@@ -73,7 +73,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.6,
-                delay: 1.0,
+                delay: 0.6,
                 ease: [0.43, 0.13, 0.23, 0.96],
               }}
             >
@@ -83,8 +83,8 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                opacity: { duration: 0.6, delay: 1.0, ease: [0.43, 0.13, 0.23, 0.96] },
-                y: { duration: 0.6, delay: 1.0, ease: [0.43, 0.13, 0.23, 0.96] },
+                opacity: { duration: 0.6, delay: 0.6, ease: [0.43, 0.13, 0.23, 0.96] },
+                y: { duration: 0.6, delay: 0.6, ease: [0.43, 0.13, 0.23, 0.96] },
               }}
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
@@ -98,8 +98,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       <main className="flex w-full justify-center bg-white dark:bg-black">
         <div className="w-full max-w-7xl px-6 sm:px-8 py-16 sm:py-20">
+          {/* Featured Speakers */}
           <motion.h2 
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
             initial={{ opacity: 0, y: 20 }}
@@ -107,65 +109,82 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            Explore Our Programs
+            Featured Past Speakers
           </motion.h2>
-          
-          <div className="flex flex-col gap-6 sm:gap-8">
-            {[
-              {
-                title: "Upcoming Speakers",
-                description: "See who's coming to Stanford next",
-                href: "/upcoming-speakers",
-                icon: "🎤"
-              },
-              {
-                title: "Past Speakers",
-                description: "Explore our rich history of speakers",
-                href: "/past-speakers",
-                icon: "📚"
-              },
-              {
-                title: "Other Programs",
-                description: "Partner with us to bring speakers to campus",
-                href: "/other-programs",
-                icon: "🤝"
-              },
-              {
-                title: "Our Team",
-                description: "Meet the people behind the scenes",
-                href: "/team",
-                icon: "👥"
-              },
-              {
-                title: "Contact Us",
-                description: "Get in touch with questions or ideas",
-                href: "/contact",
-                icon: "📧"
-              }
-            ].map((item, index) => (
-              <motion.a
-                key={item.title}
-                href={item.href}
-                className="group relative p-8 w-full"
-                whileHover={{ y: -8, scale: 1.02 }}
-              >
-                <div className="relative z-10">
-                  <div className="text-5xl mb-4">{item.icon}</div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 font-serif">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                    {item.description}
-                  </p>
-                  <div className="mt-6 flex items-center text-[#A80D0C] font-semibold text-sm group-hover:translate-x-2 transition-transform duration-300">
-                    Learn More 
-                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </motion.a>
-            ))}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Mark Rober */}
+            <motion.div
+              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Image
+                src="/speakers/mark-rober.jpeg"
+                alt="Mark Rober"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
+                  Mark Rober
+                </h3>
+                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
+                  YouTube Educator, Former NASA & Apple Engineer
+                </p>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
+                  Former NASA engineer turned YouTube star with 45+ million subscribers, known for viral science and engineering videos.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Mikey Day */}
+            <motion.div
+              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Image
+                src="/speakers/mikey-day.JPG"
+                alt="Mikey Day"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
+                  Mikey Day
+                </h3>
+                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
+                  SNL Cast Member
+                </p>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
+                  Saturday Night Live cast member and writer known for versatile impressions and memorable original characters.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="flex justify-center">
+            <motion.a
+              href="/past-speakers"
+              className="rounded-full px-8 py-4 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              View More Past Speakers
+            </motion.a>
           </div>
         </div>
       </main>
