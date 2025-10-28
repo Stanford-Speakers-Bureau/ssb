@@ -100,7 +100,7 @@ export default function Home() {
       </section>
 
       <main className="flex w-full justify-center bg-white dark:bg-black">
-        <div className="w-full max-w-7xl px-6 sm:px-8 py-16 sm:py-20">
+        <div className="w-full px-8 sm:px-12 md:px-16 lg:px-20 xl:px-24 py-16 sm:py-20">
           {/* Featured Speakers */}
           <motion.h2 
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
@@ -112,7 +112,7 @@ export default function Home() {
             Featured Past Speakers
           </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Mark Rober */}
             <motion.div
               className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
@@ -126,7 +126,7 @@ export default function Home() {
                 alt="Mark Rober"
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               <div className="relative z-10">
@@ -142,7 +142,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Mikey Day */}
+            {/* JoJo Siwa */}
             <motion.div
               className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
               initial={{ opacity: 0, y: 20 }}
@@ -151,11 +151,40 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Image
+                src="/speakers/jojo-siwa.jpg"
+                alt="JoJo Siwa"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
+                  JoJo Siwa
+                </h3>
+                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
+                  Media Icon
+                </p>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
+                  Media icon, dancer, and singer who rose to fame through the reality show Dance Moms and her vibrant online presence.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Mikey Day */}
+            <motion.div
+              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Image
                 src="/speakers/mikey-day.JPG"
                 alt="Mikey Day"
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               <div className="relative z-10">
