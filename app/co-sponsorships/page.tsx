@@ -55,54 +55,149 @@ export default function CoSponsorships() {
 
           {/* Application Process Section */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold font-serif text-black dark:text-white mb-6">
+            <h2 className="text-3xl font-bold font-serif text-black dark:text-white mb-10 text-center">
               Interested? Apply using the steps below!
             </h2>
             
-            {/* Step 1: Review */}
-            <div className="mb-8">
-              <h3 className="text-2xl font-semibold font-serif text-black dark:text-white mb-4">
-                1. Review
-              </h3>
-              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-3">
-                Review our Evaluating Co-Sponsorships & Partnerships document for more details on Speakers Bureau's evaluation process.
-              </p>
-              <a 
-                href="https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-[#d43d3d] hover:text-[#b32f2f] underline font-medium transition-colors"
-              >
-                Document Here
-              </a>
-            </div>
+            <div className="relative max-w-3xl mx-auto">
+              {/* Step 1: Review */}
+              <div className="relative mb-8">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
+                        1
+                      </div>
+                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    </div>
+                    <div className="flex-grow pt-3">
+                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                        Review
+                      </h3>
+                      <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
+                        Review our Evaluating Co-Sponsorships & Partnerships document for more details on Speakers Bureau's evaluation process.
+                      </p>
+                      <a 
+                        href="https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
+                        style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}
+                      >
+                        <span>Review Document</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                {/* Decorative Arrow */}
+                <div className="flex justify-center my-6">
+                  <div className="flex flex-col items-center">
+                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
+                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
 
-            {/* Step 2: Submit */}
-            <div className="mb-8">
-              <h3 className="text-2xl font-semibold font-serif text-black dark:text-white mb-4">
-                2. Submit
-              </h3>
-              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-3">
-                Fill out the Co-Sponsorship & Partnership Application Google Form
-              </p>
-              <a 
-                href="https://docs.google.com/forms/d/e/1FAIpQLSeAO0VRXyvxokpYWpFYPDg03UJ2oITF4LtWIF8GO0TIvyVIpA/viewform?usp=sharing&ouid=103384219620885640711"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-[#d43d3d] hover:text-[#b32f2f] underline font-medium transition-colors"
-              >
-                Document Here
-              </a>
-            </div>
+              {/* Step 2: Submit */}
+              <div className="relative mb-8">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
+                        2
+                      </div>
+                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    </div>
+                    <div className="flex-grow pt-3">
+                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                        Submit
+                      </h3>
+                      <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
+                        Fill out the Co-Sponsorship & Partnership Application Google Form
+                      </p>
+                      <a 
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSeAO0VRXyvxokpYWpFYPDg03UJ2oITF4LtWIF8GO0TIvyVIpA/viewform?usp=sharing&ouid=103384219620885640711"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
+                        style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}
+                      >
+                        <span>Submit Application</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                {/* Decorative Arrow */}
+                <div className="flex justify-center my-6">
+                  <div className="flex flex-col items-center">
+                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
+                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
 
-            {/* Step 3: Present */}
-            <div className="mb-8">
-              <h3 className="text-2xl font-semibold font-serif text-black dark:text-white mb-4">
-                3. Present
-              </h3>
-              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                Present your event in one of our team meetings (5 minutes), after which we will hold a team vote on funding
-              </p>
+              {/* Step 3: Present */}
+              <div className="relative mb-8">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
+                        3
+                      </div>
+                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    </div>
+                    <div className="flex-grow pt-3">
+                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                        Present
+                      </h3>
+                      <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                        Present your event in one of our team meetings (5 minutes), after which we will hold a team vote on funding
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {/* Decorative Arrow */}
+                <div className="flex justify-center my-6">
+                  <div className="flex flex-col items-center">
+                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
+                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4: Get Funded */}
+              <div className="relative">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
+                        4
+                      </div>
+                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    </div>
+                    <div className="flex-grow pt-3">
+                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                        Get Funded!
+                      </h3>
+                      <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                        Upon approval, receive funding for your event and bring your vision to life with the support of Stanford Speakers Bureau
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
