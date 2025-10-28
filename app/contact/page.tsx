@@ -32,11 +32,11 @@ export default function Contact() {
             <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-8">
               If you are looking for Stanford Speakers Bureau to co-sponsor an event, please first check out the{' '}
               <a 
-                href="/co-sponsorships"
+                href="/other-programs"
                 className="font-semibold hover:underline"
                 style={{ color: '#A80D0C' }}
               >
-                Co-Sponsorships section
+                Other Programs section
               </a>{' '}
               for our interests and guidelines.
             </p>

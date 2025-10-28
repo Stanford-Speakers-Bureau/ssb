@@ -1,11 +1,31 @@
-export default function CoSponsorships() {
+export default function OtherPrograms() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full justify-center bg-white dark:bg-black pt-16">
         <section className="w-full max-w-5xl py-12 px-6 sm:px-12 md:px-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
-            Co-Sponsorships & Partnerships
+            Other Programs
           </h1>
+          
+          {/* Coffee Chats Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6">
+              Coffee Chats
+            </h2>
+            
+            <div className="mb-6">
+              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                The Coffee Chats team focuses on bringing Stanford professors in to intimate, eight to ten person conversations with students. To learn more about upcoming professors or to join the team, please email the Director of Coffee Chats {' '}
+                <a 
+                  href="mailto:amock@stanford.edu"
+                  className="font-semibold hover:underline"
+                  style={{ color: '#A80D0C' }}
+                >
+                  Andrea Mock
+                </a>.
+              </p>
+            </div>
+          </div>
           
           {/* Uplift x Co-Sponsorships Section */}
           <div className="mb-12">
@@ -30,8 +50,19 @@ export default function CoSponsorships() {
                 Going forward, SSB has decided to offer our Uplift Fund in perpetuity. Though we will continue to co-sponsor some events that do not meet the Uplift Fund criteria, Uplift events will be prioritized.
               </p>
               
-              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
                 We try to co-sponsor a variety of events every year, so we love creative ideas!
+              </p>
+              
+              <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                For questions, please contact the Director of Co-Sponsorship{' '}
+                <a 
+                  href="mailto:ctoh28@stanford.edu"
+                  className="font-semibold hover:underline"
+                  style={{ color: '#A80D0C' }}
+                >
+                  Cindy Toh
+                </a>.
               </p>
             </div>
           </div>

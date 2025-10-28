@@ -63,10 +63,10 @@ export default function NavBar() {
               <motion.a 
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }} 
-                href="/co-sponsorships" 
+                href="/other-programs" 
                 className={linkClasses}
               >
-                Co-Sponsorships
+                Other Programs
               </motion.a>
               <motion.a 
                 whileHover={{ scale: 1.05 }} 
@@ -149,11 +149,11 @@ export default function NavBar() {
                   Past Speakers
                 </a>
                 <a
-                  href="/co-sponsorships"
+                  href="/other-programs"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Co-Sponsorships
+                  Other Programs
                 </a>
                 <a
                   href="/team"
