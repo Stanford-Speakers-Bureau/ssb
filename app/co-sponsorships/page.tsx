@@ -2,14 +2,14 @@ export default function CoSponsorships() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full justify-center bg-white dark:bg-black pt-16">
-        <section className="w-full max-w-5xl py-12 px-6 sm:px-16">
-          <h1 className="text-4xl font-bold text-black dark:text-white mb-8 font-serif">
+        <section className="w-full max-w-5xl py-12 px-6 sm:px-12 md:px-16">
+          <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
             Co-Sponsorships & Partnerships
           </h1>
           
           {/* Uplift x Co-Sponsorships Section */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold font-serif text-black dark:text-white mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6">
               Uplift x Co-Sponsorships
             </h2>
             
@@ -38,7 +38,7 @@ export default function CoSponsorships() {
 
           {/* Partnerships Section */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold font-serif text-black dark:text-white mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6">
               Partnerships
             </h2>
             
@@ -55,20 +55,20 @@ export default function CoSponsorships() {
 
           {/* Application Process Section */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold font-serif text-black dark:text-white mb-10 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-10 text-center">
               Interested? Apply using the steps below!
             </h2>
             
             <div className="relative max-w-3xl mx-auto">
               {/* Step 1: Review */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
-                  <div className="flex items-start gap-6">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>1</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>1</span>
                     </div>
                     <div className="flex-grow pt-1">
-                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Review
                       </h3>
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
@@ -99,13 +99,13 @@ export default function CoSponsorships() {
 
               {/* Step 2: Submit */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
-                  <div className="flex items-start gap-6">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>2</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>2</span>
                     </div>
                     <div className="flex-grow pt-1">
-                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Submit
                       </h3>
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
@@ -136,13 +136,13 @@ export default function CoSponsorships() {
 
               {/* Step 3: Present */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
-                  <div className="flex items-start gap-6">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>3</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>3</span>
                     </div>
                     <div className="flex-grow pt-1">
-                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Present
                       </h3>
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
@@ -161,13 +161,13 @@ export default function CoSponsorships() {
 
               {/* Step 4: Get Funded */}
               <div className="relative">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
-                  <div className="flex items-start gap-6">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                  <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>4</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>4</span>
                     </div>
                     <div className="flex-grow pt-1">
-                      <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Get Funded!
                       </h3>
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">

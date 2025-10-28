@@ -48,7 +48,7 @@ const teamMembers = [
 
 export default function Team() {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black py-16 px-6 sm:px-8">
+    <div className="min-h-screen bg-zinc-50 dark:bg-black py-16 px-8 sm:px-12 md:px-16">
       <div className="max-w-7xl mx-auto">
         <motion.h1 
           className="text-4xl sm:text-5xl md:text-6xl font-bold text-center mt-10 mb-4 text-[#d43d3d] font-serif"
