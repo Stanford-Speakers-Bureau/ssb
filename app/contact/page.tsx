@@ -1,7 +1,7 @@
 export default function Contact() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full justify-center bg-white dark:bg-black pt-16">
+      <main className="flex flex-1 w-full justify-center bg-white dark:bg-black pt-16">
         <section className="w-full max-w-4xl py-12 px-6 sm:px-12 md:px-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4 font-serif text-center">
             Got Questions or Ideas? Get In Touch!
