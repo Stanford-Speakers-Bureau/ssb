@@ -47,6 +47,14 @@ export default function NavBar() {
               <motion.a 
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }} 
+                href="/upcoming-speakers" 
+                className={linkClasses}
+              >
+                Upcoming Speakers
+              </motion.a>
+              <motion.a 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }} 
                 href="/past-speakers" 
                 className={linkClasses}
               >
@@ -126,6 +134,13 @@ export default function NavBar() {
           >
             <div className="flex flex-col h-full pt-20 px-8">
               <div className="flex flex-col space-y-1">
+                <a
+                  href="/upcoming-speakers"
+                  className={mobileLinkClasses}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Upcoming Speakers
+                </a>
                 <a
                   href="/past-speakers"
                   className={mobileLinkClasses}
