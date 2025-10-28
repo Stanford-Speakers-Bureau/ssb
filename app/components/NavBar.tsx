@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -35,7 +36,7 @@ export default function NavBar() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
             <a href="/" className={logoClasses}>
-              Logo
+              <Image src="/logo.png" alt="Logo" width={40} height={40} />
             </a>
             <div className="hidden items-center gap-6 md:flex">
               <motion.a 
