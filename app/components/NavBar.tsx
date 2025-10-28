@@ -35,9 +35,14 @@ export default function NavBar() {
       <nav className="absolute top-0 left-0 right-0 z-50 w-full">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
-            <a href="/" className={logoClasses}>
+            <motion.a 
+              href="/" 
+              className={logoClasses}
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+            >
               <Image src="/logo.png" alt="Logo" width={40} height={40} />
-            </a>
+            </motion.a>
             <div className="hidden items-center gap-6 md:flex">
               <motion.a 
                 whileHover={{ scale: 1.05 }} 

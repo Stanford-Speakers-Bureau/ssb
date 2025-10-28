@@ -8,10 +8,7 @@ export default function Home() {
   const headingWords = headingText.split(" ");
   
   const paragraphText = "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.";
-  const paragraphWords = paragraphText.split(" ");
-  
   const buttonText = "Join Our Mailing List";
-  const buttonWords = buttonText.split(" ");
 
   return (
     <div className="flex min-h-screen flex-col items-stretch bg-zinc-50 font-sans dark:bg-black">
@@ -70,54 +67,33 @@ export default function Home() {
                 </motion.span>
               ))}
             </h1>
-            <p className="text-gray-300 text-base sm:text-lg md:text-xl max-w-3xl text-center drop-shadow-lg mb-5 sm:mb-6 md:mb-7">
-              {paragraphWords.map((word, wordIndex) => (
-                <motion.span
-                  key={wordIndex}
-                  className="inline-block mr-1"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.8 + wordIndex * 0.02,
-                    ease: [0.43, 0.13, 0.23, 0.96],
-                  }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </p>
-            <motion.a 
-              initial={{ opacity: 0, y: 20 }}
+            <motion.p 
+              className="text-gray-300 text-base sm:text-lg md:text-xl max-w-3xl text-center drop-shadow-lg mb-5 sm:mb-6 md:mb-7"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.4,
-                delay: 1.5,
+                duration: 0.6,
+                delay: 1.0,
                 ease: [0.43, 0.13, 0.23, 0.96],
+              }}
+            >
+              {paragraphText}
+            </motion.p>
+            <motion.a 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                opacity: { duration: 0.6, delay: 1.0, ease: [0.43, 0.13, 0.23, 0.96] },
+                y: { duration: 0.6, delay: 1.0, ease: [0.43, 0.13, 0.23, 0.96] },
               }}
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="rounded-full px-6 py-3 text-base font-semibold text-white transition-colors shadow-lg" 
-              style={{ background: '#d43d3d' }}
+              className="rounded-full px-6 py-3 text-base font-semibold text-white bg-[#d43d3d] shadow-lg transition-colors hover:bg-[#b32f2f]" 
             >
-              {buttonWords.map((word, wordIndex) => (
-                <motion.span
-                  key={wordIndex}
-                  className="inline-block mr-1"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 1.5,
-                    ease: [0.43, 0.13, 0.23, 0.96],
-                  }}
-                >
-                  {word}
-                </motion.span>
-              ))}
+              {buttonText}
             </motion.a>
           </div>
         </div>
