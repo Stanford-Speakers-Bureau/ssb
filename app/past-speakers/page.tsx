@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function PastSpeakers() {
   const [expandedYears, setExpandedYears] = useState<{ [key: string]: boolean }>({
-    '2025': false,
+    '2025': true,
     '2024': false,
     '2023': false,
     '2022': false,
@@ -35,7 +35,7 @@ export default function PastSpeakers() {
             >
               <motion.span 
                 className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-                initial={{ rotate: -90 }}
+                initial={{ rotate: expandedYears['2025'] ? 0 : -90 }}
                 animate={{ rotate: expandedYears['2025'] ? 0 : -90 }}
                 transition={{ duration: 0.3 }}
               >
@@ -101,7 +101,7 @@ export default function PastSpeakers() {
             >
               <motion.span 
                 className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-                initial={{ rotate: -90 }}
+                initial={{ rotate: expandedYears['2024'] ? 0 : -90 }}
                 animate={{ rotate: expandedYears['2024'] ? 0 : -90 }}
                 transition={{ duration: 0.3 }}
               >
@@ -167,7 +167,7 @@ export default function PastSpeakers() {
             >
               <motion.span 
                 className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-                initial={{ rotate: -90 }}
+                initial={{ rotate: expandedYears['2023'] ? 0 : -90 }}
                 animate={{ rotate: expandedYears['2023'] ? 0 : -90 }}
                 transition={{ duration: 0.3 }}
               >
@@ -242,7 +242,7 @@ export default function PastSpeakers() {
             >
               <motion.span 
                 className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-                initial={{ rotate: -90 }}
+                initial={{ rotate: expandedYears['2022'] ? 0 : -90 }}
                 animate={{ rotate: expandedYears['2022'] ? 0 : -90 }}
                 transition={{ duration: 0.3 }}
               >
@@ -326,7 +326,7 @@ export default function PastSpeakers() {
             >
               <motion.span 
                 className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-                initial={{ rotate: -90 }}
+                initial={{ rotate: expandedYears['2021'] ? 0 : -90 }}
                 animate={{ rotate: expandedYears['2021'] ? 0 : -90 }}
                 transition={{ duration: 0.3 }}
               >
