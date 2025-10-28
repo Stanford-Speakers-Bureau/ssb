@@ -38,8 +38,7 @@ export default function Home() {
                     hidden: {},
                     visible: {
                       transition: {
-                        staggerChildren: 0.05,
-                        delayChildren: wordIndex * 0.3,
+                        delayChildren: wordIndex * 0.2,
                       },
                     },
                   }}
@@ -80,7 +79,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     duration: 0.4,
-                    delay: 1.2 + wordIndex * 0.08,
+                    delay: 0.8 + wordIndex * 0.02,
                     ease: [0.43, 0.13, 0.23, 0.96],
                   }}
                 >
@@ -93,7 +92,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.4,
-                delay: 3.5,
+                delay: 1.5,
                 ease: [0.43, 0.13, 0.23, 0.96],
               }}
               whileHover={{ scale: 1.05 }} 
@@ -112,7 +111,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     duration: 0.4,
-                    delay: 3.5 + wordIndex * 0.08,
+                    delay: 1.5,
                     ease: [0.43, 0.13, 0.23, 0.96],
                   }}
                 >
