@@ -51,7 +51,7 @@ export default function Team() {
     <div className="min-h-screen bg-zinc-50 dark:bg-black py-16 px-8 sm:px-12 md:px-16">
       <div className="max-w-7xl mx-auto">
         <motion.h1 
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-center mt-10 mb-4 text-[#d43d3d] font-serif"
+          className="text-4xl sm:text-5xl md:text-6xl font-bold text-center mt-10 mb-4 text-[#A80D0C] font-serif"
         >
           Our Team
         </motion.h1>
@@ -69,7 +69,7 @@ export default function Team() {
               className="flex flex-col items-center gap-4"
               whileHover={{ scale: 1.05 }}
             >
-              <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-lg ring-4 ring-gray-200 dark:ring-gray-800 transition-all hover:ring-[#d43d3d]">
+              <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-lg ring-4 ring-gray-200 dark:ring-gray-800 transition-all hover:ring-[#A80D0C]">
                 <Image
                   src={member.image}
                   alt={member.name}

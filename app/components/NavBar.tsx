@@ -24,7 +24,7 @@ export default function NavBar() {
   
   const mobileLinkClasses = isHomePage
     ? "text-lg font-medium text-white transition-colors hover:text-white/80 py-3"
-    : "text-lg font-medium text-black dark:text-gray-300 transition-colors hover:text-[#d43d3d] py-3";
+    : "text-lg font-medium text-black dark:text-gray-300 transition-colors hover:text-[#A80D0C] py-3";
   
   const hamburgerClasses = isHomePage
     ? "text-white"
@@ -83,7 +83,7 @@ export default function NavBar() {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
               href="/sign-in" 
-              className="hidden sm:block rounded-full px-4 py-2 text-sm font-medium text-white bg-[#d43d3d] shadow transition-colors hover:bg-[#b32f2f]"
+              className="hidden sm:block rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
             >
               Sign In
             </motion.a>
@@ -157,7 +157,7 @@ export default function NavBar() {
                 <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
                   <a
                     href="/sign-in"
-                    className="block text-center rounded-full px-4 py-2 text-sm font-medium text-white bg-[#d43d3d] shadow transition-colors hover:bg-[#b32f2f]"
+                    className="block text-center rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In

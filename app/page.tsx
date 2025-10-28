@@ -24,7 +24,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/70 pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center px-8 sm:px-12 md:px-16">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold drop-shadow-2xl text-center text-[#d43d3d] font-serif mb-6 sm:mb-7 md:mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold drop-shadow-2xl text-center text-[#A80D0C] font-serif mb-6 sm:mb-7 md:mb-8">
               {headingWords.map((word, wordIndex) => (
                 <motion.span
                   key={wordIndex}
@@ -91,7 +91,7 @@ export default function Home() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="rounded-full px-6 py-3 text-base font-semibold text-white bg-[#d43d3d] shadow-lg transition-colors hover:bg-[#b32f2f]" 
+              className="rounded-full px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]" 
             >
               {buttonText}
             </motion.a>

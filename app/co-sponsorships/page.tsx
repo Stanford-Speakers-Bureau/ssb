@@ -65,7 +65,7 @@ export default function CoSponsorships() {
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>1</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>1</span>
                     </div>
                     <div className="flex-grow pt-1">
                       <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
@@ -79,7 +79,7 @@ export default function CoSponsorships() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
-                        style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}
+                        style={{ background: 'linear-gradient(135deg, #A80D0C 0%, #A80D0C 100%)' }}
                       >
                         <span>Review Document</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-10 h-10" style={{ color: '#A80D0C' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
                 </div>
@@ -102,7 +102,7 @@ export default function CoSponsorships() {
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>2</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>2</span>
                     </div>
                     <div className="flex-grow pt-1">
                       <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
@@ -116,7 +116,7 @@ export default function CoSponsorships() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
-                        style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}
+                        style={{ background: 'linear-gradient(135deg, #A80D0C 0%, #A80D0C 100%)' }}
                       >
                         <span>Submit Application</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-10 h-10" style={{ color: '#A80D0C' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
                 </div>
@@ -139,7 +139,7 @@ export default function CoSponsorships() {
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>3</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>3</span>
                     </div>
                     <div className="flex-grow pt-1">
                       <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
@@ -153,7 +153,7 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-10 h-10" style={{ color: '#A80D0C' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
                 </div>
@@ -164,7 +164,7 @@ export default function CoSponsorships() {
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>4</span>
+                      <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>4</span>
                     </div>
                     <div className="flex-grow pt-1">
                       <h3 className="text-xl sm:text-2xl font-bold font-serif text-black dark:text-white mb-3">
