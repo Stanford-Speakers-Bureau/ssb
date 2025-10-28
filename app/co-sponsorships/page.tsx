@@ -64,13 +64,10 @@ export default function CoSponsorships() {
               <div className="relative mb-8">
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
-                        1
-                      </div>
-                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    <div className="flex-shrink-0">
+                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>1</span>
                     </div>
-                    <div className="flex-grow pt-3">
+                    <div className="flex-grow pt-1">
                       <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Review
                       </h3>
@@ -94,12 +91,9 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <div className="flex flex-col items-center">
-                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
-                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
-                    </svg>
-                  </div>
+                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
                 </div>
               </div>
 
@@ -107,13 +101,10 @@ export default function CoSponsorships() {
               <div className="relative mb-8">
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
-                        2
-                      </div>
-                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    <div className="flex-shrink-0">
+                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>2</span>
                     </div>
-                    <div className="flex-grow pt-3">
+                    <div className="flex-grow pt-1">
                       <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Submit
                       </h3>
@@ -137,12 +128,9 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <div className="flex flex-col items-center">
-                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
-                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
-                    </svg>
-                  </div>
+                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
                 </div>
               </div>
 
@@ -150,13 +138,10 @@ export default function CoSponsorships() {
               <div className="relative mb-8">
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
-                        3
-                      </div>
-                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    <div className="flex-shrink-0">
+                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>3</span>
                     </div>
-                    <div className="flex-grow pt-3">
+                    <div className="flex-grow pt-1">
                       <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Present
                       </h3>
@@ -168,12 +153,9 @@ export default function CoSponsorships() {
                 </div>
                 {/* Decorative Arrow */}
                 <div className="flex justify-center my-6">
-                  <div className="flex flex-col items-center">
-                    <div className="w-1 h-8 rounded-full" style={{ background: 'linear-gradient(180deg, #d43d3d 0%, #b32f2f 100%)' }}></div>
-                    <svg className="w-6 h-6 -mt-1" style={{ color: '#b32f2f' }} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 11-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v13.09A.75.75 0 0110 18z" clipRule="evenodd" transform="rotate(180 10 10)" />
-                    </svg>
-                  </div>
+                  <svg className="w-10 h-10" style={{ color: '#d43d3d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
                 </div>
               </div>
 
@@ -181,13 +163,10 @@ export default function CoSponsorships() {
               <div className="relative">
                 <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-2xl relative z-10" style={{ background: 'linear-gradient(135deg, #d43d3d 0%, #b32f2f 100%)' }}>
-                        4
-                      </div>
-                      <div className="absolute inset-0 w-20 h-20 rounded-full animate-pulse opacity-20" style={{ background: '#d43d3d' }}></div>
+                    <div className="flex-shrink-0">
+                      <span className="text-4xl font-bold font-serif" style={{ color: '#d43d3d' }}>4</span>
                     </div>
-                    <div className="flex-grow pt-3">
+                    <div className="flex-grow pt-1">
                       <h3 className="text-2xl font-bold font-serif text-black dark:text-white mb-3">
                         Get Funded!
                       </h3>

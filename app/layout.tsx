@@ -29,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <NavBar overlay />
+        <NavBar />
         {children}
       </body>
     </html>
