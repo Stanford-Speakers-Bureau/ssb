@@ -89,12 +89,12 @@ export default function Home() {
               ))}
             </p>
             <motion.a 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 0.6, 
-                delay: 4.0,
-                ease: [0.43, 0.13, 0.23, 0.96]
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.4,
+                delay: 3.5,
+                ease: [0.43, 0.13, 0.23, 0.96],
               }}
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
@@ -107,43 +107,16 @@ export default function Home() {
               {buttonWords.map((word, wordIndex) => (
                 <motion.span
                   key={wordIndex}
-                  className="inline-block mr-2 last:mr-0"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: {},
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.04,
-                        delayChildren: 4.0 + wordIndex * 0.15,
-                      },
-                    },
+                  className="inline-block mr-1"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: 3.5 + wordIndex * 0.08,
+                    ease: [0.43, 0.13, 0.23, 0.96],
                   }}
                 >
-                  {word.split("").map((char, charIndex) => (
-                    <motion.span
-                      key={charIndex}
-                      className="inline-block"
-                      variants={{
-                        hidden: {
-                          opacity: 0,
-                          y: 50,
-                          rotateX: -90,
-                        },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          rotateX: 0,
-                          transition: {
-                            duration: 0.6,
-                            ease: [0.43, 0.13, 0.23, 0.96],
-                          },
-                        },
-                      }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  {word}
                 </motion.span>
               ))}
             </motion.a>
