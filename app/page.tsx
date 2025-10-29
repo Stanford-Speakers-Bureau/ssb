@@ -15,7 +15,7 @@ export default function Home() {
       <section className="relative w-full h-screen">
         <Image
           className="object-cover"
-          src="/john-green.jpg"
+          src="/speakers/john-green.jpg"
           alt="Hero image"
           priority
           fill
