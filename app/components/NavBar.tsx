@@ -7,26 +7,26 @@ import Image from "next/image";
 
 export default function NavBar() {
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
+  const isWhiteNavPage = pathname === "/" || pathname === "/contact";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  const logoClasses = isHomePage 
+  const logoClasses = isWhiteNavPage 
     ? "text-xl font-bold text-white"
     : "text-xl font-bold text-black dark:text-white";
   
-  const linkClasses = isHomePage
+  const linkClasses = isWhiteNavPage
     ? "text-sm font-medium text-white transition-colors hover:text-white/80"
     : "text-sm font-medium text-black dark:text-gray-300 transition-colors hover:text-black dark:hover:text-white";
   
-  const mobileMenuBgClasses = isHomePage
+  const mobileMenuBgClasses = isWhiteNavPage
     ? "bg-black/95 backdrop-blur-sm"
     : "bg-white dark:bg-zinc-900";
   
-  const mobileLinkClasses = isHomePage
+  const mobileLinkClasses = isWhiteNavPage
     ? "text-lg font-medium text-white transition-colors hover:text-white/80 py-3"
     : "text-lg font-medium text-black dark:text-gray-300 transition-colors hover:text-[#A80D0C] py-3";
   
-  const hamburgerClasses = isHomePage
+  const hamburgerClasses = isWhiteNavPage
     ? "text-white"
     : "text-black dark:text-white";
   

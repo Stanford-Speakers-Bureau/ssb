@@ -100,7 +100,7 @@ export default function Home() {
       </section>
 
       <main className="flex w-full justify-center bg-white dark:bg-black">
-        <div className="w-full px-8 sm:px-12 md:px-16 lg:px-20 xl:px-24 py-16 sm:py-20">
+        <div className="w-full max-w-[1600px] px-8 sm:px-12 md:px-16 lg:px-20 xl:px-24 py-16 sm:py-20">
           {/* Featured Speakers */}
           <motion.h2 
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
@@ -201,10 +201,10 @@ export default function Home() {
             </motion.div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-16">
             <motion.a
               href="/past-speakers"
-              className="rounded-full px-8 py-4 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -215,6 +215,110 @@ export default function Home() {
               View More Speakers
             </motion.a>
           </div>
+
+          {/* Other Programs */}
+          <motion.h2 
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            Other Programs
+          </motion.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Co-Sponsorships */}
+            <motion.div
+              className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Image
+                src="/meeting.JPG"
+                alt="Co-Sponsorships"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 font-serif">
+                  Co-Sponsorships
+                </h3>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
+                  We provide co-sponsorships up to $1500 in speaker fees and event service costs, prioritizing our Community Uplift Fund for events centering traditionally marginalized communities.
+                </p>
+                <a
+                  href="/other-programs"
+                  className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline"
+                >
+                  Learn more
+                </a>
+              </div>
+            </motion.div>
+
+            {/* Coffee Chats */}
+            <motion.div
+              className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Image
+                src="/coffee-chat.jpg"
+                alt="Coffee Chats"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 font-serif">
+                  Coffee Chats
+                </h3>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
+                  Join intimate conversations with Stanford professors in small groups of eight to ten students. A unique opportunity to engage with faculty in a casual, personal setting and discuss their work and insights.
+                </p>
+                <a
+                  href="/other-programs"
+                  className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline"
+                >
+                  Learn more
+                </a>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Contact Us Section */}
+          <motion.div 
+            className="mt-20 mb-16 sm:mb-20 text-center px-6 sm:px-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-6 font-serif">
+              Get In Touch!
+            </h2>
+            <p className="text-base sm:text-lg text-zinc-700 dark:text-zinc-300 mb-8 max-w-2xl mx-auto">
+              Have ideas for events or questions about our programs?<br className="sm:hidden" /> <span className="whitespace-nowrap">We'd love to hear from you!</span>
+            </p>
+            <motion.a
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Contact Us</span>
+            </motion.a>
+          </motion.div>
         </div>
       </main>
     </div>
