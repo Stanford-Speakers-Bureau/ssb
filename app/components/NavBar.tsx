@@ -87,14 +87,14 @@ export default function NavBar() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <motion.a 
+            {/* <motion.a 
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
               href="/sign-in" 
               className="hidden sm:block rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
             >
               Sign In
-            </motion.a>
+            </motion.a> */}
             
             {/* Mobile Menu Button */}
             <button
@@ -169,7 +169,7 @@ export default function NavBar() {
                 >
                   Contact
                 </a>
-                <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
+                {/* <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
                   <a
                     href="/sign-in"
                     className="block text-center rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
@@ -177,7 +177,7 @@ export default function NavBar() {
                   >
                     Sign In
                   </a>
-                </div>
+                </div> */}
               </div>
             </div>
           </motion.div>
