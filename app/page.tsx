@@ -295,7 +295,7 @@ export default function Home() {
 
           {/* Contact Us Section */}
           <motion.div 
-            className="mt-20 mb-16 sm:mb-20 text-center px-6 sm:px-8"
+            className="mt-20 text-center px-6 sm:px-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
