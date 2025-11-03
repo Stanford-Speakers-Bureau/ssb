@@ -6,10 +6,10 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function PastSpeakers() {
   const [expandedYears, setExpandedYears] = useState<{ [key: string]: boolean }>({
     '2025': true,
-    '2024': false,
-    '2023': false,
-    '2022': false,
-    '2021': false,
+    '2024': true,
+    '2023': true,
+    '2022': true,
+    '2021': true,
   });
 
   const toggleYear = (year: string) => {
