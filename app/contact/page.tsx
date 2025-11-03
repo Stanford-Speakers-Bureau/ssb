@@ -5,7 +5,7 @@ export default function Contact() {
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="relative flex flex-1 w-full justify-center pt-16">
         <Image
-          className="object-cover"
+          className="object-cover blur-sm"
           src="/students.jpeg"
           alt="Students background"
           fill
@@ -16,7 +16,6 @@ export default function Contact() {
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-serif text-center drop-shadow-lg">
             Got Questions or Ideas? Get In Touch!
           </h1>
-          
           <h2 className="text-xl sm:text-2xl font-bold font-serif text-white mb-8 text-center drop-shadow-lg">
             We are looking for event ideas!
           </h2>
