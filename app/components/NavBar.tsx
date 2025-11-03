@@ -33,7 +33,7 @@ export default function NavBar() {
   return (
     <>
       <nav className="absolute top-0 left-0 right-0 z-50 w-full">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-8 sm:px-12 md:px-16">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
             <motion.a 
               href="/" 
