@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/NavBar";
+import BannerBar from "@/app/components/BannerBar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,7 +30,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <NavBar />
+        <BannerBar />
+          <NavBar banner={true} />
         {children}
       </body>
     </html>

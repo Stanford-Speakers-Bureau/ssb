@@ -2,10 +2,10 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
-export default function NavBar() {
+export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
   const isWhiteNavPage = pathname === "/" || pathname === "/contact";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -30,9 +30,23 @@ export default function NavBar() {
     ? "text-white"
     : "text-black dark:text-white";
   
+  // Disable body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    
+    // Cleanup: restore scroll when component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+  
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 z-50 w-full">
+      <nav className={`absolute ${banner ? "top-10" : "top-0"} left-0 right-0 z-50 w-full`}>
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
             <motion.a 
@@ -132,7 +146,7 @@ export default function NavBar() {
             transition={{ type: "tween", duration: 0.3 }}
             className={`fixed inset-y-0 right-0 z-40 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl md:hidden`}
           >
-            <div className="flex flex-col h-full pt-20 px-8">
+            <div className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}>
               <div className="flex flex-col space-y-1">
                 <a
                   href="/upcoming-speakers"
