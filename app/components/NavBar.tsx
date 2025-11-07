@@ -105,7 +105,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }} 
               href="/sign-in" 
-              className="hidden sm:block rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
+              className="hidden sm:block rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
             >
               Sign In
             </motion.a> */}
@@ -186,7 +186,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 {/* <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
                   <a
                     href="/sign-in"
-                    className="block text-center rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
+                    className="block text-center rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In

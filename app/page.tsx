@@ -91,7 +91,7 @@ export default function Home() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="rounded-full px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]" 
+              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]" 
             >
               {buttonText}
             </motion.a>
@@ -204,7 +204,7 @@ export default function Home() {
           <div className="flex justify-center mb-16">
             <motion.a
               href="/past-speakers"
-              className="rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -309,7 +309,7 @@ export default function Home() {
             </p>
             <motion.a
               href="/contact"
-              className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
