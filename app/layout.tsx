@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
         <BannerBar />
-          <NavBar banner={true} />
+        <NavBar banner={true} />
         {children}
       </body>
     </html>

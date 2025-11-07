@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import Link from "next/link";
 
 interface TimeUnitProps {
   value: string;
@@ -84,19 +85,28 @@ export default function BannerBar() {
   }, []);
 
   return (
-    <div className="h-10 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C]">
-      <a href="/events/malala" className="underline hover:opacity-90 transition-opacity">
+    <div className="relative z-50 h-10 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C]">
+      {/* Mobile version - simplified */}
+      <Link href="/events/malala" className="md:hidden underline hover:opacity-90 transition-opacity">
         SIGN UP FOR OUR FIRST SPEAKER OF THE YEAR
-      </a>
-      <span className="opacity-40">|</span>
-      <div className="flex items-center gap-1 font-mono text-sm">
-        <TimeUnit value={String(timeLeft.days)} />
-        <span className="opacity-60">:</span>
-        <TimeUnit value={String(timeLeft.hours)} />
-        <span className="opacity-60">:</span>
-        <TimeUnit value={String(timeLeft.minutes)} />
-        <span className="opacity-60">:</span>
-        <TimeUnit value={String(timeLeft.seconds)} />
+      </Link>
+      
+      {/* Desktop version - full with countdown */}
+      <div className="hidden md:flex items-center gap-3">
+        <Link href="/events/malala" className="underline hover:opacity-90 transition-opacity">
+          SIGN UP FOR OUR FIRST SPEAKER OF THE YEAR
+        </Link>
+        <span className="opacity-40">|</span>
+        <span className="text-sm font-medium">Tickets drop in</span>
+        <div className="flex items-center gap-1 font-mono text-sm">
+          <TimeUnit value={String(timeLeft.days)} />
+          <span className="opacity-60">:</span>
+          <TimeUnit value={String(timeLeft.hours)} />
+          <span className="opacity-60">:</span>
+          <TimeUnit value={String(timeLeft.minutes)} />
+          <span className="opacity-60">:</span>
+          <TimeUnit value={String(timeLeft.seconds)} />
+        </div>
       </div>
     </div>
   );
