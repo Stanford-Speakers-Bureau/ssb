@@ -84,9 +84,6 @@ export default function EventPage() {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     };
 
-    // Initial calculation
-    setTimeLeft(calculateTimeLeft());
-
     // Update every second
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
@@ -122,7 +119,7 @@ export default function EventPage() {
 
       setSubmitStatus("success");
       setEmail("");
-    } catch (error) {
+    } catch {
       setSubmitStatus("error");
       setErrorMessage("Network error. Please try again.");
     }
@@ -152,13 +149,13 @@ export default function EventPage() {
             
             <div className="text-sm sm:text-base text-white space-y-3 md:space-y-4 mb-6 md:mb-8">
               <p>
-                Malala Yousafzai is a Pakistani human rights activist and the youngest-ever Nobel Prize laureate. She became an international advocate for girls' education after surviving a targeted assassination attempt by the Taliban in 2012 for speaking out for her right to learn.
+                Malala Yousafzai is a Pakistani human rights activist and the youngest-ever Nobel Prize laureate. She became an international advocate for girls&apos; education after surviving a targeted assassination attempt by the Taliban in 2012 for speaking out for her right to learn.
               </p>
               <p>
                 Rather than being silenced, Malala co-founded the Malala Fund, a non-profit organization dedicated to building a world where every girl can learn and lead. She is the author of the international bestseller I Am Malala and a graduate of Oxford University.
               </p>
               <p>
-                Her powerful story and unwavering advocacy have grown into an international movement, making her one of the world's most prominent voices on human rights, female empowerment, and the power of education to create change.
+                Her powerful story and unwavering advocacy have grown into an international movement, making her one of the world&apos;s most prominent voices on human rights, female empowerment, and the power of education to create change.
               </p>
             </div>
             
@@ -238,7 +235,7 @@ export default function EventPage() {
               
               {submitStatus === "success" && (
                 <div className="bg-green-500/20 border border-green-500 rounded-lg p-3 text-green-100 text-sm">
-                  ✓ Success! You'll be notified when tickets open.
+                  ✓ Success! You&apos;ll be notified when tickets open.
                 </div>
               )}
               

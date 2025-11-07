@@ -34,7 +34,7 @@ export default function Contact() {
                 className="font-semibold hover:underline"
                 style={{ color: '#A80D0C' }}
               >
-                Office of Student Engagement's website
+                Office of Student Engagement&apos;s website
               </a>.
             </p>
             

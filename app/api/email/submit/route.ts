@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 
     if (error) {
       // handle unique violation (duplicate email) gracefully
-      const msg = (error as any)?.message || "Supabase insert error";
+      const msg = (error as { message?: string })?.message || "Supabase insert error";
       const isConflict =
         typeof msg === "string" && /duplicate key|unique constraint/i.test(msg);
       return NextResponse.json(
@@ -88,9 +88,10 @@ export async function POST(req: Request) {
       { success: true, record: data },
       { status: 201 }
     );
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : "Unexpected server error";
     return NextResponse.json(
-      { error: e?.message || "Unexpected server error" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
