@@ -43,7 +43,7 @@ export default function OtherPrograms() {
               </p>
               
               <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
-                In 2020 Stanford Speakers Bureau launched our Community Uplift Fund. Money from this fund is used to support organizations on Stanford's campus who want to host events that center the voices of traditionally marginalized communities including, but not limited to, communities of color, the LGBTQ+ community, the disabled community, the neurodivergent community, and the FLI community.
+                In 2020 Stanford Speakers Bureau launched our Community Uplift Fund. Money from this fund is used to support organizations on Stanford&apos;s campus who want to host events that center the voices of traditionally marginalized communities including, but not limited to, communities of color, the LGBTQ+ community, the disabled community, the neurodivergent community, and the FLI community.
               </p>
               
               <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
@@ -103,7 +103,7 @@ export default function OtherPrograms() {
                         Review
                       </h3>
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
-                        Review our Evaluating Co-Sponsorships & Partnerships document for more details on Speakers Bureau's evaluation process.
+                        Review our Evaluating Co-Sponsorships & Partnerships document for more details on Speakers Bureau&apos;s evaluation process.
                       </p>
                       <a 
                         href="https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f"

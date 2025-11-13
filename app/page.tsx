@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   const headingText = "Stanford Speakers Bureau";
@@ -91,7 +92,7 @@ export default function Home() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="rounded-full px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]" 
+              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]" 
             >
               {buttonText}
             </motion.a>
@@ -202,9 +203,7 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center mb-16">
-            <motion.a
-              href="/past-speakers"
-              className="rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -212,8 +211,13 @@ export default function Home() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              View More Speakers
-            </motion.a>
+              <Link
+                href="/past-speakers"
+                className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              >
+                View More Speakers
+              </Link>
+            </motion.div>
           </div>
 
           {/* Other Programs */}
@@ -251,12 +255,12 @@ export default function Home() {
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
                   We provide co-sponsorships up to $1500 in speaker fees and event service costs, prioritizing our Community Uplift Fund for events centering traditionally marginalized communities.
                 </p>
-                <a
+                <Link
                   href="/other-programs"
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline"
                 >
                   Learn more
-                </a>
+                </Link>
               </div>
             </motion.div>
 
@@ -283,12 +287,12 @@ export default function Home() {
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
                   Join intimate conversations with Stanford professors in small groups of eight to ten students. A unique opportunity to engage with faculty in a casual, personal setting and discuss their work and insights.
                 </p>
-                <a
+                <Link
                   href="/other-programs"
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline"
                 >
                   Learn more
-                </a>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -305,19 +309,22 @@ export default function Home() {
               Get In Touch!
             </h2>
             <p className="text-base sm:text-lg text-zinc-700 dark:text-zinc-300 mb-8 max-w-2xl mx-auto">
-              Have ideas for events or questions about our programs?<br className="sm:hidden" /> <span className="whitespace-nowrap">We'd love to hear from you!</span>
+              Have ideas for events or questions about our programs?<br className="sm:hidden" /> <span className="whitespace-nowrap">We&apos;d love to hear from you!</span>
             </p>
-            <motion.a
-              href="/contact"
-              className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+            <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>Contact Us</span>
-            </motion.a>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Contact Us</span>
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </main>

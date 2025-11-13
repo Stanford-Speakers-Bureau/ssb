@@ -2,12 +2,13 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function NavBar() {
+export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const isWhiteNavPage = pathname === "/" || pathname === "/contact";
+  const isWhiteNavPage = pathname === "/" || pathname === "/contact" || pathname === "/events/malala";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const logoClasses = isWhiteNavPage 
@@ -30,71 +31,88 @@ export default function NavBar() {
     ? "text-white"
     : "text-black dark:text-white";
   
+  // Disable body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    
+    // Cleanup: restore scroll when component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+  
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 z-50 w-full">
+      <nav className={`absolute ${banner ? "top-10" : "top-0"} left-0 right-0 z-50 w-full`}>
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
-            <motion.a 
-              href="/" 
-              className={logoClasses}
+            <motion.div
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
             >
-              <Image src="/logo.png" alt="Logo" width={40} height={40} />
-            </motion.a>
+              <Link href="/" className={logoClasses}>
+                <Image src="/logo.png" alt="Logo" width={40} height={40} />
+              </Link>
+            </motion.div>
             <div className="hidden items-center gap-6 md:flex">
-              <motion.a 
+              <motion.div
                 whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }} 
-                href="/upcoming-speakers" 
-                className={linkClasses}
+                whileTap={{ scale: 0.95 }}
               >
-                Upcoming Speakers
-              </motion.a>
-              <motion.a 
+                <Link href="/upcoming-speakers" className={linkClasses}>
+                  Upcoming Speakers
+                </Link>
+              </motion.div>
+              <motion.div
                 whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }} 
-                href="/past-speakers" 
-                className={linkClasses}
+                whileTap={{ scale: 0.95 }}
               >
-                Past Speakers
-              </motion.a>
-              <motion.a 
+                <Link href="/past-speakers" className={linkClasses}>
+                  Past Speakers
+                </Link>
+              </motion.div>
+              <motion.div
                 whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }} 
-                href="/other-programs" 
-                className={linkClasses}
+                whileTap={{ scale: 0.95 }}
               >
-                Other Programs
-              </motion.a>
-              <motion.a 
+                <Link href="/other-programs" className={linkClasses}>
+                  Other Programs
+                </Link>
+              </motion.div>
+              <motion.div
                 whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }} 
-                href="/team" 
-                className={linkClasses}
+                whileTap={{ scale: 0.95 }}
               >
-                Team
-              </motion.a>
-              <motion.a 
+                <Link href="/team" className={linkClasses}>
+                  Team
+                </Link>
+              </motion.div>
+              <motion.div
                 whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }} 
-                href="/contact" 
-                className={linkClasses}
+                whileTap={{ scale: 0.95 }}
               >
-                Contact
-              </motion.a>
+                <Link href="/contact" className={linkClasses}>
+                  Contact
+                </Link>
+              </motion.div>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {/* <motion.a 
+            {/* <motion.div
               whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }} 
-              href="/sign-in" 
-              className="hidden sm:block rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
+              whileTap={{ scale: 0.95 }}
             >
-              Sign In
-            </motion.a> */}
+              <Link
+                href="/sign-in" 
+                className="hidden sm:block rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
+              >
+                Sign In
+              </Link>
+            </motion.div> */}
             
             {/* Mobile Menu Button */}
             <button
@@ -132,51 +150,51 @@ export default function NavBar() {
             transition={{ type: "tween", duration: 0.3 }}
             className={`fixed inset-y-0 right-0 z-40 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl md:hidden`}
           >
-            <div className="flex flex-col h-full pt-20 px-8">
+            <div className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}>
               <div className="flex flex-col space-y-1">
-                <a
+                <Link
                   href="/upcoming-speakers"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Upcoming Speakers
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/past-speakers"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Past Speakers
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/other-programs"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Other Programs
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/team"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Team
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/contact"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Contact
-                </a>
+                </Link>
                 {/* <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
-                  <a
+                  <Link
                     href="/sign-in"
-                    className="block text-center rounded-full px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
+                    className="block text-center rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
-                  </a>
+                  </Link>
                 </div> */}
               </div>
             </div>
