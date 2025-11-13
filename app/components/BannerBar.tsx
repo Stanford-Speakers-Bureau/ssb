@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 
@@ -27,7 +27,31 @@ function TimeUnit({ value }: TimeUnitProps) {
   );
 }
 
-export default function BannerBar() {
+interface BannerBarProps {
+  href?: string;
+  text?: string;
+  /** Target date/time to count down to. Accepts Date, timestamp, or ISO string */
+  target?: Date | string | number;
+  /** Optional label shown before the timer on desktop */
+  prefaceLabel?: string;
+}
+
+export default function BannerBar({
+  href = "",
+  text = "",
+  target,
+  prefaceLabel = "Tickets drop in",
+}: BannerBarProps) {
+  const targetTime = useMemo(() => {
+    if (!target) return null;
+    const t = new Date(target);
+    const time = t.getTime();
+    return Number.isNaN(time) ? null : time;
+  }, [target]);
+
+  const hasText = (text ?? "").trim().length > 0;
+  const hasHref = (href ?? "").trim().length > 0;
+
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -36,42 +60,29 @@ export default function BannerBar() {
   });
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      
-      // Find the next Wednesday at 1pm
-      const targetDate = new Date(now);
-      const daysUntilWednesday = (3 - now.getDay() + 7) % 7;
-      
-      if (daysUntilWednesday === 0) {
-        // Today is Wednesday
-        if (now.getHours() < 13) {
-          // Before 1pm today
-          targetDate.setHours(13, 0, 0, 0);
-        } else {
-          // After 1pm, target next Wednesday
-          targetDate.setDate(now.getDate() + 7);
-          targetDate.setHours(13, 0, 0, 0);
-        }
-      } else {
-        // Target this coming Wednesday
-        targetDate.setDate(now.getDate() + daysUntilWednesday);
-        targetDate.setHours(13, 0, 0, 0);
-      }
+    const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    if (targetTime == null) {
+      setTimeLeft(zero);
+      return;
+    }
 
-      const difference = targetDate.getTime() - now.getTime();
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const difference = targetTime - now;
 
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
         const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((difference / 1000 / 60) % 60);
         const seconds = Math.floor((difference / 1000) % 60);
-
         return { days, hours, minutes, seconds };
       }
 
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      return zero;
     };
+
+    // Initialize immediately
+    setTimeLeft(calculateTimeLeft());
 
     // Update every second
     const timer = setInterval(() => {
@@ -79,22 +90,36 @@ export default function BannerBar() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [targetTime]);
 
   return (
     <div className="relative z-50 h-10 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C]">
       {/* Mobile version - simplified */}
-      <Link href="/events/malala" className="md:hidden underline hover:opacity-90 transition-opacity">
-        SIGN UP FOR OUR FIRST SPEAKER OF THE YEAR
-      </Link>
+      {hasText && (
+        hasHref ? (
+          <Link href={href} className="md:hidden underline hover:opacity-90 transition-opacity">
+            {text}
+          </Link>
+        ) : (
+          <span className="md:hidden underline">
+            {text}
+          </span>
+        )
+      )}
       
       {/* Desktop version - full with countdown */}
       <div className="hidden md:flex items-center gap-3">
-        <Link href="/events/malala" className="underline hover:opacity-90 transition-opacity">
-          SIGN UP FOR OUR FIRST SPEAKER OF THE YEAR
-        </Link>
-        <span className="opacity-40">|</span>
-        <span className="text-sm font-medium">Tickets drop in</span>
+        {hasText && (
+          hasHref ? (
+            <Link href={href} className="underline hover:opacity-90 transition-opacity">
+              {text}
+            </Link>
+          ) : (
+            <span className="underline">{text}</span>
+          )
+        )}
+        {hasText && <span className="opacity-40">|</span>}
+        <span className="text-sm font-medium">{prefaceLabel}</span>
         <div className="flex items-center gap-1 font-mono text-sm">
           <TimeUnit value={String(timeLeft.days)} />
           <span className="opacity-60">:</span>

@@ -105,10 +105,10 @@ export async function GET(req: Request) {
     const supabaseAdmin = getSupabaseAdmin();
     
     const { data: insertData, error: insertError } = await supabaseAdmin
-      .from("malala_emails")
+      .from("")
       .insert({ 
         email: email, 
-        meta: { event: "malala", source: "google_signin" } 
+        meta: { event: "", source: "google_signin" }
       })
       .select("email, created_at")
       .single();
