@@ -32,9 +32,7 @@ export default function EventPage() {
   const searchParams = useSearchParams();
   const eventID = params.eventID as string;
 
-  if (eventID != "malala") {
-    redirect('/');
-  }
+  redirect('/');
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -126,22 +124,22 @@ export default function EventPage() {
         <section className="w-full max-w-5xl flex flex-col py-6 md:py-12 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="p-4 md:p-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 font-serif">
-              Malala Yousafzai
+              Speaker
             </h1>
             
             <p className="text-sm sm:text-base md:text-lg text-zinc-200 mb-4 md:mb-6 italic">
-              Nobel Peace Prize Laureate & Education Activist
+              Header
             </p>
             
             <div className="text-sm sm:text-base text-white space-y-3 md:space-y-4 mb-6 md:mb-8">
               <p>
-                Malala Yousafzai is a Pakistani human rights activist and the youngest-ever Nobel Prize laureate. She became an international advocate for girls&apos; education after surviving a targeted assassination attempt by the Taliban in 2012 for speaking out for her right to learn.
+                Desc
               </p>
               <p>
-                Rather than being silenced, Malala co-founded the Malala Fund, a non-profit organization dedicated to building a world where every girl can learn and lead. She is the author of the international bestseller I Am Malala and a graduate of Oxford University.
+                Desc
               </p>
               <p>
-                Her powerful story and unwavering advocacy have grown into an international movement, making her one of the world&apos;s most prominent voices on human rights, female empowerment, and the power of education to create change.
+                Desc
               </p>
             </div>
             

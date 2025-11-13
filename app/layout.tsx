@@ -30,8 +30,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <BannerBar />
-        <NavBar banner={true} />
+        {/*<BannerBar />*/}
+        <NavBar banner={false} />
         {children}
       </body>
     </html>
