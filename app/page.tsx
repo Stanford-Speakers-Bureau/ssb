@@ -103,25 +103,13 @@ export default function Home() {
       <main className="flex w-full justify-center bg-white dark:bg-black">
         <div className="w-full max-w-[1600px] px-8 sm:px-12 md:px-16 lg:px-20 xl:px-24 py-16 sm:py-20">
           {/* Featured Speakers */}
-          <motion.h2 
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif">
             Featured Past Speakers
-          </motion.h2>
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Mark Rober */}
-            <motion.div
-              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
+            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mark-rober.jpeg"
                 alt="Mark Rober"
@@ -141,16 +129,10 @@ export default function Home() {
                   Former NASA engineer turned YouTube star with 45+ million subscribers, known for viral science and engineering videos.
                 </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* JoJo Siwa */}
-            <motion.div
-              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/jojo-siwa.jpg"
                 alt="JoJo Siwa"
@@ -170,16 +152,10 @@ export default function Home() {
                   Media icon, dancer, and singer who rose to fame through the reality show Dance Moms and her vibrant online presence.
                 </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* Mikey Day */}
-            <motion.div
-              className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
+            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mikey-day.JPG"
                 alt="Mikey Day"
@@ -199,47 +175,26 @@ export default function Home() {
                   Saturday Night Live cast member and writer known for versatile impressions and memorable original characters.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           <div className="flex justify-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Link
+              href="/past-speakers"
+              className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
-              <Link
-                href="/past-speakers"
-                className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
-              >
-                View More Speakers
-              </Link>
-            </motion.div>
+              View More Speakers
+            </Link>
           </div>
 
           {/* Other Programs */}
-          <motion.h2 
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif">
             Other Programs
-          </motion.h2>
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Co-Sponsorships */}
-            <motion.div
-              className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
+            <div className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/meeting.JPG"
                 alt="Co-Sponsorships"
@@ -262,16 +217,10 @@ export default function Home() {
                   Learn more
                 </Link>
               </div>
-            </motion.div>
+            </div>
 
             {/* Coffee Chats */}
-            <motion.div
-              className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <div className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/coffee-chat.jpg"
                 alt="Coffee Chats"
@@ -294,38 +243,27 @@ export default function Home() {
                   Learn more
                 </Link>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Contact Us Section */}
-          <motion.div 
-            className="mt-20 text-center px-6 sm:px-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="mt-20 text-center px-6 sm:px-8">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-6 font-serif">
               Get In Touch!
             </h2>
             <p className="text-base sm:text-lg text-zinc-700 dark:text-zinc-300 mb-8 max-w-2xl mx-auto">
               Have ideas for events or questions about our programs?<br className="sm:hidden" /> <span className="whitespace-nowrap">We&apos;d love to hear from you!</span>
             </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span>Contact Us</span>
-              </Link>
-            </motion.div>
-          </motion.div>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Contact Us</span>
+            </Link>
+          </div>
         </div>
       </main>
     </div>
