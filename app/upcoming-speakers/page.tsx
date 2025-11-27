@@ -1,3 +1,5 @@
+import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
+
 export default function UpcomingSpeakers() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
@@ -7,14 +9,15 @@ export default function UpcomingSpeakers() {
             Upcoming Speakers
           </h1>
           
-          <div className="flex flex-col">
-            <p className="text-xl text-zinc-600 dark:text-zinc-400">
-              No currently upcoming speakers.
-            </p>
-            <p className="text-base text-zinc-500 dark:text-zinc-500 mt-4">
-              Check back soon for announcements about our next exciting speaker!
-            </p>
-          </div>
+          <UpcomingSpeakerCard
+            name="???"
+            header="Mystery Speaker — To Be Announced"
+            dateTimeText="January 23rd, 2026 · Doors 7:30pm · Event 8:00pm"
+            locationName="Memorial Auditorium"
+            locationUrl="https://maps.app.goo.gl/oaApAEsoaqnLetZK7"
+            backgroundImageUrl="/speakers/mark-rober.jpeg"
+            mystery={true}
+          />
         </section>
       </main>
     </div>

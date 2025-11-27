@@ -13,6 +13,7 @@ export type UpcomingSpeakerCardProps = {
   ctaText?: string;
   ctaHref?: string;
   backgroundImageUrl?: string; // e.g., "/events/speaker"
+  mystery?: boolean; // Adds blur effect to hide identity
 };
 
 export default function UpcomingSpeakerCard({
@@ -26,6 +27,7 @@ export default function UpcomingSpeakerCard({
   ctaText = "",
   ctaHref = "",
   backgroundImageUrl = "",
+  mystery = false,
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
@@ -50,7 +52,7 @@ export default function UpcomingSpeakerCard({
       }}
     >
       {/* Semi-transparent overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/70 z-0"></div>
+      <div className={`absolute inset-0 z-0 ${mystery ? 'backdrop-blur-xl bg-black/50' : 'bg-black/70'}`}></div>
 
       <div className="relative z-10">
         {showName && (
