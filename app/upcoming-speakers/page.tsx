@@ -11,7 +11,7 @@ export default function UpcomingSpeakers() {
           
           <UpcomingSpeakerCard
             name="???"
-            header="Mystery Speaker — To Be Announced"
+            header="Speaker — To Be Announced"
             dateTimeText="January 23rd, 2026 · Doors 7:30pm · Event 8:00pm"
             locationName="Memorial Auditorium"
             locationUrl="https://maps.app.goo.gl/oaApAEsoaqnLetZK7"
