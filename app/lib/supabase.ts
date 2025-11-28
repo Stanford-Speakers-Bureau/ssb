@@ -16,6 +16,28 @@ export type Event = {
   doors_open: string | null;
 };
 
+/**
+ * Get the closest upcoming event for the banner
+ */
+export async function getClosestUpcomingEvent(): Promise<Event | null> {
+  const supabase = getSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .gte("start_time_date", new Date().toISOString())
+    .order("start_time_date", { ascending: true })
+    .limit(1)
+    .single();
+
+  if (error) {
+    // No upcoming events or error
+    return null;
+  }
+
+  return data;
+}
+
 export function getSupabaseClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_KEY;
