@@ -11,7 +11,7 @@ interface TimeUnitProps {
 function TimeUnit({ value }: TimeUnitProps) {
   return (
     <div className="relative w-5 h-6 overflow-hidden flex items-center justify-center">
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={value}
           initial={{ y: -24, opacity: 0 }}
@@ -52,41 +52,32 @@ export default function BannerBar({
   const hasText = (text ?? "").trim().length > 0;
   const hasHref = (href ?? "").trim().length > 0;
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const calculateTimeLeft = (targetMs: number | null) => {
+    const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    if (targetMs == null) return zero;
+    
+    const difference = targetMs - Date.now();
+    if (difference > 0) {
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+      return { days, hours, minutes, seconds };
+    }
+    return zero;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetTime));
 
   useEffect(() => {
-    const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     if (targetTime == null) {
-      setTimeLeft(zero);
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       return;
     }
 
-    const calculateTimeLeft = () => {
-      const now = Date.now();
-      const difference = targetTime - now;
-
-      if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-        return { days, hours, minutes, seconds };
-      }
-
-      return zero;
-    };
-
-    // Initialize immediately
-    setTimeLeft(calculateTimeLeft());
-
     // Update every second
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      setTimeLeft(calculateTimeLeft(targetTime));
     }, 1000);
 
     return () => clearInterval(timer);
