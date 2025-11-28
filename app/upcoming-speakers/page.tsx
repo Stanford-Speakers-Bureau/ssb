@@ -38,11 +38,14 @@ export default async function UpcomingSpeakers() {
             <div className="space-y-8">
               {events.map((event) => {
                 // Determine if this is a mystery/unreleased speaker
-                const isMystery = event.banner === true || !event.name;
+                // Mystery if current date is before release_date
+                const now = new Date();
+                const releaseDate = event.release_date ? new Date(event.release_date) : null;
+                const isMystery = releaseDate ? now < releaseDate : !event.name;
                 const displayName = isMystery ? "???" : event.name || "???";
                 const header = isMystery 
                   ? "Speaker — To Be Announced" 
-                  : `Speaker`;
+                  : event.desc || "";
 
                 return (
                   <UpcomingSpeakerCard

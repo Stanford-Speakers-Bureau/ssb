@@ -4,6 +4,7 @@ export type Event = {
   id: string;
   created_at: string;
   name: string | null;
+  desc: string | null;
   capacity: number;
   venue: string | null;
   reserved: number | null;
