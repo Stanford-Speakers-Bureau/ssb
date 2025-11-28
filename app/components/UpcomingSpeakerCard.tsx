@@ -16,6 +16,7 @@ export type UpcomingSpeakerCardProps = {
   ctaHref?: string;
   backgroundImageUrl?: string; // e.g., "/events/speaker"
   mystery?: boolean; // Adds blur effect to hide identity
+  calendarUrl?: string; // Google Calendar URL for adding event
 };
 
 export default function UpcomingSpeakerCard({
@@ -32,6 +33,7 @@ export default function UpcomingSpeakerCard({
   ctaHref = "",
   backgroundImageUrl = "",
   mystery = false,
+  calendarUrl = "",
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
@@ -46,6 +48,7 @@ export default function UpcomingSpeakerCard({
   const showSponsor = showSponsorPrefix || showSponsorName;
   const showCta = !!ctaText && !!ctaHref;
   const showMeta = showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
+  const showCalendarLink = !mystery && !!calendarUrl;
 
   return (
     <div
@@ -85,7 +88,17 @@ export default function UpcomingSpeakerCard({
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="text-base text-white font-medium">{dateText}</p>
+                {showCalendarLink ? (
+                  <a
+                    href={calendarUrl}
+                    download="event.ics"
+                    className="text-base text-white font-medium underline decoration-zinc-300 decoration-1 underline-offset-2 transition-all hover:scale-105 active:scale-95 inline-block"
+                  >
+                    {dateText}
+                  </a>
+                ) : (
+                  <p className="text-base text-white font-medium">{dateText}</p>
+                )}
               </div>
             )}
 

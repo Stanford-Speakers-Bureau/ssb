@@ -1,7 +1,9 @@
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
-import { getSupabaseClient, formatEventDate, formatTime, type Event } from "../lib/supabase";
+import { getSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
 
-async function getUpcomingEvents(): Promise<Event[]> {
+type EventWithSignedUrl = Event & { signedImageUrl: string | null };
+
+async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
   const supabase = getSupabaseClient();
   
   // Fetch events where start_time_date is in the future
@@ -16,7 +18,17 @@ async function getUpcomingEvents(): Promise<Event[]> {
     return [];
   }
 
-  return data || [];
+  const events = data || [];
+
+  // Fetch signed URLs for all event images
+  const eventsWithUrls = await Promise.all(
+    events.map(async (event) => ({
+      ...event,
+      signedImageUrl: await getSignedImageUrl(event.img, 60),
+    }))
+  );
+
+  return eventsWithUrls;
 }
 
 export default async function UpcomingSpeakers() {
@@ -57,8 +69,9 @@ export default async function UpcomingSpeakers() {
                     eventTimeText={event.start_time_date ? `Event starts at ${formatTime(event.start_time_date)}` : ""}
                     locationName={event.venue || ""}
                     locationUrl={event.venue_link || ""}
-                    backgroundImageUrl={isMystery ? "/speakers/mystery.jpg" : "/speakers/mystery.jpg"}
+                    backgroundImageUrl={isMystery ? "/speakers/mystery.jpg" : event.signedImageUrl || "/speakers/mystery.jpg"}
                     mystery={isMystery}
+                    calendarUrl={isMystery ? "" : generateICalUrl(event)}
                   />
                 );
               })}
