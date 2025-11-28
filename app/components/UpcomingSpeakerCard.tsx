@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { NOTIFY_MESSAGES } from "../lib/constants";
 
 export type UpcomingSpeakerCardProps = {
   name?: string;
@@ -60,14 +61,14 @@ export default function UpcomingSpeakerCard({
     isAlreadyNotified ? "success" : "idle"
   );
   const [notifyMessage, setNotifyMessage] = useState(
-    isAlreadyNotified ? "You're signed up for notifications!" : ""
+    isAlreadyNotified ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP : ""
   );
 
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
   useEffect(() => {
     if (isAlreadyNotified && notifyStatus !== "success") {
       setNotifyStatus("success");
-      setNotifyMessage("You'll be notified when the speaker is announced!");
+      setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
     }
   }, [isAlreadyNotified, notifyStatus]);
 
@@ -91,17 +92,17 @@ export default function UpcomingSpeakerCard({
 
       if (response.ok) {
         setNotifyStatus("success");
-        setNotifyMessage("You'll be notified when the speaker is announced!");
+        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
       } else if (response.status === 409) {
         setNotifyStatus("success");
-        setNotifyMessage("You're signed up for notifications!");
+        setNotifyMessage(NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
       } else {
         setNotifyStatus("error");
         setNotifyMessage(data.error || "Something went wrong");
       }
     } catch {
       setNotifyStatus("error");
-      setNotifyMessage("Something went wrong. Please try again.");
+      setNotifyMessage(NOTIFY_MESSAGES.ERROR_GENERIC);
     }
   };
 

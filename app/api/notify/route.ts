@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient, getSupabaseClient } from "../../lib/supabase";
+import { NOTIFY_MESSAGES } from "../../lib/constants";
 
 export async function POST(req: Request) {
   try {
@@ -8,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!speaker_id) {
       return NextResponse.json(
-        { error: "Missing required field: speaker_id" },
+        { error: NOTIFY_MESSAGES.ERROR_MISSING_SPEAKER_ID },
         { status: 400 }
       );
     }
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
 
     if (eventError || !event) {
       return NextResponse.json(
-        { error: "Event not found" },
+        { error: NOTIFY_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 }
       );
     }
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 
     if (userError || !user?.email) {
       return NextResponse.json(
-        { error: "Not authenticated. Please sign in with Google." },
+        { error: NOTIFY_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 }
       );
     }
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
 
     if (existingNotify) {
       return NextResponse.json(
-        { error: "You're signed up for notifications for this event!" },
+        { error: NOTIFY_MESSAGES.ALREADY_SIGNED_UP },
         { status: 409 }
       );
     }
