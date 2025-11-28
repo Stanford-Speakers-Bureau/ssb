@@ -1,22 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseClient } from "../../../lib/supabase";
 
 // API: GET /api/auth/google
 // Initiates Google OAuth sign-in flow via Supabase
 // Redirects to Supabase's Google OAuth URL
-
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_KEY;
-  
-  if (!url || !key) {
-    throw new Error(
-      "Missing Supabase configuration: please set SUPABASE_URL and SUPABASE_KEY."
-    );
-  }
-  
-  return createClient(url, key);
-}
 
 export async function GET(req: Request) {
   try {
@@ -39,6 +26,7 @@ export async function GET(req: Request) {
         queryParams: {
           access_type: "offline",
           prompt: "consent",
+          hd: "stanford.edu",
         },
       },
     });

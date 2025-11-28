@@ -1,6 +1,27 @@
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
+import { getSupabaseClient, formatEventDate, formatTime, type Event } from "../lib/supabase";
 
-export default function UpcomingSpeakers() {
+async function getUpcomingEvents(): Promise<Event[]> {
+  const supabase = getSupabaseClient();
+  
+  // Fetch events where start_time_date is in the future
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .gte("start_time_date", new Date().toISOString())
+    .order("start_time_date", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export default async function UpcomingSpeakers() {
+  const events = await getUpcomingEvents();
+
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-16">
@@ -9,18 +30,39 @@ export default function UpcomingSpeakers() {
             Upcoming Speakers
           </h1>
           
-          <UpcomingSpeakerCard
-            name="???"
-            header="Speaker — To Be Announced"
-            dateTimeText="January 23rd, 2026 · Doors 7:30pm · Event 8:00pm"
-            locationName="Memorial Auditorium"
-            locationUrl="https://maps.app.goo.gl/oaApAEsoaqnLetZK7"
-            backgroundImageUrl="/speakers/mark-rober.jpeg"
-            mystery={true}
-          />
+          {events.length === 0 ? (
+            <p className="text-zinc-600 dark:text-zinc-400">
+              No upcoming events at this time. Check back soon!
+            </p>
+          ) : (
+            <div className="space-y-8">
+              {events.map((event) => {
+                // Determine if this is a mystery/unreleased speaker
+                const isMystery = event.banner === true || !event.name;
+                const displayName = isMystery ? "???" : event.name || "???";
+                const header = isMystery 
+                  ? "Speaker — To Be Announced" 
+                  : `Speaker`;
+
+                return (
+                  <UpcomingSpeakerCard
+                    key={event.id}
+                    name={displayName}
+                    header={header}
+                    dateText={formatEventDate(event.start_time_date)}
+                    doorsOpenText={event.doors_open ? `Doors open at ${formatTime(event.doors_open)}` : ""}
+                    eventTimeText={event.start_time_date ? `Event starts at ${formatTime(event.start_time_date)}` : ""}
+                    locationName={event.venue || ""}
+                    locationUrl={event.venue_link || ""}
+                    backgroundImageUrl={isMystery ? "/speakers/mystery.jpg" : "/speakers/mystery.jpg"}
+                    mystery={isMystery}
+                  />
+                );
+              })}
+            </div>
+          )}
         </section>
       </main>
     </div>
   );
 }
-

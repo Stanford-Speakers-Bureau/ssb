@@ -5,7 +5,9 @@ import Link from "next/link";
 export type UpcomingSpeakerCardProps = {
   name?: string;
   header?: string;
-  dateTimeText?: string;
+  dateText?: string; // e.g., "January 23rd, 2026"
+  doorsOpenText?: string; // e.g., "Doors open at 7:30 PM"
+  eventTimeText?: string; // e.g., "Event starts at 8:00 PM"
   locationName?: string;
   locationUrl?: string;
   sponsorPrefix?: string; // e.g., "Sponsored by"
@@ -19,7 +21,9 @@ export type UpcomingSpeakerCardProps = {
 export default function UpcomingSpeakerCard({
   name = "",
   header = "",
-  dateTimeText = "",
+  dateText = "",
+  doorsOpenText = "",
+  eventTimeText = "",
   locationName = "",
   locationUrl = "",
   sponsorPrefix = "",
@@ -31,7 +35,9 @@ export default function UpcomingSpeakerCard({
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
-  const showDate = !!dateTimeText;
+  const showDate = !!dateText;
+  const showDoorsOpen = !!doorsOpenText;
+  const showEventTime = !!eventTimeText;
   const showLocationName = !!locationName;
   const showLocationUrl = !!locationUrl;
   const showLocation = showLocationName || showLocationUrl;
@@ -39,7 +45,7 @@ export default function UpcomingSpeakerCard({
   const showSponsorName = !!sponsorName;
   const showSponsor = showSponsorPrefix || showSponsorName;
   const showCta = !!ctaText && !!ctaHref;
-  const showMeta = showDate || showLocation || showSponsor;
+  const showMeta = showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
 
   return (
     <div
@@ -79,7 +85,47 @@ export default function UpcomingSpeakerCard({
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="text-base text-white font-medium">{dateTimeText}</p>
+                <p className="text-base text-white font-medium">{dateText}</p>
+              </div>
+            )}
+
+            {showDoorsOpen && (
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-red-500 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M13 4h3a2 2 0 0 1 2 2v14" />
+                  <path d="M2 20h3" />
+                  <path d="M13 20h9" />
+                  <path d="M10 12v.01" />
+                  <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4.742-1.186A1 1 0 0 1 13 4.56z" />
+                </svg>
+                <p className="text-base text-white font-medium">{doorsOpenText}</p>
+              </div>
+            )}
+
+            {showEventTime && (
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-red-500 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-base text-white font-medium">{eventTimeText}</p>
               </div>
             )}
 
