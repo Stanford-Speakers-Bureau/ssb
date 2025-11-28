@@ -28,6 +28,9 @@ export function getSupabaseClient() {
   return createClient(url, key);
 }
 
+// Timezone for event display (Pacific Time for Stanford)
+const EVENT_TIMEZONE = "America/Los_Angeles";
+
 /**
  * Format a date for display (e.g., "January 23rd, 2026")
  */
@@ -35,13 +38,19 @@ export function formatEventDate(dateString: string | null): string {
   if (!dateString) return "";
   
   const date = new Date(dateString);
-  const day = date.getDate();
+  
+  // Get day in the correct timezone
+  const day = parseInt(date.toLocaleDateString("en-US", {
+    day: "numeric",
+    timeZone: EVENT_TIMEZONE,
+  }));
   const suffix = getOrdinalSuffix(day);
   
   return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: EVENT_TIMEZONE,
   }).replace(/\d+/, `${day}${suffix}`);
 }
 
@@ -56,6 +65,7 @@ export function formatTime(dateString: string | null): string {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZone: EVENT_TIMEZONE,
   });
 }
 
