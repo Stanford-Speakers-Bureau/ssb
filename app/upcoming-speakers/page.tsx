@@ -3,9 +3,14 @@ import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
 import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
 
-type EventWithSignedUrl = Event & { signedImageUrl: string | null };
+type SanitizedEvent = Omit<Event, 'name' | 'desc' | 'img'> & {
+  name: string | null;
+  desc: string | null;
+  signedImageUrl: string | null;
+  isMystery: boolean;
+};
 
-async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
+async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const supabase = getSupabaseClient();
   
   const { data, error } = await supabase
@@ -20,15 +25,25 @@ async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
   }
 
   const events = data || [];
+  const now = new Date();
 
-  const eventsWithUrls = await Promise.all(
-    events.map(async (event) => ({
-      ...event,
-      signedImageUrl: await getSignedImageUrl(event.img, 60),
-    }))
+  const sanitizedEvents = await Promise.all(
+    events.map(async (event) => {
+      const releaseDate = event.release_date ? new Date(event.release_date) : null;
+      const isMystery = releaseDate ? now < releaseDate : !event.name;
+
+      // Don't expose sensitive data for mystery speakers
+      return {
+        ...event,
+        name: isMystery ? null : event.name,
+        desc: isMystery ? null : event.desc,
+        signedImageUrl: isMystery ? null : await getSignedImageUrl(event.img, 60),
+        isMystery,
+      };
+    })
   );
 
-  return eventsWithUrls;
+  return sanitizedEvents;
 }
 
 async function getUserNotifications(): Promise<Set<string>> {
@@ -74,33 +89,23 @@ export default async function UpcomingSpeakers() {
             </p>
           ) : (
             <div className="space-y-8">
-              {events.map((event) => {
-                const now = new Date();
-                const releaseDate = event.release_date ? new Date(event.release_date) : null;
-                const isMystery = releaseDate ? now < releaseDate : !event.name;
-                const displayName = isMystery ? "???" : event.name || "???";
-                const header = isMystery 
-                  ? "Speaker — To Be Announced" 
-                  : event.desc || "";
-
-                return (
-                  <UpcomingSpeakerCard
-                    key={event.id}
-                    name={displayName}
-                    header={header}
-                    dateText={formatEventDate(event.start_time_date)}
-                    doorsOpenText={event.doors_open ? `Doors open at ${formatTime(event.doors_open)}` : ""}
-                    eventTimeText={event.start_time_date ? `Event starts at ${formatTime(event.start_time_date)}` : ""}
-                    locationName={event.venue || ""}
-                    locationUrl={event.venue_link || ""}
-                    backgroundImageUrl={isMystery ? "/speakers/mystery.jpg" : event.signedImageUrl || "/speakers/mystery.jpg"}
-                    mystery={isMystery}
-                    calendarUrl={isMystery ? "" : generateICalUrl(event)}
-                    eventId={event.id}
-                    isAlreadyNotified={userNotifications.has(event.id)}
-                  />
-                );
-              })}
+              {events.map((event) => (
+                <UpcomingSpeakerCard
+                  key={event.id}
+                  name={event.isMystery ? "???" : event.name || "???"}
+                  header={event.isMystery ? "Speaker — To Be Announced" : event.desc || ""}
+                  dateText={formatEventDate(event.start_time_date)}
+                  doorsOpenText={event.doors_open ? `Doors open at ${formatTime(event.doors_open)}` : ""}
+                  eventTimeText={event.start_time_date ? `Event starts at ${formatTime(event.start_time_date)}` : ""}
+                  locationName={event.venue || ""}
+                  locationUrl={event.venue_link || ""}
+                  backgroundImageUrl={event.isMystery ? "/speakers/mystery.jpg" : event.signedImageUrl || "/speakers/mystery.jpg"}
+                  mystery={event.isMystery}
+                  calendarUrl={event.isMystery ? "" : generateICalUrl(event)}
+                  eventId={event.id}
+                  isAlreadyNotified={userNotifications.has(event.id)}
+                />
+              ))}
             </div>
           )}
         </section>
