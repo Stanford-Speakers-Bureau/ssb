@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react";
 import Link from "next/link";
 
 export type UpcomingSpeakerCardProps = {
@@ -16,7 +17,9 @@ export type UpcomingSpeakerCardProps = {
   ctaHref?: string;
   backgroundImageUrl?: string; // e.g., "/events/speaker"
   mystery?: boolean; // Adds blur effect to hide identity
-  calendarUrl?: string; // Google Calendar URL for adding event
+  calendarUrl?: string; // iCal URL for adding event
+  eventId?: string; // Event ID for notify signup
+  isAlreadyNotified?: boolean; // Whether user is already signed up for notifications
 };
 
 export default function UpcomingSpeakerCard({
@@ -34,6 +37,8 @@ export default function UpcomingSpeakerCard({
   backgroundImageUrl = "",
   mystery = false,
   calendarUrl = "",
+  eventId = "",
+  isAlreadyNotified = false,
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
@@ -49,6 +54,48 @@ export default function UpcomingSpeakerCard({
   const showCta = !!ctaText && !!ctaHref;
   const showMeta = showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
   const showCalendarLink = !mystery && !!calendarUrl;
+  const showNotifyButton = mystery && !!eventId;
+
+  const [notifyStatus, setNotifyStatus] = useState<"idle" | "loading" | "success" | "error">(
+    isAlreadyNotified ? "success" : "idle"
+  );
+  const [notifyMessage, setNotifyMessage] = useState(
+    isAlreadyNotified ? "You're already signed up for notifications!" : ""
+  );
+
+  const handleNotifyClick = async () => {
+    setNotifyStatus("loading");
+    
+    try {
+      const response = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speaker_id: eventId }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated, redirect to Google sign-in
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(`/upcoming-speakers?notify=${eventId}`)}`;
+        return;
+      }
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNotifyStatus("success");
+        setNotifyMessage("You'll be notified when the speaker is announced!");
+      } else if (response.status === 409) {
+        setNotifyStatus("success");
+        setNotifyMessage("You're already signed up for notifications!");
+      } else {
+        setNotifyStatus("error");
+        setNotifyMessage(data.error || "Something went wrong");
+      }
+    } catch {
+      setNotifyStatus("error");
+      setNotifyMessage("Something went wrong. Please try again.");
+    }
+  };
 
   return (
     <div
@@ -206,6 +253,42 @@ export default function UpcomingSpeakerCard({
             </svg>
             {ctaText}
           </Link>
+        )}
+
+        {showNotifyButton && (
+          notifyStatus === "success" ? (
+            <p className="text-sm text-green-400 font-medium">{notifyMessage}</p>
+          ) : notifyStatus === "error" ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-red-400">{notifyMessage}</p>
+              <button
+                onClick={handleNotifyClick}
+                className="text-sm text-white underline hover:text-zinc-300"
+              >
+                Try again
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleNotifyClick}
+              disabled={notifyStatus === "loading"}
+              className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#8B0A0A] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {notifyStatus === "loading" ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              )}
+              {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}
+            </button>
+          )
         )}
       </div>
     </div>

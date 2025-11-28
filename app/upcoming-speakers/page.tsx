@@ -1,12 +1,13 @@
+import { Suspense } from "react";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
-import { getSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
+import NotifyHandler from "./NotifyHandler";
+import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
 
 type EventWithSignedUrl = Event & { signedImageUrl: string | null };
 
 async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
   const supabase = getSupabaseClient();
   
-  // Fetch events where start_time_date is in the future
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -20,7 +21,6 @@ async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
 
   const events = data || [];
 
-  // Fetch signed URLs for all event images
   const eventsWithUrls = await Promise.all(
     events.map(async (event) => ({
       ...event,
@@ -31,8 +31,30 @@ async function getUpcomingEvents(): Promise<EventWithSignedUrl[]> {
   return eventsWithUrls;
 }
 
+async function getUserNotifications(): Promise<Set<string>> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user?.email) return new Set();
+
+    const adminClient = getSupabaseClient();
+    const { data } = await adminClient
+      .from("notify")
+      .select("speaker_id")
+      .eq("email", user.email);
+
+    return new Set(data?.map(n => n.speaker_id) || []);
+  } catch {
+    return new Set();
+  }
+}
+
 export default async function UpcomingSpeakers() {
-  const events = await getUpcomingEvents();
+  const [events, userNotifications] = await Promise.all([
+    getUpcomingEvents(),
+    getUserNotifications(),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
@@ -41,6 +63,10 @@ export default async function UpcomingSpeakers() {
           <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
             Upcoming Speakers
           </h1>
+
+          <Suspense fallback={null}>
+            <NotifyHandler />
+          </Suspense>
           
           {events.length === 0 ? (
             <p className="text-zinc-600 dark:text-zinc-400">
@@ -49,8 +75,6 @@ export default async function UpcomingSpeakers() {
           ) : (
             <div className="space-y-8">
               {events.map((event) => {
-                // Determine if this is a mystery/unreleased speaker
-                // Mystery if current date is before release_date
                 const now = new Date();
                 const releaseDate = event.release_date ? new Date(event.release_date) : null;
                 const isMystery = releaseDate ? now < releaseDate : !event.name;
@@ -72,6 +96,8 @@ export default async function UpcomingSpeakers() {
                     backgroundImageUrl={isMystery ? "/speakers/mystery.jpg" : event.signedImageUrl || "/speakers/mystery.jpg"}
                     mystery={isMystery}
                     calendarUrl={isMystery ? "" : generateICalUrl(event)}
+                    eventId={event.id}
+                    isAlreadyNotified={userNotifications.has(event.id)}
                   />
                 );
               })}

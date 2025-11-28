@@ -1,4 +1,17 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+/**
+ * Simple Supabase client for public data queries (bypasses RLS with service key)
+ */
+export function getSupabaseClient() {
+  return createSupabaseClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!
+  );
+}
 
 export type Event = {
   id: string;
@@ -17,6 +30,44 @@ export type Event = {
 };
 
 /**
+ * Create a Supabase client for use in the browser (client components)
+ */
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+/**
+ * Create a Supabase client for use on the server (server components, API routes)
+ */
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignore - called from Server Component
+          }
+        },
+      },
+    }
+  );
+}
+
+/**
  * Get the closest upcoming event for the banner
  */
 export async function getClosestUpcomingEvent(): Promise<Event | null> {
@@ -31,34 +82,18 @@ export async function getClosestUpcomingEvent(): Promise<Event | null> {
     .single();
 
   if (error) {
-    // No upcoming events or error
     return null;
   }
 
   return data;
 }
 
-export function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_KEY;
-
-  if (!url || !key) {
-    throw new Error(
-      "Missing Supabase configuration: please set SUPABASE_URL and SUPABASE_KEY."
-    );
-  }
-
-  return createClient(url, key);
-}
-
 /**
  * Generate a signed URL for a speaker image from Supabase storage
- * @param imgName - The image filename from the img column
- * @param expiresIn - Expiration time in seconds (default 10)
  */
 export async function getSignedImageUrl(
   imgName: string | null,
-  expiresIn: number = 10
+  expiresIn: number = 60
 ): Promise<string | null> {
   if (!imgName) return null;
 
@@ -85,8 +120,6 @@ export function formatEventDate(dateString: string | null): string {
   if (!dateString) return "";
   
   const date = new Date(dateString);
-  
-  // Get day in the correct timezone
   const day = parseInt(date.toLocaleDateString("en-US", {
     day: "numeric",
     timeZone: EVENT_TIMEZONE,
@@ -128,7 +161,6 @@ function getOrdinalSuffix(day: number): string {
 
 /**
  * Generate an iCal (.ics) data URL for an event
- * Works with Google Calendar, Apple Calendar, Outlook, and all standard calendar apps
  */
 export function generateICalUrl(event: {
   name: string | null;
@@ -140,10 +172,8 @@ export function generateICalUrl(event: {
   if (!event.start_time_date) return "";
 
   const startDate = new Date(event.start_time_date);
-  // Assume 1.5 hour event duration
   const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
 
-  // Format dates for iCal (YYYYMMDDTHHmmssZ)
   const formatForICal = (date: Date) => {
     return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   };
@@ -153,7 +183,6 @@ export function generateICalUrl(event: {
   const location = event.venue || "";
   const uid = `${formatForICal(startDate)}-ssb@stanfordspeakersbureau.org`;
 
-  // Build iCal content
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -172,13 +201,9 @@ export function generateICalUrl(event: {
     "END:VCALENDAR",
   ].join("\r\n");
 
-  // Return as data URL
   return `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
 }
 
-/**
- * Escape special characters for iCal format
- */
 function escapeICalText(text: string): string {
   return text
     .replace(/\\/g, "\\\\")
@@ -186,4 +211,3 @@ function escapeICalText(text: string): string {
     .replace(/,/g, "\\,")
     .replace(/\n/g, "\\n");
 }
-
