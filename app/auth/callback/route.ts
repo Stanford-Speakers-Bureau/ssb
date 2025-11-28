@@ -14,13 +14,12 @@ function isValidRedirect(path: string): boolean {
 }
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get("code");
-  const redirectTo = searchParams.get("redirect_to") || "/upcoming-speakers";
+  const requestUrl = new URL(req.url);
+  const code = requestUrl.searchParams.get("code");
+  const redirectTo = requestUrl.searchParams.get("redirect_to") || "/upcoming-speakers";
   
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-  const host = req.headers.get("host") || "localhost:3000";
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+  // Use the request origin to ensure we redirect back to the same domain
+  const baseUrl = requestUrl.origin;
 
   if (code) {
     const supabase = await createServerSupabaseClient();

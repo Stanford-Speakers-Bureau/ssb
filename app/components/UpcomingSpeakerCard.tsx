@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export type UpcomingSpeakerCardProps = {
@@ -62,6 +62,14 @@ export default function UpcomingSpeakerCard({
   const [notifyMessage, setNotifyMessage] = useState(
     isAlreadyNotified ? "You're already signed up for notifications!" : ""
   );
+
+  // Sync state with prop when it changes (e.g., after redirect and page refresh)
+  useEffect(() => {
+    if (isAlreadyNotified && notifyStatus !== "success") {
+      setNotifyStatus("success");
+      setNotifyMessage("You'll be notified when the speaker is announced!");
+    }
+  }, [isAlreadyNotified, notifyStatus]);
 
   const handleNotifyClick = async () => {
     setNotifyStatus("loading");
