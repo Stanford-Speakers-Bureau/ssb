@@ -1,70 +1,34 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// API: GET /api/auth/google
-// Initiates Google OAuth sign-in flow via Supabase
-// Redirects to Supabase's Google OAuth URL
-
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_KEY;
-  
-  if (!url || !key) {
-    throw new Error(
-      "Missing Supabase configuration: please set SUPABASE_URL and SUPABASE_KEY."
-    );
-  }
-  
-  return createClient(url, key);
-}
+import { createServerSupabaseClient } from "../../../lib/supabase";
 
 export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const redirectTo = searchParams.get("redirect_to") || "/events/malala";
-    
-    // Construct base URL
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const host = req.headers.get("host") || "localhost:3000";
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-    const callbackUrl = `${baseUrl}/api/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`;
-    
-    const supabase = getSupabaseClient();
-    
-    // Generate the OAuth URL for Google sign-in
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: callbackUrl,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+  const { searchParams } = new URL(req.url);
+  const redirectTo = searchParams.get("redirect_to") || "/upcoming-speakers";
+  
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const host = req.headers.get("host") || "localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+  
+  const supabase = await createServerSupabaseClient();
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${baseUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+        hd: "stanford.edu",
       },
-    });
+    },
+  });
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
-    if (!data.url) {
-      return NextResponse.json(
-        { error: "Failed to generate OAuth URL" },
-        { status: 500 }
-      );
-    }
-
-    // Redirect to Google sign-in
-    return NextResponse.redirect(data.url);
-  } catch (e: unknown) {
-    const errorMessage = e instanceof Error ? e.message : "Unexpected server error";
+  if (error || !data.url) {
     return NextResponse.json(
-      { error: errorMessage },
+      { error: error?.message || "Failed to initiate sign in" },
       { status: 500 }
     );
   }
-}
 
+  return NextResponse.redirect(data.url);
+}

@@ -3,6 +3,7 @@ import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/NavBar";
 import BannerBar from "./components/BannerBar";
+import { getClosestUpcomingEvent } from "./lib/supabase";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,23 +21,42 @@ export const metadata: Metadata = {
   description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const closestEvent = await getClosestUpcomingEvent();
+  
+  // Determine if speaker is still a mystery (before release_date)
+  const now = new Date();
+  const releaseDate = closestEvent?.release_date ? new Date(closestEvent.release_date) : null;
+  const isMystery = releaseDate ? now < releaseDate : !closestEvent?.name;
+  
+  // Show banner if there's an upcoming event
+  const showBanner = !!closestEvent;
+  
+  // Banner text and countdown target based on mystery status
+  const bannerText = isMystery 
+    ? "GET NOTIFIED ABOUT OUR NEXT SPEAKER!!" 
+    : `${closestEvent?.name} is coming to Stanford!`;
+  const countdownTarget = isMystery ? closestEvent?.release_date : closestEvent?.start_time_date;
+  const prefaceLabel = isMystery ? "Speaker Name & Ticket Reveal in" : "Event starts in";
+
   return (
     <html lang="en">
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <BannerBar 
-          text="GET NOTIFIED ABOUT OUR NEXT SPEAKER!!"
-          href="/upcoming-speakers"
-          prefaceLabel="Speaker Name & Ticket Reveal in"
-          target="2026-01-09T12:00:00"
-        />
-        <NavBar banner={true} />
+        {showBanner && (
+          <BannerBar 
+            text={bannerText}
+            href="/upcoming-speakers"
+            prefaceLabel={prefaceLabel}
+            target={countdownTarget || undefined}
+          />
+        )}
+        <NavBar banner={showBanner} />
         {children}
       </body>
     </html>
