@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     if (existingNotify) {
       return NextResponse.json(
-        { error: "You're already signed up for notifications for this event!" },
+        { error: "You're signed up for notifications for this event!" },
         { status: 409 }
       );
     }

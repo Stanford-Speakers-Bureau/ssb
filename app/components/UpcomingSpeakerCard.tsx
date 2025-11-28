@@ -19,7 +19,7 @@ export type UpcomingSpeakerCardProps = {
   mystery?: boolean; // Adds blur effect to hide identity
   calendarUrl?: string; // iCal URL for adding event
   eventId?: string; // Event ID for notify signup
-  isAlreadyNotified?: boolean; // Whether user is already signed up for notifications
+  isAlreadyNotified?: boolean; // Whether user is signed up for notifications
 };
 
 export default function UpcomingSpeakerCard({
@@ -60,7 +60,7 @@ export default function UpcomingSpeakerCard({
     isAlreadyNotified ? "success" : "idle"
   );
   const [notifyMessage, setNotifyMessage] = useState(
-    isAlreadyNotified ? "You're already signed up for notifications!" : ""
+    isAlreadyNotified ? "You're signed up for notifications!" : ""
   );
 
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
@@ -94,7 +94,7 @@ export default function UpcomingSpeakerCard({
         setNotifyMessage("You'll be notified when the speaker is announced!");
       } else if (response.status === 409) {
         setNotifyStatus("success");
-        setNotifyMessage("You're already signed up for notifications!");
+        setNotifyMessage("You're signed up for notifications!");
       } else {
         setNotifyStatus("error");
         setNotifyMessage(data.error || "Something went wrong");
