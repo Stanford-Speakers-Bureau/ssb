@@ -1,9 +1,6 @@
-"use client";
-
-import { motion } from "motion/react";
 import Image from "next/image";
 
-const teamMembers = [
+const leadership = [
   {
     name: "Anish Anne",
     position: "Co-President",
@@ -14,6 +11,14 @@ const teamMembers = [
     position: "Co-President",
     image: "/team/annika.jpg"
   },
+  {
+    name: "Katie Heffernan",
+    position: "Executive Advisor to the Board",
+    image: "/team/katie.jpg"
+  }
+];
+
+const directors = [
   {
     name: "Ajay Eisenberg",
     position: "Financial Officer",
@@ -46,51 +51,71 @@ const teamMembers = [
   }
 ];
 
-export default function Team() {
+function TeamCard({ member, large = false }: { member: typeof leadership[0]; large?: boolean }) {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black py-16 px-8 sm:px-12 md:px-16">
-      <div className="max-w-7xl mx-auto">
-        <motion.h1 
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-center mt-10 mb-4 text-[#A80D0C] font-serif"
-        >
-          Our Team
-        </motion.h1>
-        
-        <motion.p 
-          className="text-gray-600 dark:text-gray-400 text-center mb-16 text-lg max-w-2xl mx-auto"
-        >
-          Meet the team behind Stanford Speakers Bureau
-        </motion.p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 justify-items-center">
-          {teamMembers.map((member) => (
-            <motion.div
-              key={member.name}
-              className="flex flex-col items-center gap-4"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-lg ring-4 ring-gray-200 dark:ring-gray-800 transition-all hover:ring-[#A80D0C]">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 192px, 192px"
-                />
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                  {member.name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {member.position}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+    <div className="group flex flex-col items-center gap-4">
+      <div 
+        className={`relative ${large ? 'w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56' : 'w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44'} rounded-full overflow-hidden shadow-xl ring-4 ring-white dark:ring-zinc-800 group-hover:ring-[#A80D0C] transition-all duration-300`}
+      >
+        <Image
+          src={member.image}
+          alt={member.name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes={large ? "(max-width: 640px) 160px, (max-width: 768px) 192px, 224px" : "(max-width: 640px) 128px, (max-width: 768px) 160px, 176px"}
+        />
+      </div>
+      <div className="text-center px-2">
+        <h3 className={`${large ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'} font-semibold text-gray-900 dark:text-white mb-1`}>
+          {member.name}
+        </h3>
+        <p className={`${large ? 'text-sm md:text-base' : 'text-xs sm:text-sm'} text-[#A80D0C] font-medium`}>
+          {member.position}
+        </p>
       </div>
     </div>
   );
 }
 
+export default function Team() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-16">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#A80D0C] font-serif tracking-tight">
+            Our Team
+          </h1>
+          <div className="mt-4 w-24 h-1 bg-[#A80D0C] mx-auto rounded-full" />
+          <p className="text-gray-600 dark:text-gray-400 mt-6 text-lg max-w-xl mx-auto leading-relaxed">
+            Meet the dedicated team behind Stanford Speakers Bureau
+          </p>
+        </div>
+
+        {/* Leadership Section */}
+        <section className="mb-16 sm:mb-20">
+          <h2 className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase text-center mb-8 sm:mb-12">
+            Leadership
+          </h2>
+          <div className="flex flex-wrap justify-center gap-8 sm:gap-12 md:gap-16 lg:gap-24">
+            {leadership.map((member) => (
+              <TeamCard key={member.name} member={member} large />
+            ))}
+          </div>
+        </section>
+
+        {/* Directors Section */}
+        <section>
+          <h2 className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase text-center mb-8 sm:mb-12">
+            Directors
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-10 md:gap-14 justify-items-center max-w-4xl mx-auto">
+            {directors.map((member) => (
+              <TeamCard key={member.name} member={member} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
