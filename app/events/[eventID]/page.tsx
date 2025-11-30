@@ -28,9 +28,8 @@ function TimeUnit({ value }: TimeUnitProps) {
 }
 
 export default function EventPage() {
-  const params = useParams();
+  useParams(); // Required for dynamic route
   const searchParams = useSearchParams();
-  const eventID = params.eventID as string;
 
   redirect('/');
 
@@ -51,11 +50,18 @@ export default function EventPage() {
     const message = searchParams.get("message") || searchParams.get("error_message");
 
     if (success === "true") {
-      setSubmitStatus("success");
-      setStatusMessage(message || "Successfully signed up! You'll be notified when tickets open.");
+      // Defer state update to avoid synchronous setState in effect
+      const timeoutId = setTimeout(() => {
+        setSubmitStatus("success");
+        setStatusMessage(message || "Successfully signed up! You'll be notified when tickets open.");
+      }, 0);
+      return () => clearTimeout(timeoutId);
     } else if (error) {
-      setSubmitStatus("error");
-      setStatusMessage(message || "An error occurred. Please try again.");
+      const timeoutId = setTimeout(() => {
+        setSubmitStatus("error");
+        setStatusMessage(message || "An error occurred. Please try again.");
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [searchParams]);
 

@@ -70,9 +70,13 @@ export default function BannerBar({
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetTime));
 
   useEffect(() => {
+    // Defer initial update to avoid synchronous setState in effect
+    const timeoutId = setTimeout(() => {
+      setTimeLeft(calculateTimeLeft(targetTime));
+    }, 0);
+
     if (targetTime == null) {
-      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      return;
+      return () => clearTimeout(timeoutId);
     }
 
     // Update every second
@@ -80,7 +84,10 @@ export default function BannerBar({
       setTimeLeft(calculateTimeLeft(targetTime));
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(timer);
+    };
   }, [targetTime]);
 
   return (

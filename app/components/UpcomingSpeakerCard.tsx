@@ -67,8 +67,12 @@ export default function UpcomingSpeakerCard({
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
   useEffect(() => {
     if (isAlreadyNotified && notifyStatus !== "success") {
-      setNotifyStatus("success");
-      setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
+      // Defer state update to avoid synchronous setState in effect
+      const timeoutId = setTimeout(() => {
+        setNotifyStatus("success");
+        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [isAlreadyNotified, notifyStatus]);
 
