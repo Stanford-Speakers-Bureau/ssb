@@ -30,18 +30,6 @@ export default function AdminSuggestClient({
   const [editError, setEditError] = useState<string | null>(null);
   const [expandedVoterPanels, setExpandedVoterPanels] = useState<Set<string>>(new Set());
 
-  function toggleVoterPanel(id: string) {
-    setExpandedVoterPanels((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
     
@@ -140,6 +128,17 @@ export default function AdminSuggestClient({
 
   const pendingCount = suggestions.filter((s) => !s.reviewed).length;
 
+  // Pre-compute approved suggestions with tokenized speaker names for fuzzy matching
+  const approvedSuggestions = suggestions
+    .filter((s) => s.approved)
+    .map((s) => ({
+      ...s,
+      _tokens: s.speaker
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean),
+    }));
+
   const filterTabs = [
     { id: "pending" as const, label: "Pending", count: pendingCount },
     { id: "approved" as const, label: "Approved" },
@@ -235,7 +234,22 @@ export default function AdminSuggestClient({
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredSuggestions.map((suggestion) => (
+          {filteredSuggestions.map((suggestion) => {
+            const pendingTokens = suggestion.speaker
+              .toLowerCase()
+              .split(/\s+/)
+              .filter(Boolean);
+
+            // Find all approved suggestions whose name shares at least one token
+            const matchingApproved = !suggestion.reviewed
+              ? approvedSuggestions.filter((approved) =>
+                  approved._tokens.some((t) => pendingTokens.includes(t))
+                )
+              : [];
+
+            const isDuplicateOfApproved = matchingApproved.length > 0;
+
+            return (
             <div
               key={suggestion.id}
               className={`bg-zinc-900 rounded-xl border p-6 transition-all ${
@@ -248,8 +262,8 @@ export default function AdminSuggestClient({
             >
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-white truncate">
+                  <div className="flex items-start gap-3 mb-2">
+                    <h3 className="text-lg font-semibold text-white break-words">
                       {suggestion.speaker}
                     </h3>
                     {suggestion.reviewed && (
@@ -261,6 +275,11 @@ export default function AdminSuggestClient({
                         }`}
                       >
                         {suggestion.approved ? "Approved" : "Rejected"}
+                      </span>
+                    )}
+                    {!suggestion.reviewed && isDuplicateOfApproved && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        Duplicate
                       </span>
                     )}
                   </div>
@@ -284,46 +303,49 @@ export default function AdminSuggestClient({
                       {new Date(suggestion.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  {/* Voters toggle button */}
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleVoterPanel(suggestion.id)}
-                      className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200"
-                    >
-                      <svg
-                        className={`w-3 h-3 transition-transform ${
-                          expandedVoterPanels.has(suggestion.id) ? "rotate-90" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                      <span>
-                        {suggestion.voters?.length ?? 0} voter
-                        {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
-                      </span>
-                    </button>
-                    {expandedVoterPanels.has(suggestion.id) && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(suggestion.voters ?? []).length === 0 ? (
-                          <p className="text-sm text-zinc-500">
-                            No recorded voters for this suggestion yet.
-                          </p>
-                        ) : (
-                          suggestion.voters!.map((email) => (
-                            <span
-                              key={email}
-                              className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
-                            >
-                              {email}
+                  {/* Matching approved suggestions (for pending items) */}
+                  {!suggestion.reviewed && matchingApproved.length > 0 && (
+                    <div className="mt-2 text-xs text-zinc-400">
+                      <p className="mb-1">Matching approved suggestion{matchingApproved.length > 1 ? "s" : ""}:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {matchingApproved.map((approved) => (
+                          <span
+                            key={approved.id}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-zinc-800 text-zinc-100 border border-zinc-700"
+                          >
+                            <span className="font-medium truncate max-w-[160px]">
+                              {approved.speaker}
                             </span>
-                          ))
-                        )}
+                            <span className="text-[10px] text-zinc-400">
+                              ({approved.votes} votes)
+                            </span>
+                          </span>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
+
+                  {/* Voters list (always visible) */}
+                  <div className="mt-3">
+                    <p className="text-xs font-medium text-zinc-400 mb-1">
+                      Voters ({(suggestion.voters ?? []).length})
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(suggestion.voters ?? []).length === 0 ? (
+                        <p className="text-sm text-zinc-500">
+                          No recorded voters for this suggestion yet.
+                        </p>
+                      ) : (
+                        suggestion.voters!.map((email) => (
+                          <span
+                            key={email}
+                            className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
+                          >
+                            {email}
+                          </span>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -381,7 +403,7 @@ export default function AdminSuggestClient({
                 )}
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
 

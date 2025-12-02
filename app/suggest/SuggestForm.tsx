@@ -56,11 +56,11 @@ export default function SuggestForm() {
       <div>
         <label 
           htmlFor="speaker" 
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-4"
         >
           Who would you like to see speak?
           <br />
-          (1 person per submission preferred)
+          (separate people with commas)
         </label>
         <textarea
           id="speaker"

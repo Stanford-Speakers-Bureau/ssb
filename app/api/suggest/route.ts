@@ -23,9 +23,8 @@ function sanitizeInput(input: string): string {
  */
 function toTitleCase(input: string): string {
   return input
-    .toLowerCase()
     .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : "")
     .join(" ");
 }
 
@@ -106,38 +105,56 @@ export async function POST(req: Request) {
     // Format speaker name with title case
     const formattedSpeaker = toTitleCase(sanitizedSpeaker);
 
-    // Insert suggestion using admin client (to bypass RLS) and return its id
-    const { data: suggestion, error: suggestError } = await adminClient
-      .from("suggest")
-      .insert([{ 
-        email: user.email, 
-        speaker: formattedSpeaker,
-        approved: false,
-        reviewed: false,
-        votes: 0,
-      }])
-      .select("id")
-      .single();
+    // Support comma-separated speakers: split, trim, and keep the first non-empty
+    const speakers = formattedSpeaker
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
 
-    if (suggestError || !suggestion) {
-      console.error("Suggest insert error:", suggestError);
+
+
+    if (speakers.length === 0) {
       return NextResponse.json(
-        { error: SUGGEST_MESSAGES.ERROR_GENERIC },
-        { status: 500 }
+        { error: SUGGEST_MESSAGES.ERROR_MISSING_SPEAKER },
+        { status: 400 }
       );
     }
 
-    // Automatically create an initial vote for the suggester
-    const { error: voteError } = await adminClient
-      .from("votes")
-      .insert([{
-        speaker_id: suggestion.id,
-        email: user.email,
-      }]);
+    // Insert all speakers and cast a vote for each
+    for (const speakerName of speakers) {
+      // Insert suggestion using admin client (to bypass RLS) and return its id
+      const { data: suggestion, error: suggestError } = await adminClient
+        .from("suggest")
+        .insert([{ 
+          email: user.email, 
+          speaker: speakerName,
+          approved: false,
+          reviewed: false,
+          votes: 0,
+        }])
+        .select("id")
+        .single();
 
-    if (voteError) {
-      console.error("Initial vote insert error:", voteError);
-      // Suggestion was created successfully; vote is a best-effort enhancement
+      if (suggestError || !suggestion) {
+        console.error("Suggest insert error:", suggestError);
+        return NextResponse.json(
+          { error: SUGGEST_MESSAGES.ERROR_GENERIC },
+          { status: 500 }
+        );
+      }
+
+      // Automatically create an initial vote for the suggester
+      const { error: voteError } = await adminClient
+        .from("votes")
+        .insert([{
+          speaker_id: suggestion.id,
+          email: user.email,
+        }]);
+
+      if (voteError) {
+        console.error("Initial vote insert error:", voteError);
+        // Suggestion was created successfully; vote is a best-effort enhancement
+      }
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
