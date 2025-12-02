@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Contact() {
   return (
@@ -40,13 +41,13 @@ export default function Contact() {
             
             <p className="text-base text-gray-200 leading-relaxed mb-8 drop-shadow-md">
               If you are looking for Stanford Speakers Bureau to co-sponsor an event, please first check out the{' '}
-              <a 
+              <Link 
                 href="/other-programs"
                 className="font-semibold hover:underline"
                 style={{ color: '#A80D0C' }}
               >
                 Other Programs section
-              </a>{' '}
+              </Link>{' '}
               for our interests and guidelines.
             </p>
           </div>
