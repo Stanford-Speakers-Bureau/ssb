@@ -106,21 +106,35 @@ export async function POST(req: Request) {
     // Format speaker name with title case
     const formattedSpeaker = toTitleCase(sanitizedSpeaker);
 
-    // Insert suggestion using admin client (to bypass RLS)
-    const { error } = await adminClient
+    // Insert suggestion using admin client (to bypass RLS) and return its id
+    const { data: suggestion, error: suggestError } = await adminClient
       .from("suggest")
       .insert([{ 
         email: user.email, 
         speaker: formattedSpeaker,
-        votes: 0
-      }]);
+      }])
+      .select("id")
+      .single();
 
-    if (error) {
-      console.error("Suggest insert error:", error);
+    if (suggestError || !suggestion) {
+      console.error("Suggest insert error:", suggestError);
       return NextResponse.json(
         { error: SUGGEST_MESSAGES.ERROR_GENERIC },
         { status: 500 }
       );
+    }
+
+    // Automatically create an initial vote for the suggester
+    const { error: voteError } = await adminClient
+      .from("votes")
+      .insert([{
+        speaker_id: suggestion.id,
+        email: user.email,
+      }]);
+
+    if (voteError) {
+      console.error("Initial vote insert error:", voteError);
+      // Suggestion was created successfully; vote is a best-effort enhancement
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

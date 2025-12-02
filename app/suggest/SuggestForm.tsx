@@ -59,6 +59,8 @@ export default function SuggestForm() {
           className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
         >
           Who would you like to see speak?
+          <br />
+          (1 person per submission preferred)
         </label>
         <textarea
           id="speaker"
