@@ -6,7 +6,7 @@ import { SUGGEST_MESSAGES } from "../lib/constants";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
-export default function SuggestForm({ userEmail }: { userEmail: string }) {
+export default function SuggestForm() {
   const [speaker, setSpeaker] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");

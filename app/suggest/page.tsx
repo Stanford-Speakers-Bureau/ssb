@@ -54,7 +54,7 @@ export default async function SuggestPage() {
                 </div>
               </div>
               
-              <SuggestForm userEmail={user.email || ""} />
+              <SuggestForm />
             </div>
           ) : (
             <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 text-center">
