@@ -102,16 +102,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // Atomically increment the votes count on the suggest table
-    const { data: rpcData, error: updateError } = await adminClient
-      .rpc('increment_vote_count', { row_id: speaker_id });
+    // Fetch updated vote count from suggest table (kept in sync via DB triggers)
+    const { data: updatedSuggestion, error: updatedSuggestionError } = await adminClient
+      .from("suggest")
+      .select("votes")
+      .eq("id", speaker_id)
+      .single();
 
-    if (updateError) {
-      console.error("Vote count update error:", updateError);
-      // Vote was recorded, just couldn't update count - not critical
+    if (updatedSuggestionError) {
+      console.error("Failed to fetch updated vote count:", updatedSuggestionError);
     }
 
-    const newVoteCount = rpcData ?? (suggestion.votes || 0) + 1;
+    const newVoteCount = updatedSuggestion?.votes ?? (suggestion.votes || 0) + 1;
 
     return NextResponse.json({ 
       success: true, 
@@ -215,15 +217,18 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Atomically decrement the votes count on the suggest table
-    const { data: rpcData, error: updateError } = await adminClient
-      .rpc('decrement_vote_count', { row_id: speaker_id });
+    // Fetch updated vote count from suggest table (kept in sync via DB triggers)
+    const { data: updatedSuggestion, error: updatedSuggestionError } = await adminClient
+      .from("suggest")
+      .select("votes")
+      .eq("id", speaker_id)
+      .single();
 
-    if (updateError) {
-      console.error("Vote count update error:", updateError);
+    if (updatedSuggestionError) {
+      console.error("Failed to fetch updated vote count:", updatedSuggestionError);
     }
 
-    const newVoteCount = rpcData ?? Math.max((suggestion.votes || 0) - 1, 0);
+    const newVoteCount = updatedSuggestion?.votes ?? Math.max((suggestion.votes || 0) - 1, 0);
 
     return NextResponse.json({ 
       success: true, 
