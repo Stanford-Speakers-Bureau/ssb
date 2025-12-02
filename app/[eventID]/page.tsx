@@ -1,31 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSupabaseClient, type Event } from "../lib/supabase";
-
-type EventWithRoute = Event & {
-  route: string | null;
-};
-
-async function getEventByRoute(eventID: string): Promise<EventWithRoute | null> {
-  const supabase = getSupabaseClient();
-  
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("route", eventID)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data as EventWithRoute;
-}
-
-function isEventMystery(event: EventWithRoute): boolean {
-  const now = new Date();
-  const releaseDate = event.release_date ? new Date(event.release_date) : null;
-  return releaseDate ? now < releaseDate : !event.name;
-}
+import { getEventByRoute, isEventMystery } from "../lib/supabase";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
-import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
+import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, isEventMystery, type Event } from "../lib/supabase";
 
 type SanitizedEvent = Omit<Event, 'name' | 'desc' | 'img'> & {
   name: string | null;
@@ -25,12 +25,10 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   }
 
   const events = data || [];
-  const now = new Date();
 
   const sanitizedEvents = await Promise.all(
     events.map(async (event) => {
-      const releaseDate = event.release_date ? new Date(event.release_date) : null;
-      const isMystery = releaseDate ? now < releaseDate : !event.name;
+      const isMystery = isEventMystery(event);
 
       // Don't expose sensitive data for mystery speakers
       return {
