@@ -110,7 +110,7 @@ export default async function SuggestPage() {
             {/* Right column: Suggest a Speaker + Your suggested speakers */}
             <aside className="w-96 space-y-4">
               {/* Suggest a Speaker */}
-              <section className="bg-white dark:bg-black p-4 rounded-lg">
+              <section className="bg-white dark:bg-black p-4 pt-2 rounded-lg">
                 <h2 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
                   Suggest a Speaker
                 </h2>
