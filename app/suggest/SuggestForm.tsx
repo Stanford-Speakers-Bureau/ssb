@@ -67,7 +67,7 @@ export default function SuggestForm({ userEmail }: { userEmail: string }) {
           value={speaker}
           onChange={(e) => setSpeaker(e.target.value)}
           disabled={isDisabled}
-          placeholder="Enter a name (e.g., Michelle Obama, Elon Musk, Taylor Swift...)"
+          placeholder="Enter a name"
           className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-600 
                      bg-white dark:bg-zinc-800 text-black dark:text-white
                      placeholder:text-zinc-400 dark:placeholder:text-zinc-500

@@ -19,15 +19,6 @@ function sanitizeInput(input: string): string {
 
 export async function POST(req: Request) {
   try {
-    // Verify Content-Type header
-    const contentType = req.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      return NextResponse.json(
-        { error: "Invalid content type" },
-        { status: 400 }
-      );
-    }
-
     const supabase = await createServerSupabaseClient();
 
     // Get current user - this verifies the session token server-side
@@ -88,17 +79,14 @@ export async function POST(req: Request) {
       }]);
 
     if (error) {
-      console.error("Error inserting into suggest table:", error);
       return NextResponse.json(
         { error: SUGGEST_MESSAGES.ERROR_GENERIC },
         { status: 500 }
       );
     }
 
-    // Don't return inserted data - only confirm success
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Unexpected error in suggest route:", error);
+  } catch {
     return NextResponse.json(
       { error: SUGGEST_MESSAGES.ERROR_GENERIC },
       { status: 500 }

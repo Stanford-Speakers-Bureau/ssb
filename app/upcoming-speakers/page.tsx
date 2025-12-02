@@ -25,7 +25,6 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
     .order("start_time_date", { ascending: true });
 
   if (error) {
-    console.error("Error fetching events:", error);
     return [];
   }
 

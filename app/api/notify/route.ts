@@ -4,10 +4,21 @@ import { NOTIFY_MESSAGES } from "../../lib/constants";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // Parse request body with error handling
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON body" },
+        { status: 400 }
+      );
+    }
+
     const { speaker_id } = body;
 
-    if (!speaker_id) {
+    // Validate input type
+    if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_MISSING_SPEAKER_ID },
         { status: 400 }
@@ -57,19 +68,16 @@ export async function POST(req: Request) {
     }
 
     // Insert notification signup
-    const { data, error } = await adminClient
+    const { error } = await adminClient
       .from("notify")
-      .insert([{ email: user.email, speaker_id }])
-      .select();
+      .insert([{ email: user.email, speaker_id }]);
 
     if (error) {
-      console.error("Error inserting into notify table:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: NOTIFY_MESSAGES.ERROR_GENERIC }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data }, { status: 200 });
-  } catch (error) {
-    console.error("Unexpected error in notify route:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: NOTIFY_MESSAGES.ERROR_GENERIC }, { status: 500 });
   }
 }
