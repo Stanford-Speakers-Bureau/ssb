@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { SUGGEST_MESSAGES } from "../lib/constants";
 
@@ -10,6 +11,7 @@ export default function SuggestForm() {
   const [speaker, setSpeaker] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +40,7 @@ export default function SuggestForm() {
 
       setStatus("success");
       setSpeaker("");
+      router.refresh();
       
       // Reset to idle after 3 seconds
       setTimeout(() => {

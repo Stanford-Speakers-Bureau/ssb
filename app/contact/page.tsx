@@ -14,7 +14,7 @@ export default function Contact() {
           priority
         />
         <div className="absolute inset-0 bg-black/70 pointer-events-none" />
-        <section className="relative z-10 w-full max-w-4xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
+        <section className="relative z-10 w-full max-w-5xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-serif text-center drop-shadow-lg">
             Got Questions or Ideas? Get In Touch!
           </h1>

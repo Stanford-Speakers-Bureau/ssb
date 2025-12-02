@@ -10,12 +10,24 @@ type Suggestion = {
   hasVoted: boolean;
 };
 
+type UserSuggestion = {
+  id: string;
+  speaker: string;
+  approved: boolean;
+  reviewed: boolean;
+};
+
 type LeaderboardProps = {
   suggestions: Suggestion[];
   isLoggedIn: boolean;
+  userSuggestions?: UserSuggestion[];
 };
 
-export default function Leaderboard({ suggestions: initialSuggestions, isLoggedIn }: LeaderboardProps) {
+export default function Leaderboard({
+  suggestions: initialSuggestions,
+  isLoggedIn,
+  userSuggestions = [],
+}: LeaderboardProps) {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [, startTransition] = useTransition();
   const [votingId, setVotingId] = useState<string | null>(null);
@@ -68,7 +80,7 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
   };
 
   return (
-    <div className="flex flex-col lg:flex-1 lg:h-full">
+    <div className="flex flex-col lg:flex-1 lg:h-full max-w-lg mx-0">
       <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4 font-serif">
         Speaker Leaderboard
       </h1>
@@ -135,10 +147,6 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
 
             {/* Vote Count */}
             <div className="flex items-center gap-2">
-              {/* <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium tabular-nums">
-                {suggestion.votes} {suggestion.votes === 1 ? "vote" : "votes"}
-              </span> */}
-
               {/* Vote Button */}
               {isLoggedIn ? (
                 <motion.button

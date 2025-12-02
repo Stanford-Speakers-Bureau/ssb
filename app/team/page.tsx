@@ -80,7 +80,7 @@ function TeamCard({ member, large = false }: { member: typeof leadership[0]; lar
 export default function Team() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black py-22 px-4 sm:px-8 md:px-16">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#A80D0C] font-serif tracking-tight">
