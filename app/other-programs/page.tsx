@@ -2,7 +2,7 @@ export default function OtherPrograms() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full justify-center bg-white dark:bg-black pt-16">
-        <section className="w-full max-w-5xl lg:py-12 py-6 px-6 sm:px-12 md:px-16">
+        <section className="w-full max-w-5xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
             Other Programs
           </h1>
@@ -93,7 +93,7 @@ export default function OtherPrograms() {
             <div className="relative max-w-3xl mx-auto">
               {/* Step 1: Review */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>1</span>
@@ -109,8 +109,7 @@ export default function OtherPrograms() {
                         href="https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
-                        style={{ background: 'linear-gradient(135deg, #A80D0C 0%, #A80D0C 100%)' }}
+                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
                       >
                         <span>Review Document</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +129,7 @@ export default function OtherPrograms() {
 
               {/* Step 2: Submit */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>2</span>
@@ -142,11 +141,11 @@ export default function OtherPrograms() {
                       <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
                         Fill out the Co-Sponsorship & Partnership Application Google Form
                       </p>
-                      <a 
+                      <a
                         href="https://docs.google.com/forms/d/e/1FAIpQLSeAO0VRXyvxokpYWpFYPDg03UJ2oITF4LtWIF8GO0TIvyVIpA/viewform?usp=sharing&ouid=103384219620885640711"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110"
+                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
                         style={{ background: 'linear-gradient(135deg, #A80D0C 0%, #A80D0C 100%)' }}
                       >
                         <span>Submit Application</span>
@@ -167,7 +166,7 @@ export default function OtherPrograms() {
 
               {/* Step 3: Present */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>3</span>
@@ -192,7 +191,7 @@ export default function OtherPrograms() {
 
               {/* Step 4: Get Funded */}
               <div className="relative">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-zinc-200 dark:border-zinc-700 transition-all hover:shadow-2xl hover:scale-[1.02]">
+                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span className="text-3xl sm:text-4xl font-bold font-serif" style={{ color: '#A80D0C' }}>4</span>

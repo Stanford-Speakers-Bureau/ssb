@@ -134,7 +134,7 @@ export default async function SuggestPage() {
         </div>
 
         {/* Mobile Layout */}
-        <div className="lg:hidden flex-1 flex flex-col lg:py-12 py-6 px-6">
+        <div className="lg:hidden flex-1 flex flex-col lg:py-8 py-6 px-6">
           <section className="flex-1 flex flex-col">
             <Leaderboard suggestions={leaderboardData} isLoggedIn={!!user} />
           </section>
