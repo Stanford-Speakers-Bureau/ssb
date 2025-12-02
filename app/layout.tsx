@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
-import NavBar from "./components/NavBar";
-import BannerBar from "./components/BannerBar";
+import SiteChrome from "./components/SiteChrome";
 import { getClosestUpcomingEvent } from "./lib/supabase";
 
 const inter = Inter({
@@ -48,15 +47,15 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        {showBanner && (
-          <BannerBar 
-            text={bannerText}
-            href="/upcoming-speakers"
-            prefaceLabel={prefaceLabel}
-            target={countdownTarget || undefined}
-          />
-        )}
-        <NavBar banner={showBanner} />
+        <SiteChrome
+          showBanner={showBanner}
+          bannerProps={{
+            text: bannerText,
+            href: "/upcoming-speakers",
+            prefaceLabel,
+            target: countdownTarget || undefined,
+          }}
+        />
         {children}
       </body>
     </html>
