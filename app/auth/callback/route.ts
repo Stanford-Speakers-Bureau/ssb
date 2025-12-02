@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../lib/supabase";
 
 // Allowed redirect paths (must start with /)
-const ALLOWED_REDIRECTS = ["/upcoming-speakers", "/events", "/suggest"];
+const ALLOWED_REDIRECTS = ["/upcoming-speakers", "/events", "/suggest", "/admin"];
 
 function isValidRedirect(path: string): boolean {
   // Must be a relative path starting with /

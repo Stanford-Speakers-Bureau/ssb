@@ -1,5 +1,4 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { createBrowserClient } from "@supabase/ssr";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -30,14 +29,46 @@ export type Event = {
   route: string | null;
 };
 
+type UnauthorizedResult = {
+  authorized: false;
+  error: string;
+};
+
+type AuthorizedResult = {
+  authorized: true;
+  email: string;
+  adminClient: ReturnType<typeof getSupabaseClient>;
+};
+
+export type AdminVerificationResult = UnauthorizedResult | AuthorizedResult;
+
 /**
- * Create a Supabase client for use in the browser (client components)
+ * Verify that the current request is authenticated and belongs to an admin user.
+ * Returns the admin client for privileged database access when authorized.
  */
-export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+export async function verifyAdminRequest(): Promise<AdminVerificationResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user?.email) {
+    return { authorized: false, error: "Not authenticated" };
+  }
+
+  const adminClient = getSupabaseClient();
+  const { data: adminRecord } = await adminClient
+    .from("admins")
+    .select("email")
+    .eq("email", user.email)
+    .single();
+
+  if (!adminRecord) {
+    return { authorized: false, error: "Not authorized" };
+  }
+
+  return { authorized: true, email: user.email, adminClient };
 }
 
 /**
