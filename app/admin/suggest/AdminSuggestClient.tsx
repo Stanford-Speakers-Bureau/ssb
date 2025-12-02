@@ -138,26 +138,34 @@ export default function AdminSuggestClient({
     }
   }
 
+  const pendingCount = suggestions.filter((s) => !s.reviewed).length;
+
   const filterTabs = [
-    { id: "pending" as const, label: "Pending", count: suggestions.filter((s) => !s.reviewed).length },
+    { id: "pending" as const, label: "Pending", count: pendingCount },
     { id: "approved" as const, label: "Approved" },
     { id: "rejected" as const, label: "Rejected" },
     { id: "all" as const, label: "All" },
   ];
 
-  const filteredSuggestions = suggestions.filter((s) => {
-    switch (filter) {
-      case "pending":
-        return !s.reviewed;
-      case "approved":
-        return s.reviewed && s.approved;
-      case "rejected":
-        return s.reviewed && !s.approved;
-      case "all":
-      default:
-        return true;
-    }
-  });
+  const filteredSuggestions = suggestions
+    .filter((s) => {
+      switch (filter) {
+        case "pending":
+          return !s.reviewed;
+        case "approved":
+          return s.reviewed && s.approved;
+        case "rejected":
+          return s.reviewed && !s.approved;
+        case "all":
+        default:
+          return true;
+      }
+    })
+    // For approved tab, sort by most votes first; keep existing order for other tabs
+    .sort((a, b) => {
+      if (filter !== "approved") return 0;
+      return b.votes - a.votes;
+    });
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -179,9 +187,9 @@ export default function AdminSuggestClient({
             }`}
           >
             {tab.label}
-            {tab.id === "pending" && filter === "pending" && suggestions.length > 0 && (
+            {tab.id === "pending" && filter === "pending" && pendingCount > 0 && (
               <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-xs rounded-full">
-                {suggestions.length}
+                {pendingCount}
               </span>
             )}
           </button>
@@ -189,7 +197,7 @@ export default function AdminSuggestClient({
       </div>
 
       {/* Bulk Actions */}
-      {filter === "pending" && suggestions.length > 0 && (
+      {filter === "pending" && pendingCount > 0 && (
         <div className="flex gap-3 mb-6 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
           <button
             onClick={() => handleBulkAction("approve")}
@@ -198,7 +206,7 @@ export default function AdminSuggestClient({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Approve All ({suggestions.length})
+            Approve All ({pendingCount})
           </button>
           <button
             onClick={() => handleBulkAction("reject")}

@@ -11,6 +11,7 @@ export default function Contact() {
           alt="Students background"
           fill
           sizes="100vw"
+          priority
         />
         <div className="absolute inset-0 bg-black/70 pointer-events-none" />
         <section className="relative z-10 w-full max-w-4xl lg:py-12 py-6 px-6 sm:px-12 md:px-16">
