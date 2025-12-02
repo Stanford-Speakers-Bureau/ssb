@@ -92,7 +92,7 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
         )}
       </AnimatePresence>
 
-      <div className="space-y-3 overflow-y-auto max-h-[540px] lg:max-h-none lg:flex-1 pr-2 pb-4">
+      <div className="space-y-3">
         {suggestions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">

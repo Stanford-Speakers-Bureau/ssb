@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type Admin = {
   id: string;
@@ -22,35 +22,11 @@ type AdminUsersClientProps = {
 export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUsersClientProps) {
   const [admins, setAdmins] = useState<Admin[]>(initialAdmins);
   const [bans, setBans] = useState<Ban[]>(initialBans);
-  const [isLoading, setIsLoading] = useState(initialAdmins.length === 0 && initialBans.length === 0);
   const [activeTab, setActiveTab] = useState<"admins" | "bans">("admins");
   const [newEmail, setNewEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (admins.length === 0 && bans.length === 0) {
-      fetchData();
-    } else {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function fetchData() {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/admin/users", { cache: "no-store" });
-      const data = await response.json();
-      setAdmins(data.admins || []);
-      setBans(data.bans || []);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   async function handleAddUser(type: "admin" | "ban") {
     if (!newEmail.trim()) {
@@ -81,9 +57,18 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
         return;
       }
 
+      const created = data.user as (Admin | Ban) | undefined;
+
+      if (created) {
+        if (type === "admin") {
+          setAdmins((prev) => [created as Admin, ...prev]);
+        } else {
+          setBans((prev) => [created as Ban, ...prev]);
+        }
+      }
+
       setSuccess(`Successfully added ${newEmail} as ${type === "admin" ? "an admin" : "a banned user"}`);
       setNewEmail("");
-      fetchData();
     } catch (error) {
       console.error("Failed to add user:", error);
       setError("Failed to add user. Please try again.");
@@ -231,19 +216,7 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
       </div>
 
       {/* User List */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 animate-pulse">
-              <div className="flex items-center justify-between">
-                <div className="h-5 bg-zinc-800 rounded w-48" />
-                <div className="h-8 bg-zinc-800 rounded w-20" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-3">
+      <div className="space-y-3">
           {activeTab === "admins" ? (
             admins.length === 0 ? (
               <div className="text-center py-12 bg-zinc-900/50 rounded-xl border border-zinc-800">
@@ -315,8 +288,7 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
               </div>
             ))
           )}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

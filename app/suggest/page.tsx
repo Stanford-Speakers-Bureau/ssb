@@ -59,10 +59,10 @@ export default async function SuggestPage() {
   const leaderboardData = await getLeaderboardData(user?.email || null);
 
   return (
-    <div className="flex h-[calc(100vh-2.5rem)] flex-col items-center bg-zinc-50 font-sans dark:bg-black overflow-hidden">
-      <main className="flex w-full flex-1 bg-white dark:bg-black pt-16 overflow-hidden">
+    <div className="flex h-[calc(100vh-2.5rem)] flex-col items-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex w-full flex-1 bg-white dark:bg-black pt-16">
         {/* Desktop Layout - Leaderboard centered with Suggest to its right */}
-        <div className="hidden lg:flex flex-1 justify-center items-start overflow-hidden py-8 px-6 relative">
+        <div className="hidden lg:flex flex-1 justify-center items-start py-8 px-6 relative">
           <section className="w-full max-w-xl h-full flex flex-col">
             <Leaderboard suggestions={leaderboardData} isLoggedIn={!!user} />
           </section>
@@ -134,8 +134,8 @@ export default async function SuggestPage() {
         </div>
 
         {/* Mobile Layout */}
-        <div className="lg:hidden flex-1 flex flex-col overflow-hidden py-8 px-6">
-          <section className="flex-1 overflow-hidden flex flex-col">
+        <div className="lg:hidden flex-1 flex flex-col lg:py-12 py-6 px-6">
+          <section className="flex-1 flex flex-col">
             <Leaderboard suggestions={leaderboardData} isLoggedIn={!!user} />
           </section>
         </div>

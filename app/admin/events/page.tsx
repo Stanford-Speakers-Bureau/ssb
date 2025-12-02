@@ -1,21 +1,40 @@
 import AdminEventsClient, { Event } from "./AdminEventsClient";
+import { getSignedImageUrl, verifyAdminRequest } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 async function getInitialEvents(): Promise<Event[]> {
   try {
-    // Use a relative URL so that admin auth cookies are forwarded to the API route.
-    const response = await fetch(`/api/admin/events`, {
-      cache: "no-store",
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Failed to fetch initial events:", data.error || data);
+    const auth = await verifyAdminRequest();
+    if (!auth.authorized) {
       return [];
     }
 
-    return data.events || [];
+    const client = auth.adminClient!;
+
+    const { data: events, error } = await client
+      .from("events")
+      .select("*")
+      .order("start_time_date", { ascending: false });
+
+    if (error) {
+      console.error("Events fetch error:", error);
+      return [];
+    }
+
+    const eventsWithImages =
+      events
+        ? await Promise.all(
+            events.map(async (event: any) => ({
+              ...event,
+              image_url: event.img
+                ? await getSignedImageUrl(event.img, 60 * 60) // 1 hour expiry
+                : null,
+            }))
+          )
+        : [];
+
+    return eventsWithImages as Event[];
   } catch (error) {
     console.error("Failed to fetch initial events:", error);
     return [];
@@ -26,4 +45,5 @@ export default async function AdminEventsPage() {
   const initialEvents = await getInitialEvents();
   return <AdminEventsClient initialEvents={initialEvents} />;
 }
+
 

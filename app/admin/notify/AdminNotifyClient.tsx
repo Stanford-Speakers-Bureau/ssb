@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type EventWithNotifications = {
   id: string;
@@ -19,29 +19,8 @@ type AdminNotifyClientProps = {
 
 export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientProps) {
   const [events, setEvents] = useState<EventWithNotifications[]>(initialEvents);
-  const [isLoading, setIsLoading] = useState(initialEvents.length === 0);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    if (initialEvents.length === 0) {
-      fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function fetchData() {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/admin/notifications", { cache: "no-store" });
-      const data = await response.json();
-      setEvents(data.events || []);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   function exportToCSV(event: EventWithNotifications) {
     const csv = [
@@ -102,16 +81,7 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
         />
       </div>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 animate-pulse">
-              <div className="h-6 bg-zinc-800 rounded w-48 mb-4" />
-              <div className="h-4 bg-zinc-800 rounded w-32" />
-            </div>
-          ))}
-        </div>
-      ) : filteredEvents.length === 0 ? (
+      {filteredEvents.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +199,7 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
       )}
 
       {/* Stats Summary */}
-      {!isLoading && events.length > 0 && (
+      {events.length > 0 && (
         <div className="mt-8 p-6 bg-zinc-900/50 rounded-xl border border-zinc-800">
           <h3 className="text-lg font-semibold text-white mb-4">Summary</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

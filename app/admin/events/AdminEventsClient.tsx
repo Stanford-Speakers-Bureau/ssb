@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 
 const PACIFIC_TIMEZONE = "America/Los_Angeles";
@@ -94,7 +94,6 @@ type AdminEventsClientProps = {
 
 export default function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
-  const [isLoading, setIsLoading] = useState(initialEvents.length === 0);
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<FormData>(emptyForm);
@@ -104,39 +103,6 @@ export default function AdminEventsClient({ initialEvents }: AdminEventsClientPr
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const hasHydrated = useRef(false);
-
-  useEffect(() => {
-    // We already have server-rendered events; only refetch once on mount
-    // if no initial events were provided.
-    if (!hasHydrated.current) {
-      hasHydrated.current = true;
-      if (initialEvents.length === 0) {
-        fetchEvents();
-      }
-    }
-  }, [initialEvents]);
-
-  async function fetchEvents() {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/admin/events", { cache: "no-store" });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Failed to fetch events.");
-        setEvents([]);
-        return;
-      }
-
-      setEvents(data.events || []);
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
-      setError("Unable to load events. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   function handleEdit(event: Event) {
     setEditingEvent(event);
@@ -224,9 +190,18 @@ export default function AdminEventsClient({ initialEvents }: AdminEventsClientPr
         return;
       }
 
+      const savedEvent = data.event as Event | undefined;
+
+      if (savedEvent) {
+        setEvents((prev) =>
+          editingEvent
+            ? prev.map((e) => (e.id === savedEvent.id ? savedEvent : e))
+            : [savedEvent, ...prev]
+        );
+      }
+
       setSuccess(editingEvent ? "Event updated successfully!" : "Event created successfully!");
       handleCancel();
-      fetchEvents();
     } catch (error) {
       console.error("Failed to save event:", error);
       setError("Failed to save event. Please try again.");
@@ -542,19 +517,7 @@ export default function AdminEventsClient({ initialEvents }: AdminEventsClientPr
       )}
 
       {/* Events List */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden animate-pulse">
-              <div className="h-48 bg-zinc-800" />
-              <div className="p-5">
-                <div className="h-5 bg-zinc-800 rounded w-32 mb-2" />
-                <div className="h-4 bg-zinc-800 rounded w-24" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : events.length === 0 ? (
+      {events.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

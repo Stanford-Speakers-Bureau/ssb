@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type Suggestion = {
   id: string;
@@ -22,7 +22,6 @@ export default function AdminSuggestClient({
   initialSuggestions,
 }: AdminSuggestClientProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
-  const [isLoading, setIsLoading] = useState(initialSuggestions.length === 0);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [editingSuggestion, setEditingSuggestion] = useState<Suggestion | null>(null);
@@ -30,32 +29,6 @@ export default function AdminSuggestClient({
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [expandedVoterPanels, setExpandedVoterPanels] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    // If we already have server-rendered data for the default filter,
-    // only refetch when the filter actually changes away from "pending".
-    if (filter === "pending" && initialSuggestions.length > 0) {
-      setIsLoading(false);
-      setSuggestions(initialSuggestions);
-      return;
-    }
-    fetchSuggestions();
-  }, [filter, initialSuggestions]);
-
-  async function fetchSuggestions() {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/admin/suggestions?filter=${filter}`, {
-        cache: "no-store",
-      });
-      const data = await response.json();
-      setSuggestions(data.suggestions || []);
-    } catch (error) {
-      console.error("Failed to fetch suggestions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   function toggleVoterPanel(id: string) {
     setExpandedVoterPanels((prev) => {
@@ -106,7 +79,7 @@ export default function AdminSuggestClient({
   }
 
   async function handleBulkAction(action: "approve" | "reject") {
-    const pendingIds = suggestions.filter((s) => !s.reviewed).map((s) => s.id);
+    const pendingIds = filteredSuggestions.filter((s) => !s.reviewed).map((s) => s.id);
     
     for (const id of pendingIds) {
       await handleAction(id, action);
@@ -172,6 +145,20 @@ export default function AdminSuggestClient({
     { id: "all" as const, label: "All" },
   ];
 
+  const filteredSuggestions = suggestions.filter((s) => {
+    switch (filter) {
+      case "pending":
+        return !s.reviewed;
+      case "approved":
+        return s.reviewed && s.approved;
+      case "rejected":
+        return s.reviewed && !s.approved;
+      case "all":
+      default:
+        return true;
+    }
+  });
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
@@ -226,24 +213,7 @@ export default function AdminSuggestClient({
       )}
 
       {/* Suggestions List */}
-      {isLoading ? (
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 animate-pulse">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="h-5 bg-zinc-800 rounded w-48 mb-2" />
-                  <div className="h-4 bg-zinc-800 rounded w-32" />
-                </div>
-                <div className="flex gap-2">
-                  <div className="h-9 w-24 bg-zinc-800 rounded-lg" />
-                  <div className="h-9 w-24 bg-zinc-800 rounded-lg" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : suggestions.length === 0 ? (
+      {filteredSuggestions.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +227,7 @@ export default function AdminSuggestClient({
         </div>
       ) : (
         <div className="space-y-4">
-          {suggestions.map((suggestion) => (
+          {filteredSuggestions.map((suggestion) => (
             <div
               key={suggestion.id}
               className={`bg-zinc-900 rounded-xl border p-6 transition-all ${

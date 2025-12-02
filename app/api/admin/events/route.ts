@@ -1,42 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
 
-export async function GET() {
-  try {
-    const auth = await verifyAdminRequest();
-    if (!auth.authorized) {
-      return NextResponse.json({ error: auth.error }, { status: 401 });
-    }
-
-    const { data: events, error } = await auth.adminClient!
-      .from("events")
-      .select("*")
-      .order("start_time_date", { ascending: false });
-
-    if (error) {
-      console.error("Events fetch error:", error);
-      return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
-    }
-
-    const eventsWithImages =
-      events
-        ? await Promise.all(
-            events.map(async (event) => ({
-              ...event,
-              image_url: event.img
-                ? await getSignedImageUrl(event.img, 60 * 60) // 1 hour expiry
-                : null,
-            }))
-          )
-        : [];
-
-    return NextResponse.json({ events: eventsWithImages });
-  } catch (error) {
-    console.error("Events error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const auth = await verifyAdminRequest();
@@ -97,30 +61,49 @@ export async function POST(req: Request) {
       eventData.img = imgName;
     }
 
+    let savedEvent: any;
+
     if (id) {
       // Update existing event
-      const { error } = await auth.adminClient!
+      const { data, error } = await auth.adminClient!
         .from("events")
         .update(eventData)
-        .eq("id", id);
+        .eq("id", id)
+        .select("*")
+        .single();
 
       if (error) {
         console.error("Event update error:", error);
         return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
       }
+
+      savedEvent = data;
     } else {
       // Create new event
-      const { error } = await auth.adminClient!
+      const { data, error } = await auth.adminClient!
         .from("events")
-        .insert([eventData]);
+        .insert([eventData])
+        .select("*")
+        .single();
 
       if (error) {
         console.error("Event insert error:", error);
         return NextResponse.json({ error: "Failed to create event" }, { status: 500 });
       }
+
+      savedEvent = data;
     }
 
-    return NextResponse.json({ success: true });
+    const eventWithImage = savedEvent
+      ? {
+          ...savedEvent,
+          image_url: savedEvent.img
+            ? await getSignedImageUrl(savedEvent.img, 60 * 60)
+            : null,
+        }
+      : null;
+
+    return NextResponse.json({ success: true, event: eventWithImage });
   } catch (error) {
     console.error("Event save error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

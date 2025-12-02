@@ -1,42 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "../../../lib/supabase";
 
-export async function GET() {
-  try {
-    const auth = await verifyAdminRequest();
-    if (!auth.authorized) {
-      return NextResponse.json({ error: auth.error }, { status: 401 });
-    }
-
-    // Get all admins
-    const { data: admins, error: adminsError } = await auth.adminClient!
-      .from("admins")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (adminsError) {
-      console.error("Admins fetch error:", adminsError);
-      return NextResponse.json({ error: "Failed to fetch admins" }, { status: 500 });
-    }
-
-    // Get all bans
-    const { data: bans, error: bansError } = await auth.adminClient!
-      .from("bans")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (bansError) {
-      console.error("Bans fetch error:", bansError);
-      return NextResponse.json({ error: "Failed to fetch bans" }, { status: 500 });
-    }
-
-    return NextResponse.json({ admins: admins || [], bans: bans || [] });
-  } catch (error) {
-    console.error("Users fetch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const auth = await verifyAdminRequest();
@@ -76,14 +40,18 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error } = await auth.adminClient!.from(table).insert([{ email }]);
+      const { data, error } = await auth.adminClient!
+        .from(table)
+        .insert([{ email }])
+        .select("*")
+        .single();
 
       if (error) {
         console.error("Insert error:", error);
         return NextResponse.json({ error: "Failed to add user" }, { status: 500 });
       }
 
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, user: data });
     } else {
       // Remove
       if (!id) {

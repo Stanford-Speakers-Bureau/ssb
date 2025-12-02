@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSupabaseClient } from "../lib/supabase";
 
 type Stats = {
   pendingSuggestions: number;
@@ -10,22 +11,40 @@ type Stats = {
 
 export const dynamic = "force-dynamic";
 
-async function getStats(): Promise<Stats | null> {
+async function getStats(): Promise<Stats> {
   try {
-    // Use a relative URL so that admin auth cookies are forwarded to the API route.
-    const response = await fetch(`/api/admin/stats`, {
-      cache: "no-store",
-    });
+    const supabase = getSupabaseClient();
 
-    if (!response.ok) {
-      console.error("Failed to fetch stats:", await response.text());
-      return null;
-    }
+    const [
+      { count: pendingSuggestions },
+      { count: totalEvents },
+      { count: totalNotifications },
+      { count: totalUsers },
+      { count: totalBans },
+    ] = await Promise.all([
+      supabase.from("suggest").select("*", { count: "exact", head: true }).eq("reviewed", false),
+      supabase.from("events").select("*", { count: "exact", head: true }),
+      supabase.from("notify").select("*", { count: "exact", head: true }),
+      supabase.from("admins").select("*", { count: "exact", head: true }),
+      supabase.from("bans").select("*", { count: "exact", head: true }),
+    ]);
 
-    return (await response.json()) as Stats;
+    return {
+      pendingSuggestions: pendingSuggestions ?? 0,
+      totalEvents: totalEvents ?? 0,
+      totalNotifications: totalNotifications ?? 0,
+      totalUsers: totalUsers ?? 0,
+      totalBans: totalBans ?? 0,
+    };
   } catch (error) {
-    console.error("Failed to fetch stats:", error);
-    return null;
+    console.error("Failed to fetch stats on dashboard:", error);
+    return {
+      pendingSuggestions: 0,
+      totalEvents: 0,
+      totalNotifications: 0,
+      totalUsers: 0,
+      totalBans: 0,
+    };
   }
 }
 
@@ -35,7 +54,7 @@ export default async function AdminDashboard() {
   const cards = [
     {
       title: "Pending Suggestions",
-      value: stats?.pendingSuggestions ?? 0,
+      value: stats.pendingSuggestions,
       href: "/admin/suggest",
       icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
       color: "from-amber-500 to-orange-500",
@@ -44,7 +63,7 @@ export default async function AdminDashboard() {
     },
     {
       title: "Total Events",
-      value: stats?.totalEvents ?? 0,
+      value: stats.totalEvents,
       href: "/admin/events",
       icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
       color: "from-emerald-500 to-teal-500",
@@ -53,7 +72,7 @@ export default async function AdminDashboard() {
     },
     {
       title: "Notification Signups",
-      value: stats?.totalNotifications ?? 0,
+      value: stats.totalNotifications,
       href: "/admin/notify",
       icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
       color: "from-blue-500 to-indigo-500",
@@ -62,7 +81,7 @@ export default async function AdminDashboard() {
     },
     {
       title: "Admins",
-      value: stats?.totalUsers ?? 0,
+      value: stats.totalUsers,
       href: "/admin/users",
       icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
       color: "from-purple-500 to-pink-500",
@@ -71,7 +90,7 @@ export default async function AdminDashboard() {
     },
     {
       title: "Banned Users",
-      value: stats?.totalBans ?? 0,
+      value: stats.totalBans,
       href: "/admin/users",
       icon: "M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636",
       color: "from-rose-500 to-red-500",
