@@ -54,7 +54,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
             >
-              <Link href="/" className={logoClasses}>
+              <Link href="/" className={logoClasses} prefetch={false} >
                 <Image src="/logo.png" alt="Logo" width={40} height={40} />
               </Link>
             </motion.div>
@@ -63,7 +63,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/upcoming-speakers" className={linkClasses}>
+                <Link href="/upcoming-speakers" className={linkClasses} prefetch={false} >
                   Upcoming Speakers
                 </Link>
               </motion.div>
@@ -71,7 +71,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/past-speakers" className={linkClasses}>
+                <Link href="/past-speakers" className={linkClasses} prefetch={false} >
                   Past Speakers
                 </Link>
               </motion.div>
@@ -79,7 +79,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/suggest" className={linkClasses}>
+                <Link href="/suggest" className={linkClasses} prefetch={false}>
                   Suggest
                 </Link>
               </motion.div>
@@ -87,7 +87,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/other-programs" className={linkClasses}>
+                <Link href="/other-programs" className={linkClasses} prefetch={false} >
                   Other Programs
                 </Link>
               </motion.div>
@@ -95,7 +95,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/team" className={linkClasses}>
+                <Link href="/team" className={linkClasses} prefetch={false} >
                   Team
                 </Link>
               </motion.div>
@@ -103,25 +103,14 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/contact" className={linkClasses}>
+                <Link href="/contact" className={linkClasses} prefetch={false} >
                   Contact
                 </Link>
               </motion.div>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {/* <motion.div
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/sign-in" 
-                className="hidden sm:block rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
-              >
-                Sign In
-              </Link>
-            </motion.div> */}
-            
+
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
