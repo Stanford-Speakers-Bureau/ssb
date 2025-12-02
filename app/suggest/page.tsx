@@ -214,7 +214,7 @@ export default async function SuggestPage() {
                               {s.speaker}
                             </span>
                             <span
-                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${statusClass}`}
+                              className={`inline-flex items-center rounded-full px-2 py-2 text-xs font-semibold ${statusClass}`}
                             >
                               {statusLabel}
                             </span>
