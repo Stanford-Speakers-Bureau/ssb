@@ -88,7 +88,7 @@ export default function Team() {
           </h1>
           <div className="mt-4 w-24 h-1 bg-[#A80D0C] mx-auto rounded-full" />
           <p className="text-gray-600 dark:text-gray-400 mt-6 text-lg max-w-xl mx-auto leading-relaxed">
-            Meet the dedicated team behind Stanford Speakers Bureau
+            Meet the team behind Stanford Speakers Bureau
           </p>
         </div>
 

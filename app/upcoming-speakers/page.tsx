@@ -123,6 +123,21 @@ export default async function UpcomingSpeakers() {
               ))}
             </div>
           )}
+
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 mt-10 text-center drop-shadow-lg">
+            To Hear About Upcoming Events:
+          </h2>
+
+          <div className="flex justify-center">
+            <a
+              href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transform transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
+            >
+              Join Our Mailing List
+            </a>
+          </div>
         </section>
       </main>
     </div>

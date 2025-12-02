@@ -77,9 +77,9 @@ export default function HomeClient() {
                 ease: [0.43, 0.13, 0.23, 0.96],
               }}
             >
-              Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.
+              Stanford&#39;s largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.
             </motion.p>
-            <motion.a
+            <MotionLink
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
@@ -96,13 +96,11 @@ export default function HomeClient() {
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/suggest"
               className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
-              Join Our Mailing List
-            </motion.a>
+              Suggest a Speaker!
+            </MotionLink>
           </div>
         </div>
       </section>
