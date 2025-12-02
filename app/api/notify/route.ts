@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient, getSupabaseClient } from "../../lib/supabase";
 import { NOTIFY_MESSAGES } from "../../lib/constants";
+import { notifyRatelimit, checkRateLimit } from "../../lib/ratelimit";
 
 export async function POST(req: Request) {
   try {
@@ -51,6 +52,13 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Rate limit by user email
+    const rateLimitResponse = await checkRateLimit(
+      notifyRatelimit,
+      `notify:${user.email}`
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Check if notification signup already exists
     const { data: existingNotify } = await adminClient

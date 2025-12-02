@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient, getSupabaseClient } from "../../lib/supabase";
 import { SUGGEST_MESSAGES } from "../../lib/constants";
+import { suggestRatelimit, checkRateLimit } from "../../lib/ratelimit";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -17,6 +18,17 @@ function sanitizeInput(input: string): string {
     .trim();
 }
 
+/**
+ * Capitalize the first letter of each word
+ */
+function toTitleCase(input: string): string {
+  return input
+    .toLowerCase()
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export async function POST(req: Request) {
   try {
     const supabase = await createServerSupabaseClient();
@@ -30,6 +42,13 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Rate limit by user email (more restrictive for suggestions)
+    const rateLimitResponse = await checkRateLimit(
+      suggestRatelimit,
+      `suggest:${user.email}`
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Parse request body with error handling
     let body;
@@ -69,16 +88,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // Format speaker name with title case
+    const formattedSpeaker = toTitleCase(sanitizedSpeaker);
+
     // Insert suggestion using admin client (to bypass RLS)
     const adminClient = getSupabaseClient();
     const { error } = await adminClient
       .from("suggest")
       .insert([{ 
         email: user.email, 
-        speaker: sanitizedSpeaker 
+        speaker: formattedSpeaker,
+        votes: 0
       }]);
 
     if (error) {
+      console.error("Suggest insert error:", error);
       return NextResponse.json(
         { error: SUGGEST_MESSAGES.ERROR_GENERIC },
         { status: 500 }
@@ -86,7 +110,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error("Suggest error:", error);
     return NextResponse.json(
       { error: SUGGEST_MESSAGES.ERROR_GENERIC },
       { status: 500 }
