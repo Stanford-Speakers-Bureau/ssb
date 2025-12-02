@@ -10,10 +10,6 @@ export default function HomeClient() {
   const headingText = "Stanford Speakers Bureau";
   const headingWords = headingText.split(" ");
 
-  const paragraphText =
-    "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.";
-  const buttonText = "Join Our Mailing List";
-
   return (
     <div className="flex min-h-screen flex-col items-stretch bg-zinc-50 font-sans dark:bg-black">
       <section className="relative w-full h-screen">
@@ -81,7 +77,7 @@ export default function HomeClient() {
                 ease: [0.43, 0.13, 0.23, 0.96],
               }}
             >
-              {paragraphText}
+              Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.
             </motion.p>
             <motion.a
               initial={{ opacity: 0, y: 30 }}
@@ -105,7 +101,7 @@ export default function HomeClient() {
               rel="noopener noreferrer"
               className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
-              {buttonText}
+              Join Our Mailing List
             </motion.a>
           </div>
         </div>
