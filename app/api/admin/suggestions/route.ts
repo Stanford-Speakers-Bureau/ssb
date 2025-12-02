@@ -70,27 +70,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const sanitizedSpeaker = sanitizeInput(speaker);
-
-    if (sanitizedSpeaker.length < MIN_SPEAKER_LENGTH) {
-      return NextResponse.json(
-        { error: "Speaker name is too short." },
-        { status: 400 }
-      );
-    }
-
-    if (sanitizedSpeaker.length > MAX_SPEAKER_LENGTH) {
-      return NextResponse.json(
-        { error: "Speaker name is too long." },
-        { status: 400 }
-      );
-    }
-
-    const formattedSpeaker = toTitleCase(sanitizedSpeaker);
-
     const { error } = await auth.adminClient!
       .from("suggest")
-      .update({ speaker: formattedSpeaker })
+      .update({ speaker: speaker })
       .eq("id", id);
 
     if (error) {
