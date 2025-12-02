@@ -112,6 +112,9 @@ export async function POST(req: Request) {
       .insert([{ 
         email: user.email, 
         speaker: formattedSpeaker,
+        approved: false,
+        reviewed: false,
+        votes: 0,
       }])
       .select("id")
       .single();
