@@ -111,6 +111,7 @@ export default async function AdminDashboard() {
           <Link
             key={card.title}
             href={card.href}
+            prefetch={false}
             className="group bg-zinc-900 rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all hover:scale-[1.02]"
           >
             <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
@@ -132,6 +133,7 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/suggest"
+            prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
@@ -147,6 +149,7 @@ export default async function AdminDashboard() {
           
           <Link
             href="/admin/events"
+            prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -162,6 +165,7 @@ export default async function AdminDashboard() {
           
           <Link
             href="/admin/users"
+            prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
@@ -177,6 +181,7 @@ export default async function AdminDashboard() {
           
           <Link
             href="/admin/notify"
+            prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">

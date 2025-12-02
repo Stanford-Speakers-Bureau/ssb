@@ -161,6 +161,7 @@ export default async function SuggestPage() {
                     </p>
                     <Link
                       href="/api/auth/google?redirect_to=/suggest"
+                      prefetch={false}
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white text-sm
                                  bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all shadow-md hover:shadow-lg"
                     >
@@ -277,7 +278,7 @@ export default async function SuggestPage() {
           </section>
         </div>
 
-        {/* Mobile: Fixed bottom suggest bar */}
+          {/* Mobile: Fixed bottom suggest bar */}
         <section className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-black p-4">
           {user ? (
             <div className="flex items-center gap-3">
@@ -288,6 +289,7 @@ export default async function SuggestPage() {
           ) : (
             <Link
               href="/api/auth/google?redirect_to=/suggest"
+              prefetch={false}
               className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg font-semibold text-white
                          bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all"
             >

@@ -95,7 +95,7 @@ export default function BannerBar({
       {/* Mobile version - simplified */}
       {hasText && (
         hasHref ? (
-          <Link href={href} className="md:hidden underline hover:opacity-90 transition-opacity">
+          <Link href={href} className="md:hidden underline hover:opacity-90 transition-opacity" prefetch={false}>
             {text}
           </Link>
         ) : (
@@ -109,7 +109,7 @@ export default function BannerBar({
       <div className="hidden md:flex items-center gap-3">
         {hasText && (
           hasHref ? (
-            <Link href={href} className="underline hover:opacity-90 transition-opacity">
+            <Link href={href} className="underline hover:opacity-90 transition-opacity" prefetch={false}>
               {text}
             </Link>
           ) : (

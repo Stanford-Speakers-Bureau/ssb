@@ -43,8 +43,9 @@ export default function Contact() {
             
             <p className="text-base text-gray-200 leading-relaxed mb-8 drop-shadow-md">
               If you are looking for Stanford Speakers Bureau to co-sponsor an event, please first check out the{' '}
-              <Link 
+              <Link
                 href="/other-programs"
+                prefetch={false}
                 className="font-semibold hover:underline"
                 style={{ color: '#A80D0C' }}
               >

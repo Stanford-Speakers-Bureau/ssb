@@ -28,7 +28,7 @@ export default function AdminLayoutClient({
       <nav className="fixed top-0 left-0 right-0 h-16 bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-800 z-50">
         <div className="h-full max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/admin" className="flex items-center gap-3">
+            <Link href="/admin" prefetch={false} className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-orange-500 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -44,6 +44,7 @@ export default function AdminLayoutClient({
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-rose-500/10 text-rose-400"
@@ -66,6 +67,7 @@ export default function AdminLayoutClient({
             )}
             <Link
               href="/"
+              prefetch={false}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,6 +88,7 @@ export default function AdminLayoutClient({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
                   isActive ? "text-rose-400" : "text-zinc-500 hover:text-white"
                 }`}

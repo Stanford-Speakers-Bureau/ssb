@@ -61,6 +61,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
           </p>
           <Link
             href="/"
+            prefetch={false}
             className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

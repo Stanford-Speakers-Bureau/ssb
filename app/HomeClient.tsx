@@ -97,6 +97,7 @@ export default function HomeClient() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               href="/suggest"
+              prefetch={false}
               className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
               Suggest a Speaker!
@@ -186,6 +187,7 @@ export default function HomeClient() {
           <div className="flex justify-center mb-16">
             <MotionLink
               href="/past-speakers"
+              prefetch={false}
               className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -219,6 +221,7 @@ export default function HomeClient() {
                 </p>
                 <MotionLink
                   href="/other-programs"
+                  prefetch={false}
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline inline-block"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -247,6 +250,7 @@ export default function HomeClient() {
                 </p>
                 <MotionLink
                   href="/other-programs"
+                  prefetch={false}
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline inline-block"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -271,6 +275,7 @@ export default function HomeClient() {
             </p>
             <MotionLink
               href="/contact"
+              prefetch={false}
               className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
