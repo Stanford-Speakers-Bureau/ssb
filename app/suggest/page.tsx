@@ -179,7 +179,7 @@ export default async function SuggestPage() {
               {/* Your suggested speakers below the suggest card */}
               <section className="bg-white dark:bg-black p-4 rounded-lg">
                 <h2 className="text-xl font-bold text-black dark:text-white mb-2 font-serif">
-                  Your suggested speakers
+                  Your Suggested Speakers
                 </h2>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
                   These are the speakers you&apos;ve submitted. New suggestions may take a little time
