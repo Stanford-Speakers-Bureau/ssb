@@ -135,9 +135,9 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
 
             {/* Vote Count */}
             <div className="flex items-center gap-2">
-              <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium tabular-nums">
+              {/* <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium tabular-nums">
                 {suggestion.votes} {suggestion.votes === 1 ? "vote" : "votes"}
-              </span>
+              </span> */}
 
               {/* Vote Button */}
               {isLoggedIn ? (
