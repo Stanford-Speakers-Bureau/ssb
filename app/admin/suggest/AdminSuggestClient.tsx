@@ -30,6 +30,18 @@ export default function AdminSuggestClient({
   const [editError, setEditError] = useState<string | null>(null);
   const [expandedVoterPanels, setExpandedVoterPanels] = useState<Set<string>>(new Set());
 
+  function toggleVoterPanel(id: string) {
+    setExpandedVoterPanels((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
     
@@ -40,20 +52,15 @@ export default function AdminSuggestClient({
         body: JSON.stringify({ id, action }),
       });
 
-      if (response.ok) {
-        // Update local state
-        setSuggestions((prev) =>
-          prev.map((s) =>
-            s.id === id
-              ? { ...s, reviewed: true, approved: action === "approve" }
-              : s
-          )
-        );
-        
-        // If on pending filter, remove the item
-        if (filter === "pending") {
-          setSuggestions((prev) => prev.filter((s) => s.id !== id));
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Failed to process suggestion:", data.error || "Unknown error");
+        return;
+      }
+
+      if (Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
       }
     } catch (error) {
       console.error("Failed to process suggestion:", error);
@@ -113,11 +120,9 @@ export default function AdminSuggestClient({
         return;
       }
 
-      setSuggestions((prev) =>
-        prev.map((s) =>
-          s.id === editingSuggestion.id ? { ...s, speaker: data.speaker } : s
-        )
-      );
+      if (Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
+      }
       closeEditing();
     } catch (error) {
       console.error("Failed to edit suggestion:", error);
@@ -262,8 +267,8 @@ export default function AdminSuggestClient({
             >
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-white break-words">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-semibold text-white truncate">
                       {suggestion.speaker}
                     </h3>
                     {suggestion.reviewed && (
@@ -325,27 +330,46 @@ export default function AdminSuggestClient({
                     </div>
                   )}
 
-                  {/* Voters list (always visible) */}
+                  {/* Voters toggle button */}
                   <div className="mt-3">
-                    <p className="text-xs font-medium text-zinc-400 mb-1">
-                      Voters ({(suggestion.voters ?? []).length})
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {(suggestion.voters ?? []).length === 0 ? (
-                        <p className="text-sm text-zinc-500">
-                          No recorded voters for this suggestion yet.
-                        </p>
-                      ) : (
-                        suggestion.voters!.map((email) => (
-                          <span
-                            key={email}
-                            className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
-                          >
-                            {email}
-                          </span>
-                        ))
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleVoterPanel(suggestion.id)}
+                      className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200"
+                    >
+                      <svg
+                        className={`w-3 h-3 transition-transform ${
+                          expandedVoterPanels.has(suggestion.id) ? "rotate-90" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span>
+                        {suggestion.voters?.length ?? 0} voter
+                        {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
+                      </span>
+                    </button>
+                    {expandedVoterPanels.has(suggestion.id) && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(suggestion.voters ?? []).length === 0 ? (
+                          <p className="text-sm text-zinc-500">
+                            No recorded voters for this suggestion yet.
+                          </p>
+                        ) : (
+                          suggestion.voters!.map((email) => (
+                            <span
+                              key={email}
+                              className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
+                            >
+                              {email}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

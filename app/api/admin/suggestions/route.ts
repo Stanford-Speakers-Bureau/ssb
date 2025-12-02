@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "../../../lib/supabase";
+import { getAdminSuggestions } from "../../../admin/suggest/data";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -46,7 +47,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to update suggestion" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    // Return fresh suggestions using the same logic as the initial page load
+    const { suggestions } = await getAdminSuggestions();
+    return NextResponse.json({ success: true, suggestions });
   } catch (error) {
     console.error("Suggestion action error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -98,7 +101,9 @@ export async function PATCH(req: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, speaker: formattedSpeaker });
+    // Return fresh suggestions using the same logic as the initial page load
+    const { suggestions } = await getAdminSuggestions();
+    return NextResponse.json({ success: true, suggestions });
   } catch (error) {
     console.error("Suggestion edit error:", error);
     return NextResponse.json(

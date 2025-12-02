@@ -77,7 +77,7 @@ export default async function SuggestPage() {
           </p>
           
           {user ? (
-            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-4">
                 {userAvatar ? (
                   <Image
@@ -141,7 +141,7 @@ export default async function SuggestPage() {
         </div>
 
         {/* Mobile: Fixed bottom suggest bar */}
-        <section className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-800 p-4">
+        <section className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-black p-4">
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex-1">
