@@ -9,3 +9,12 @@ export const NOTIFY_MESSAGES = {
   ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
 } as const;
 
+// Suggest Speaker Messages
+export const SUGGEST_MESSAGES = {
+  SUCCESS: "Thank you! Your suggestion has been submitted.",
+  ERROR_GENERIC: "Something went wrong. Please try again.",
+  ERROR_MISSING_SPEAKER: "Please enter a speaker name.",
+  ERROR_TOO_LONG: "Speaker name must be 500 characters or less.",
+  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+} as const;
+

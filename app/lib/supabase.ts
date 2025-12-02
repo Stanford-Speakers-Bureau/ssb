@@ -104,7 +104,6 @@ export async function getSignedImageUrl(
     .createSignedUrl(imgName, expiresIn);
 
   if (error) {
-    console.error("Error creating signed URL:", error);
     return null;
   }
 

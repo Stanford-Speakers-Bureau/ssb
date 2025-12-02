@@ -79,6 +79,14 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
               >
+                <Link href="/suggest" className={linkClasses}>
+                  Suggest
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+              >
                 <Link href="/other-programs" className={linkClasses}>
                   Other Programs
                 </Link>
@@ -165,6 +173,13 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Past Speakers
+                </Link>
+                <Link
+                  href="/suggest"
+                  className={mobileLinkClasses}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Suggest
                 </Link>
                 <Link
                   href="/other-programs"
