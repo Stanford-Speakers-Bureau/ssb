@@ -103,7 +103,7 @@ export default function HomeClient() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#A80D0C]"
+              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
             >
               {buttonText}
             </motion.a>

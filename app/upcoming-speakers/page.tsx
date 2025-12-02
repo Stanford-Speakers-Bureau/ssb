@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
+import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, isEventMystery } from "../lib/supabase";
 
 type SanitizedEvent = {
@@ -90,16 +91,11 @@ export default async function UpcomingSpeakers() {
             <NotifyHandler />
           </Suspense>
 
-          <div className="mb-10 flex flex-col gap-4 rounded-3xl border border-zinc-200 bg-zinc-100/80 p-6 text-black shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-10 flex flex-col gap-4 rounded-lg bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-lg font-semibold">Want to see someone on stage? Suggest a speaker!</p>
             </div>
-            <Link
-              href="/suggest"
-              className="inline-flex items-center justify-center rounded-full bg-[#A80D0C] hover:bg-[#8B0A0A] px-5 py-2 text-sm font-semibold text-white transition"
-            >
-              Suggest a speaker
-            </Link>
+            <SuggestSpeakerButton />
           </div>
           
           {events.length === 0 ? (
