@@ -16,5 +16,6 @@ export const SUGGEST_MESSAGES = {
   ERROR_MISSING_SPEAKER: "Please enter a speaker name.",
   ERROR_TOO_LONG: "Speaker name must be 500 characters or less.",
   ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+  ERROR_BANNED: "You have been banned from making suggestions.",
 } as const;
 

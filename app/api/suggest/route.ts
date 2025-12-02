@@ -43,6 +43,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if user is banned
+    const adminClient = getSupabaseClient();
+    const { data: banRecord } = await adminClient
+      .from("bans")
+      .select("email")
+      .eq("email", user.email)
+      .single();
+
+    if (banRecord) {
+      return NextResponse.json(
+        { error: SUGGEST_MESSAGES.ERROR_BANNED },
+        { status: 403 }
+      );
+    }
+
     // Rate limit by user email (more restrictive for suggestions)
     const rateLimitResponse = await checkRateLimit(
       suggestRatelimit,
@@ -92,7 +107,6 @@ export async function POST(req: Request) {
     const formattedSpeaker = toTitleCase(sanitizedSpeaker);
 
     // Insert suggestion using admin client (to bypass RLS)
-    const adminClient = getSupabaseClient();
     const { error } = await adminClient
       .from("suggest")
       .insert([{ 
