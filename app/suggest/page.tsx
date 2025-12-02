@@ -68,7 +68,7 @@ export default async function SuggestPage() {
           </section>
 
           {/* Suggest Section - Positioned to the right of centered leaderboard */}
-          <section className="absolute top-8 left-[calc(50%+320px)] w-96 overflow-y-auto max-h-[calc(100vh-10rem)] bg-white dark:bg-black p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <section className="absolute top-8 left-[calc(50%+320px)] w-96 overflow-y-auto max-h-[calc(100vh-10rem)] bg-white dark:bg-black p-4 rounded-lg ">
           <h2 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
             Suggest a Speaker
           </h2>
@@ -103,7 +103,7 @@ export default async function SuggestPage() {
               <SuggestForm />
             </div>
           ) : (
-            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800 text-center">
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 text-center">
               <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center mx-auto mb-3">
                 <svg className="w-6 h-6 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

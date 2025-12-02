@@ -70,7 +70,7 @@ export default function SuggestForm() {
           onChange={(e) => setSpeaker(e.target.value)}
           disabled={isDisabled}
           placeholder="Enter a name"
-          className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-600 
+          className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-600
                      bg-white dark:bg-zinc-800 text-black dark:text-white
                      placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                      focus:outline-none focus:ring-2 focus:ring-[#A80D0C] focus:border-transparent
@@ -118,7 +118,7 @@ export default function SuggestForm() {
         disabled={isDisabled}
         whileHover={isDisabled ? {} : { scale: 1.02 }}
         whileTap={isDisabled ? {} : { scale: 0.98 }}
-        className="w-full py-3 px-6 rounded-lg font-semibold text-white
+        className="w-full py-3 px-6 rounded font-semibold text-white
                    bg-[#A80D0C] hover:bg-[#8a0b0a]
                    disabled:opacity-50 disabled:cursor-not-allowed
                    transition-all shadow-md hover:shadow-lg

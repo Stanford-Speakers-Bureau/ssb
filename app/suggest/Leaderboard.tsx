@@ -82,7 +82,7 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+            className="mb-4 flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800"
           >
             <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -114,7 +114,7 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800"
+            className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
           >
             {/* Rank */}
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
@@ -148,7 +148,7 @@ export default function Leaderboard({ suggestions: initialSuggestions, isLoggedI
                   disabled={votingId === suggestion.id}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-all
                     ${suggestion.hasVoted 
                       ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400"
                       : "bg-[#A80D0C] hover:bg-[#8a0b0a] text-white shadow-sm hover:shadow"
