@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Stats = {
@@ -11,25 +8,29 @@ type Stats = {
   totalBans: number;
 };
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch("/api/admin/stats");
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error("Failed to fetch stats:", error);
-      } finally {
-        setIsLoading(false);
-      }
+async function getStats(): Promise<Stats | null> {
+  try {
+    // Use a relative URL so that admin auth cookies are forwarded to the API route.
+    const response = await fetch(`/api/admin/stats`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch stats:", await response.text());
+      return null;
     }
 
-    fetchStats();
-  }, []);
+    return (await response.json()) as Stats;
+  } catch (error) {
+    console.error("Failed to fetch stats:", error);
+    return null;
+  }
+}
+
+export default async function AdminDashboard() {
+  const stats = await getStats();
 
   const cards = [
     {
@@ -86,37 +87,25 @@ export default function AdminDashboard() {
         <p className="text-zinc-400">Welcome to the Stanford Speakers Bureau admin panel.</p>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 animate-pulse">
-              <div className="w-12 h-12 bg-zinc-800 rounded-xl mb-4" />
-              <div className="h-4 bg-zinc-800 rounded w-24 mb-2" />
-              <div className="h-8 bg-zinc-800 rounded w-16" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {cards.map((card) => (
+          <Link
+            key={card.title}
+            href={card.href}
+            className="group bg-zinc-900 rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all hover:scale-[1.02]"
+          >
+            <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+              <svg className={`w-6 h-6 ${card.textColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.icon} />
+              </svg>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cards.map((card) => (
-            <Link
-              key={card.title}
-              href={card.href}
-              className="group bg-zinc-900 rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all hover:scale-[1.02]"
-            >
-              <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <svg className={`w-6 h-6 ${card.textColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.icon} />
-                </svg>
-              </div>
-              <p className="text-zinc-400 text-sm mb-1">{card.title}</p>
-              <p className={`text-3xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}>
-                {card.value.toLocaleString()}
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
+            <p className="text-zinc-400 text-sm mb-1">{card.title}</p>
+            <p className={`text-3xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}>
+              {card.value.toLocaleString()}
+            </p>
+          </Link>
+        ))}
+      </div>
 
       {/* Quick Actions */}
       <div className="mt-12">

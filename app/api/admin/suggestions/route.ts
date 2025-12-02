@@ -28,8 +28,10 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const filter = searchParams.get("filter") || "pending";
+    const includeLeaderboard =
+      searchParams.get("leaderboard") === "1" || searchParams.get("leaderboard") === "true";
 
-    let query = auth.adminClient!.from("suggest").select("*").order("created_at", { ascending: false });
+    let query = auth.adminClient!.from("suggest").select("*");
 
     switch (filter) {
       case "pending":
@@ -44,6 +46,13 @@ export async function GET(req: Request) {
       // "all" - no filter
     }
 
+    // Sort results: approved suggestions by most votes, others by newest first.
+    if (filter === "approved") {
+      query = query.order("votes", { ascending: false });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+
     const { data: suggestions, error } = await query;
 
     if (error) {
@@ -51,7 +60,105 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Failed to fetch suggestions" }, { status: 500 });
     }
 
-    return NextResponse.json({ suggestions: suggestions || [] });
+    // Attach voters for each suggestion (admin-only view)
+    let suggestionsWithVoters = suggestions || [];
+    try {
+      const suggestionIds = (suggestions || []).map((s: any) => s.id).filter(Boolean);
+
+      if (suggestionIds.length > 0) {
+        const { data: votes, error: votesError } = await auth.adminClient!
+          .from("votes")
+          .select("speaker_id, email")
+          .in("speaker_id", suggestionIds);
+
+        if (votesError) {
+          console.error("Votes fetch error:", votesError);
+        } else {
+          const votersBySpeaker: Record<string, string[]> = {};
+          for (const vote of votes || []) {
+            const key = vote.speaker_id as string;
+            if (!votersBySpeaker[key]) votersBySpeaker[key] = [];
+            votersBySpeaker[key].push(vote.email);
+          }
+
+          suggestionsWithVoters = (suggestions || []).map((s: any) => ({
+            ...s,
+            voters: votersBySpeaker[s.id] || [],
+          }));
+        }
+      }
+    } catch (votesError) {
+      console.error("Unexpected error attaching voters:", votesError);
+    }
+
+    // Optionally include a global leaderboard (top approved suggestions by votes)
+    let leaderboard:
+      | {
+          id: string;
+          speaker: string;
+          votes: number;
+          voters: string[];
+        }[]
+      | undefined;
+    if (includeLeaderboard) {
+      const { data: leaderboardData, error: leaderboardError } = await auth.adminClient!
+        .from("suggest")
+        .select("id, speaker, votes")
+        .eq("approved", true)
+        .order("votes", { ascending: false })
+        .limit(10);
+
+      if (leaderboardError) {
+        console.error("Leaderboard fetch error:", leaderboardError);
+      } else {
+        const baseLeaderboard = leaderboardData || [];
+
+        // Attach voters for leaderboard entries
+        try {
+          const speakerIds = baseLeaderboard.map((s: any) => s.id).filter(Boolean);
+
+          if (speakerIds.length > 0) {
+            const { data: lbVotes, error: lbVotesError } = await auth.adminClient!
+              .from("votes")
+              .select("speaker_id, email")
+              .in("speaker_id", speakerIds);
+
+            if (lbVotesError) {
+              console.error("Leaderboard votes fetch error:", lbVotesError);
+              leaderboard = baseLeaderboard.map((s: any) => ({
+                ...s,
+                voters: [],
+              }));
+            } else {
+              const votersBySpeaker: Record<string, string[]> = {};
+              for (const vote of lbVotes || []) {
+                const key = vote.speaker_id as string;
+                if (!votersBySpeaker[key]) votersBySpeaker[key] = [];
+                votersBySpeaker[key].push(vote.email);
+              }
+
+              leaderboard = baseLeaderboard.map((s: any) => ({
+                ...s,
+                voters: votersBySpeaker[s.id] || [],
+              }));
+            }
+          } else {
+            leaderboard = [];
+          }
+        } catch (lbError) {
+          console.error("Unexpected error attaching leaderboard voters:", lbError);
+          leaderboard = baseLeaderboard.map((s: any) => ({
+            ...s,
+            voters: [],
+          }));
+        }
+      }
+    }
+
+    return NextResponse.json({
+      suggestions: suggestionsWithVoters,
+      ...(includeLeaderboard ? { leaderboard: leaderboard || [] } : {}),
+    });
   } catch (error) {
     console.error("Suggestions error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
