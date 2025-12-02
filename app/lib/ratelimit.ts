@@ -51,7 +51,7 @@ export async function checkRateLimit(
   if (!success) {
     return NextResponse.json(
       { 
-        error: "Too many requests. Please try again later.",
+        error: "Too many requests. Try again later.",
         retryAfter: Math.ceil((reset - Date.now()) / 1000),
       },
       { 
