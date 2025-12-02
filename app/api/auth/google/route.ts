@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "../../../lib/supabase";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+  // this is not an issue because we are checking redirect links in supabase
   const redirectTo = searchParams.get("redirect_to") || "/upcoming-speakers";
   
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
