@@ -27,6 +27,7 @@ export type Event = {
   banner: boolean | null;
   start_time_date: string | null;
   doors_open: string | null;
+  route: string | null;
 };
 
 /**
@@ -210,4 +211,35 @@ function escapeICalText(text: string): string {
     .replace(/;/g, "\\;")
     .replace(/,/g, "\\,")
     .replace(/\n/g, "\\n");
+}
+
+/**
+ * Check if an event is still a mystery (not yet revealed)
+ * An event is a mystery if:
+ * - There's a release_date and we're before that date, OR
+ * - There's no release_date and no name
+ */
+export function isEventMystery(event: { release_date: string | null; name: string | null }): boolean {
+  const now = new Date();
+  const releaseDate = event.release_date ? new Date(event.release_date) : null;
+  return releaseDate ? now < releaseDate : !event.name;
+}
+
+/**
+ * Get an event by its route slug
+ */
+export async function getEventByRoute(route: string): Promise<Event | null> {
+  const supabase = getSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("route", route)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data;
 }

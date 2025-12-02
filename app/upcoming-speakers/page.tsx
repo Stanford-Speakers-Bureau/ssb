@@ -1,9 +1,14 @@
 import { Suspense } from "react";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
-import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, type Event } from "../lib/supabase";
+import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, isEventMystery } from "../lib/supabase";
 
-type SanitizedEvent = Omit<Event, 'name' | 'desc' | 'img'> & {
+type SanitizedEvent = {
+  id: string;
+  start_time_date: string | null;
+  doors_open: string | null;
+  venue: string | null;
+  venue_link: string | null;
   name: string | null;
   desc: string | null;
   signedImageUrl: string | null;
@@ -25,16 +30,18 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   }
 
   const events = data || [];
-  const now = new Date();
 
   const sanitizedEvents = await Promise.all(
     events.map(async (event) => {
-      const releaseDate = event.release_date ? new Date(event.release_date) : null;
-      const isMystery = releaseDate ? now < releaseDate : !event.name;
+      const isMystery = isEventMystery(event);
 
-      // Don't expose sensitive data for mystery speakers
+      // Only expose safe fields - never leak speaker info for mystery events
       return {
-        ...event,
+        id: event.id,
+        start_time_date: event.start_time_date,
+        doors_open: event.doors_open,
+        venue: event.venue,
+        venue_link: event.venue_link,
         name: isMystery ? null : event.name,
         desc: isMystery ? null : event.desc,
         signedImageUrl: isMystery ? null : await getSignedImageUrl(event.img, 60),
