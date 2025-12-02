@@ -11,7 +11,7 @@ export function SuggestSpeakerButton() {
   >
     <Link href="/suggest" 
       className="rounded px-5 py-3 text-base font-semibold text-white shadow-lg bg-[#A80D0C] transition-colors hover:bg-[#8B0A0A]">
-      Suggest
+      Suggest!
     </Link>
   </motion.div>
   );
