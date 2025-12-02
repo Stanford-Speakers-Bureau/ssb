@@ -28,19 +28,6 @@ export default function AdminSuggestClient({
   const [editedSpeaker, setEditedSpeaker] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-  const [expandedVoterPanels, setExpandedVoterPanels] = useState<Set<string>>(new Set());
-
-  function toggleVoterPanel(id: string) {
-    setExpandedVoterPanels((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
 
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
@@ -330,46 +317,33 @@ export default function AdminSuggestClient({
                     </div>
                   )}
 
-                  {/* Voters toggle button */}
+                  {/* Voters */}
                   <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleVoterPanel(suggestion.id)}
-                      className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200"
-                    >
-                      <svg
-                        className={`w-3 h-3 transition-transform ${
-                          expandedVoterPanels.has(suggestion.id) ? "rotate-90" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <div className="flex items-center gap-1.5 text-sm text-zinc-400 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                       </svg>
                       <span>
                         {suggestion.voters?.length ?? 0} voter
                         {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
                       </span>
-                    </button>
-                    {expandedVoterPanels.has(suggestion.id) && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(suggestion.voters ?? []).length === 0 ? (
-                          <p className="text-sm text-zinc-500">
-                            No recorded voters for this suggestion yet.
-                          </p>
-                        ) : (
-                          suggestion.voters!.map((email) => (
-                            <span
-                              key={email}
-                              className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
-                            >
-                              {email}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(suggestion.voters ?? []).length === 0 ? (
+                        <p className="text-sm text-zinc-500">
+                          No recorded voters for this suggestion yet.
+                        </p>
+                      ) : (
+                        suggestion.voters!.map((email) => (
+                          <span
+                            key={email}
+                            className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
+                          >
+                            {email}
+                          </span>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
 
