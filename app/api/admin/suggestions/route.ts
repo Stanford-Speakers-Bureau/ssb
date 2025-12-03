@@ -70,13 +70,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    // Sanitize and format the speaker name consistently with the suggest route
-    const sanitizedSpeaker = sanitizeInput(speaker);
-    const formattedSpeaker = toTitleCase(sanitizedSpeaker);
-
     const { error } = await auth.adminClient!
       .from("suggest")
-      .update({ speaker: formattedSpeaker })
+      .update({ speaker: speaker })
       .eq("id", id);
 
     if (error) {
