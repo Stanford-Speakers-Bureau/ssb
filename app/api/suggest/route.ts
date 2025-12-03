@@ -105,13 +105,13 @@ export async function POST(req: Request) {
     // Format speaker name with title case
     const formattedSpeaker = toTitleCase(sanitizedSpeaker);
 
-    // Support comma-separated speakers: split, trim, and keep the first non-empty
-    const speakers = formattedSpeaker
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean);
-
-
+    // Support comma-separated speakers: split, trim, filter empty, and deduplicate
+    const speakers = [...new Set(
+      formattedSpeaker
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+    )];
 
     if (speakers.length === 0) {
       return NextResponse.json(
@@ -120,8 +120,34 @@ export async function POST(req: Request) {
       );
     }
 
-    // Insert all speakers and cast a vote for each
-    for (const speakerName of speakers) {
+    // Check for existing suggestions from this user to prevent duplicates
+    const { data: existingSuggestions, error: checkError } = await adminClient
+      .from("suggest")
+      .select("speaker")
+      .eq("email", user.email);
+
+    if (checkError) {
+      console.error("Error checking existing suggestions:", checkError);
+      return NextResponse.json(
+        { error: SUGGEST_MESSAGES.ERROR_GENERIC },
+        { status: 500 }
+      );
+    }
+
+    const existingSpeakers = new Set(existingSuggestions?.map(s => s.speaker) || []);
+
+    // Filter out speakers that have already been suggested by this user
+    const newSpeakers = speakers.filter(speaker => !existingSpeakers.has(speaker));
+
+    if (newSpeakers.length === 0) {
+      return NextResponse.json(
+        { error: "You have already suggested all of these speakers." },
+        { status: 400 }
+      );
+    }
+
+    // Insert all new speakers and cast a vote for each
+    for (const speakerName of newSpeakers) {
       // Insert suggestion using admin client (to bypass RLS) and return its id
       const { data: suggestion, error: suggestError } = await adminClient
         .from("suggest")
