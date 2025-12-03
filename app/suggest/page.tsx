@@ -94,7 +94,7 @@ export default async function SuggestPage() {
 
   return (
     <div className="flex h-[calc(100vh-2.5rem)] flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full flex-1 bg-white dark:bg-black pt-16">
+      <main className="flex w-full flex-1 bg-white dark:bg-black pt-16 justify-center">
         {/* Desktop Layout - Centered leaderboard + right column */}
         <div className="hidden lg:flex flex-1 justify-center items-start">
           <section className="w-full max-w-5xl flex items-start justify-center lg:py-8 py-6 px-6 sm:px-12 md:px-16">
@@ -235,7 +235,7 @@ export default async function SuggestPage() {
         </div>
 
         {/* Mobile Layout */}
-        <div className="lg:hidden flex-1 flex flex-col lg:py-8 py-6 px-6">
+        <div className="lg:hidden flex-1 flex flex-col py-6 px-6 max-w-sm">
           {/* Mobile: Suggest section at the top */}
           <section className="mb-6 rounded-lg pb-4 shadow-sm">
             <h2 className="text-3xl font-bold text-black dark:text-white mb-4 font-serif">
