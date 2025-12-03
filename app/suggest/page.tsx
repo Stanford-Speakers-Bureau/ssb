@@ -154,7 +154,7 @@ export default async function SuggestPage() {
                       </svg>
                     </div>
                     <h3 className="text-sm font-semibold text-black dark:text-white mb-1">
-                      Sign in to suggest
+                      Sign in to Suggest
                     </h3>
                     <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-4">
                       Use your Stanford Google account
