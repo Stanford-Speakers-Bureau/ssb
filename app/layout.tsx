@@ -21,7 +21,12 @@ export const metadata: Metadata = {
   title: "Stanford Speakers Bureau",
   description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
   openGraph: {
+    title: "Stanford Speakers Bureau",
+    description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
     images: [`${baseURL}/speakers/jojo-siwa.jpg`],
+    width: 1200,
+    height: 630,
+    url: `${baseURL}`,
   },
 };
 
