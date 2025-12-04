@@ -14,7 +14,7 @@
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.7",
     "motion": "^12.23.25",
-    "next": "^16.0.6",
+    "next": "^16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
@@ -23,7 +23,7 @@
     "@types/node": "^20.19.25",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "baseline-browser-mapping": "^2.8.32",
+    "baseline-browser-mapping": "^2.9.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.0",
     "tailwindcss": "^4.1.17",
