@@ -18,6 +18,7 @@ const hedvigLettersSerif = Hedvig_Letters_Serif({
 const baseURL = "https://ssb.stanford.edu";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ssb.stanford.edu'),
   title: "Stanford Speakers Bureau",
   description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
   openGraph: {
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
     images: [
       {
-        url: `${baseURL}/speakers/jojo-siwa.jpg`,
+        url: `/speakers/jojo-siwa.jpg`,
         width: 1200,
         height: 630,
       }
