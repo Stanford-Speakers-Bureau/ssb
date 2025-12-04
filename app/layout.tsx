@@ -15,9 +15,14 @@ const hedvigLettersSerif = Hedvig_Letters_Serif({
   weight: ["400"],
 });
 
+const baseURL = "https://ssb.stanford.edu";
+
 export const metadata: Metadata = {
   title: "Stanford Speakers Bureau",
   description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
+  openGraph: {
+    images: [`${baseURL}/speakers/jojo-siwa.jpg`],
+  },
 };
 
 export default async function RootLayout({
