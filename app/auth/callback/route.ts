@@ -23,7 +23,13 @@ export async function GET(req: Request) {
 
   if (code) {
     const supabase = await createServerSupabaseClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      // Log the error for debugging purposes (optional, could be more robust)
+      console.error("Supabase auth exchangeCodeForSession error:", error);
+      // Redirect to the safeRedirect with an error parameter
+      return NextResponse.redirect(new URL(`${safeRedirect}?error=auth_failed`, baseUrl));
+    }
   }
 
   // Validate redirect path to prevent open redirect attacks
