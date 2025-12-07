@@ -10,6 +10,7 @@ export type Suggestion = {
   votes: number;
   approved: boolean;
   reviewed: boolean;
+  duplicate?: boolean;
   // List of voter emails for this suggestion (admin-only view)
   voters?: string[];
 };
@@ -167,6 +168,7 @@ export default function AdminSuggestClient({
     }
   }
 
+
   const pendingCount = suggestions.filter((s) => !s.reviewed).length;
 
   // Pre-compute approved suggestions with tokenized speaker names for fuzzy matching
@@ -282,11 +284,10 @@ export default function AdminSuggestClient({
               .filter(Boolean);
 
             // Find all approved suggestions whose name shares at least one token
-            const matchingApproved = !suggestion.reviewed
-              ? approvedSuggestions.filter((approved) =>
-                  approved._tokens.some((t) => pendingTokens.includes(t))
-                )
-              : [];
+            // Apply to both pending and rejected items
+            const matchingApproved = approvedSuggestions.filter((approved) =>
+              approved._tokens.some((t) => pendingTokens.includes(t))
+            );
 
             const isDuplicateOfApproved = matchingApproved.length > 0;
 
@@ -312,13 +313,20 @@ export default function AdminSuggestClient({
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           suggestion.approved
                             ? "bg-emerald-500/20 text-emerald-400"
+                            : suggestion.duplicate
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
                             : "bg-rose-500/20 text-rose-400"
                         }`}
                       >
-                        {suggestion.approved ? "Approved" : "Rejected"}
+                        {suggestion.approved ? "Approved" : suggestion.duplicate ? "Duplicate" : "Rejected"}
                       </span>
                     )}
                     {!suggestion.reviewed && isDuplicateOfApproved && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        Duplicate
+                      </span>
+                    )}
+                    {suggestion.reviewed && !suggestion.approved && isDuplicateOfApproved && !suggestion.duplicate && (
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
                         Duplicate
                       </span>
@@ -344,8 +352,8 @@ export default function AdminSuggestClient({
                       {new Date(suggestion.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  {/* Matching approved suggestions (for pending items) */}
-                  {!suggestion.reviewed && matchingApproved.length > 0 && (
+                  {/* Matching approved suggestions (for pending and rejected items) */}
+                  {matchingApproved.length > 0 && (
                     <div className="mt-2 text-xs text-zinc-400">
                       <p className="mb-1">Matching approved suggestion{matchingApproved.length > 1 ? "s" : ""}:</p>
                       <div className="flex flex-wrap gap-2">
@@ -450,15 +458,29 @@ export default function AdminSuggestClient({
                   </div>
                 )} 
                 {suggestion.reviewed && (
-                  <button
-                    onClick={() => startEditing(suggestion)}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit
-                  </button>
+                  <div className="flex gap-2 shrink-0">
+                    {!suggestion.approved && isDuplicateOfApproved && !suggestion.duplicate && (
+                      <button
+                        onClick={() => startDuplicateMerge(suggestion)}
+                        disabled={processingIds.has(suggestion.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Duplicate
+                      </button>
+                    )}
+                    <button
+                      onClick={() => startEditing(suggestion)}
+                      className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

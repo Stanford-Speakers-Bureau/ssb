@@ -64,9 +64,34 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, speaker } = body;
+    const { id, speaker, duplicate } = body;
 
-    if (!id || typeof speaker !== "string") {
+    if (!id) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    // Handle marking as duplicate
+    if (typeof duplicate === "boolean") {
+      const { error } = await auth.adminClient!
+        .from("suggest")
+        .update({ duplicate })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Suggestion duplicate update error:", error);
+        return NextResponse.json(
+          { error: "Failed to update suggestion" },
+          { status: 500 }
+        );
+      }
+
+      // Return fresh suggestions using the same logic as the initial page load
+      const { suggestions } = await getAdminSuggestions();
+      return NextResponse.json({ success: true, suggestions });
+    }
+
+    // Handle updating speaker name
+    if (typeof speaker !== "string") {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
@@ -111,16 +136,16 @@ export async function PUT(req: Request) {
 
     const client = auth.adminClient!;
 
-    // Verify source is pending and target is approved
+    // Verify source is pending or rejected (not approved) and target is approved
     const { data: source, error: sourceError } = await client
       .from("suggest")
       .select("id, reviewed, approved")
       .eq("id", sourceId)
       .single();
 
-    if (sourceError || !source || source.reviewed) {
+    if (sourceError || !source || source.approved) {
       return NextResponse.json(
-        { error: "Source suggestion must be pending" },
+        { error: "Source suggestion must be pending or rejected" },
         { status: 400 }
       );
     }
@@ -207,12 +232,13 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Mark source as reviewed and rejected
+    // Mark source as reviewed, rejected, and duplicate
     const { error: updateError } = await client
       .from("suggest")
       .update({
         reviewed: true,
         approved: false,
+        duplicate: true,
       })
       .eq("id", sourceId);
 

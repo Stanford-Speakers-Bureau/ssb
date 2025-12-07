@@ -16,6 +16,7 @@ type UserSuggestion = {
   speaker: string;
   approved: boolean;
   reviewed: boolean;
+  duplicate?: boolean;
 };
 
 async function getLeaderboardData(userEmail: string | null): Promise<Suggestion[]> {
@@ -61,7 +62,7 @@ async function getUserSuggestions(userEmail: string | null): Promise<UserSuggest
 
   const { data, error } = await supabase
     .from("suggest")
-    .select("id, speaker, approved, reviewed")
+    .select("id, speaker, approved, reviewed, duplicate")
     .eq("email", userEmail)
     .order("created_at", { ascending: false });
 
@@ -75,19 +76,21 @@ async function getUserSuggestions(userEmail: string | null): Promise<UserSuggest
     speaker: s.speaker || "",
     approved: !!s.approved,
     reviewed: !!s.reviewed,
+    duplicate: !!s.duplicate,
   }));
 }
 
 export default async function SuggestPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   // Check for authentication errors from the callback
-  const authError = searchParams.error === "auth_failed";
+  const resolvedSearchParams = await searchParams;
+  const authError = resolvedSearchParams.error === "auth_failed";
 
   // Get user metadata from Google OAuth
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
@@ -217,8 +220,13 @@ export default async function SuggestPage({
                           statusLabel = "On leaderboard";
                           statusClass = "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20";
                         } else if (s.reviewed && !s.approved) {
-                          statusLabel = "Rejected";
-                          statusClass = "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20";
+                          if (s.duplicate) {
+                            statusLabel = "Duplicate";
+                            statusClass = "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20";
+                          } else {
+                            statusLabel = "Rejected";
+                            statusClass = "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20";
+                          }
                         }
 
                         return (
