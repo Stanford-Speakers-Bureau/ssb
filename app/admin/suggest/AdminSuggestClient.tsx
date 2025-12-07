@@ -28,6 +28,9 @@ export default function AdminSuggestClient({
   const [editedSpeaker, setEditedSpeaker] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [duplicateSuggestion, setDuplicateSuggestion] = useState<Suggestion | null>(null);
+  const [isMergingDuplicate, setIsMergingDuplicate] = useState(false);
+  const [mergeError, setMergeError] = useState<string | null>(null);
 
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
@@ -115,6 +118,52 @@ export default function AdminSuggestClient({
       console.error("Failed to edit suggestion:", error);
       setEditError("Failed to update speaker. Please try again.");
       setIsSavingEdit(false);
+    }
+  }
+
+  function startDuplicateMerge(suggestion: Suggestion) {
+    setDuplicateSuggestion(suggestion);
+    setMergeError(null);
+  }
+
+  function closeDuplicateMerge() {
+    setDuplicateSuggestion(null);
+    setIsMergingDuplicate(false);
+    setMergeError(null);
+  }
+
+  async function handleMergeDuplicate(targetId: string) {
+    if (!duplicateSuggestion) return;
+
+    setIsMergingDuplicate(true);
+    setMergeError(null);
+
+    try {
+      const response = await fetch("/api/admin/suggestions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          sourceId: duplicateSuggestion.id, 
+          targetId 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMergeError(data.error || "Failed to merge duplicate.");
+        setIsMergingDuplicate(false);
+        return;
+      }
+
+      if (Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
+      }
+      closeDuplicateMerge();
+    } catch (error) {
+      console.error("Failed to merge duplicate:", error);
+      setMergeError("Failed to merge duplicate. Please try again.");
+      setIsMergingDuplicate(false);
     }
   }
 
@@ -348,7 +397,19 @@ export default function AdminSuggestClient({
                 </div>
 
                 {!suggestion.reviewed && (
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 flex-wrap">
+                    {isDuplicateOfApproved && (
+                      <button
+                        onClick={() => startDuplicateMerge(suggestion)}
+                        disabled={processingIds.has(suggestion.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Duplicate
+                      </button>
+                    )}
                     <button
                       onClick={() => handleAction(suggestion.id, "approve")}
                       disabled={processingIds.has(suggestion.id)}
@@ -465,6 +526,88 @@ export default function AdminSuggestClient({
           </div>
         </div>
       )}
+
+      {duplicateSuggestion && (() => {
+        const pendingTokens = duplicateSuggestion.speaker
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean);
+
+        const matchingApproved = approvedSuggestions.filter((approved) =>
+          approved._tokens.some((t) => pendingTokens.includes(t))
+        );
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+            <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Merge Duplicate</h3>
+                  <p className="text-sm text-zinc-400">
+                    Move votes from "{duplicateSuggestion.speaker}" to an approved duplicate
+                  </p>
+                </div>
+                <button
+                  onClick={closeDuplicateMerge}
+                  className="text-zinc-500 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-zinc-300 mb-2">
+                  Select which approved suggestion to merge votes into:
+                </p>
+                {matchingApproved.length === 0 ? (
+                  <p className="text-sm text-zinc-500 p-3 bg-zinc-800 rounded-lg">
+                    No matching approved suggestions found.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {matchingApproved.map((approved) => (
+                      <button
+                        key={approved.id}
+                        onClick={() => handleMergeDuplicate(approved.id)}
+                        disabled={isMergingDuplicate}
+                        className="w-full text-left p-3 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-amber-500/50 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium truncate">{approved.speaker}</p>
+                            <p className="text-xs text-zinc-400 mt-1">
+                              {approved.votes} votes • {approved.voters?.length ?? 0} voters
+                            </p>
+                          </div>
+                          {isMergingDuplicate && (
+                            <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin ml-2" />
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {mergeError && (
+                <p className="mt-2 text-sm text-rose-400">{mergeError}</p>
+              )}
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  onClick={closeDuplicateMerge}
+                  disabled={isMergingDuplicate}
+                  className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
