@@ -125,7 +125,7 @@ export default function Leaderboard({
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
+            transition={{ delay: index * 0.01, duration: 0.2 }}
             className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
           >
             {/* Rank */}
