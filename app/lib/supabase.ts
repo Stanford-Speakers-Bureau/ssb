@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 export function getSupabaseClient() {
   return createSupabaseClient(
     process.env.SUPABASE_URL!,
-    process.env.SUPABASE_KEY!
+    process.env.SUPABASE_KEY!,
   );
 }
 
@@ -88,14 +88,14 @@ export async function createServerSupabaseClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // Ignore - called from Server Component
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -104,7 +104,7 @@ export async function createServerSupabaseClient() {
  */
 export async function getClosestUpcomingEvent(): Promise<Event | null> {
   const supabase = getSupabaseClient();
-  
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -125,7 +125,7 @@ export async function getClosestUpcomingEvent(): Promise<Event | null> {
  */
 export async function getSignedImageUrl(
   imgName: string | null,
-  expiresIn: number = 60
+  expiresIn: number = 60,
 ): Promise<string | null> {
   if (!imgName) return null;
 
@@ -149,20 +149,24 @@ const EVENT_TIMEZONE = "America/Los_Angeles";
  */
 export function formatEventDate(dateString: string | null): string {
   if (!dateString) return "";
-  
+
   const date = new Date(dateString);
-  const day = parseInt(date.toLocaleDateString("en-US", {
-    day: "numeric",
-    timeZone: EVENT_TIMEZONE,
-  }));
+  const day = parseInt(
+    date.toLocaleDateString("en-US", {
+      day: "numeric",
+      timeZone: EVENT_TIMEZONE,
+    }),
+  );
   const suffix = getOrdinalSuffix(day);
-  
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: EVENT_TIMEZONE,
-  }).replace(/\d+/, `${day}${suffix}`);
+
+  return date
+    .toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: EVENT_TIMEZONE,
+    })
+    .replace(/\d+/, `${day}${suffix}`);
 }
 
 /**
@@ -170,7 +174,7 @@ export function formatEventDate(dateString: string | null): string {
  */
 export function formatTime(dateString: string | null): string {
   if (!dateString) return "";
-  
+
   const date = new Date(dateString);
   return date.toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -183,10 +187,14 @@ export function formatTime(dateString: string | null): string {
 function getOrdinalSuffix(day: number): string {
   if (day > 3 && day < 21) return "th";
   switch (day % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -206,7 +214,10 @@ export function generateICalUrl(event: {
   const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
 
   const formatForICal = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    return date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "");
   };
 
   const title = `Stanford Speakers Bureau: ${event.name || "Speaker Event"}`;
@@ -249,7 +260,10 @@ function escapeICalText(text: string): string {
  * - There's a release_date and we're before that date, OR
  * - There's no release_date and no name
  */
-export function isEventMystery(event: { release_date: string | null; name: string | null }): boolean {
+export function isEventMystery(event: {
+  release_date: string | null;
+  name: string | null;
+}): boolean {
   const now = new Date();
   const releaseDate = event.release_date ? new Date(event.release_date) : null;
   return releaseDate ? now < releaseDate : !event.name;
@@ -260,7 +274,7 @@ export function isEventMystery(event: { release_date: string | null; name: strin
  */
 export async function getEventByRoute(route: string): Promise<Event | null> {
   const supabase = getSupabaseClient();
-  
+
   const { data, error } = await supabase
     .from("events")
     .select("*")

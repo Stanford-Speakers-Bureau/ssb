@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient, getSupabaseClient } from "../../lib/supabase";
+import {
+  createServerSupabaseClient,
+  getSupabaseClient,
+} from "../../lib/supabase";
 import { voteRatelimit, checkRateLimit } from "../../lib/ratelimit";
 
 export const VOTE_MESSAGES = {
@@ -18,19 +21,22 @@ export async function POST(req: Request) {
     const supabase = await createServerSupabaseClient();
 
     // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Rate limit by user email
     const rateLimitResponse = await checkRateLimit(
       voteRatelimit,
-      `vote:${user.email}`
+      `vote:${user.email}`,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -39,10 +45,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { speaker_id } = body;
@@ -50,7 +53,7 @@ export async function POST(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_MISSING_SPEAKER_ID },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
     if (suggestionError || !suggestion) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_SPEAKER_NOT_FOUND },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -82,50 +85,57 @@ export async function POST(req: Request) {
     if (existingVote) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ALREADY_VOTED, alreadyVoted: true },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Insert the vote
-    const { error: voteError } = await adminClient
-      .from("votes")
-      .insert([{
+    const { error: voteError } = await adminClient.from("votes").insert([
+      {
         speaker_id,
         email: user.email,
-      }]);
+      },
+    ]);
 
     if (voteError) {
       console.error("Vote insert error:", voteError);
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_GENERIC },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Fetch updated vote count from suggest table (kept in sync via DB triggers)
-    const { data: updatedSuggestion, error: updatedSuggestionError } = await adminClient
-      .from("suggest")
-      .select("votes")
-      .eq("id", speaker_id)
-      .single();
+    const { data: updatedSuggestion, error: updatedSuggestionError } =
+      await adminClient
+        .from("suggest")
+        .select("votes")
+        .eq("id", speaker_id)
+        .single();
 
     if (updatedSuggestionError) {
-      console.error("Failed to fetch updated vote count:", updatedSuggestionError);
+      console.error(
+        "Failed to fetch updated vote count:",
+        updatedSuggestionError,
+      );
     }
 
-    const newVoteCount = updatedSuggestion?.votes ?? (suggestion.votes || 0) + 1;
+    const newVoteCount =
+      updatedSuggestion?.votes ?? (suggestion.votes || 0) + 1;
 
-    return NextResponse.json({ 
-      success: true, 
-      message: VOTE_MESSAGES.SUCCESS,
-      newVoteCount 
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: VOTE_MESSAGES.SUCCESS,
+        newVoteCount,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Vote error:", error);
     return NextResponse.json(
       { error: VOTE_MESSAGES.ERROR_GENERIC },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -135,19 +145,22 @@ export async function DELETE(req: Request) {
     const supabase = await createServerSupabaseClient();
 
     // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Rate limit by user email
     const rateLimitResponse = await checkRateLimit(
       voteRatelimit,
-      `vote:${user.email}`
+      `vote:${user.email}`,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -156,10 +169,7 @@ export async function DELETE(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { speaker_id } = body;
@@ -167,7 +177,7 @@ export async function DELETE(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_MISSING_SPEAKER_ID },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -183,7 +193,7 @@ export async function DELETE(req: Request) {
     if (suggestionError || !suggestion) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_SPEAKER_NOT_FOUND },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -198,7 +208,7 @@ export async function DELETE(req: Request) {
     if (!existingVote) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.NOT_VOTED },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -213,35 +223,41 @@ export async function DELETE(req: Request) {
       console.error("Vote delete error:", deleteError);
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_GENERIC },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Fetch updated vote count from suggest table (kept in sync via DB triggers)
-    const { data: updatedSuggestion, error: updatedSuggestionError } = await adminClient
-      .from("suggest")
-      .select("votes")
-      .eq("id", speaker_id)
-      .single();
+    const { data: updatedSuggestion, error: updatedSuggestionError } =
+      await adminClient
+        .from("suggest")
+        .select("votes")
+        .eq("id", speaker_id)
+        .single();
 
     if (updatedSuggestionError) {
-      console.error("Failed to fetch updated vote count:", updatedSuggestionError);
+      console.error(
+        "Failed to fetch updated vote count:",
+        updatedSuggestionError,
+      );
     }
 
-    const newVoteCount = updatedSuggestion?.votes ?? Math.max((suggestion.votes || 0) - 1, 0);
+    const newVoteCount =
+      updatedSuggestion?.votes ?? Math.max((suggestion.votes || 0) - 1, 0);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: VOTE_MESSAGES.REMOVED,
-      newVoteCount 
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: VOTE_MESSAGES.REMOVED,
+        newVoteCount,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Unvote error:", error);
     return NextResponse.json(
       { error: VOTE_MESSAGES.ERROR_GENERIC },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

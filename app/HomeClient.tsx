@@ -77,7 +77,9 @@ export default function HomeClient() {
                 ease: [0.43, 0.13, 0.23, 0.96],
               }}
             >
-              Stanford&#39;s largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.
+              Stanford&#39;s largest student organization sponsor of speaking
+              events since 1935. We meet weekly to discuss upcoming speakers and
+              determine who is of interest to the Stanford community.
             </motion.p>
             <MotionLink
               initial={{ opacity: 0, y: 30 }}
@@ -132,7 +134,8 @@ export default function HomeClient() {
                   YouTube Educator, Former NASA & Apple Engineer
                 </p>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Former NASA engineer turned YouTube star with 45+ million subscribers, known for viral science and engineering videos.
+                  Former NASA engineer turned YouTube star with 45+ million
+                  subscribers, known for viral science and engineering videos.
                 </p>
               </div>
             </div>
@@ -155,7 +158,8 @@ export default function HomeClient() {
                   Media Icon
                 </p>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Media icon, dancer, and singer who rose to fame through the reality show Dance Moms and her vibrant online presence.
+                  Media icon, dancer, and singer who rose to fame through the
+                  reality show Dance Moms and her vibrant online presence.
                 </p>
               </div>
             </div>
@@ -178,7 +182,8 @@ export default function HomeClient() {
                   SNL Cast Member
                 </p>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Saturday Night Live cast member and writer known for versatile impressions and memorable original characters.
+                  Saturday Night Live cast member and writer known for versatile
+                  impressions and memorable original characters.
                 </p>
               </div>
             </div>
@@ -217,7 +222,9 @@ export default function HomeClient() {
                   Co-Sponsorships
                 </h3>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
-                  We provide co-sponsorships up to $1500 in speaker fees and event service costs, prioritizing our Community Uplift Fund for events centering traditionally marginalized communities.
+                  We provide co-sponsorships up to $1500 in speaker fees and
+                  event service costs, prioritizing our Community Uplift Fund
+                  for events centering traditionally marginalized communities.
                 </p>
                 <MotionLink
                   href="/other-programs"
@@ -246,7 +253,10 @@ export default function HomeClient() {
                   Coffee Chats
                 </h3>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
-                  Join intimate conversations with Stanford professors in small groups of eight to ten students. A unique opportunity to engage with faculty in a casual, personal setting and discuss their work and insights.
+                  Join intimate conversations with Stanford professors in small
+                  groups of eight to ten students. A unique opportunity to
+                  engage with faculty in a casual, personal setting and discuss
+                  their work and insights.
                 </p>
                 <MotionLink
                   href="/other-programs"
@@ -301,5 +311,3 @@ export default function HomeClient() {
     </div>
   );
 }
-
-

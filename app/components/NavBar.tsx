@@ -8,29 +8,32 @@ import Link from "next/link";
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const isWhiteNavPage = pathname === "/" || pathname === "/contact" || pathname === "/events/malala";
+  const isWhiteNavPage =
+    pathname === "/" ||
+    pathname === "/contact" ||
+    pathname === "/events/malala";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  const logoClasses = isWhiteNavPage 
+
+  const logoClasses = isWhiteNavPage
     ? "text-xl font-bold text-white"
     : "text-xl font-bold text-black dark:text-white";
-  
+
   const linkClasses = isWhiteNavPage
     ? "text-sm font-medium text-white transition-colors hover:text-white/80"
     : "text-sm font-medium text-black dark:text-gray-300 transition-colors hover:text-black dark:hover:text-white";
-  
+
   const mobileMenuBgClasses = isWhiteNavPage
     ? "bg-black/95 backdrop-blur-sm"
     : "bg-white dark:bg-zinc-900";
-  
+
   const mobileLinkClasses = isWhiteNavPage
     ? "text-lg font-medium text-white transition-colors hover:text-white/80 py-3"
     : "text-lg font-medium text-black dark:text-gray-300 transition-colors hover:text-[#A80D0C] py-3";
-  
+
   const hamburgerClasses = isWhiteNavPage
     ? "text-white"
     : "text-black dark:text-white";
-  
+
   // Disable body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -38,45 +41,52 @@ export default function NavBar({ banner }: { banner: boolean }) {
     } else {
       document.body.style.overflow = "";
     }
-    
+
     // Cleanup: restore scroll when component unmounts
     return () => {
       document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
-  
+
   return (
     <>
-      <nav className={`absolute ${banner ? "top-10" : "top-0"} left-0 right-0 z-50 w-full`}>
+      <nav
+        className={`absolute ${banner ? "top-10" : "top-0"} left-0 right-0 z-50 w-full`}
+      >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div className="flex items-center gap-8 pt-2">
-            <motion.div
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link href="/" className={logoClasses} prefetch={false} >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/" className={logoClasses} prefetch={false}>
                 <Image src="/logo.png" alt="Logo" width={40} height={40} />
               </Link>
             </motion.div>
             <div className="hidden items-center gap-6 md:flex">
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/upcoming-speakers" className={linkClasses} prefetch={false} >
+                <Link
+                  href="/upcoming-speakers"
+                  className={linkClasses}
+                  prefetch={false}
+                >
                   Upcoming Speakers
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/past-speakers" className={linkClasses} prefetch={false} >
+                <Link
+                  href="/past-speakers"
+                  className={linkClasses}
+                  prefetch={false}
+                >
                   Past Speakers
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Link href="/suggest" className={linkClasses} prefetch={false}>
@@ -84,33 +94,36 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/other-programs" className={linkClasses} prefetch={false} >
+                <Link
+                  href="/other-programs"
+                  className={linkClasses}
+                  prefetch={false}
+                >
                   Other Programs
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/team" className={linkClasses} prefetch={false} >
+                <Link href="/team" className={linkClasses} prefetch={false}>
                   Team
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }} 
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/contact" className={linkClasses} prefetch={false} >
+                <Link href="/contact" className={linkClasses} prefetch={false}>
                   Contact
                 </Link>
               </motion.div>
             </div>
           </div>
           <div className="flex items-center gap-4">
-
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -147,7 +160,9 @@ export default function NavBar({ banner }: { banner: boolean }) {
             transition={{ type: "tween", duration: 0.3 }}
             className={`fixed inset-y-0 right-0 z-40 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl md:hidden`}
           >
-            <div className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}>
+            <div
+              className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}
+            >
               <div className="flex flex-col space-y-1">
                 <Link
                   href="/upcoming-speakers"
@@ -208,4 +223,3 @@ export default function NavBar({ banner }: { banner: boolean }) {
     </>
   );
 }
-

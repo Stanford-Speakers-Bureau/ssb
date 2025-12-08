@@ -12,17 +12,19 @@ async function getInitialNotifications(): Promise<EventWithNotifications[]> {
 
     const client = auth.adminClient!;
 
-    const [{ data: events, error: eventsError }, { data: notifications, error: notifyError }] =
-      await Promise.all([
-        client
-          .from("events")
-          .select("id, name, start_time_date")
-          .order("start_time_date", { ascending: false }),
-        client
-          .from("notify")
-          .select("id, email, created_at, speaker_id")
-          .order("created_at", { ascending: false }),
-      ]);
+    const [
+      { data: events, error: eventsError },
+      { data: notifications, error: notifyError },
+    ] = await Promise.all([
+      client
+        .from("events")
+        .select("id, name, start_time_date")
+        .order("start_time_date", { ascending: false }),
+      client
+        .from("notify")
+        .select("id, email, created_at, speaker_id")
+        .order("created_at", { ascending: false }),
+    ]);
 
     if (eventsError) {
       console.error("Events fetch error:", eventsError);

@@ -55,7 +55,7 @@ export default function BannerBar({
   const calculateTimeLeft = (targetMs: number | null) => {
     const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     if (targetMs == null) return zero;
-    
+
     const difference = targetMs - Date.now();
     if (difference > 0) {
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -93,29 +93,33 @@ export default function BannerBar({
   return (
     <div className="relative z-50 h-10 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C]">
       {/* Mobile version - simplified */}
-      {hasText && (
-        hasHref ? (
-          <Link href={href} className="md:hidden underline hover:opacity-90 transition-opacity" prefetch={false}>
+      {hasText &&
+        (hasHref ? (
+          <Link
+            href={href}
+            className="md:hidden underline hover:opacity-90 transition-opacity"
+            prefetch={false}
+          >
             {text}
           </Link>
         ) : (
-          <span className="md:hidden underline">
-            {text}
-          </span>
-        )
-      )}
-      
+          <span className="md:hidden underline">{text}</span>
+        ))}
+
       {/* Desktop version - full with countdown */}
       <div className="hidden md:flex items-center gap-3">
-        {hasText && (
-          hasHref ? (
-            <Link href={href} className="underline hover:opacity-90 transition-opacity" prefetch={false}>
+        {hasText &&
+          (hasHref ? (
+            <Link
+              href={href}
+              className="underline hover:opacity-90 transition-opacity"
+              prefetch={false}
+            >
               {text}
             </Link>
           ) : (
             <span className="underline">{text}</span>
-          )
-        )}
+          ))}
         {hasText && <span className="opacity-40">|</span>}
         <span className="text-sm font-medium">{prefaceLabel}</span>
         <div className="flex items-center gap-1 font-mono text-sm">
@@ -131,4 +135,3 @@ export default function BannerBar({
     </div>
   );
 }
-

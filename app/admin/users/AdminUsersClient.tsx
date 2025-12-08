@@ -19,7 +19,10 @@ type AdminUsersClientProps = {
   initialBans: Ban[];
 };
 
-export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUsersClientProps) {
+export default function AdminUsersClient({
+  initialAdmins,
+  initialBans,
+}: AdminUsersClientProps) {
   const [admins, setAdmins] = useState<Admin[]>(initialAdmins);
   const [bans, setBans] = useState<Ban[]>(initialBans);
   const [activeTab, setActiveTab] = useState<"admins" | "bans">("admins");
@@ -47,7 +50,11 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
       const response = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newEmail.trim().toLowerCase(), type, action: "add" }),
+        body: JSON.stringify({
+          email: newEmail.trim().toLowerCase(),
+          type,
+          action: "add",
+        }),
       });
 
       const data = await response.json();
@@ -67,7 +74,9 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
         }
       }
 
-      setSuccess(`Successfully added ${newEmail} as ${type === "admin" ? "an admin" : "a banned user"}`);
+      setSuccess(
+        `Successfully added ${newEmail} as ${type === "admin" ? "an admin" : "a banned user"}`,
+      );
       setNewEmail("");
     } catch (error) {
       console.error("Failed to add user:", error);
@@ -105,7 +114,9 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-serif mb-2">User Management</h1>
+        <h1 className="text-3xl font-bold text-white font-serif mb-2">
+          User Management
+        </h1>
         <p className="text-zinc-400">Manage admin access and banned users.</p>
       </div>
 
@@ -119,8 +130,18 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
               : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
           </svg>
           Admins ({admins.length})
         </button>
@@ -132,8 +153,18 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
               : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+            />
           </svg>
           Banned Users ({bans.length})
         </button>
@@ -142,13 +173,36 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
       {/* Messages */}
       {error && (
         <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-3">
-          <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="w-5 h-5 text-rose-400 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <p className="text-rose-400 text-sm">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto text-rose-400 hover:text-rose-300">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-rose-400 hover:text-rose-300"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -156,13 +210,36 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
 
       {success && (
         <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3">
-          <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <svg
+            className="w-5 h-5 text-emerald-400 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
           </svg>
           <p className="text-emerald-400 text-sm">{success}</p>
-          <button onClick={() => setSuccess(null)} className="ml-auto text-emerald-400 hover:text-emerald-300">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={() => setSuccess(null)}
+            className="ml-auto text-emerald-400 hover:text-emerald-300"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -181,19 +258,29 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
             <input
               type="email"
               placeholder="Enter email address..."
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddUser(activeTab === "admins" ? "admin" : "ban")}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                handleAddUser(activeTab === "admins" ? "admin" : "ban")
+              }
               className="w-full pl-12 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/50"
             />
           </div>
           <button
-            onClick={() => handleAddUser(activeTab === "admins" ? "admin" : "ban")}
+            onClick={() =>
+              handleAddUser(activeTab === "admins" ? "admin" : "ban")
+            }
             disabled={isSubmitting}
             className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text:white font-medium transition-all disabled:opacity-50 ${
               activeTab === "admins"
@@ -205,8 +292,18 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
                 {activeTab === "admins" ? "Add Admin" : "Ban User"}
               </>
@@ -217,80 +314,118 @@ export default function AdminUsersClient({ initialAdmins, initialBans }: AdminUs
 
       {/* User List */}
       <div className="space-y-3">
-          {activeTab === "admins" ? (
-            admins.length === 0 ? (
-              <div className="text-center py-12 bg-zinc-900/50 rounded-xl border border-zinc-800">
-                <p className="text-zinc-400">No admins found</p>
-              </div>
-            ) : (
-              admins.map((admin) => (
-                <div
-                  key={admin.id}
-                  className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 flex items-center justify-between hover:border-zinc-700 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">{admin.email}</p>
-                      <p className="text-zinc-500 text-sm">
-                        Added {new Date(admin.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveUser(admin.id, "admin")}
-                    className="flex items-center gap-2 px-3 py-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Remove
-                  </button>
-                </div>
-              ))
-            )
-          ) : bans.length === 0 ? (
+        {activeTab === "admins" ? (
+          admins.length === 0 ? (
             <div className="text-center py-12 bg-zinc-900/50 rounded-xl border border-zinc-800">
-              <p className="text-zinc-400">No banned users</p>
+              <p className="text-zinc-400">No admins found</p>
             </div>
           ) : (
-            bans.map((ban) => (
+            admins.map((admin) => (
               <div
-                key={ban.id}
+                key={admin.id}
                 className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 flex items-center justify-between hover:border-zinc-700 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-rose-500/20 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-purple-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-white font-medium">{ban.email}</p>
+                    <p className="text-white font-medium">{admin.email}</p>
                     <p className="text-zinc-500 text-sm">
-                      Banned {new Date(ban.created_at).toLocaleDateString()}
+                      Added {new Date(admin.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleRemoveUser(ban.id, "ban")}
-                  className="flex items-center gap-2 px-3 py-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg text-sm transition-colors"
+                  onClick={() => handleRemoveUser(admin.id, "admin")}
+                  className="flex items-center gap-2 px-3 py-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
-                  Unban
+                  Remove
                 </button>
               </div>
             ))
-          )}
+          )
+        ) : bans.length === 0 ? (
+          <div className="text-center py-12 bg-zinc-900/50 rounded-xl border border-zinc-800">
+            <p className="text-zinc-400">No banned users</p>
+          </div>
+        ) : (
+          bans.map((ban) => (
+            <div
+              key={ban.id}
+              className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 flex items-center justify-between hover:border-zinc-700 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-rose-500/20 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-rose-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-white font-medium">{ban.email}</p>
+                  <p className="text-zinc-500 text-sm">
+                    Banned {new Date(ban.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRemoveUser(ban.id, "ban")}
+                className="flex items-center gap-2 px-3 py-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg text-sm transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Unban
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
 }
-
-

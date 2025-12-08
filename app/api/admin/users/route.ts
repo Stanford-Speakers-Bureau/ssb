@@ -23,32 +23,40 @@ export async function POST(req: Request) {
 
     if (action === "add") {
       if (!email) {
-        return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Email is required" },
+          { status: 400 },
+        );
       }
 
       // Check if already exists
-      const { data: existing } = await auth.adminClient!
-        .from(table)
+      const { data: existing } = await auth
+        .adminClient!.from(table)
         .select("id")
         .eq("email", email)
         .single();
 
       if (existing) {
         return NextResponse.json(
-          { error: `This email is already ${type === "admin" ? "an admin" : "banned"}` },
-          { status: 400 }
+          {
+            error: `This email is already ${type === "admin" ? "an admin" : "banned"}`,
+          },
+          { status: 400 },
         );
       }
 
-      const { data, error } = await auth.adminClient!
-        .from(table)
+      const { data, error } = await auth
+        .adminClient!.from(table)
         .insert([{ email }])
         .select("*")
         .single();
 
       if (error) {
         console.error("Insert error:", error);
-        return NextResponse.json({ error: "Failed to add user" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to add user" },
+          { status: 500 },
+        );
       }
 
       return NextResponse.json({ success: true, user: data });
@@ -58,18 +66,26 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "ID is required" }, { status: 400 });
       }
 
-      const { error } = await auth.adminClient!.from(table).delete().eq("id", id);
+      const { error } = await auth
+        .adminClient!.from(table)
+        .delete()
+        .eq("id", id);
 
       if (error) {
         console.error("Delete error:", error);
-        return NextResponse.json({ error: "Failed to remove user" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to remove user" },
+          { status: 500 },
+        );
       }
 
       return NextResponse.json({ success: true });
     }
   } catch (error) {
     console.error("Users action error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
-

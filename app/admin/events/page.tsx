@@ -22,17 +22,16 @@ async function getInitialEvents(): Promise<Event[]> {
       return [];
     }
 
-    const eventsWithImages =
-      events
-        ? await Promise.all(
-            events.map(async (event: any) => ({
-              ...event,
-              image_url: event.img
-                ? await getSignedImageUrl(event.img, 60 * 60) // 1 hour expiry
-                : null,
-            }))
-          )
-        : [];
+    const eventsWithImages = events
+      ? await Promise.all(
+          events.map(async (event: any) => ({
+            ...event,
+            image_url: event.img
+              ? await getSignedImageUrl(event.img, 60 * 60) // 1 hour expiry
+              : null,
+          })),
+        )
+      : [];
 
     return eventsWithImages as Event[];
   } catch (error) {
@@ -45,5 +44,3 @@ export default async function AdminEventsPage() {
   const initialEvents = await getInitialEvents();
   return <AdminEventsClient initialEvents={initialEvents} />;
 }
-
-

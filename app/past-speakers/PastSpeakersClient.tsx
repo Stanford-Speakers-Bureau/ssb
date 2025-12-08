@@ -4,15 +4,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 export default function PastSpeakersClient() {
-  const [expandedYears, setExpandedYears] = useState<{ [key: string]: boolean }>(
-    {
-      "2025": true,
-      "2024": true,
-      "2023": true,
-      "2022": true,
-      "2021": true,
-    }
-  );
+  const [expandedYears, setExpandedYears] = useState<{
+    [key: string]: boolean;
+  }>({
+    "2025": true,
+    "2024": true,
+    "2023": true,
+    "2022": true,
+    "2021": true,
+  });
 
   const toggleYear = (year: string) => {
     setExpandedYears((prev) => ({
@@ -64,16 +64,16 @@ export default function PastSpeakersClient() {
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                       Mark Rober is an American YouTuber, engineer, and
-                      inventor. Known for his viral videos that combine
-                      science, engineering, and humor, Rober has amassed a
-                      following of over 45 million subscribers on YouTube.
-                      Before becoming a full-time content creator, he worked as
-                      an engineer for NASA&apos;s Jet Propulsion Laboratory,
-                      where he contributed to the development of the Curiosity
-                      rover, and later at Apple, where he worked on product
-                      design patents. Rober is celebrated for his creative
-                      projects and his ability to make complex scientific
-                      concepts accessible and entertaining to a broad audience.
+                      inventor. Known for his viral videos that combine science,
+                      engineering, and humor, Rober has amassed a following of
+                      over 45 million subscribers on YouTube. Before becoming a
+                      full-time content creator, he worked as an engineer for
+                      NASA&apos;s Jet Propulsion Laboratory, where he
+                      contributed to the development of the Curiosity rover, and
+                      later at Apple, where he worked on product design patents.
+                      Rober is celebrated for his creative projects and his
+                      ability to make complex scientific concepts accessible and
+                      entertaining to a broad audience.
                     </p>
                   </div>
 
@@ -92,9 +92,9 @@ export default function PastSpeakersClient() {
                       on YouTube and more than 41 million followers on TikTok.
                       Known for her high-energy persona, signature bows, and
                       empowering pop music, Siwa has successfully transitioned
-                      into a versatile entertainer. She has also made history
-                      as the first contestant to be paired with a same-sex
-                      partner on Dancing with the Stars.
+                      into a versatile entertainer. She has also made history as
+                      the first contestant to be paired with a same-sex partner
+                      on Dancing with the Stars.
                     </p>
                   </div>
 
@@ -115,9 +115,9 @@ export default function PastSpeakersClient() {
                       $250 million to over $4 billion, and the company laid the
                       foundation for the blockbuster Marvel Cinematic Universe.
                       His business acumen and strategic vision have been
-                      credited with revitalizing the comic book giant and
-                      paving the way for its eventual acquisition by The Walt
-                      Disney Company.
+                      credited with revitalizing the comic book giant and paving
+                      the way for its eventual acquisition by The Walt Disney
+                      Company.
                     </p>
                   </div>
 
@@ -129,16 +129,15 @@ export default function PastSpeakersClient() {
                       SNL Cast Member
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      Mikey Day is an American comedian, writer, and actor,
-                      best known for his work as a cast member on Saturday
-                      Night Live (SNL). He joined the show as a writer in 2013
-                      and became a featured player in 2016. Day is known for
-                      his versatile impressions and memorable original
-                      characters, including his recurring roles as a game show
-                      host and a character in the &quot;Haunted
-                      Elevator&quot; sketches with Tom Hanks. Before SNL, he
-                      was a writer and performer on shows like Maya & Marty and
-                      Wild &apos;N Out.
+                      Mikey Day is an American comedian, writer, and actor, best
+                      known for his work as a cast member on Saturday Night Live
+                      (SNL). He joined the show as a writer in 2013 and became a
+                      featured player in 2016. Day is known for his versatile
+                      impressions and memorable original characters, including
+                      his recurring roles as a game show host and a character in
+                      the &quot;Haunted Elevator&quot; sketches with Tom Hanks.
+                      Before SNL, he was a writer and performer on shows like
+                      Maya & Marty and Wild &apos;N Out.
                     </p>
                   </div>
                 </motion.div>
@@ -180,19 +179,19 @@ export default function PastSpeakersClient() {
                       Physicist &amp; Author
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      Alan Lightman is an American physicist, writer, and
-                      social entrepreneur. He has served on the faculties of
-                      Harvard University and Massachusetts Institute of
-                      Technology (MIT) and is currently a professor of the
-                      practice of the humanities at the Massachusetts Institute
-                      of Technology (MIT). Lightman is the author of the
-                      international bestseller Einstein&apos;s Dreams, and his
-                      novel The Diagnosis was a finalist for the National Book
-                      Award. He is also the founder of Harpswell, a nonprofit
-                      organization whose mission is to advance a new generation
-                      of women leaders in Southeast Asia. Lightman hosts the
-                      public television series Searching: Our Quest for Meaning
-                      in the Age of Science.
+                      Alan Lightman is an American physicist, writer, and social
+                      entrepreneur. He has served on the faculties of Harvard
+                      University and Massachusetts Institute of Technology (MIT)
+                      and is currently a professor of the practice of the
+                      humanities at the Massachusetts Institute of Technology
+                      (MIT). Lightman is the author of the international
+                      bestseller Einstein&apos;s Dreams, and his novel The
+                      Diagnosis was a finalist for the National Book Award. He
+                      is also the founder of Harpswell, a nonprofit organization
+                      whose mission is to advance a new generation of women
+                      leaders in Southeast Asia. Lightman hosts the public
+                      television series Searching: Our Quest for Meaning in the
+                      Age of Science.
                     </p>
                   </div>
 
@@ -208,15 +207,14 @@ export default function PastSpeakersClient() {
                       recognized for his personality and exceptional skill on
                       the field. Sherman gained prominence as a key player for
                       the Seattle Seahawks during their Super Bowl-winning
-                      season in 2013, becoming a cornerstone of the
-                      &quot;Legion of Boom&quot; defense. Known for his
-                      intelligence and leadership, he was a fifth-round pick
-                      from Stanford who defied the odds to become one of the
-                      top players in the league. After retiring from football,
-                      Sherman transitioned into broadcasting, becoming an
-                      analyst for Amazon&apos;s Thursday Night Football in
-                      2022. He is also an advocate for social justice and
-                      education reform.
+                      season in 2013, becoming a cornerstone of the &quot;Legion
+                      of Boom&quot; defense. Known for his intelligence and
+                      leadership, he was a fifth-round pick from Stanford who
+                      defied the odds to become one of the top players in the
+                      league. After retiring from football, Sherman transitioned
+                      into broadcasting, becoming an analyst for Amazon&apos;s
+                      Thursday Night Football in 2022. He is also an advocate
+                      for social justice and education reform.
                     </p>
                   </div>
 
@@ -249,14 +247,14 @@ export default function PastSpeakersClient() {
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                       Phil Hellmuth is known by many as the best tournament
-                      poker player ever. He has captivated fans with his
-                      amazing poker skill, and his antics on and off the table.
-                      Hellmuth is celebrated by many for his &quot;Poker
-                      Brat&quot; personality, with trash talk and flash a key
-                      part of his persona. He has won over $30,000,000 in
-                      tournament poker, and is a Palo Alto resident. After his
-                      talk, Mr. Hellmuth played a game of poker with students
-                      in SSB and the Stanford Poker Club.
+                      poker player ever. He has captivated fans with his amazing
+                      poker skill, and his antics on and off the table. Hellmuth
+                      is celebrated by many for his &quot;Poker Brat&quot;
+                      personality, with trash talk and flash a key part of his
+                      persona. He has won over $30,000,000 in tournament poker,
+                      and is a Palo Alto resident. After his talk, Mr. Hellmuth
+                      played a game of poker with students in SSB and the
+                      Stanford Poker Club.
                     </p>
                   </div>
                 </motion.div>
@@ -298,19 +296,18 @@ export default function PastSpeakersClient() {
                       Author
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      Roxane Gay is an acclaimed author known for her
-                      insightful and thought-provoking works that explore
-                      themes of feminism, race, and identity. She has authored
-                      several influential books, including Bad Feminist, a
-                      collection of essays that has resonated with a wide
-                      audience. Gay is celebrated for her candid writing style
-                      and her ability to address complex social issues with
-                      nuance and humor. In addition to her essays, she has
-                      written fiction, including the novel An Untamed State,
-                      opinion pieces for the New York Times, served as editor
-                      of Gay Mag, and founded Tiny Hardcore Press. Her work
-                      often challenges cultural norms and advocates for social
-                      justice.
+                      Roxane Gay is an acclaimed author known for her insightful
+                      and thought-provoking works that explore themes of
+                      feminism, race, and identity. She has authored several
+                      influential books, including Bad Feminist, a collection of
+                      essays that has resonated with a wide audience. Gay is
+                      celebrated for her candid writing style and her ability to
+                      address complex social issues with nuance and humor. In
+                      addition to her essays, she has written fiction, including
+                      the novel An Untamed State, opinion pieces for the New
+                      York Times, served as editor of Gay Mag, and founded Tiny
+                      Hardcore Press. Her work often challenges cultural norms
+                      and advocates for social justice.
                     </p>
                   </div>
 
@@ -323,15 +320,15 @@ export default function PastSpeakersClient() {
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                       Stuart Weitzman is a major shoe designer, who is best
-                      known for the &quot;million dollar&quot; shoes he has
-                      made for Oscar nominees and red carpet appearances. He
-                      has designed shoes for Beyonce, Taylor Swift, and other
-                      top talent. Weitzman is well-known for the unique
-                      materials in his shoes, including cork, vinyl, lucite,
-                      wallpaper, and 24-karat gold. His shoes are sold in over
-                      70 countries. Mr. Weitzman also collects stamps, and is
-                      known for his purchase of the British Guiana 1c magenta,
-                      or the world&apos;s most famous stamp.
+                      known for the &quot;million dollar&quot; shoes he has made
+                      for Oscar nominees and red carpet appearances. He has
+                      designed shoes for Beyonce, Taylor Swift, and other top
+                      talent. Weitzman is well-known for the unique materials in
+                      his shoes, including cork, vinyl, lucite, wallpaper, and
+                      24-karat gold. His shoes are sold in over 70 countries.
+                      Mr. Weitzman also collects stamps, and is known for his
+                      purchase of the British Guiana 1c magenta, or the
+                      world&apos;s most famous stamp.
                     </p>
                   </div>
 
@@ -365,16 +362,16 @@ export default function PastSpeakersClient() {
                       Netflix Personality
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      Sima Taparia, known by fans as Sima Aunty, is a
-                      matchmaker from Mumbai. In 2017, the documentary &apos;A
-                      Suitable Girl&apos; was released on Netflix featuring
-                      Sima Aunty finding a match for her daughter and two
-                      others winning the Best New Documentary Filmmaker award
-                      at the Tribeca Film Festival. In July 2020, the reality
-                      show &quot;Indian Matchmaking&quot; was released on
-                      Netflix, showing the process of Sima Aunty finding
-                      matches for her clients. The show was nominated for the
-                      Outstanding Unstructured Reality Program Emmy in 2021.
+                      Sima Taparia, known by fans as Sima Aunty, is a matchmaker
+                      from Mumbai. In 2017, the documentary &apos;A Suitable
+                      Girl&apos; was released on Netflix featuring Sima Aunty
+                      finding a match for her daughter and two others winning
+                      the Best New Documentary Filmmaker award at the Tribeca
+                      Film Festival. In July 2020, the reality show &quot;Indian
+                      Matchmaking&quot; was released on Netflix, showing the
+                      process of Sima Aunty finding matches for her clients. The
+                      show was nominated for the Outstanding Unstructured
+                      Reality Program Emmy in 2021.
                     </p>
                   </div>
 
@@ -391,8 +388,8 @@ export default function PastSpeakersClient() {
                       finalist on the 12th season of &quot;America&apos;s Got
                       Talent.&quot; Lawson has since performed on numerous TV
                       shows, including &quot;The Late Late Show with James
-                      Corden,&quot; &quot;Last Call with Carson Daly,&quot;
-                      and &quot;Conan.&quot; He has also acted in movies and TV
+                      Corden,&quot; &quot;Last Call with Carson Daly,&quot; and
+                      &quot;Conan.&quot; He has also acted in movies and TV
                       shows, including a recurring role on the sitcom
                       &quot;Connecting...&quot;. Known for his high-energy,
                       observational comedy, Lawson has become a rising star in
@@ -446,10 +443,9 @@ export default function PastSpeakersClient() {
                       unflinching details surrounding her life and rise to fame
                       in her newly released memoir &quot;I&apos;m Glad My Mom
                       Died&quot;, which stayed at #1 on the NYT bestseller list
-                      for eight consecutive weeks. In addition to her
-                      impressive acting resume, Jennette is an accomplished
-                      creator, and has been honored as part of the 2022 TIME100
-                      Next list.
+                      for eight consecutive weeks. In addition to her impressive
+                      acting resume, Jennette is an accomplished creator, and
+                      has been honored as part of the 2022 TIME100 Next list.
                     </p>
                   </div>
 
@@ -465,17 +461,17 @@ export default function PastSpeakersClient() {
                       than forty-five countries, is the author of more than
                       fifty books of fiction, poetry, critical essays, and
                       graphic novels. Her latest novel, The Testaments, is a
-                      co-winner of the 2019 Booker Prize. It is the
-                      long-awaited sequel to The Handmaid&apos;s Tale, now an
-                      award-winning TV series. Her other works of fiction
-                      include Cat&apos;s Eye, finalist for the 1989 Booker
-                      Prize; Alias Grace, which won the Giller Prize in Canada
-                      and the Premio Mondello in Italy; The Blind Assassin,
-                      winner of the 2000 Booker Prize; The MaddAddam Trilogy;
-                      and Hag-Seed. She is the recipient of numerous awards,
-                      including the Peace Prize of the German Book Trade, the
-                      Franz Kafka International Literary Prize, the PEN Center
-                      USA Lifetime Achievement Award, and the Los Angeles Times
+                      co-winner of the 2019 Booker Prize. It is the long-awaited
+                      sequel to The Handmaid&apos;s Tale, now an award-winning
+                      TV series. Her other works of fiction include Cat&apos;s
+                      Eye, finalist for the 1989 Booker Prize; Alias Grace,
+                      which won the Giller Prize in Canada and the Premio
+                      Mondello in Italy; The Blind Assassin, winner of the 2000
+                      Booker Prize; The MaddAddam Trilogy; and Hag-Seed. She is
+                      the recipient of numerous awards, including the Peace
+                      Prize of the German Book Trade, the Franz Kafka
+                      International Literary Prize, the PEN Center USA Lifetime
+                      Achievement Award, and the Los Angeles Times
                       Innovator&apos;s Award. She lives in Toronto.
                     </p>
                   </div>
@@ -488,18 +484,17 @@ export default function PastSpeakersClient() {
                       Stand-up Comedian
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      Jimmy O. Yang is a Hong Kong-born American actor,
-                      stand-up comedian, and writer. He is best known for his
-                      portrayal of Jian-Yang on the HBO series &quot;Silicon
-                      Valley.&quot; Additionally, Yang has appeared in movies
-                      such as &quot;Crazy Rich Asians,&quot; &quot;The
-                      Internship,&quot; and &quot;Fantasy Island.&quot; He is
-                      also a published author, having written the memoir &quot;
-                      How to American: An Immigrant&apos;s Guide to
-                      Disappointing Your Parents.&quot; With his multifaceted
-                      talent and diverse range of roles, Jimmy O. Yang has
-                      established himself as a prominent figure in the
-                      entertainment industry.
+                      Jimmy O. Yang is a Hong Kong-born American actor, stand-up
+                      comedian, and writer. He is best known for his portrayal
+                      of Jian-Yang on the HBO series &quot;Silicon Valley.&quot;
+                      Additionally, Yang has appeared in movies such as
+                      &quot;Crazy Rich Asians,&quot; &quot;The Internship,&quot;
+                      and &quot;Fantasy Island.&quot; He is also a published
+                      author, having written the memoir &quot; How to American:
+                      An Immigrant&apos;s Guide to Disappointing Your
+                      Parents.&quot; With his multifaceted talent and diverse
+                      range of roles, Jimmy O. Yang has established himself as a
+                      prominent figure in the entertainment industry.
                     </p>
                   </div>
 
@@ -522,11 +517,11 @@ export default function PastSpeakersClient() {
                       evolution, population, space exploration, and STEM
                       education. He is a steadfast champion of the unwavering
                       value of critical thinking, science, and reason. Most
-                      recently, Nye was the subject of the documentary film
-                      Bill Nye: Science Guy. This behind the scenes portrait of
-                      Nye follows him as he takes off his Science Guy lab coat
-                      and takes on those who would deny climate change,
-                      evolution, and a science-based worldview.
+                      recently, Nye was the subject of the documentary film Bill
+                      Nye: Science Guy. This behind the scenes portrait of Nye
+                      follows him as he takes off his Science Guy lab coat and
+                      takes on those who would deny climate change, evolution,
+                      and a science-based worldview.
                     </p>
                   </div>
 
@@ -544,13 +539,12 @@ export default function PastSpeakersClient() {
                       to serve as the mayor of a major Western city and has the
                       biggest personal mandate of any politician in the UK. In
                       2018, he was named on TIME&apos;s list of 100 most
-                      influential people. Since his re-election last year,
-                      Mayor Khan has made addressing climate change one of his
-                      top priorities and has also focused on building
-                      affordable housing, running the city&apos;s world-class
-                      transport network, and reforming the police. Khan is
-                      strongly linked to the social democratic wing of the
-                      British Labour Party.
+                      influential people. Since his re-election last year, Mayor
+                      Khan has made addressing climate change one of his top
+                      priorities and has also focused on building affordable
+                      housing, running the city&apos;s world-class transport
+                      network, and reforming the police. Khan is strongly linked
+                      to the social democratic wing of the British Labour Party.
                     </p>
                   </div>
 
@@ -563,11 +557,11 @@ export default function PastSpeakersClient() {
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                       Louise Glück is an acclaimed poet, having won the 2020
-                      Nobel Prize in Literature, and authored 12 books of
-                      poetry as well as winning the Pulitzer Prize, National
-                      Book Award, and National Humanities Medal. She has held
-                      roles as an English professor at Yale and a visiting
-                      professor of creative writing at Stanford.
+                      Nobel Prize in Literature, and authored 12 books of poetry
+                      as well as winning the Pulitzer Prize, National Book
+                      Award, and National Humanities Medal. She has held roles
+                      as an English professor at Yale and a visiting professor
+                      of creative writing at Stanford.
                     </p>
                   </div>
                 </motion.div>
@@ -612,20 +606,19 @@ export default function PastSpeakersClient() {
                       founded the United Farm Workers union. She served as Vice
                       President and played a critical role in many of the
                       union&apos;s accomplishments for four decades. In 2002,
-                      she received the Puffin/Nation $100,000 prize for
-                      Creative Citizenship which she used to establish the
-                      Dolores Huerta Foundation (DHF). DHF is connecting
-                      groundbreaking community-based organizing to state and
-                      national movements to register and educate voters;
-                      advocate for education reform; bring about infrastructure
-                      improvements in low-income communities; advocate for
-                      greater equality for the LGBT community; and create
-                      strong leadership development. Dolores has received
-                      numerous awards: among them The Eleanor Roosevelt Humans
-                      Rights Award from President Clinton in 1998. In 2012
-                      President Obama bestowed Dolores with The Presidential
-                      Medal of Freedom, the highest civilian honor in the
-                      United States.
+                      she received the Puffin/Nation $100,000 prize for Creative
+                      Citizenship which she used to establish the Dolores Huerta
+                      Foundation (DHF). DHF is connecting groundbreaking
+                      community-based organizing to state and national movements
+                      to register and educate voters; advocate for education
+                      reform; bring about infrastructure improvements in
+                      low-income communities; advocate for greater equality for
+                      the LGBT community; and create strong leadership
+                      development. Dolores has received numerous awards: among
+                      them The Eleanor Roosevelt Humans Rights Award from
+                      President Clinton in 1998. In 2012 President Obama
+                      bestowed Dolores with The Presidential Medal of Freedom,
+                      the highest civilian honor in the United States.
                     </p>
                   </div>
 
@@ -677,12 +670,12 @@ export default function PastSpeakersClient() {
                     </p>
                     <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                       Jonathan Van Ness is an Emmy-nominated television
-                      personality, podcaster, and hairstylist to the stars.
-                      They can be seen starring on Netflix&apos;s Emmy
-                      Award-winning reboot series &quot;Queer Eye,&quot; where
-                      they shine as the show&apos;s groomer, hair stylist, and
-                      self-care advocate. In addition to &quot;Queer Eye,&quot;
-                      JVN starred on the Emmy-nominated series &quot;Gay of
+                      personality, podcaster, and hairstylist to the stars. They
+                      can be seen starring on Netflix&apos;s Emmy Award-winning
+                      reboot series &quot;Queer Eye,&quot; where they shine as
+                      the show&apos;s groomer, hair stylist, and self-care
+                      advocate. In addition to &quot;Queer Eye,&quot; JVN
+                      starred on the Emmy-nominated series &quot;Gay of
                       Thrones,&quot; (Funny or Die) a witty social commentary
                       series recapping HBO&apos;s &quot;Game of Thrones.&quot;
                       After a worldwide comedy tour in 2019, they published
@@ -748,8 +741,8 @@ export default function PastSpeakersClient() {
                       known for his reports in Trevor Noah&apos;s The Daily
                       Show. Previously, he has appeared in international
                       blockbusters such as Crazy Rich Asians and Godzilla vs.
-                      Kong. In 2019, Ronny starred in his very own Netflix
-                      stand up special titled &quot;Asian Comedian Destroys
+                      Kong. In 2019, Ronny starred in his very own Netflix stand
+                      up special titled &quot;Asian Comedian Destroys
                       America!&quot;
                     </p>
                   </div>
@@ -762,5 +755,3 @@ export default function PastSpeakersClient() {
     </div>
   );
 }
-
-

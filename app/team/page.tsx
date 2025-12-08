@@ -4,72 +4,86 @@ const leadership = [
   {
     name: "Anish Anne",
     position: "Co-President",
-    image: "/team/anish.jpg"
+    image: "/team/anish.jpg",
   },
   {
     name: "Annika Joshi",
     position: "Co-President",
-    image: "/team/annika.jpg"
+    image: "/team/annika.jpg",
   },
   {
     name: "Katie Heffernan",
     position: "Executive Advisor to the Board",
-    image: "/team/katie.jpg"
-  }
+    image: "/team/katie.jpg",
+  },
 ];
 
 const directors = [
   {
     name: "Ajay Eisenberg",
     position: "Financial Officer",
-    image: "/team/ajay.jpg"
+    image: "/team/ajay.jpg",
   },
   {
     name: "Suraya Mathai-Jackson",
     position: "Director of Marketing",
-    image: "/team/suraya.jpg"
+    image: "/team/suraya.jpg",
   },
   {
     name: "Michael Yu",
     position: "Director of Technology",
-    image: "/team/michael.jpg"
+    image: "/team/michael.jpg",
   },
   {
     name: "Rishi Jeyamurthy",
     position: "Director of Socials",
-    image: "/team/rishi.jpg"
+    image: "/team/rishi.jpg",
   },
   {
     name: "Andrea Mock",
     position: "Director of Coffee Chats",
-    image: "/team/andrea.jpg"
+    image: "/team/andrea.jpg",
   },
   {
     name: "Cindy Toh",
     position: "Director of Co-Sponsorship",
-    image: "/team/cindy.jpg"
-  }
+    image: "/team/cindy.jpg",
+  },
 ];
 
-function TeamCard({ member, large = false }: { member: typeof leadership[0]; large?: boolean }) {
+function TeamCard({
+  member,
+  large = false,
+}: {
+  member: (typeof leadership)[0];
+  large?: boolean;
+}) {
   return (
     <div className="group flex flex-col items-center gap-4">
-      <div 
-        className={`relative ${large ? 'w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56' : 'w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44'} rounded-full overflow-hidden shadow-xl ring-4 ring-white dark:ring-zinc-800 group-hover:ring-[#A80D0C] transition-all duration-300`}
+      <div
+        className={`relative ${large ? "w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56" : "w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44"} rounded-full overflow-hidden shadow-xl ring-4 ring-white dark:ring-zinc-800 group-hover:ring-[#A80D0C] transition-all duration-300`}
       >
         <Image
           src={member.image}
           alt={member.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes={large ? "(max-width: 640px) 160px, (max-width: 768px) 192px, 224px" : "(max-width: 640px) 128px, (max-width: 768px) 160px, 176px"}
+          sizes={
+            large
+              ? "(max-width: 640px) 160px, (max-width: 768px) 192px, 224px"
+              : "(max-width: 640px) 128px, (max-width: 768px) 160px, 176px"
+          }
         />
       </div>
       <div className="text-center px-2">
-        <h3 className={`${large ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'} font-semibold text-gray-900 dark:text-white mb-1`}>
+        <h3
+          className={`${large ? "text-lg sm:text-xl md:text-2xl" : "text-base sm:text-lg md:text-xl"} font-semibold text-gray-900 dark:text-white mb-1`}
+        >
           {member.name}
         </h3>
-        <p className={`${large ? 'text-sm md:text-base' : 'text-xs sm:text-sm'} text-[#A80D0C] font-medium`}>
+        <p
+          className={`${large ? "text-sm md:text-base" : "text-xs sm:text-sm"} text-[#A80D0C] font-medium`}
+        >
           {member.position}
         </p>
       </div>

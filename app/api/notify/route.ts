@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient, getSupabaseClient } from "../../lib/supabase";
+import {
+  createServerSupabaseClient,
+  getSupabaseClient,
+} from "../../lib/supabase";
 import { NOTIFY_MESSAGES } from "../../lib/constants";
 import { notifyRatelimit, checkRateLimit } from "../../lib/ratelimit";
 
@@ -10,10 +13,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { speaker_id } = body;
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_MISSING_SPEAKER_ID },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,26 +37,29 @@ export async function POST(req: Request) {
     if (eventError || !event) {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_EVENT_NOT_FOUND },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const supabase = await createServerSupabaseClient();
 
     // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Rate limit by user email
     const rateLimitResponse = await checkRateLimit(
       notifyRatelimit,
-      `notify:${user.email}`
+      `notify:${user.email}`,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -71,7 +74,7 @@ export async function POST(req: Request) {
     if (existingNotify) {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ALREADY_SIGNED_UP },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -81,11 +84,17 @@ export async function POST(req: Request) {
       .insert([{ email: user.email, speaker_id }]);
 
     if (error) {
-      return NextResponse.json({ error: NOTIFY_MESSAGES.ERROR_GENERIC }, { status: 500 });
+      return NextResponse.json(
+        { error: NOTIFY_MESSAGES.ERROR_GENERIC },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {
-    return NextResponse.json({ error: NOTIFY_MESSAGES.ERROR_GENERIC }, { status: 500 });
+    return NextResponse.json(
+      { error: NOTIFY_MESSAGES.ERROR_GENERIC },
+      { status: 500 },
+    );
   }
 }

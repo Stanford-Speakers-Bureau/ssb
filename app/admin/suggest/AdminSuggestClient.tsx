@@ -22,20 +22,26 @@ type AdminSuggestClientProps = {
 export default function AdminSuggestClient({
   initialSuggestions,
 }: AdminSuggestClientProps) {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
-  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [suggestions, setSuggestions] =
+    useState<Suggestion[]>(initialSuggestions);
+  const [filter, setFilter] = useState<
+    "pending" | "approved" | "rejected" | "all"
+  >("pending");
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
-  const [editingSuggestion, setEditingSuggestion] = useState<Suggestion | null>(null);
+  const [editingSuggestion, setEditingSuggestion] = useState<Suggestion | null>(
+    null,
+  );
   const [editedSpeaker, setEditedSpeaker] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-  const [duplicateSuggestion, setDuplicateSuggestion] = useState<Suggestion | null>(null);
+  const [duplicateSuggestion, setDuplicateSuggestion] =
+    useState<Suggestion | null>(null);
   const [isMergingDuplicate, setIsMergingDuplicate] = useState(false);
   const [mergeError, setMergeError] = useState<string | null>(null);
 
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
-    
+
     try {
       const response = await fetch("/api/admin/suggestions", {
         method: "POST",
@@ -46,7 +52,10 @@ export default function AdminSuggestClient({
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Failed to process suggestion:", data.error || "Unknown error");
+        console.error(
+          "Failed to process suggestion:",
+          data.error || "Unknown error",
+        );
         return;
       }
 
@@ -65,8 +74,10 @@ export default function AdminSuggestClient({
   }
 
   async function handleBulkAction(action: "approve" | "reject") {
-    const pendingIds = filteredSuggestions.filter((s) => !s.reviewed).map((s) => s.id);
-    
+    const pendingIds = filteredSuggestions
+      .filter((s) => !s.reviewed)
+      .map((s) => s.id);
+
     for (const id of pendingIds) {
       await handleAction(id, action);
     }
@@ -143,9 +154,9 @@ export default function AdminSuggestClient({
       const response = await fetch("/api/admin/suggestions", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          sourceId: duplicateSuggestion.id, 
-          targetId 
+        body: JSON.stringify({
+          sourceId: duplicateSuggestion.id,
+          targetId,
         }),
       });
 
@@ -168,7 +179,6 @@ export default function AdminSuggestClient({
     }
   }
 
-
   const pendingCount = suggestions.filter((s) => !s.reviewed).length;
 
   // Pre-compute approved suggestions with tokenized speaker names for fuzzy matching
@@ -176,10 +186,7 @@ export default function AdminSuggestClient({
     .filter((s) => s.approved)
     .map((s) => ({
       ...s,
-      _tokens: s.speaker
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(Boolean),
+      _tokens: s.speaker.toLowerCase().split(/\s+/).filter(Boolean),
     }));
 
   const filterTabs = [
@@ -212,8 +219,12 @@ export default function AdminSuggestClient({
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-serif mb-2">Speaker Suggestions</h1>
-        <p className="text-zinc-400">Review and manage speaker suggestions from users.</p>
+        <h1 className="text-3xl font-bold text-white font-serif mb-2">
+          Speaker Suggestions
+        </h1>
+        <p className="text-zinc-400">
+          Review and manage speaker suggestions from users.
+        </p>
       </div>
 
       {/* Filter Tabs */}
@@ -229,11 +240,13 @@ export default function AdminSuggestClient({
             }`}
           >
             {tab.label}
-            {tab.id === "pending" && filter === "pending" && pendingCount > 0 && (
-              <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-xs rounded-full">
-                {pendingCount}
-              </span>
-            )}
+            {tab.id === "pending" &&
+              filter === "pending" &&
+              pendingCount > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-xs rounded-full">
+                  {pendingCount}
+                </span>
+              )}
           </button>
         ))}
       </div>
@@ -245,8 +258,18 @@ export default function AdminSuggestClient({
             onClick={() => handleBulkAction("approve")}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Approve All ({pendingCount})
           </button>
@@ -254,8 +277,18 @@ export default function AdminSuggestClient({
             onClick={() => handleBulkAction("reject")}
             className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Reject All
           </button>
@@ -266,13 +299,25 @@ export default function AdminSuggestClient({
       {filteredSuggestions.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            <svg
+              className="w-8 h-8 text-zinc-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
             </svg>
           </div>
           <p className="text-zinc-400 text-lg mb-1">No suggestions found</p>
           <p className="text-zinc-600 text-sm">
-            {filter === "pending" ? "All caught up! No pending suggestions." : `No ${filter} suggestions yet.`}
+            {filter === "pending"
+              ? "All caught up! No pending suggestions."
+              : `No ${filter} suggestions yet.`}
           </p>
         </div>
       ) : (
@@ -286,205 +331,318 @@ export default function AdminSuggestClient({
             // Find all approved suggestions whose name shares at least one token
             // Apply to both pending and rejected items
             const matchingApproved = approvedSuggestions.filter((approved) =>
-              approved._tokens.some((t) => pendingTokens.includes(t))
+              approved._tokens.some((t) => pendingTokens.includes(t)),
             );
 
             const isDuplicateOfApproved = matchingApproved.length > 0;
 
             return (
-            <div
-              key={suggestion.id}
-              className={`bg-zinc-900 rounded-xl border p-6 transition-all ${
-                suggestion.reviewed
-                  ? suggestion.approved
-                    ? "border-emerald-500/30"
-                    : "border-rose-500/30"
-                  : "border-zinc-800 hover:border-zinc-700"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-white truncate">
-                      {suggestion.speaker}
-                    </h3>
-                    {suggestion.reviewed && (
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          suggestion.approved
-                            ? "bg-emerald-500/20 text-emerald-400"
+              <div
+                key={suggestion.id}
+                className={`bg-zinc-900 rounded-xl border p-6 transition-all ${
+                  suggestion.reviewed
+                    ? suggestion.approved
+                      ? "border-emerald-500/30"
+                      : "border-rose-500/30"
+                    : "border-zinc-800 hover:border-zinc-700"
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-white truncate">
+                        {suggestion.speaker}
+                      </h3>
+                      {suggestion.reviewed && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            suggestion.approved
+                              ? "bg-emerald-500/20 text-emerald-400"
+                              : suggestion.duplicate
+                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                                : "bg-rose-500/20 text-rose-400"
+                          }`}
+                        >
+                          {suggestion.approved
+                            ? "Approved"
                             : suggestion.duplicate
-                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                            : "bg-rose-500/20 text-rose-400"
-                        }`}
-                      >
-                        {suggestion.approved ? "Approved" : suggestion.duplicate ? "Duplicate" : "Rejected"}
-                      </span>
-                    )}
-                    {!suggestion.reviewed && isDuplicateOfApproved && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                        Duplicate
-                      </span>
-                    )}
-                    {suggestion.reviewed && !suggestion.approved && isDuplicateOfApproved && !suggestion.duplicate && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                        Duplicate
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
-                    <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      {suggestion.email}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                      </svg>
-                      {suggestion.votes} votes
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {new Date(suggestion.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {/* Matching approved suggestions (for pending and rejected items) */}
-                  {matchingApproved.length > 0 && (
-                    <div className="mt-2 text-xs text-zinc-400">
-                      <p className="mb-1">Matching approved suggestion{matchingApproved.length > 1 ? "s" : ""}:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {matchingApproved.map((approved) => (
-                          <span
-                            key={approved.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-zinc-800 text-zinc-100 border border-zinc-700"
-                          >
-                            <span className="font-medium truncate max-w-[160px]">
-                              {approved.speaker}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              ({approved.votes} votes)
-                            </span>
+                              ? "Duplicate"
+                              : "Rejected"}
+                        </span>
+                      )}
+                      {!suggestion.reviewed && isDuplicateOfApproved && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          Duplicate
+                        </span>
+                      )}
+                      {suggestion.reviewed &&
+                        !suggestion.approved &&
+                        isDuplicateOfApproved &&
+                        !suggestion.duplicate && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            Duplicate
                           </span>
-                        ))}
+                        )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+                      <span className="flex items-center gap-1.5">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        {suggestion.email}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                          />
+                        </svg>
+                        {suggestion.votes} votes
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {new Date(suggestion.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {/* Matching approved suggestions (for pending and rejected items) */}
+                    {matchingApproved.length > 0 && (
+                      <div className="mt-2 text-xs text-zinc-400">
+                        <p className="mb-1">
+                          Matching approved suggestion
+                          {matchingApproved.length > 1 ? "s" : ""}:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {matchingApproved.map((approved) => (
+                            <span
+                              key={approved.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-zinc-800 text-zinc-100 border border-zinc-700"
+                            >
+                              <span className="font-medium truncate max-w-[160px]">
+                                {approved.speaker}
+                              </span>
+                              <span className="text-[10px] text-zinc-400">
+                                ({approved.votes} votes)
+                              </span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Voters */}
+                    <div className="mt-3">
+                      <div className="flex items-center gap-1.5 text-sm text-zinc-400 mb-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                          />
+                        </svg>
+                        <span>
+                          {suggestion.voters?.length ?? 0} voter
+                          {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(suggestion.voters ?? []).length === 0 ? (
+                          <p className="text-sm text-zinc-500">
+                            No recorded voters for this suggestion yet.
+                          </p>
+                        ) : (
+                          suggestion.voters!.map((email) => (
+                            <span
+                              key={email}
+                              className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
+                            >
+                              {email}
+                            </span>
+                          ))
+                        )}
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Voters */}
-                  <div className="mt-3">
-                    <div className="flex items-center gap-1.5 text-sm text-zinc-400 mb-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                      </svg>
-                      <span>
-                        {suggestion.voters?.length ?? 0} voter
-                        {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(suggestion.voters ?? []).length === 0 ? (
-                        <p className="text-sm text-zinc-500">
-                          No recorded voters for this suggestion yet.
-                        </p>
-                      ) : (
-                        suggestion.voters!.map((email) => (
-                          <span
-                            key={email}
-                            className="text-sm px-3 py-1 rounded-full bg-zinc-800 text-zinc-100"
+                  {!suggestion.reviewed && (
+                    <div className="flex gap-2 shrink-0 flex-wrap">
+                      {isDuplicateOfApproved && (
+                        <button
+                          onClick={() => startDuplicateMerge(suggestion)}
+                          disabled={processingIds.has(suggestion.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            {email}
-                          </span>
-                        ))
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                            />
+                          </svg>
+                          Duplicate
+                        </button>
                       )}
+                      <button
+                        onClick={() => handleAction(suggestion.id, "approve")}
+                        disabled={processingIds.has(suggestion.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                      >
+                        {processingIds.has(suggestion.id) ? (
+                          <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleAction(suggestion.id, "reject")}
+                        disabled={processingIds.has(suggestion.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors disabled:opacity-50"
+                      >
+                        {processingIds.has(suggestion.id) ? (
+                          <div className="w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        )}
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => startEditing(suggestion)}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
                     </div>
-                  </div>
+                  )}
+                  {suggestion.reviewed && (
+                    <div className="flex gap-2 shrink-0">
+                      {!suggestion.approved &&
+                        isDuplicateOfApproved &&
+                        !suggestion.duplicate && (
+                          <button
+                            onClick={() => startDuplicateMerge(suggestion)}
+                            disabled={processingIds.has(suggestion.id)}
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                              />
+                            </svg>
+                            Duplicate
+                          </button>
+                        )}
+                      <button
+                        onClick={() => startEditing(suggestion)}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                {!suggestion.reviewed && (
-                  <div className="flex gap-2 shrink-0 flex-wrap">
-                    {isDuplicateOfApproved && (
-                      <button
-                        onClick={() => startDuplicateMerge(suggestion)}
-                        disabled={processingIds.has(suggestion.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                        Duplicate
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleAction(suggestion.id, "approve")}
-                      disabled={processingIds.has(suggestion.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
-                    >
-                      {processingIds.has(suggestion.id) ? (
-                        <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleAction(suggestion.id, "reject")}
-                      disabled={processingIds.has(suggestion.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors disabled:opacity-50"
-                    >
-                      {processingIds.has(suggestion.id) ? (
-                        <div className="w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      )}
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => startEditing(suggestion)}
-                      className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  </div>
-                )} 
-                {suggestion.reviewed && (
-                  <div className="flex gap-2 shrink-0">
-                    {!suggestion.approved && isDuplicateOfApproved && !suggestion.duplicate && (
-                      <button
-                        onClick={() => startDuplicateMerge(suggestion)}
-                        disabled={processingIds.has(suggestion.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                        Duplicate
-                      </button>
-                    )}
-                    <button
-                      onClick={() => startEditing(suggestion)}
-                      className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
-          )})}
+            );
+          })}
         </div>
       )}
 
@@ -493,7 +651,9 @@ export default function AdminSuggestClient({
           <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-semibold text-white">Edit Speaker Name</h3>
+                <h3 className="text-xl font-semibold text-white">
+                  Edit Speaker Name
+                </h3>
                 <p className="text-sm text-zinc-400">
                   Update suggestion submitted by {editingSuggestion.email}
                 </p>
@@ -502,8 +662,18 @@ export default function AdminSuggestClient({
                 onClick={closeEditing}
                 className="text-zinc-500 hover:text-white transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -538,8 +708,18 @@ export default function AdminSuggestClient({
                 {isSavingEdit ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
                 Save Changes
@@ -549,89 +729,104 @@ export default function AdminSuggestClient({
         </div>
       )}
 
-      {duplicateSuggestion && (() => {
-        const pendingTokens = duplicateSuggestion.speaker
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(Boolean);
+      {duplicateSuggestion &&
+        (() => {
+          const pendingTokens = duplicateSuggestion.speaker
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(Boolean);
 
-        const matchingApproved = approvedSuggestions.filter((approved) =>
-          approved._tokens.some((t) => pendingTokens.includes(t))
-        );
+          const matchingApproved = approvedSuggestions.filter((approved) =>
+            approved._tokens.some((t) => pendingTokens.includes(t)),
+          );
 
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-            <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-white">Merge Duplicate</h3>
-                  <p className="text-sm text-zinc-400">
-                    Move votes from "{duplicateSuggestion.speaker}" to an approved duplicate
-                  </p>
-                </div>
-                <button
-                  onClick={closeDuplicateMerge}
-                  className="text-zinc-500 hover:text-white transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm text-zinc-300 mb-2">
-                  Select which approved suggestion to merge votes into:
-                </p>
-                {matchingApproved.length === 0 ? (
-                  <p className="text-sm text-zinc-500 p-3 bg-zinc-800 rounded-lg">
-                    No matching approved suggestions found.
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {matchingApproved.map((approved) => (
-                      <button
-                        key={approved.id}
-                        onClick={() => handleMergeDuplicate(approved.id)}
-                        disabled={isMergingDuplicate}
-                        className="w-full text-left p-3 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-amber-500/50 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white font-medium truncate">{approved.speaker}</p>
-                            <p className="text-xs text-zinc-400 mt-1">
-                              {approved.votes} votes • {approved.voters?.length ?? 0} voters
-                            </p>
-                          </div>
-                          {isMergingDuplicate && (
-                            <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin ml-2" />
-                          )}
-                        </div>
-                      </button>
-                    ))}
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">
+                      Merge Duplicate
+                    </h3>
+                    <p className="text-sm text-zinc-400">
+                      Move votes from "{duplicateSuggestion.speaker}" to an
+                      approved duplicate
+                    </p>
                   </div>
+                  <button
+                    onClick={closeDuplicateMerge}
+                    className="text-zinc-500 hover:text-white transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-zinc-300 mb-2">
+                    Select which approved suggestion to merge votes into:
+                  </p>
+                  {matchingApproved.length === 0 ? (
+                    <p className="text-sm text-zinc-500 p-3 bg-zinc-800 rounded-lg">
+                      No matching approved suggestions found.
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {matchingApproved.map((approved) => (
+                        <button
+                          key={approved.id}
+                          onClick={() => handleMergeDuplicate(approved.id)}
+                          disabled={isMergingDuplicate}
+                          className="w-full text-left p-3 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-amber-500/50 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white font-medium truncate">
+                                {approved.speaker}
+                              </p>
+                              <p className="text-xs text-zinc-400 mt-1">
+                                {approved.votes} votes •{" "}
+                                {approved.voters?.length ?? 0} voters
+                              </p>
+                            </div>
+                            {isMergingDuplicate && (
+                              <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin ml-2" />
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {mergeError && (
+                  <p className="mt-2 text-sm text-rose-400">{mergeError}</p>
                 )}
-              </div>
 
-              {mergeError && (
-                <p className="mt-2 text-sm text-rose-400">{mergeError}</p>
-              )}
-
-              <div className="mt-6 flex items-center justify-end gap-3">
-                <button
-                  onClick={closeDuplicateMerge}
-                  disabled={isMergingDuplicate}
-                  className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    onClick={closeDuplicateMerge}
+                    disabled={isMergingDuplicate}
+                    className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
     </div>
   );
 }
-
-

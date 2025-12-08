@@ -18,4 +18,3 @@ export const SUGGEST_MESSAGES = {
   ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
   ERROR_BANNED: "You have been banned from making suggestions.",
 } as const;
-

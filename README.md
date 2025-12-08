@@ -1,12 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## supabase auth
+
 whitelist:
+
 ```
 http://localhost:3000/auth/callback*
 ```
-@ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration
 
+@ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration
 
 ## Getting Started
 

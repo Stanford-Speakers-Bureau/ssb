@@ -29,8 +29,8 @@ export async function POST(req: Request) {
       const fileExt = imageFile.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      const { error: uploadError } = await auth.adminClient!.storage
-        .from("speakers")
+      const { error: uploadError } = await auth
+        .adminClient!.storage.from("speakers")
         .upload(fileName, imageFile, {
           cacheControl: "3600",
           upsert: false,
@@ -38,7 +38,10 @@ export async function POST(req: Request) {
 
       if (uploadError) {
         console.error("Image upload error:", uploadError);
-        return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to upload image" },
+          { status: 500 },
+        );
       }
 
       imgName = fileName;
@@ -51,7 +54,9 @@ export async function POST(req: Request) {
       venue: venue || null,
       venue_link: venue_link || null,
       release_date: release_date ? new Date(release_date).toISOString() : null,
-      start_time_date: start_time_date ? new Date(start_time_date).toISOString() : null,
+      start_time_date: start_time_date
+        ? new Date(start_time_date).toISOString()
+        : null,
       doors_open: doors_open ? new Date(doors_open).toISOString() : null,
       route: route || null,
       banner: banner,
@@ -65,8 +70,8 @@ export async function POST(req: Request) {
 
     if (id) {
       // Update existing event
-      const { data, error } = await auth.adminClient!
-        .from("events")
+      const { data, error } = await auth
+        .adminClient!.from("events")
         .update(eventData)
         .eq("id", id)
         .select("*")
@@ -74,21 +79,27 @@ export async function POST(req: Request) {
 
       if (error) {
         console.error("Event update error:", error);
-        return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to update event" },
+          { status: 500 },
+        );
       }
 
       savedEvent = data;
     } else {
       // Create new event
-      const { data, error } = await auth.adminClient!
-        .from("events")
+      const { data, error } = await auth
+        .adminClient!.from("events")
         .insert([eventData])
         .select("*")
         .single();
 
       if (error) {
         console.error("Event insert error:", error);
-        return NextResponse.json({ error: "Failed to create event" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to create event" },
+          { status: 500 },
+        );
       }
 
       savedEvent = data;
@@ -106,7 +117,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, event: eventWithImage });
   } catch (error) {
     console.error("Event save error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -121,38 +135,44 @@ export async function DELETE(req: Request) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Event ID is required" },
+        { status: 400 },
+      );
     }
 
     // Get the event first to delete its image
-    const { data: event } = await auth.adminClient!
-      .from("events")
+    const { data: event } = await auth
+      .adminClient!.from("events")
       .select("img")
       .eq("id", id)
       .single();
 
     // Delete the image from storage if it exists
     if (event?.img) {
-      await auth.adminClient!.storage
-        .from("speakers")
-        .remove([event.img]);
+      await auth.adminClient!.storage.from("speakers").remove([event.img]);
     }
 
     // Delete the event
-    const { error } = await auth.adminClient!
-      .from("events")
+    const { error } = await auth
+      .adminClient!.from("events")
       .delete()
       .eq("id", id);
 
     if (error) {
       console.error("Event delete error:", error);
-      return NextResponse.json({ error: "Failed to delete event" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to delete event" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Event delete error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
-

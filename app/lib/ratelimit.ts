@@ -44,17 +44,18 @@ export const notifyRatelimit = new Ratelimit({
  */
 export async function checkRateLimit(
   ratelimit: Ratelimit,
-  identifier: string
+  identifier: string,
 ): Promise<NextResponse | null> {
-  const { success, limit, reset, remaining } = await ratelimit.limit(identifier);
+  const { success, limit, reset, remaining } =
+    await ratelimit.limit(identifier);
 
   if (!success) {
     return NextResponse.json(
-      { 
+      {
         error: "Too many requests. Try again later.",
         retryAfter: Math.ceil((reset - Date.now()) / 1000),
       },
-      { 
+      {
         status: 429,
         headers: {
           "X-RateLimit-Limit": limit.toString(),
@@ -62,10 +63,9 @@ export async function checkRateLimit(
           "X-RateLimit-Reset": reset.toString(),
           "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
         },
-      }
+      },
     );
   }
 
   return null;
 }
-

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "u": "bunx npm-check-updates -u && bun install",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prettier": "prettier --write ."
+    
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -27,6 +29,7 @@
     "baseline-browser-mapping": "^2.9.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.7",
+    "prettier": "3.7.4",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
   }

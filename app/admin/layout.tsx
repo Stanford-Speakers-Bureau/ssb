@@ -42,23 +42,15 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   if (!auth.authorized) {
     if (auth.error === "Not authenticated") {
-      redirect(
-        `/api/auth/google?redirect_to=${encodeURIComponent("/admin")}`
-      );
+      redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/admin")}`);
     }
 
-    redirect(
-      `/`
-    );
+    redirect(`/`);
   }
 
   return (
-    <AdminLayoutClient
-      userEmail={auth.email}
-      navItems={navItems}
-    >
+    <AdminLayoutClient userEmail={auth.email} navItems={navItems}>
       {children}
     </AdminLayoutClient>
   );
 }
-

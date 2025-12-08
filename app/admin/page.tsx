@@ -22,7 +22,10 @@ async function getStats(): Promise<Stats> {
       { count: totalUsers },
       { count: totalBans },
     ] = await Promise.all([
-      supabase.from("suggest").select("*", { count: "exact", head: true }).eq("reviewed", false),
+      supabase
+        .from("suggest")
+        .select("*", { count: "exact", head: true })
+        .eq("reviewed", false),
       supabase.from("events").select("*", { count: "exact", head: true }),
       supabase.from("notify").select("*", { count: "exact", head: true }),
       supabase.from("admins").select("*", { count: "exact", head: true }),
@@ -102,8 +105,12 @@ export default async function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-serif mb-2">Dashboard</h1>
-        <p className="text-zinc-400">Welcome to the Stanford Speakers Bureau admin panel.</p>
+        <h1 className="text-3xl font-bold text-white font-serif mb-2">
+          Dashboard
+        </h1>
+        <p className="text-zinc-400">
+          Welcome to the Stanford Speakers Bureau admin panel.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -114,13 +121,27 @@ export default async function AdminDashboard() {
             prefetch={false}
             className="group bg-zinc-900 rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all hover:scale-[1.02]"
           >
-            <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-              <svg className={`w-6 h-6 ${card.textColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.icon} />
+            <div
+              className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+            >
+              <svg
+                className={`w-6 h-6 ${card.textColor}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={card.icon}
+                />
               </svg>
             </div>
             <p className="text-zinc-400 text-sm mb-1">{card.title}</p>
-            <p className={`text-3xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}>
+            <p
+              className={`text-3xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}
+            >
               {card.value.toLocaleString()}
             </p>
           </Link>
@@ -129,7 +150,9 @@ export default async function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="mt-12">
-        <h2 className="text-xl font-bold text-white font-serif mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-bold text-white font-serif mb-4">
+          Quick Actions
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/suggest"
@@ -137,24 +160,46 @@ export default async function AdminDashboard() {
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-5 h-5 text-amber-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <div>
               <p className="text-white font-medium">Review Suggestions</p>
-              <p className="text-zinc-500 text-sm">Approve or reject speakers</p>
+              <p className="text-zinc-500 text-sm">
+                Approve or reject speakers
+              </p>
             </div>
           </Link>
-          
+
           <Link
             href="/admin/events"
             prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-5 h-5 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
             </div>
             <div>
@@ -162,15 +207,25 @@ export default async function AdminDashboard() {
               <p className="text-zinc-500 text-sm">Add a new speaker event</p>
             </div>
           </Link>
-          
+
           <Link
             href="/admin/users"
             prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <svg
+                className="w-5 h-5 text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                />
               </svg>
             </div>
             <div>
@@ -178,15 +233,25 @@ export default async function AdminDashboard() {
               <p className="text-zinc-500 text-sm">Grant admin access</p>
             </div>
           </Link>
-          
+
           <Link
             href="/admin/notify"
             prefetch={false}
             className="flex items-center gap-3 p-4 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
           >
             <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <svg
+                className="w-5 h-5 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div>
@@ -199,4 +264,3 @@ export default async function AdminDashboard() {
     </div>
   );
 }
-

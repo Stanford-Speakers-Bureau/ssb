@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -53,15 +53,16 @@ export default function UpcomingSpeakerCard({
   const showSponsorName = !!sponsorName;
   const showSponsor = showSponsorPrefix || showSponsorName;
   const showCta = !!ctaText && !!ctaHref;
-  const showMeta = showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
+  const showMeta =
+    showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
   const showCalendarLink = !mystery && !!calendarUrl;
   const showNotifyButton = mystery && !!eventId;
 
-  const [notifyStatus, setNotifyStatus] = useState<"idle" | "loading" | "success" | "error">(
-    isAlreadyNotified ? "success" : "idle"
-  );
+  const [notifyStatus, setNotifyStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >(isAlreadyNotified ? "success" : "idle");
   const [notifyMessage, setNotifyMessage] = useState(
-    isAlreadyNotified ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP : ""
+    isAlreadyNotified ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP : "",
   );
 
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
@@ -78,7 +79,7 @@ export default function UpcomingSpeakerCard({
 
   const handleNotifyClick = async () => {
     setNotifyStatus("loading");
-    
+
     try {
       const response = await fetch("/api/notify", {
         method: "POST",
@@ -114,21 +115,29 @@ export default function UpcomingSpeakerCard({
     <div
       className="relative rounded-lg p-8 shadow-sm overflow-hidden"
       style={{
-        ...(backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : {}),
+        ...(backgroundImageUrl
+          ? { backgroundImage: `url(${backgroundImageUrl})` }
+          : {}),
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
       {/* Semi-transparent overlay for better text readability */}
-      <div className={`absolute inset-0 z-0 ${mystery ? 'backdrop-blur-xl bg-black/50' : 'bg-black/70'}`}></div>
+      <div
+        className={`absolute inset-0 z-0 ${mystery ? "backdrop-blur-xl bg-black/50" : "bg-black/70"}`}
+      ></div>
 
       <div className="relative z-10">
         {showName && (
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white mb-2">{name}</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white mb-2">
+            {name}
+          </h2>
         )}
         {showHeader && (
-          <p className="text-base sm:text-lg text-zinc-200 mb-6 italic">{header}</p>
+          <p className="text-base sm:text-lg text-zinc-200 mb-6 italic">
+            {header}
+          </p>
         )}
 
         {showMeta && (
@@ -179,7 +188,9 @@ export default function UpcomingSpeakerCard({
                   <path d="M10 12v.01" />
                   <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4.742-1.186A1 1 0 0 1 13 4.56z" />
                 </svg>
-                <p className="text-base text-white font-medium">{doorsOpenText}</p>
+                <p className="text-base text-white font-medium">
+                  {doorsOpenText}
+                </p>
               </div>
             )}
 
@@ -198,7 +209,9 @@ export default function UpcomingSpeakerCard({
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-base text-white font-medium">{eventTimeText}</p>
+                <p className="text-base text-white font-medium">
+                  {eventTimeText}
+                </p>
               </div>
             )}
 
@@ -233,7 +246,9 @@ export default function UpcomingSpeakerCard({
                     {locationName}
                   </a>
                 ) : showLocationName ? (
-                  <span className="text-base text-white font-medium">{locationName}</span>
+                  <span className="text-base text-white font-medium">
+                    {locationName}
+                  </span>
                 ) : null}
               </div>
             )}
@@ -241,8 +256,15 @@ export default function UpcomingSpeakerCard({
             {showSponsor && (
               <div className="flex items-center gap-2">
                 <p className="text-base text-white">
-                  {showSponsorPrefix && <span>{sponsorPrefix}{showSponsorName ? " " : ""}</span>}
-                  {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
+                  {showSponsorPrefix && (
+                    <span>
+                      {sponsorPrefix}
+                      {showSponsorName ? " " : ""}
+                    </span>
+                  )}
+                  {showSponsorName && (
+                    <span className="font-semibold">{sponsorName}</span>
+                  )}
                 </p>
               </div>
             )}
@@ -257,7 +279,12 @@ export default function UpcomingSpeakerCard({
             rel=""
             className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#8B0A0A] hover:shadow-lg hover:scale-105 active:scale-95"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -269,9 +296,11 @@ export default function UpcomingSpeakerCard({
           </Link>
         )}
 
-        {showNotifyButton && (
-          notifyStatus === "success" ? (
-            <p className="text-sm text-green-400 font-medium">{notifyMessage}</p>
+        {showNotifyButton &&
+          (notifyStatus === "success" ? (
+            <p className="text-sm text-green-400 font-medium">
+              {notifyMessage}
+            </p>
           ) : notifyStatus === "error" ? (
             <div className="flex items-center gap-3">
               <p className="text-sm text-red-400">{notifyMessage}</p>
@@ -291,7 +320,12 @@ export default function UpcomingSpeakerCard({
               {notifyStatus === "loading" ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -302,8 +336,7 @@ export default function UpcomingSpeakerCard({
               )}
               {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}
             </button>
-          )
-        )}
+          ))}
       </div>
     </div>
   );

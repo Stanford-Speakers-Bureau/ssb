@@ -16,7 +16,10 @@ interface SiteChromeProps {
   bannerProps: BannerProps;
 }
 
-export default function SiteChrome({ showBanner, bannerProps }: SiteChromeProps) {
+export default function SiteChrome({
+  showBanner,
+  bannerProps,
+}: SiteChromeProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
 
@@ -38,4 +41,3 @@ export default function SiteChrome({ showBanner, bannerProps }: SiteChromeProps)
     </>
   );
 }
-

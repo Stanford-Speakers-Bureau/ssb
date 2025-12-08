@@ -18,18 +18,20 @@ const hedvigLettersSerif = Hedvig_Letters_Serif({
 const baseURL = "https://ssb.stanford.edu";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://ssb.stanford.edu'),
+  metadataBase: new URL("https://ssb.stanford.edu"),
   title: "Stanford Speakers Bureau",
-  description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
+  description:
+    "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
   openGraph: {
     title: "Stanford Speakers Bureau",
-    description: "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
+    description:
+      "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
     images: [
       {
         url: `/speakers/jojo-siwa.jpg`,
         width: 1200,
         height: 630,
-      }
+      },
     ],
     url: `${baseURL}`,
   },
@@ -41,21 +43,27 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const closestEvent = await getClosestUpcomingEvent();
-  
+
   // Determine if speaker is still a mystery (before release_date)
   const now = new Date();
-  const releaseDate = closestEvent?.release_date ? new Date(closestEvent.release_date) : null;
+  const releaseDate = closestEvent?.release_date
+    ? new Date(closestEvent.release_date)
+    : null;
   const isMystery = releaseDate ? now < releaseDate : !closestEvent?.name;
-  
+
   // Show banner if there's an upcoming event
   const showBanner = !!closestEvent;
-  
+
   // Banner text and countdown target based on mystery status
-  const bannerText = isMystery 
-    ? "GET NOTIFIED ABOUT OUR NEXT SPEAKER!!" 
+  const bannerText = isMystery
+    ? "GET NOTIFIED ABOUT OUR NEXT SPEAKER!!"
     : `${closestEvent?.name} is coming to Stanford!`;
-  const countdownTarget = isMystery ? closestEvent?.release_date : closestEvent?.start_time_date;
-  const prefaceLabel = isMystery ? "Speaker Name & Ticket Reveal in" : "Event starts in";
+  const countdownTarget = isMystery
+    ? closestEvent?.release_date
+    : closestEvent?.start_time_date;
+  const prefaceLabel = isMystery
+    ? "Speaker Name & Ticket Reveal in"
+    : "Event starts in";
 
   return (
     <html lang="en">

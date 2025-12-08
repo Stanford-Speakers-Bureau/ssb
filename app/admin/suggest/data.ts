@@ -1,7 +1,9 @@
 import type { Suggestion } from "./AdminSuggestClient";
 import { verifyAdminRequest } from "../../lib/supabase";
 
-export async function getAdminSuggestions(): Promise<{ suggestions: Suggestion[] }> {
+export async function getAdminSuggestions(): Promise<{
+  suggestions: Suggestion[];
+}> {
   try {
     const auth = await verifyAdminRequest();
     if (!auth.authorized) {
@@ -24,7 +26,9 @@ export async function getAdminSuggestions(): Promise<{ suggestions: Suggestion[]
     // Attach voters for each suggestion (admin-only view)
     let suggestionsWithVoters = suggestions || [];
     try {
-      const suggestionIds = (suggestions || []).map((s: any) => s.id).filter(Boolean);
+      const suggestionIds = (suggestions || [])
+        .map((s: any) => s.id)
+        .filter(Boolean);
 
       if (suggestionIds.length > 0) {
         const { data: votes, error: votesError } = await client
@@ -60,5 +64,3 @@ export async function getAdminSuggestions(): Promise<{ suggestions: Suggestion[]
     return { suggestions: [] };
   }
 }
-
-

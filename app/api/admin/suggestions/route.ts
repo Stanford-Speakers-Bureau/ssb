@@ -34,8 +34,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const { error } = await auth.adminClient!
-      .from("suggest")
+    const { error } = await auth
+      .adminClient!.from("suggest")
       .update({
         reviewed: true,
         approved: action === "approve",
@@ -44,7 +44,10 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Suggestion update error:", error);
-      return NextResponse.json({ error: "Failed to update suggestion" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to update suggestion" },
+        { status: 500 },
+      );
     }
 
     // Return fresh suggestions using the same logic as the initial page load
@@ -52,7 +55,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, suggestions });
   } catch (error) {
     console.error("Suggestion action error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -72,8 +78,8 @@ export async function PATCH(req: Request) {
 
     // Handle marking as duplicate
     if (typeof duplicate === "boolean") {
-      const { error } = await auth.adminClient!
-        .from("suggest")
+      const { error } = await auth
+        .adminClient!.from("suggest")
         .update({ duplicate })
         .eq("id", id);
 
@@ -81,7 +87,7 @@ export async function PATCH(req: Request) {
         console.error("Suggestion duplicate update error:", error);
         return NextResponse.json(
           { error: "Failed to update suggestion" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -95,8 +101,8 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const { error } = await auth.adminClient!
-      .from("suggest")
+    const { error } = await auth
+      .adminClient!.from("suggest")
       .update({ speaker: speaker })
       .eq("id", id);
 
@@ -104,7 +110,7 @@ export async function PATCH(req: Request) {
       console.error("Suggestion edit error:", error);
       return NextResponse.json(
         { error: "Failed to update suggestion" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -115,7 +121,7 @@ export async function PATCH(req: Request) {
     console.error("Suggestion edit error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -130,7 +136,12 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const { sourceId, targetId } = body;
 
-    if (!sourceId || !targetId || typeof sourceId !== "string" || typeof targetId !== "string") {
+    if (
+      !sourceId ||
+      !targetId ||
+      typeof sourceId !== "string" ||
+      typeof targetId !== "string"
+    ) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
@@ -146,7 +157,7 @@ export async function PUT(req: Request) {
     if (sourceError || !source || source.approved) {
       return NextResponse.json(
         { error: "Source suggestion must be pending or rejected" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -159,7 +170,7 @@ export async function PUT(req: Request) {
     if (targetError || !target || !target.approved) {
       return NextResponse.json(
         { error: "Target suggestion must be approved" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -173,7 +184,7 @@ export async function PUT(req: Request) {
       console.error("Failed to fetch source votes:", votesError);
       return NextResponse.json(
         { error: "Failed to fetch source votes" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -187,7 +198,7 @@ export async function PUT(req: Request) {
       console.error("Failed to fetch target votes:", targetVotesError);
       return NextResponse.json(
         { error: "Failed to fetch target votes" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -195,25 +206,23 @@ export async function PUT(req: Request) {
 
     // Filter out votes that already exist for the target
     const votesToTransfer = (sourceVotes || []).filter(
-      (vote) => !targetVoterEmails.has(vote.email)
+      (vote) => !targetVoterEmails.has(vote.email),
     );
 
     // Transfer votes to target (only new ones)
     if (votesToTransfer.length > 0) {
-      const { error: transferError } = await client
-        .from("votes")
-        .insert(
-          votesToTransfer.map((vote) => ({
-            speaker_id: targetId,
-            email: vote.email,
-          }))
-        );
+      const { error: transferError } = await client.from("votes").insert(
+        votesToTransfer.map((vote) => ({
+          speaker_id: targetId,
+          email: vote.email,
+        })),
+      );
 
       if (transferError) {
         console.error("Failed to transfer votes:", transferError);
         return NextResponse.json(
           { error: "Failed to transfer votes" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -228,7 +237,7 @@ export async function PUT(req: Request) {
       console.error("Failed to delete source votes:", deleteError);
       return NextResponse.json(
         { error: "Failed to delete source votes" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -246,7 +255,7 @@ export async function PUT(req: Request) {
       console.error("Failed to update source suggestion:", updateError);
       return NextResponse.json(
         { error: "Failed to update source suggestion" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -257,8 +266,7 @@ export async function PUT(req: Request) {
     console.error("Duplicate merge error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

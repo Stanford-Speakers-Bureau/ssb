@@ -3,7 +3,15 @@ import Link from "next/link";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
 import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
-import { getSupabaseClient, createServerSupabaseClient, formatEventDate, formatTime, generateICalUrl, getSignedImageUrl, isEventMystery } from "../lib/supabase";
+import {
+  getSupabaseClient,
+  createServerSupabaseClient,
+  formatEventDate,
+  formatTime,
+  generateICalUrl,
+  getSignedImageUrl,
+  isEventMystery,
+} from "../lib/supabase";
 
 type SanitizedEvent = {
   id: string;
@@ -19,7 +27,7 @@ type SanitizedEvent = {
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const supabase = getSupabaseClient();
-  
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -45,10 +53,12 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         venue_link: event.venue_link,
         name: isMystery ? null : event.name,
         desc: isMystery ? null : event.desc,
-        signedImageUrl: isMystery ? null : await getSignedImageUrl(event.img, 60),
+        signedImageUrl: isMystery
+          ? null
+          : await getSignedImageUrl(event.img, 60),
         isMystery,
       };
-    })
+    }),
   );
 
   return sanitizedEvents;
@@ -57,8 +67,10 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
 async function getUserNotifications(): Promise<Set<string>> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user?.email) return new Set();
 
     const adminClient = getSupabaseClient();
@@ -67,7 +79,7 @@ async function getUserNotifications(): Promise<Set<string>> {
       .select("speaker_id")
       .eq("email", user.email);
 
-    return new Set(data?.map(n => n.speaker_id) || []);
+    return new Set(data?.map((n) => n.speaker_id) || []);
   } catch {
     return new Set();
   }
@@ -93,11 +105,13 @@ export default async function UpcomingSpeakers() {
 
           <div className="mb-10 flex flex-col gap-4 rounded-lg bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-lg font-semibold">Want to see someone on stage? Suggest a speaker!</p>
+              <p className="text-lg font-semibold">
+                Want to see someone on stage? Suggest a speaker!
+              </p>
             </div>
             <SuggestSpeakerButton />
           </div>
-          
+
           {events.length === 0 ? (
             <p className="text-zinc-600 dark:text-zinc-400">
               No upcoming events at this time. Check back soon!
@@ -108,13 +122,29 @@ export default async function UpcomingSpeakers() {
                 <UpcomingSpeakerCard
                   key={event.id}
                   name={event.isMystery ? "???" : event.name || "???"}
-                  header={event.isMystery ? "Speaker — To Be Announced" : event.desc || ""}
+                  header={
+                    event.isMystery
+                      ? "Speaker — To Be Announced"
+                      : event.desc || ""
+                  }
                   dateText={formatEventDate(event.start_time_date)}
-                  doorsOpenText={event.doors_open ? `Doors open at ${formatTime(event.doors_open)}` : ""}
-                  eventTimeText={event.start_time_date ? `Event starts at ${formatTime(event.start_time_date)}` : ""}
+                  doorsOpenText={
+                    event.doors_open
+                      ? `Doors open at ${formatTime(event.doors_open)}`
+                      : ""
+                  }
+                  eventTimeText={
+                    event.start_time_date
+                      ? `Event starts at ${formatTime(event.start_time_date)}`
+                      : ""
+                  }
                   locationName={event.venue || ""}
                   locationUrl={event.venue_link || ""}
-                  backgroundImageUrl={event.isMystery ? "/speakers/mystery.jpg" : event.signedImageUrl || "/speakers/mystery.jpg"}
+                  backgroundImageUrl={
+                    event.isMystery
+                      ? "/speakers/mystery.jpg"
+                      : event.signedImageUrl || "/speakers/mystery.jpg"
+                  }
                   mystery={event.isMystery}
                   calendarUrl={event.isMystery ? "" : generateICalUrl(event)}
                   eventId={event.id}

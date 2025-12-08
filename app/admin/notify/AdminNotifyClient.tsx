@@ -17,7 +17,9 @@ type AdminNotifyClientProps = {
   initialEvents: EventWithNotifications[];
 };
 
-export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientProps) {
+export default function AdminNotifyClient({
+  initialEvents,
+}: AdminNotifyClientProps) {
   const [events, setEvents] = useState<EventWithNotifications[]>(initialEvents);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,7 +28,7 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
     const csv = [
       "Email,Signup Date",
       ...event.notifications.map(
-        (n) => `${n.email},${new Date(n.created_at).toISOString()}`
+        (n) => `${n.email},${new Date(n.created_at).toISOString()}`,
       ),
     ].join("\n");
 
@@ -43,18 +45,25 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
     const term = searchTerm.toLowerCase();
     const nameMatch = event.name?.toLowerCase().includes(term);
     const emailMatch = event.notifications.some((n) =>
-      n.email.toLowerCase().includes(term)
+      n.email.toLowerCase().includes(term),
     );
     return nameMatch || emailMatch;
   });
 
-  const totalSignups = events.reduce((acc, e) => acc + e.notifications.length, 0);
+  const totalSignups = events.reduce(
+    (acc, e) => acc + e.notifications.length,
+    0,
+  );
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-serif mb-2">Notification Signups</h1>
-        <p className="text-zinc-400">View users who signed up for event notifications.</p>
+        <h1 className="text-3xl font-bold text-white font-serif mb-2">
+          Notification Signups
+        </h1>
+        <p className="text-zinc-400">
+          View users who signed up for event notifications.
+        </p>
       </div>
 
       {/* Search */}
@@ -84,13 +93,27 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
       {filteredEvents.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <svg
+              className="w-8 h-8 text-zinc-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
             </svg>
           </div>
-          <p className="text-zinc-400 text-lg mb-1">No notification signups found</p>
+          <p className="text-zinc-400 text-lg mb-1">
+            No notification signups found
+          </p>
           <p className="text-zinc-600 text-sm">
-            {searchTerm ? "Try a different search term." : "No users have signed up for notifications yet."}
+            {searchTerm
+              ? "Try a different search term."
+              : "No users have signed up for notifications yet."}
           </p>
         </div>
       ) : (
@@ -109,7 +132,9 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setExpandedEvent(expandedEvent === event.id ? null : event.id);
+                    setExpandedEvent(
+                      expandedEvent === event.id ? null : event.id,
+                    );
                   }
                 }}
                 className="w-full p-6 flex items-center justify-between hover:bg-zinc-800/50 transition-colors cursor-pointer"
@@ -120,16 +145,36 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-zinc-500">
                     <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
                       {event.start_time_date
                         ? new Date(event.start_time_date).toLocaleDateString()
                         : "TBD"}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
                       </svg>
                       {event.notifications.length} signups
                     </span>
@@ -144,8 +189,18 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                       }}
                       className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-lg text-sm hover:bg-zinc-700 transition-colors"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
                       </svg>
                       Export CSV
                     </button>
@@ -158,7 +213,12 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -176,9 +236,13 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                       <tbody className="divide-y divide-zinc-800/50">
                         {event.notifications.map((notification) => (
                           <tr key={notification.id} className="text-sm">
-                            <td className="py-3 text-white">{notification.email}</td>
+                            <td className="py-3 text-white">
+                              {notification.email}
+                            </td>
                             <td className="py-3 text-zinc-500">
-                              {new Date(notification.created_at).toLocaleString()}
+                              {new Date(
+                                notification.created_at,
+                              ).toLocaleString()}
                             </td>
                           </tr>
                         ))}
@@ -188,11 +252,14 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
                 </div>
               )}
 
-              {expandedEvent === event.id && event.notifications.length === 0 && (
-                <div className="border-t border-zinc-800 p-8 text-center">
-                  <p className="text-zinc-500">No signups for this event yet.</p>
-                </div>
-              )}
+              {expandedEvent === event.id &&
+                event.notifications.length === 0 && (
+                  <div className="border-t border-zinc-800 p-8 text-center">
+                    <p className="text-zinc-500">
+                      No signups for this event yet.
+                    </p>
+                  </div>
+                )}
             </div>
           ))}
         </div>
@@ -209,9 +276,7 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
             </div>
             <div>
               <p className="text-zinc-500 text-sm">Total Signups</p>
-              <p className="text-2xl font-bold text-blue-400">
-                {totalSignups}
-              </p>
+              <p className="text-2xl font-bold text-blue-400">{totalSignups}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-sm">Avg per Event</p>
@@ -225,5 +290,3 @@ export default function AdminNotifyClient({ initialEvents }: AdminNotifyClientPr
     </div>
   );
 }
-
-

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {motion} from "motion/react";
+import { motion } from "motion/react";
 
 export default function Contact() {
   return (
@@ -22,35 +22,40 @@ export default function Contact() {
           <h2 className="text-xl sm:text-2xl font-bold font-serif text-white mb-8 text-center drop-shadow-lg">
             We are looking for event ideas!
           </h2>
-          
+
           <div className="mb-8">
             <p className="text-base text-gray-200 leading-relaxed mb-6 drop-shadow-md">
-              If you have ideas for events or have special connections to speakers you think the Stanford community would be interested in, please send us a message!
+              If you have ideas for events or have special connections to
+              speakers you think the Stanford community would be interested in,
+              please send us a message!
             </p>
-            
+
             <p className="text-base text-gray-200 leading-relaxed mb-6 drop-shadow-md">
-              If you have questions on getting an event off the ground, please check the{' '}
-              <a 
-                href="https://ose.stanford.edu/student-orgs/event-planning" 
-                target="_blank" 
+              If you have questions on getting an event off the ground, please
+              check the{" "}
+              <a
+                href="https://ose.stanford.edu/student-orgs/event-planning"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold hover:underline"
-                style={{ color: '#A80D0C' }}
+                style={{ color: "#A80D0C" }}
               >
                 Office of Student Engagement&apos;s website
-              </a>.
+              </a>
+              .
             </p>
-            
+
             <p className="text-base text-gray-200 leading-relaxed mb-8 drop-shadow-md">
-              If you are looking for Stanford Speakers Bureau to co-sponsor an event, please first check out the{' '}
+              If you are looking for Stanford Speakers Bureau to co-sponsor an
+              event, please first check out the{" "}
               <Link
                 href="/other-programs"
                 prefetch={false}
                 className="font-semibold hover:underline"
-                style={{ color: '#A80D0C' }}
+                style={{ color: "#A80D0C" }}
               >
                 Other Programs section
-              </Link>{' '}
+              </Link>{" "}
               for our interests and guidelines.
             </p>
           </div>
@@ -60,12 +65,22 @@ export default function Contact() {
           </h2>
 
           <div className="flex justify-center">
-            <a 
+            <a
               href="mailto:ajoshi17@stanford.edu,anishan@stanford.edu"
               className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
               </svg>
               <span>Email Us!</span>
             </a>
@@ -75,4 +90,3 @@ export default function Contact() {
     </div>
   );
 }
-

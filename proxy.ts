@@ -14,10 +14,7 @@ function getAllowedOrigins(request: NextRequest): string[] {
   const host = request.headers.get("host") || "";
   const isProduction = process.env.NODE_ENV === "production";
 
-  const origins = [
-    `https://${host}`,
-    `http://${host}`,
-  ];
+  const origins = [`https://${host}`, `http://${host}`];
 
   // Only allow localhost in development
   if (!isProduction) {
@@ -41,7 +38,9 @@ function isValidOrigin(request: NextRequest): boolean {
   if (!requestOrigin) return true;
 
   const allowedOrigins = getAllowedOrigins(request);
-  return allowedOrigins.some((allowed) => requestOrigin.startsWith(allowed.replace(/\/$/, "")));
+  return allowedOrigins.some((allowed) =>
+    requestOrigin.startsWith(allowed.replace(/\/$/, "")),
+  );
 }
 
 /**
@@ -57,11 +56,13 @@ export function proxy(request: NextRequest) {
   }
 
   // CSRF Protection: Validate origin for state-changing requests
-  const isExemptRoute = ORIGIN_EXEMPT_ROUTES.some((route) => pathname.startsWith(route));
+  const isExemptRoute = ORIGIN_EXEMPT_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
   if (!isExemptRoute && !isValidOrigin(request)) {
     return NextResponse.json(
       { error: "Invalid request origin" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -72,7 +73,7 @@ export function proxy(request: NextRequest) {
     if (!contentType?.includes("application/json")) {
       return NextResponse.json(
         { error: "Invalid content type. Expected application/json" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,7 +82,7 @@ export function proxy(request: NextRequest) {
     if (contentLength && parseInt(contentLength, 10) > MAX_CONTENT_LENGTH) {
       return NextResponse.json(
         { error: "Request body too large" },
-        { status: 413 }
+        { status: 413 },
       );
     }
   }
@@ -92,4 +93,3 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: "/api/:path*",
 };
-
