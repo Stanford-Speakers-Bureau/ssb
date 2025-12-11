@@ -10,8 +10,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
   const isWhiteNavPage =
     pathname === "/" ||
-    pathname === "/contact" ||
-    pathname === "/events/malala";
+    pathname === "/contact";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const logoClasses = isWhiteNavPage
