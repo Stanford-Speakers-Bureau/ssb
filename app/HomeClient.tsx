@@ -100,7 +100,7 @@ export default function HomeClient() {
               whileTap={{ scale: 0.95 }}
               href="/suggest"
               prefetch={false}
-              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211]"
+              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
             >
               Suggest a Speaker!
             </MotionLink>

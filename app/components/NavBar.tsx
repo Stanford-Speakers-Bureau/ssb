@@ -5,13 +5,32 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isWhiteNavPage =
     pathname === "/" ||
     pathname === "/contact";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  // Check authentication state
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (error) {
+        console.error("Failed to check auth state:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, [pathname]);
 
   const logoClasses = isWhiteNavPage
     ? "text-xl font-bold text-white"
@@ -53,13 +72,13 @@ export default function NavBar({ banner }: { banner: boolean }) {
         className={`absolute ${banner ? "top-10" : "top-0"} left-0 right-0 z-50 w-full`}
       >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
-          <div className="flex items-center gap-8 pt-2">
+          <div className="flex items-center gap-8 pt-2 flex-1">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/" className={logoClasses} prefetch={false}>
                 <Image src="/logo.png" alt="Logo" width={40} height={40} />
               </Link>
             </motion.div>
-            <div className="hidden items-center gap-6 md:flex">
+            <div className="hidden items-center gap-6 md:flex flex-1">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -120,14 +139,31 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   Contact
                 </Link>
               </motion.div>
-              {/*<motion.div*/}
-              {/*  whileHover={{ scale: 1.05 }}*/}
-              {/*  whileTap={{ scale: 0.95 }}*/}
-              {/*>*/}
-              {/*  <Link href="/contact" className={linkClasses} prefetch={false}>*/}
-              {/*    Contact*/}
-              {/*  </Link>*/}
-              {/*</motion.div>*/}
+              {isAuthenticated !== null && (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="ml-auto"
+                >
+                  {isAuthenticated ? (
+                    <button
+                      onClick={() => {
+                        window.location.href = `/api/auth/signout?redirect_to=${encodeURIComponent(pathname)}`;
+                      }}
+                      className={linkClasses}
+                    >
+                      Sign Out
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
+                      className={linkClasses}
+                    >
+                      Sign In
+                    </Link>
+                  )}
+                </motion.div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -213,22 +249,27 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 >
                   Contact
                 </Link>
-                {/*<Link*/}
-                {/*  href="/sign"*/}
-                {/*  className={mobileLinkClasses}*/}
-                {/*  onClick={() => setMobileMenuOpen(false)}*/}
-                {/*>*/}
-                {/*  Sign Out*/}
-                {/*</Link>*/}
-                {/* <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
-                  <Link
-                    href="/sign-in"
-                    className="block text-center rounded px-4 py-2 text-sm font-medium text-white bg-[#A80D0C] shadow transition-colors hover:bg-[#A80D0C]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                </div> */}
+                {isAuthenticated !== null && (
+                  isAuthenticated ? (
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        window.location.href = `/api/auth/signout?redirect_to=${encodeURIComponent(pathname)}`;
+                      }}
+                      className={mobileLinkClasses}
+                    >
+                      Sign Out
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
+                      className={mobileLinkClasses}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign In
+                    </Link>
+                  )
+                )}
               </div>
             </div>
           </motion.div>
