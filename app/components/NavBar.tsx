@@ -120,6 +120,14 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   Contact
                 </Link>
               </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link href="/contact" className={linkClasses} prefetch={false}>
+                  Contact
+                </Link>
+              </motion.div>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -204,6 +212,13 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Contact
+                </Link>
+                <Link
+                  href="/sign"
+                  className={mobileLinkClasses}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Out
                 </Link>
                 {/* <div className="pt-4 border-t border-gray-300 dark:border-gray-700">
                   <Link
