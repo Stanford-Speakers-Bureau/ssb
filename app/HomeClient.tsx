@@ -100,7 +100,7 @@ export default function HomeClient() {
               whileTap={{ scale: 0.95 }}
               href="/suggest"
               prefetch={false}
-              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211]"
             >
               Suggest a Speaker!
             </MotionLink>
@@ -117,7 +117,7 @@ export default function HomeClient() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Mark Rober */}
-            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
+            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mark-rober.jpeg"
                 alt="Mark Rober"
@@ -141,7 +141,7 @@ export default function HomeClient() {
             </div>
 
             {/* JoJo Siwa */}
-            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
+            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/jojo-siwa.jpg"
                 alt="JoJo Siwa"
@@ -165,7 +165,7 @@ export default function HomeClient() {
             </div>
 
             {/* Mikey Day */}
-            <div className="relative p-6 rounded-lg overflow-hidden min-h-[400px] flex flex-col justify-end">
+            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mikey-day.JPG"
                 alt="Mikey Day"
@@ -193,7 +193,7 @@ export default function HomeClient() {
             <MotionLink
               href="/past-speakers"
               prefetch={false}
-              className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -208,7 +208,7 @@ export default function HomeClient() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Co-Sponsorships */}
-            <div className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
+            <div className="relative rounded overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/meeting.JPG"
                 alt="Co-Sponsorships"
@@ -239,7 +239,7 @@ export default function HomeClient() {
             </div>
 
             {/* Coffee Chats */}
-            <div className="relative rounded-lg overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
+            <div className="relative rounded overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/coffee-chat.jpg"
                 alt="Coffee Chats"
@@ -286,7 +286,7 @@ export default function HomeClient() {
             <MotionLink
               href="/contact"
               prefetch={false}
-              className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#8B0A0A]"
+              className="inline-flex items-center gap-2 rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

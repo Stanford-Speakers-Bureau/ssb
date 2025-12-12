@@ -193,7 +193,7 @@ export default function Leaderboard({
                     ${
                       suggestion.hasVoted
                         ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400"
-                        : "bg-[#A80D0C] hover:bg-[#8a0b0a] text-white shadow-sm hover:shadow"
+                        : "bg-[#A80D0C] hover:bg-[#8a0b0a] text-white shadow-sm hover:bg-[#C11211]"
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed`}
                   >

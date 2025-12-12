@@ -67,7 +67,7 @@ export default function Contact() {
           <div className="flex justify-center">
             <a
               href="mailto:ajoshi17@stanford.edu,anishan@stanford.edu"
-              className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
+              className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
             >
               <svg
                 className="w-5 h-5"

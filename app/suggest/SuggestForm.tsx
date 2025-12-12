@@ -75,7 +75,7 @@ export default function SuggestForm() {
           onChange={(e) => setSpeaker(e.target.value)}
           disabled={isDisabled}
           placeholder="Enter a name"
-          className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-600
+          className="w-full px-4 py-3 rounded border border-zinc-300 dark:border-zinc-600
                      bg-white dark:bg-zinc-800 text-black dark:text-white
                      placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                      focus:outline-none focus:ring-2 focus:ring-[#A80D0C] focus:border-transparent
@@ -94,7 +94,7 @@ export default function SuggestForm() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+            className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded"
           >
             <svg
               className="w-5 h-5 text-red-500"
@@ -120,7 +120,7 @@ export default function SuggestForm() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+            className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded"
           >
             <svg
               className="w-5 h-5 text-green-500"
@@ -148,9 +148,8 @@ export default function SuggestForm() {
         whileHover={isDisabled ? {} : { scale: 1.02 }}
         whileTap={isDisabled ? {} : { scale: 0.98 }}
         className="w-full py-3 px-6 rounded font-semibold text-white
-                   bg-[#A80D0C] hover:bg-[#8a0b0a]
-                   disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-all shadow-md hover:shadow-lg
+                   bg-[#A80D0C] disabled:opacity-50 disabled:cursor-not-allowed
+                   transition-all shadow-md hover:bg-[#C11211]
                    flex items-center justify-center gap-2"
       >
         {status === "submitting" ? (

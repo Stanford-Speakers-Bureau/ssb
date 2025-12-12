@@ -115,7 +115,7 @@ export default function OtherPrograms() {
             <div className="relative max-w-3xl mx-auto">
               {/* Step 1: Review */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl">
+                <div className="relative bg-white dark:bg-zinc-900 rounded p-6 sm:p-8 shadow-xl">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="shrink-0">
                       <span
@@ -138,7 +138,7 @@ export default function OtherPrograms() {
                         href="https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
+                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
                       >
                         <span>Review Document</span>
                         <svg
@@ -179,7 +179,7 @@ export default function OtherPrograms() {
 
               {/* Step 2: Submit */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
+                <div className="relative bg-white dark:bg-zinc-900 rounded p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span
@@ -201,7 +201,7 @@ export default function OtherPrograms() {
                         href="https://docs.google.com/forms/d/e/1FAIpQLSeAO0VRXyvxokpYWpFYPDg03UJ2oITF4LtWIF8GO0TIvyVIpA/viewform?usp=sharing&ouid=103384219620885640711"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
+                        className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
                       >
                         <span>Submit Application</span>
                         <svg
@@ -242,7 +242,7 @@ export default function OtherPrograms() {
 
               {/* Step 3: Present */}
               <div className="relative mb-8">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
+                <div className="relative bg-white dark:bg-zinc-900 rounded p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span
@@ -285,7 +285,7 @@ export default function OtherPrograms() {
 
               {/* Step 4: Get Funded */}
               <div className="relative">
-                <div className="relative bg-white dark:bg-zinc-900 rounded-lg p-6 sm:p-8 shadow-xl  ">
+                <div className="relative bg-white dark:bg-zinc-900 rounded p-6 sm:p-8 shadow-xl  ">
                   <div className="flex items-start gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
                       <span

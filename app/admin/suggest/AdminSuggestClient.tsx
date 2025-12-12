@@ -233,7 +233,7 @@ export default function AdminSuggestClient({
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-4 py-2 rounded text-sm font-medium transition-all ${
               filter === tab.id
                 ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                 : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
@@ -256,7 +256,7 @@ export default function AdminSuggestClient({
         <div className="flex gap-3 mb-6 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
           <button
             onClick={() => handleBulkAction("approve")}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded text-sm font-medium hover:bg-emerald-500/30 transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -275,7 +275,7 @@ export default function AdminSuggestClient({
           </button>
           <button
             onClick={() => handleBulkAction("reject")}
-            className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded text-sm font-medium hover:bg-rose-500/30 transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -505,7 +505,7 @@ export default function AdminSuggestClient({
                         <button
                           onClick={() => startDuplicateMerge(suggestion)}
                           disabled={processingIds.has(suggestion.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
                         >
                           <svg
                             className="w-4 h-4"
@@ -526,7 +526,7 @@ export default function AdminSuggestClient({
                       <button
                         onClick={() => handleAction(suggestion.id, "approve")}
                         disabled={processingIds.has(suggestion.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
                       >
                         {processingIds.has(suggestion.id) ? (
                           <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -550,7 +550,7 @@ export default function AdminSuggestClient({
                       <button
                         onClick={() => handleAction(suggestion.id, "reject")}
                         disabled={processingIds.has(suggestion.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-rose-500/20 text-rose-400 rounded text-sm font-medium hover:bg-rose-500/30 transition-colors disabled:opacity-50"
                       >
                         {processingIds.has(suggestion.id) ? (
                           <div className="w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
@@ -573,7 +573,7 @@ export default function AdminSuggestClient({
                       </button>
                       <button
                         onClick={() => startEditing(suggestion)}
-                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded text-sm font-medium hover:bg-zinc-700 transition-colors"
                       >
                         <svg
                           className="w-4 h-4"
@@ -600,7 +600,7 @@ export default function AdminSuggestClient({
                           <button
                             onClick={() => startDuplicateMerge(suggestion)}
                             disabled={processingIds.has(suggestion.id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
                           >
                             <svg
                               className="w-4 h-4"
@@ -620,7 +620,7 @@ export default function AdminSuggestClient({
                         )}
                       <button
                         onClick={() => startEditing(suggestion)}
-                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-200 rounded text-sm font-medium hover:bg-zinc-700 transition-colors"
                       >
                         <svg
                           className="w-4 h-4"
@@ -778,7 +778,7 @@ export default function AdminSuggestClient({
                     Select which approved suggestion to merge votes into:
                   </p>
                   {matchingApproved.length === 0 ? (
-                    <p className="text-sm text-zinc-500 p-3 bg-zinc-800 rounded-lg">
+                    <p className="text-sm text-zinc-500 p-3 bg-zinc-800 rounded">
                       No matching approved suggestions found.
                     </p>
                   ) : (
@@ -788,7 +788,7 @@ export default function AdminSuggestClient({
                           key={approved.id}
                           onClick={() => handleMergeDuplicate(approved.id)}
                           disabled={isMergingDuplicate}
-                          className="w-full text-left p-3 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-amber-500/50 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full text-left p-3 bg-zinc-800 border border-zinc-700 rounded hover:border-amber-500/50 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">

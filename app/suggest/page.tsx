@@ -115,7 +115,7 @@ export default async function SuggestPage({
       <main className="flex w-full flex-1 bg-white dark:bg-black pt-16 justify-center">
         {authError && (
           <div
-            className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded-lg text-sm font-medium text-red-800 bg-red-50 dark:bg-red-900/20 dark:text-red-300 shadow-lg"
+            className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded text-sm font-medium text-red-800 bg-red-50 dark:bg-red-900/20 dark:text-red-300 shadow-lg"
             role="alert"
           >
             Authentication failed. Please try signing in again.
@@ -136,7 +136,7 @@ export default async function SuggestPage({
             {/* Right column: Suggest a Speaker + Your suggested speakers */}
             <aside className="w-96 space-y-4">
               {/* Suggest a Speaker */}
-              <section className="bg-white dark:bg-black p-4 pt-2 rounded-lg">
+              <section className="bg-white dark:bg-black p-4 pt-2 rounded">
                 <h2 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
                   Suggest a Speaker
                 </h2>
@@ -146,7 +146,7 @@ export default async function SuggestPage({
                 </p>
 
                 {user ? (
-                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4">
+                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4">
                     <div className="flex items-center gap-2 mb-4">
                       {userAvatar ? (
                         <Image
@@ -186,7 +186,7 @@ export default async function SuggestPage({
                     <SuggestForm />
                   </div>
                 ) : (
-                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 text-center">
+                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4 text-center">
                     <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center mx-auto mb-3">
                       <svg
                         className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
@@ -211,7 +211,7 @@ export default async function SuggestPage({
                     <Link
                       href="/api/auth/google?redirect_to=/suggest"
                       prefetch={false}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white text-sm
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded font-semibold text-white text-sm
                                  bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all shadow-md hover:shadow-lg"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -239,7 +239,7 @@ export default async function SuggestPage({
               </section>
 
               {/* Your suggested speakers below the suggest card */}
-              <section className="bg-white dark:bg-black p-4 rounded-lg">
+              <section className="bg-white dark:bg-black p-4 rounded">
                 <h2 className="text-xl font-bold text-black dark:text-white mb-2 font-serif">
                   Your Suggested Speakers
                 </h2>
@@ -285,7 +285,7 @@ export default async function SuggestPage({
                               {s.speaker}
                             </span>
                             <span
-                              className={`inline-flex items-center rounded-lg px-2 py-2 text-xs font-semibold ${statusClass}`}
+                              className={`inline-flex items-center rounded px-2 py-2 text-xs font-semibold ${statusClass}`}
                             >
                               {statusLabel}
                             </span>
@@ -307,12 +307,12 @@ export default async function SuggestPage({
         {/* Mobile Layout */}
         <div className="lg:hidden flex-1 flex flex-col py-6 px-6 max-w-sm">
           {/* Mobile: Suggest section at the top */}
-          <section className="mb-6 rounded-lg pb-4 shadow-sm">
+          <section className="mb-6 rounded pb-4 shadow-sm">
             <h2 className="text-3xl font-bold text-black dark:text-white mb-4 font-serif">
               Suggest a Speaker
             </h2>
             {user ? (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4">
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4">
                 <div className="flex items-center gap-2 mb-4">
                   {userAvatar ? (
                     <Image
@@ -352,7 +352,7 @@ export default async function SuggestPage({
                 <SuggestForm />
               </div>
             ) : (
-              <div className="rounded-lg p-4 text-center">
+              <div className="rounded p-4 text-center">
                 <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center mx-auto mb-3">
                   <svg
                     className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
@@ -377,7 +377,7 @@ export default async function SuggestPage({
                 <Link
                   href="/api/auth/google?redirect_to=/suggest"
                   prefetch={false}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white text-sm
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded font-semibold text-white text-sm
                              bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all shadow-md hover:shadow-lg"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -406,7 +406,7 @@ export default async function SuggestPage({
 
           {/* Mobile: Your suggestions above the leaderboard */}
           {/* <section className="mb-4">
-            <div className="rounded-lg p-4 shadow-sm">
+            <div className="rounded p-4 shadow-sm">
               <h2 className="text-lg font-bold text-black dark:text-white mb-2 font-serif">
                 Your suggested speakers
               </h2>

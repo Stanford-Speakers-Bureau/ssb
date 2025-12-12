@@ -113,7 +113,7 @@ export default function UpcomingSpeakerCard({
 
   return (
     <div
-      className="relative rounded-lg p-8 shadow-sm overflow-hidden"
+      className="relative rounded p-8 shadow-sm overflow-hidden"
       style={{
         ...(backgroundImageUrl
           ? { backgroundImage: `url(${backgroundImageUrl})` }
@@ -277,7 +277,7 @@ export default function UpcomingSpeakerCard({
             prefetch={false}
             target=""
             rel=""
-            className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#8B0A0A] hover:shadow-lg hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95"
           >
             <svg
               className="w-4 h-4"
@@ -315,7 +315,7 @@ export default function UpcomingSpeakerCard({
             <button
               onClick={handleNotifyClick}
               disabled={notifyStatus === "loading"}
-              className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#8B0A0A] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {notifyStatus === "loading" ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

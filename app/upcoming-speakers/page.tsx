@@ -103,7 +103,7 @@ export default async function UpcomingSpeakers() {
             <NotifyHandler />
           </Suspense>
 
-          <div className="mb-10 flex flex-col gap-4 rounded-lg bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-10 flex flex-col gap-4 rounded bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-lg font-semibold">
                 Want to see someone on stage? Suggest a speaker!
@@ -163,7 +163,7 @@ export default async function UpcomingSpeakers() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transform transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#8B0A0A]"
+              className="inline-flex rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transform transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
             >
               Join Our Mailing List
             </a>

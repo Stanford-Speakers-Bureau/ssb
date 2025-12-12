@@ -124,7 +124,7 @@ export default function AdminUsersClient({
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setActiveTab("admins")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all ${
             activeTab === "admins"
               ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
               : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
@@ -147,7 +147,7 @@ export default function AdminUsersClient({
         </button>
         <button
           onClick={() => setActiveTab("bans")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all ${
             activeTab === "bans"
               ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
               : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
@@ -350,7 +350,7 @@ export default function AdminUsersClient({
                 </div>
                 <button
                   onClick={() => handleRemoveUser(admin.id, "admin")}
-                  className="flex items-center gap-2 px-3 py-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-rose-400 hover:bg-rose-500/10 rounded text-sm transition-colors"
                 >
                   <svg
                     className="w-4 h-4"
@@ -405,7 +405,7 @@ export default function AdminUsersClient({
               </div>
               <button
                 onClick={() => handleRemoveUser(ban.id, "ban")}
-                className="flex items-center gap-2 px-3 py-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded text-sm transition-colors"
               >
                 <svg
                   className="w-4 h-4"

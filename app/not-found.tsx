@@ -18,7 +18,7 @@ export default function NotFound() {
           <Link
             href="/"
             prefetch={false}
-            className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#8B0A0A] hover:shadow-lg hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95"
           >
             <svg
               className="w-4 h-4"

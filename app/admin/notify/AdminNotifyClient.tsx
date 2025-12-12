@@ -187,7 +187,7 @@ export default function AdminNotifyClient({
                         e.stopPropagation();
                         exportToCSV(event);
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-lg text-sm hover:bg-zinc-700 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded text-sm hover:bg-zinc-700 transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
