@@ -26,7 +26,8 @@
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "wrangler": "^4.55.0"
+    "wrangler": "^4.55.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

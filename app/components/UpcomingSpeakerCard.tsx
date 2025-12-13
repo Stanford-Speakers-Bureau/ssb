@@ -348,6 +348,7 @@ export default function UpcomingSpeakerCard({
         {showCta && (
           <Link
             href={ctaHref}
+            prefetch={false}
             target=""
             rel=""
             className="inline-flex items-center gap-2 rounded px-5 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95"
