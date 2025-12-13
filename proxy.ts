@@ -70,16 +70,24 @@ export function proxy(request: NextRequest) {
   if (["POST", "PUT", "PATCH"].includes(method)) {
     const contentType = request.headers.get("content-type");
 
-    if (!contentType?.includes("application/json")) {
+    if (
+      !contentType?.includes("application/json") &&
+      !contentType?.includes("multipart/form-data")
+    ) {
       return NextResponse.json(
-        { error: "Invalid content type. Expected application/json" },
+        { error: "Invalid content type. Expected application/json or multipart/form-data" },
         { status: 400 },
       );
     }
 
     // Check Content-Length to prevent oversized payloads
     const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_CONTENT_LENGTH) {
+    // 10MB limit for file uploads
+    const MAX_SIZE = contentType?.includes("multipart/form-data")
+      ? 10 * 1024 * 1024
+      : MAX_CONTENT_LENGTH;
+
+    if (contentLength && parseInt(contentLength, 10) > MAX_SIZE) {
       return NextResponse.json(
         { error: "Request body too large" },
         { status: 413 },

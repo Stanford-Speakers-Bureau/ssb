@@ -1,15 +1,14 @@
-import { Suspense } from "react";
-import Link from "next/link";
+import {Suspense} from "react";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
-import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
+import {SuggestSpeakerButton} from "./SuggestSpeakerButton";
 import {
-  getSupabaseClient,
   createServerSupabaseClient,
   formatEventDate,
   formatTime,
   generateICalUrl,
   getSignedImageUrl,
+  getSupabaseClient,
   isEventMystery,
 } from "../lib/supabase";
 
@@ -31,8 +30,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const { data, error } = await supabase
     .from("events")
     .select("*")
-    .gte("start_time_date", new Date().toISOString())
-    .order("start_time_date", { ascending: true });
+    .order("start_time_date", { ascending: false });
 
   if (error) {
     return [];
@@ -40,7 +38,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
 
   const events = data || [];
 
-  const sanitizedEvents = await Promise.all(
+  return await Promise.all(
     events.map(async (event) => {
       const isMystery = isEventMystery(event);
 
@@ -60,8 +58,6 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
       };
     }),
   );
-
-  return sanitizedEvents;
 }
 
 async function getUserNotifications(): Promise<Set<string>> {
