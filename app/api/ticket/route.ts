@@ -15,6 +15,7 @@ const TICKET_MESSAGES = {
   ERROR_ALREADY_HAS_TICKET: "You already have a ticket for this event.",
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
+  ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
 } as const;
 
 export async function POST(req: Request) {
@@ -179,6 +180,20 @@ export async function DELETE(req: Request) {
     }
 
     const adminClient = getSupabaseClient();
+
+    // Check if there's a live event - prevent cancellation if any event is live
+    const { data: liveEvent } = await adminClient
+      .from("events")
+      .select("id, name")
+      .eq("live", true)
+      .single();
+
+    if (liveEvent) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
+        { status: 400 },
+      );
+    }
 
     // Check if user has a ticket for this event
     const { data: existingTicket } = await adminClient

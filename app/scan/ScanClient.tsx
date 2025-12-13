@@ -297,7 +297,7 @@ export default function ScanClient() {
 
       // Optimized scanner configuration - scan entire camera viewport
       const config = {
-        fps: 20, // Higher FPS for faster scanning
+        fps: 60, // Higher FPS for faster scanning
         // No qrbox specified - scans entire camera viewport
         aspectRatio: 1.0,
         // Disable verbose logging for better performance on mobile
@@ -400,19 +400,19 @@ export default function ScanClient() {
     });
   };
 
-  // Get background color based on scan status (subtle overlay effect)
+  // Get background color based on scan status (bright full-screen overlay)
   const getStatusOverlay = () => {
     if (status === "scanned") {
       if (ticketInfo?.type?.toLowerCase() === "vip") {
-        return "bg-blue-50/30 dark:bg-blue-950/20";
+        return "bg-blue-500";
       }
-      return "bg-green-50/30 dark:bg-green-950/20";
+      return "bg-green-500";
     }
     if (status === "already_scanned") {
-      return "bg-yellow-50/30 dark:bg-yellow-950/20";
+      return "bg-yellow-500";
     }
     if (status === "invalid") {
-      return "bg-red-50/30 dark:bg-red-950/20";
+      return "bg-red-500";
     }
     return "";
   };
@@ -460,10 +460,14 @@ export default function ScanClient() {
 
   return (
     <div
-      className={`flex h-screen flex-col items-center font-sans bg-zinc-50 dark:bg-black transition-colors duration-500 overflow-hidden ${getStatusOverlay()}`}
+      className={`flex h-screen flex-col items-center font-sans transition-colors duration-500 overflow-hidden ${
+        status ? getStatusOverlay() : "bg-zinc-50 dark:bg-black"
+      }`}
     >
       <main
-        className={`flex w-full flex-1 justify-center bg-white dark:bg-black transition-colors duration-500 pt-12 sm:pt-16 overflow-y-auto ${getStatusOverlay()}`}
+        className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-12 sm:pt-16 overflow-y-auto ${
+          status ? getStatusOverlay() : "bg-white dark:bg-black"
+        }`}
       >
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="text-center mb-2 sm:mb-4">

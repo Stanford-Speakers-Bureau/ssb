@@ -18,6 +18,7 @@ const TICKET_MESSAGES = {
   ERROR_ALREADY_HAS_TICKET: "You already have a ticket for this event.",
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
+  ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   CREATING: "Creating ticket...",
   CANCELLING: "Cancelling ticket...",
 } as const;
@@ -31,6 +32,7 @@ export default function TicketButton({
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [isLiveEvent, setIsLiveEvent] = useState(false);
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -39,6 +41,25 @@ export default function TicketButton({
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  // Check if there's a live event
+  useEffect(() => {
+    const checkLiveEvent = async () => {
+      try {
+        const response = await fetch("/api/events/live");
+        const data = await response.json();
+        setIsLiveEvent(data.isLive || false);
+      } catch (error) {
+        console.error("Error checking live event:", error);
+        setIsLiveEvent(false);
+      }
+    };
+
+    checkLiveEvent();
+    // Refresh live event status every 30 seconds
+    const interval = setInterval(checkLiveEvent, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleTicketClick = async () => {
     setIsLoading(true);
@@ -78,7 +99,12 @@ export default function TicketButton({
         // Dispatch event to update ticket count
         window.dispatchEvent(new CustomEvent("ticketChanged"));
       } else {
-        setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
+        const errorMessage = data.error || TICKET_MESSAGES.ERROR_GENERIC;
+        setMessage(errorMessage);
+        // If it's a live event error, update the live event state
+        if (errorMessage === TICKET_MESSAGES.ERROR_LIVE_EVENT) {
+          setIsLiveEvent(true);
+        }
       }
     } catch {
       setMessage(TICKET_MESSAGES.ERROR_GENERIC);
@@ -87,13 +113,16 @@ export default function TicketButton({
     }
   };
 
+  const isCancelDisabled = hasTicket && isLiveEvent;
+  const isButtonDisabled = isLoading || isCancelDisabled;
+
   return (
     <div className="mb-4 md:mb-6">
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={isButtonDisabled ? {} : { scale: 1.05 }}
+        whileTap={isButtonDisabled ? {} : { scale: 0.95 }}
         onClick={handleTicketClick}
-        disabled={isLoading}
+        disabled={isButtonDisabled}
         className="rounded px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
       >
         {isLoading
@@ -104,7 +133,12 @@ export default function TicketButton({
             ? "Cancel Ticket"
             : "Get Ticket"}
       </motion.button>
-      {message && (
+      {isCancelDisabled && (
+        <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+          {TICKET_MESSAGES.ERROR_LIVE_EVENT}
+        </p>
+      )}
+      {message && !isCancelDisabled && (
         <p
           className={`mt-2 text-xs sm:text-sm ${
             message.includes("successfully") ? "text-green-400" : "text-red-400"
