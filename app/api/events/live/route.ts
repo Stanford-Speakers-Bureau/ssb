@@ -17,7 +17,10 @@ export async function GET(req: Request) {
       .single();
 
     if (liveEventError || !liveEvent) {
-      return NextResponse.json({ isLive: false, liveEvent: null }, { status: 200 });
+      return NextResponse.json(
+        { isLive: false, liveEvent: null },
+        { status: 200 },
+      );
     }
 
     return NextResponse.json(
@@ -38,4 +41,3 @@ export async function GET(req: Request) {
     );
   }
 }
-
