@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type {NextRequest} from "next/server";
+import {NextResponse} from "next/server";
 
 // Maximum allowed request body size (1MB)
 const MAX_CONTENT_LENGTH = 1024 * 1024;
@@ -75,7 +75,10 @@ export function proxy(request: NextRequest) {
       !contentType?.includes("multipart/form-data")
     ) {
       return NextResponse.json(
-        { error: "Invalid content type. Expected application/json or multipart/form-data" },
+        {
+          error:
+            "Invalid content type. Expected application/json or multipart/form-data",
+        },
         { status: 400 },
       );
     }

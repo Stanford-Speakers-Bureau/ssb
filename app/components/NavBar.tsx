@@ -1,18 +1,14 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import {AnimatePresence, motion} from "motion/react";
+import {usePathname} from "next/navigation";
+import {useEffect, useState} from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const isWhiteNavPage =
-    pathname === "/" ||
-    pathname === "/contact";
+  const isWhiteNavPage = pathname === "/" || pathname === "/contact";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -249,8 +245,8 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 >
                   Contact
                 </Link>
-                {isAuthenticated !== null && (
-                  isAuthenticated ? (
+                {isAuthenticated !== null &&
+                  (isAuthenticated ? (
                     <button
                       onClick={() => {
                         setMobileMenuOpen(false);
@@ -268,8 +264,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     >
                       Sign In
                     </Link>
-                  )
-                )}
+                  ))}
               </div>
             </div>
           </motion.div>

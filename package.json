@@ -9,7 +9,6 @@
     "u": "bunx npm-check-updates -u && bun install",
     "lint": "eslint",
     "prettier": "prettier --write ."
-    
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

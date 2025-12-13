@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSupabaseClient } from "../lib/supabase";
+import {getSupabaseClient} from "../lib/supabase";
 
 type Stats = {
   pendingSuggestions: number;
@@ -7,6 +7,7 @@ type Stats = {
   totalNotifications: number;
   totalUsers: number;
   totalBans: number;
+  totalScanners: number;
 };
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ async function getStats(): Promise<Stats> {
       { count: totalNotifications },
       { count: totalUsers },
       { count: totalBans },
+      {count: totalScanners},
     ] = await Promise.all([
       supabase
         .from("suggest")
@@ -28,8 +30,18 @@ async function getStats(): Promise<Stats> {
         .eq("reviewed", false),
       supabase.from("events").select("*", { count: "exact", head: true }),
       supabase.from("notify").select("*", { count: "exact", head: true }),
-      supabase.from("admins").select("*", { count: "exact", head: true }),
-      supabase.from("bans").select("*", { count: "exact", head: true }),
+      supabase
+        .from("roles")
+        .select("*", {count: "exact", head: true})
+        .ilike("roles", "%admin%"),
+      supabase
+        .from("roles")
+        .select("*", {count: "exact", head: true})
+        .ilike("roles", "%banned%"),
+      supabase
+        .from("roles")
+        .select("*", {count: "exact", head: true})
+        .ilike("roles", "%scanner%"),
     ]);
 
     return {
@@ -38,6 +50,7 @@ async function getStats(): Promise<Stats> {
       totalNotifications: totalNotifications ?? 0,
       totalUsers: totalUsers ?? 0,
       totalBans: totalBans ?? 0,
+      totalScanners: totalScanners ?? 0,
     };
   } catch (error) {
     console.error("Failed to fetch stats on dashboard:", error);
@@ -47,6 +60,7 @@ async function getStats(): Promise<Stats> {
       totalNotifications: 0,
       totalUsers: 0,
       totalBans: 0,
+      totalScanners: 0,
     };
   }
 }
@@ -90,6 +104,15 @@ export default async function AdminDashboard() {
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
       textColor: "text-purple-400",
+    },
+    {
+      title: "Scanners",
+      value: stats.totalScanners,
+      href: "/admin/users",
+      icon: "M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z",
+      color: "from-blue-500 to-cyan-500",
+      bgColor: "bg-blue-500/10",
+      textColor: "text-blue-400",
     },
     {
       title: "Banned Users",
