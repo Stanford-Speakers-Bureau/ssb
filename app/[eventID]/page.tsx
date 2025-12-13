@@ -11,12 +11,7 @@ export default async function EventRedirectPage({ params }: PageProps) {
   const event = await getEventByRoute(eventID);
 
   // If no event found with this route, redirect to home
-  if (!event) {
-    redirect("/");
-  }
-
-  // If the event is still a mystery, redirect to home
-  if (isEventMystery(event)) {
+  if (!event || isEventMystery(event)) {
     redirect("/");
   }
 

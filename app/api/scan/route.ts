@@ -163,10 +163,7 @@ export async function POST(req: Request) {
     );
 
     if (eventUpdateError) {
-      console.error(
-        "Failed to update event scanned count:",
-        eventUpdateError,
-      );
+      console.error("Failed to update event scanned count:", eventUpdateError);
       // Don't fail the scan if count update fails, but log it
     }
 

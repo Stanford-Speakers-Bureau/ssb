@@ -3,7 +3,7 @@ import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
 import { getClosestUpcomingEvent } from "./lib/supabase";
-import {BANNER_MESSAGES} from "@/app/lib/constants";
+import { BANNER_MESSAGES } from "@/app/lib/constants";
 
 const inter = Inter({
   variable: "--font-inter",

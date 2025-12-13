@@ -498,21 +498,27 @@ export default function ScanClient() {
                   {liveEvent.venue && (
                     <>
                       {" "}
-                      <span className={`text-md italic font-semibold ${status ? getTextColor() : "text-black dark:text-white"}`}>
+                      <span
+                        className={`text-md italic font-semibold ${status ? getTextColor() : "text-black dark:text-white"}`}
+                      >
                         {liveEvent.venue}
                       </span>
                     </>
                   )}
                 </p>
-                {liveEvent.scanned !== undefined && liveEvent.totalSold !== undefined && (
-                  <p
-                    className={`text-sm mt-1 ${
-                      status ? getTextColor() : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    Tickets: {liveEvent.scanned} / {liveEvent.totalSold} scanned
-                  </p>
-                )}
+                {liveEvent.scanned !== undefined &&
+                  liveEvent.totalSold !== undefined && (
+                    <p
+                      className={`text-sm mt-1 ${
+                        status
+                          ? getTextColor()
+                          : "text-gray-600 dark:text-gray-400"
+                      }`}
+                    >
+                      Tickets: {liveEvent.scanned} / {liveEvent.totalSold}{" "}
+                      scanned
+                    </p>
+                  )}
               </div>
             ) : (
               <p
@@ -624,11 +630,15 @@ export default function ScanClient() {
                 video {
                   object-fit: cover !important;
                 }
-                ${isProcessingScan ? `
+                ${
+                  isProcessingScan
+                    ? `
                   #qr-reader video {
                     filter: blur(12px) !important;
                   }
-                ` : ''}
+                `
+                    : ""
+                }
                 .border-blob-wrapper {
                   position: relative;
                 }
@@ -647,7 +657,8 @@ export default function ScanClient() {
                       padding: "3px",
                       background:
                         "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
-                      WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMask:
+                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
                       WebkitMaskComposite: "xor",
                       maskComposite: "exclude",
                       // Animate the gradient angle (not a transform) to avoid loop flicker/snapping.
@@ -673,38 +684,38 @@ export default function ScanClient() {
                     />
                     {isProcessingScan && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
-                    <div className="text-center">
-                      <div className="inline-flex items-center gap-3 mb-2">
-                        <svg
-                          className="animate-spin h-8 w-8 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
+                        <div className="text-center">
+                          <div className="inline-flex items-center gap-3 mb-2">
+                            <svg
+                              className="animate-spin h-8 w-8 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          </div>
+                          <p className="text-white text-xl sm:text-2xl font-bold">
+                            Processing QR Code...
+                          </p>
+                          <p className="text-white/80 text-sm sm:text-base mt-1">
+                            Please wait
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-white text-xl sm:text-2xl font-bold">
-                        Processing QR Code...
-                      </p>
-                      <p className="text-white/80 text-sm sm:text-base mt-1">
-                        Please wait
-                      </p>
-                    </div>
-                  </div>
-                  )}
+                    )}
                   </div>
                 </div>
                 {cameraError && (

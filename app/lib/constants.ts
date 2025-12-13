@@ -24,6 +24,6 @@ export const BANNER_MESSAGES = {
   EVENT_MESSAGE: " is coming to Stanford!",
   COUNTDOWN_REVEAL_MESSAGE: "Speaker Name & Ticket Reveal in",
   COUNTDOWN_EVENT_MESSAGE: "Event starts in",
-}
+};
 
 export const PACIFIC_TIMEZONE = "America/Los_Angeles";
