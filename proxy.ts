@@ -1,5 +1,5 @@
-import type {NextRequest} from "next/server";
-import {NextResponse} from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Maximum allowed request body size (1MB)
 const MAX_CONTENT_LENGTH = 1024 * 1024;

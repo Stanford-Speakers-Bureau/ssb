@@ -1,7 +1,7 @@
-import {Suspense} from "react";
+import { Suspense } from "react";
 import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
-import {SuggestSpeakerButton} from "./SuggestSpeakerButton";
+import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import {
   createServerSupabaseClient,
   formatEventDate,

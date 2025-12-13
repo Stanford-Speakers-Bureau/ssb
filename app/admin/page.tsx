@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {getSupabaseClient} from "../lib/supabase";
+import { getSupabaseClient } from "../lib/supabase";
 
 type Stats = {
   pendingSuggestions: number;
@@ -22,7 +22,7 @@ async function getStats(): Promise<Stats> {
       { count: totalNotifications },
       { count: totalUsers },
       { count: totalBans },
-      {count: totalScanners},
+      { count: totalScanners },
     ] = await Promise.all([
       supabase
         .from("suggest")
@@ -32,15 +32,15 @@ async function getStats(): Promise<Stats> {
       supabase.from("notify").select("*", { count: "exact", head: true }),
       supabase
         .from("roles")
-        .select("*", {count: "exact", head: true})
+        .select("*", { count: "exact", head: true })
         .ilike("roles", "%admin%"),
       supabase
         .from("roles")
-        .select("*", {count: "exact", head: true})
+        .select("*", { count: "exact", head: true })
         .ilike("roles", "%banned%"),
       supabase
         .from("roles")
-        .select("*", {count: "exact", head: true})
+        .select("*", { count: "exact", head: true })
         .ilike("roles", "%scanner%"),
     ]);
 

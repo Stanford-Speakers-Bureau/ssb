@@ -1,12 +1,12 @@
-import {NextResponse} from "next/server";
-import {createServerSupabaseClient} from "@/app/lib/supabase";
-import {isValidRedirect} from "@/app/lib/security";
+import { NextResponse } from "next/server";
+import { createServerSupabaseClient } from "@/app/lib/supabase";
+import { isValidRedirect } from "@/app/lib/security";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
   const redirectTo = requestUrl.searchParams.get("redirect_to") || "/";
   const baseUrl = requestUrl.origin;
-  
+
   const safeRedirect = isValidRedirect(redirectTo) ? redirectTo : "/";
 
   const supabase = await createServerSupabaseClient();

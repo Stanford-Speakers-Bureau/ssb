@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import { useState } from "react";
 
 export type Admin = {
   id: string;
@@ -29,7 +29,7 @@ type AdminUsersClientProps = {
 export default function AdminUsersClient({
   initialAdmins,
   initialBans,
-                                           initialScanners,
+  initialScanners,
 }: AdminUsersClientProps) {
   const [admins, setAdmins] = useState<Admin[]>(initialAdmins);
   const [bans, setBans] = useState<Ban[]>(initialBans);
@@ -70,7 +70,7 @@ export default function AdminUsersClient({
       try {
         const response = await fetch("/api/admin/users", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: email.toLowerCase(),
             type,

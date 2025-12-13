@@ -1,5 +1,5 @@
-import AdminUsersClient, {Admin, Ban, Scanner} from "./AdminUsersClient";
-import {verifyAdminRequest} from "../../lib/supabase";
+import AdminUsersClient, { Admin, Ban, Scanner } from "./AdminUsersClient";
+import { verifyAdminRequest } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -11,15 +11,15 @@ async function getInitialUsers(): Promise<{
   try {
     const auth = await verifyAdminRequest();
     if (!auth.authorized) {
-      return {admins: [], bans: [], scanners: []};
+      return { admins: [], bans: [], scanners: [] };
     }
 
     const client = auth.adminClient!;
 
-    const {data: allRoles, error: rolesError} = await client
+    const { data: allRoles, error: rolesError } = await client
       .from("roles")
       .select("*")
-      .order("created_at", {ascending: false});
+      .order("created_at", { ascending: false });
 
     if (rolesError) {
       console.error("Roles fetch error:", rolesError);
@@ -42,12 +42,12 @@ async function getInitialUsers(): Promise<{
     };
   } catch (error) {
     console.error("Failed to fetch initial users:", error);
-    return {admins: [], bans: [], scanners: []};
+    return { admins: [], bans: [], scanners: [] };
   }
 }
 
 export default async function AdminUsersPage() {
-  const {admins, bans, scanners} = await getInitialUsers();
+  const { admins, bans, scanners } = await getInitialUsers();
   return (
     <AdminUsersClient
       initialAdmins={admins}

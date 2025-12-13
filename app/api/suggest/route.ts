@@ -1,7 +1,10 @@
-import {NextResponse} from "next/server";
-import {createServerSupabaseClient, getSupabaseClient,} from "../../lib/supabase";
-import {SUGGEST_MESSAGES} from "../../lib/constants";
-import {checkRateLimit, suggestRatelimit} from "../../lib/ratelimit";
+import { NextResponse } from "next/server";
+import {
+  createServerSupabaseClient,
+  getSupabaseClient,
+} from "../../lib/supabase";
+import { SUGGEST_MESSAGES } from "../../lib/constants";
+import { checkRateLimit, suggestRatelimit } from "../../lib/ratelimit";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -51,7 +54,7 @@ export async function POST(req: Request) {
 
     // Check if user is banned
     const adminClient = getSupabaseClient();
-    const {data: userRole} = await adminClient
+    const { data: userRole } = await adminClient
       .from("roles")
       .select("roles")
       .eq("email", user.email)

@@ -11,7 +11,7 @@ export function isValidRedirect(path: string): boolean {
   if (!path.startsWith("/")) return false;
   // Prevent protocol-relative URLs (//evil.com)
   if (path.startsWith("//")) return false;
-  
+
   // Allow root path
   if (path === "/") return true;
 
@@ -23,4 +23,3 @@ export function isValidRedirect(path: string): boolean {
       path.startsWith(allowed + "/"),
   );
 }
-

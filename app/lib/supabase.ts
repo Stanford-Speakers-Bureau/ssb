@@ -1,6 +1,6 @@
-import {createClient as createSupabaseClient} from "@supabase/supabase-js";
-import {createServerClient} from "@supabase/ssr";
-import {cookies} from "next/headers";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 /**
  * Simple Supabase client for public data queries (bypasses RLS with service key)

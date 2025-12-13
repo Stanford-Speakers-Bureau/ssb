@@ -1,8 +1,8 @@
 "use client";
 
-import {AnimatePresence, motion} from "motion/react";
-import {usePathname} from "next/navigation";
-import {useEffect, useState} from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
