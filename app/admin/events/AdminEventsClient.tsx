@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-
-const PACIFIC_TIMEZONE = "America/Los_Angeles";
+import { PACIFIC_TIMEZONE } from "../../../lib/constants";
 
 function formatDateTimeForInput(dateString: string | null): string {
   if (!dateString) return "";

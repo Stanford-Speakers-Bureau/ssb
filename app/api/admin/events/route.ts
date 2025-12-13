@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
 import { randomUUID } from "crypto";
+import { fromZonedTime } from "date-fns-tz";
+import { PACIFIC_TIMEZONE } from "../../../lib/constants";
 
 export async function POST(req: Request) {
   try {
@@ -54,11 +56,15 @@ export async function POST(req: Request) {
       capacity: capacity ? parseInt(capacity) : 0,
       venue: venue || null,
       venue_link: venue_link || null,
-      release_date: release_date ? new Date(release_date).toISOString() : null,
-      start_time_date: start_time_date
-        ? new Date(start_time_date).toISOString()
+      release_date: release_date
+        ? fromZonedTime(release_date, PACIFIC_TIMEZONE).toISOString()
         : null,
-      doors_open: doors_open ? new Date(doors_open).toISOString() : null,
+      start_time_date: start_time_date
+        ? fromZonedTime(start_time_date, PACIFIC_TIMEZONE).toISOString()
+        : null,
+      doors_open: doors_open
+        ? fromZonedTime(doors_open, PACIFIC_TIMEZONE).toISOString()
+        : null,
       route: route || null,
       banner: banner,
     };
