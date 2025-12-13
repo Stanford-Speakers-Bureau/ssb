@@ -3,6 +3,7 @@ import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
 import { getClosestUpcomingEvent } from "./lib/supabase";
+import {BANNER_MESSAGES} from "@/app/lib/constants";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,14 +60,14 @@ export default async function RootLayout({
 
   // Banner text and countdown target based on mystery status
   const bannerText = isMystery
-    ? "GET EARLY ACCESS TO OUR NEXT SPEAKER!!"
-    : `${closestEvent?.name} is coming to Stanford!`;
+    ? BANNER_MESSAGES.NOTIFY_MESSAGE
+    : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
   const countdownTarget = isMystery
     ? closestEvent?.release_date
     : closestEvent?.start_time_date;
   const prefaceLabel = isMystery
-    ? "Speaker Name & Ticket Reveal in"
-    : "Event starts in";
+    ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
+    : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
   return (
     <html lang="en">

@@ -19,4 +19,11 @@ export const SUGGEST_MESSAGES = {
   ERROR_BANNED: "You have been banned from making suggestions.",
 } as const;
 
+export const BANNER_MESSAGES = {
+  NOTIFY_MESSAGE: "GET EARLY ACCESS TO OUR NEXT SPEAKER!!",
+  EVENT_MESSAGE: " is coming to Stanford!",
+  COUNTDOWN_REVEAL_MESSAGE: "Speaker Name & Ticket Reveal in",
+  COUNTDOWN_EVENT_MESSAGE: "Event starts in",
+}
+
 export const PACIFIC_TIMEZONE = "America/Los_Angeles";
