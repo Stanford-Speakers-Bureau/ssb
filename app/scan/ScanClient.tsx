@@ -27,7 +27,6 @@ type LiveEvent = {
 export default function ScanClient() {
   const [status, setStatus] = useState<TicketStatus>(null);
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraPermission, setCameraPermission] = useState<
@@ -192,7 +191,6 @@ export default function ScanClient() {
     lastScannedRef.current = id;
     scanCooldownRef.current = now;
 
-    setIsLoading(true);
     // Don't clear status/ticketInfo - keep showing until new scan completes
     // Don't pause scanner - keep it running to avoid showing "paused" message
 
@@ -227,8 +225,6 @@ export default function ScanClient() {
       setStatus("invalid");
       setTicketInfo(null);
       setMessage("Failed to scan ticket");
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -376,7 +372,7 @@ export default function ScanClient() {
 
   const getStatusText = () => {
     if (status === "scanned") {
-      if (ticketInfo?.type?.toLowerCase() === "vip") {
+      if (ticketInfo?.type?.toLowerCase().trim() === "vip") {
         return "✓ VIP Ticket - Scanned";
       }
       return "✓ Valid Ticket - Scanned";
@@ -404,7 +400,7 @@ export default function ScanClient() {
   const getStatusOverlay = () => {
     if (status === "scanned") {
       if (ticketInfo?.type?.toLowerCase() === "vip") {
-        return "bg-blue-500";
+        return "bg-[#92BADF]";
       }
       return "bg-green-500";
     }
@@ -470,7 +466,7 @@ export default function ScanClient() {
       }`}
     >
       <main
-        className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-12 sm:pt-16 overflow-y-auto ${
+        className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-6 overflow-y-auto ${
           status ? getStatusOverlay() : "bg-white dark:bg-black"
         }`}
       >
@@ -624,7 +620,7 @@ export default function ScanClient() {
               `,
                 }}
               />
-              <div className="mb-2 sm:mb-3 flex-shrink-0">
+              <div className="mb-2 sm:mb-3 shrink-0">
                 <div
                   id="qr-reader"
                   ref={scanAreaRef}
@@ -639,19 +635,6 @@ export default function ScanClient() {
                     {cameraError}
                   </p>
                 )}
-                {cameraStarted && !cameraError && (
-                  <div className="mt-2 text-center">
-                    <p
-                      className={`text-xs sm:text-sm ${
-                        status
-                          ? getTextColor()
-                          : "text-zinc-500 dark:text-zinc-400"
-                      }`}
-                    >
-                      💡 Tip: Hold steady and ensure the QR code is well-lit
-                    </p>
-                  </div>
-                )}
               </div>
             </>
           )}
@@ -662,18 +645,10 @@ export default function ScanClient() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-colors duration-500 flex-shrink-0 ${
-                  status === "scanned"
-                    ? ticketInfo?.type?.toLowerCase() === "vip"
-                      ? "bg-white/90 border-white/50"
-                      : "bg-white/90 border-white/50"
-                    : status === "already_scanned"
-                      ? "bg-white/90 border-white/50"
-                      : "bg-white/90 border-white/50"
-                }`}
+                className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl transition-colors duration-500 shrink-0 bg-transparent`}
               >
                 <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-black">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-black ">
                     {getStatusText()}
                   </h2>
 
@@ -685,7 +660,7 @@ export default function ScanClient() {
                         </p>
                       )}
                       {ticketInfo.email && (
-                        <p className="text-sm sm:text-base break-words">
+                        <p className="text-sm sm:text-base wrap-break-word">
                           <span className="text-gray-600">Email:</span>{" "}
                           <span className="font-medium text-black">
                             {ticketInfo.email}
@@ -734,12 +709,6 @@ export default function ScanClient() {
                           </p>
                         )}
                     </div>
-                  )}
-
-                  {message && (
-                    <p className="mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base text-black">
-                      {message}
-                    </p>
                   )}
                 </div>
               </motion.div>
