@@ -20,6 +20,7 @@ type SanitizedEvent = {
   venue_link: string | null;
   name: string | null;
   desc: string | null;
+  route: string | null;
   signedImageUrl: string | null;
   isMystery: boolean;
 };
@@ -51,6 +52,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         venue_link: event.venue_link,
         name: isMystery ? null : event.name,
         desc: isMystery ? null : event.desc,
+        route: isMystery ? null : event.route,
         signedImageUrl: isMystery
           ? null
           : await getSignedImageUrl(event.img, 60),
@@ -132,6 +134,8 @@ export default async function UpcomingSpeakers() {
                       ? "/speakers/mystery.jpg"
                       : event.signedImageUrl || "/speakers/mystery.jpg"
                   }
+                  ctaHref={event.isMystery ? "" : `/events/${event.route}`}
+                  ctaText={event.isMystery ? "" : "Get Tickets"}
                   mystery={event.isMystery}
                   calendarUrl={event.isMystery ? "" : generateICalUrl(event)}
                   eventId={event.id}

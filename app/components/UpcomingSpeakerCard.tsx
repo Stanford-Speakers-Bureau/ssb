@@ -64,6 +64,7 @@ export default function UpcomingSpeakerCard({
   const [notifyMessage, setNotifyMessage] = useState(
     isAlreadyNotified ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP : "",
   );
+  const [imageLoaded, setImageLoaded] = useState(!backgroundImageUrl);
 
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
   useEffect(() => {
@@ -111,18 +112,71 @@ export default function UpcomingSpeakerCard({
     }
   };
 
+  if (!imageLoaded && backgroundImageUrl) {
+    return (
+      <div className="relative rounded p-8 shadow-sm overflow-hidden bg-zinc-900">
+        {/* Hidden Image to trigger onLoad */}
+        <img
+          src={backgroundImageUrl}
+          alt=""
+          className="hidden"
+          onLoad={() => setImageLoaded(true)}
+        />
+        <div className="flex flex-col h-full">
+          {/* Title / Name */}
+          <div className="h-8 md:h-9 bg-zinc-800 rounded-md w-3/4 mb-2 animate-pulse"></div>
+
+          {/* Subtitle / Header */}
+          <div className="h-5 md:h-6 bg-zinc-800 rounded-md w-1/2 mb-6 animate-pulse"></div>
+
+          {/* Meta Information Section */}
+          <div className="space-y-3 mb-6 flex-1">
+            {/* Date */}
+            <div className="flex items-center gap-2 animate-pulse">
+              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
+              <div className="h-4 bg-zinc-800 rounded w-48"></div>
+            </div>
+            {/* Doors Open */}
+            <div className="flex items-center gap-2 animate-pulse">
+              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
+              <div className="h-4 bg-zinc-800 rounded w-40"></div>
+            </div>
+            {/* Event Time */}
+            <div className="flex items-center gap-2 animate-pulse">
+              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
+              <div className="h-4 bg-zinc-800 rounded w-36"></div>
+            </div>
+            {/* Location */}
+            <div className="flex items-center gap-2 animate-pulse">
+              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
+              <div className="h-4 bg-zinc-800 rounded w-56"></div>
+            </div>
+          </div>
+
+          {/* Button Placeholder */}
+          <div className="h-10 w-32 bg-zinc-800 rounded-md mt-auto animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative rounded p-8 shadow-sm overflow-hidden"
-      style={{
-        ...(backgroundImageUrl
-          ? { backgroundImage: `url(${backgroundImageUrl})` }
-          : {}),
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
     >
+      {/* Background Image */}
+      {backgroundImageUrl && (
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            backgroundImage: `url(${backgroundImageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+      )}
+
       {/* Semi-transparent overlay for better text readability */}
       <div
         className={`absolute inset-0 z-0 ${mystery ? "backdrop-blur-xl bg-black/50" : "bg-black/70"}`}
