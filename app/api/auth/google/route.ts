@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${baseUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`,
+      redirectTo: `${baseUrl}/callback/auth?redirect_to=${encodeURIComponent(redirectTo)}`,
       queryParams: {
         access_type: "online",
         prompt: "none",

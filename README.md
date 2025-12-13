@@ -5,7 +5,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 whitelist:
 
 ```
-http://localhost:3000/auth/callback*
+http://localhost:3000/callback/auth*
 ```
 
 @ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration

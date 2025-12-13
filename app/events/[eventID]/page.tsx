@@ -202,23 +202,27 @@ export default async function EventPage({ params }: PageProps) {
                         />
                       </svg>
                       <p className="text-sm sm:text-base text-white font-medium">
-                        Spots available:{" "}
-                        {event.capacity - (event.reserved || 0)} /{" "}
-                        {event.capacity}
+                        Tickets left:{" "}
+                        {Math.max(
+                          0,
+                          event.capacity -
+                            ((event.tickets ?? event.reserved) || 0),
+                        )}{" "}
+                        / {event.capacity}
                       </p>
                     </div>
                   )}
                 </div>
 
-                <div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">
-                  <p className="text-white text-sm sm:text-base leading-relaxed">
-                    <span className="font-semibold">
-                      Stanford Community Only.
-                    </span>{" "}
-                    This event is exclusively for Stanford faculty and students.
-                    Valid SUNET identification will be verified at entry.
-                  </p>
-                </div>
+                {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
+                {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}
+                {/*    <span className="font-semibold">*/}
+                {/*      Stanford Community Only.*/}
+                {/*    </span>{" "}*/}
+                {/*    This event is exclusively for Stanford faculty and students.*/}
+                {/*    Valid SUNET identification will be verified at entry.*/}
+                {/*  </p>*/}
+                {/*</div>*/}
               </div>
             </section>
           </main>

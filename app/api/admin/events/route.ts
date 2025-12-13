@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     const desc = formData.get("desc") as string;
     const tagline = formData.get("tagline") as string;
     const capacity = formData.get("capacity") as string;
+    const tickets = formData.get("tickets") as string;
     const reserved = formData.get("reserved") as string;
     const venue = formData.get("venue") as string;
     const venue_link = formData.get("venue_link") as string;
@@ -146,6 +147,13 @@ export async function POST(req: Request) {
       desc: desc || null,
       tagline: tagline || null,
       capacity: capacity ? parseInt(capacity) : 0,
+      // tickets = tickets sold so far (new field)
+      tickets: tickets
+        ? parseInt(tickets)
+        : reserved
+          ? parseInt(reserved)
+          : null,
+      // reserved is legacy (kept for backwards compatibility / older rows)
       reserved: reserved ? parseInt(reserved) : null,
       venue: venue || null,
       venue_link: venue_link || null,

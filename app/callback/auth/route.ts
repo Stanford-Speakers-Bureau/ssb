@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "../../lib/supabase";
-import { isValidRedirect } from "../../lib/security";
+import { createServerSupabaseClient } from "../../../lib/supabase";
+import { isValidRedirect } from "../../../lib/security";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
@@ -31,3 +31,4 @@ export async function GET(req: Request) {
 
   return NextResponse.redirect(new URL(safeRedirect, baseUrl));
 }
+

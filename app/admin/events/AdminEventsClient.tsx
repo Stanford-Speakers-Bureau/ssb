@@ -51,6 +51,7 @@ export type Event = {
   tagline: string | null;
   img: string | null;
   capacity: number;
+  tickets?: number | null;
   venue: string | null;
   reserved: number | null;
   venue_link: string | null;
@@ -67,6 +68,7 @@ type FormData = {
   desc: string;
   tagline: string;
   capacity: string;
+  tickets: string;
   reserved: string;
   venue: string;
   venue_link: string;
@@ -82,6 +84,7 @@ const emptyForm: FormData = {
   desc: "",
   tagline: "",
   capacity: "",
+  tickets: "",
   reserved: "",
   venue: "",
   venue_link: "",
@@ -178,6 +181,7 @@ export default function AdminEventsClient({
       desc: event.desc || "",
       tagline: event.tagline || "",
       capacity: event.capacity?.toString() || "",
+      tickets: event.tickets?.toString() || "",
       reserved: event.reserved?.toString() || "",
       venue: event.venue || "",
       venue_link: event.venue_link || "",
@@ -232,6 +236,7 @@ export default function AdminEventsClient({
       submitData.append("desc", formData.desc);
       submitData.append("tagline", formData.tagline);
       submitData.append("capacity", formData.capacity);
+      submitData.append("tickets", formData.tickets);
       submitData.append("reserved", formData.reserved);
       submitData.append("venue", formData.venue);
       submitData.append("venue_link", formData.venue_link);
@@ -500,10 +505,26 @@ export default function AdminEventsClient({
                 />
               </div>
 
-              {/* Reserved Seats */}
+              {/* Tickets Sold */}
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Reserved Seats
+                  Tickets Sold
+                </label>
+                <input
+                  type="number"
+                  value={formData.tickets}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tickets: e.target.value })
+                  }
+                  placeholder="e.g., 250"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+                />
+              </div>
+
+              {/* Reserved Seats (legacy / optional) */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Reserved Seats (optional)
                 </label>
                 <input
                   type="number"
