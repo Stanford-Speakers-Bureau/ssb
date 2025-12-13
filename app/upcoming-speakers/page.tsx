@@ -35,8 +35,7 @@ async function getTicketCount(eventId: string): Promise<number> {
     const { count, error } = await supabase
       .from("tickets")
       .select("*", { count: "exact", head: true })
-      .eq("event_id", eventId)
-      .eq("status", "VALID");
+      .eq("event_id", eventId);
 
     if (error) {
       console.error("Ticket count error:", error);

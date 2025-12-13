@@ -22,8 +22,9 @@ export default function SiteChrome({
 }: SiteChromeProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const isScanRoute = pathname.startsWith("/scan");
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isScanRoute) {
     return null;
   }
 

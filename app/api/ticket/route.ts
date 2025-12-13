@@ -125,7 +125,6 @@ export async function POST(req: Request) {
       .select("id")
       .eq("event_id", event_id)
       .eq("email", user.email)
-      .eq("status", "VALID")
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
@@ -194,7 +193,6 @@ export async function DELETE(req: Request) {
       .select("id")
       .eq("event_id", event_id)
       .eq("email", user.email)
-      .eq("status", "VALID")
       .single();
 
     if (!existingTicket) {
@@ -204,7 +202,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Delete the ticket (soft delete by setting status or hard delete)
+    // Delete the ticket (hard delete)
     const { error: deleteError } = await adminClient
       .from("tickets")
       .delete()

@@ -15,12 +15,11 @@ export async function GET(req: Request) {
 
     const adminClient = getSupabaseClient();
 
-    // Count tickets with VALID status for this event
+    // Count tickets for this event
     const { count, error } = await adminClient
       .from("tickets")
       .select("*", { count: "exact", head: true })
-      .eq("event_id", event_id)
-      .eq("status", "VALID");
+      .eq("event_id", event_id);
 
     if (error) {
       console.error("Ticket count error:", error);

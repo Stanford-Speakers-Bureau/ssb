@@ -23,7 +23,7 @@ export async function GET() {
 
     const adminClient = getSupabaseClient();
 
-    // Get all valid tickets for this user with event information
+    // Get all tickets for this user with event information
     const { data: tickets, error } = await adminClient
       .from("tickets")
       .select(
@@ -31,7 +31,7 @@ export async function GET() {
         id,
         event_id,
         created_at,
-        status,
+        type,
         events (
           id,
           name,
@@ -42,7 +42,6 @@ export async function GET() {
       `,
       )
       .eq("email", user.email)
-      .eq("status", "VALID")
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -32,7 +32,6 @@ async function getUserTicketStatus(eventId: string): Promise<string | null> {
       .select("id")
       .eq("event_id", eventId)
       .eq("email", user.email)
-      .eq("status", "VALID")
       .single();
 
     return data?.id ?? null;

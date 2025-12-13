@@ -12,7 +12,7 @@ interface Ticket {
   id: string;
   event_id: string;
   created_at: string;
-  status: string;
+  type: string | null;
   events: {
     id: string;
     name: string | null;
@@ -37,7 +37,7 @@ async function getUserTickets(): Promise<Ticket[]> {
 
   const adminClient = getSupabaseClient();
 
-  // Get all valid tickets for this user with event information
+  // Get all tickets for this user with event information
   const { data: tickets, error } = await adminClient
     .from("tickets")
     .select(
@@ -45,7 +45,7 @@ async function getUserTickets(): Promise<Ticket[]> {
       id,
       event_id,
       created_at,
-      status,
+      type,
       events (
         id,
         name,
@@ -56,7 +56,6 @@ async function getUserTickets(): Promise<Ticket[]> {
     `,
     )
     .eq("email", user.email)
-    .eq("status", "VALID")
     .order("created_at", { ascending: false });
 
   if (error) {
