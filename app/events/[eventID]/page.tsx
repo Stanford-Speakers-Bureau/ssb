@@ -17,14 +17,14 @@ interface PageProps {
   params: Promise<{ eventID: string }>;
 }
 
-async function getUserTicketStatus(eventId: string): Promise<boolean> {
+async function getUserTicketStatus(eventId: string): Promise<string | null> {
   try {
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user?.email) return false;
+    if (!user?.email) return null;
 
     const adminClient = getSupabaseClient();
     const { data } = await adminClient
@@ -35,9 +35,9 @@ async function getUserTicketStatus(eventId: string): Promise<boolean> {
       .eq("status", "VALID")
       .single();
 
-    return !!data;
+    return data?.id ?? null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -52,10 +52,12 @@ export default async function EventPage({ params }: PageProps) {
   }
 
   // Get the signed image URL for the event and check if user has a ticket
-  const [signedImageUrl, hasTicket] = await Promise.all([
+  const [signedImageUrl, ticketId] = await Promise.all([
     getSignedImageUrl(event.img, 3600),
     getUserTicketStatus(event.id),
   ]);
+  
+  const hasTicket = !!ticketId;
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
@@ -222,11 +224,12 @@ export default async function EventPage({ params }: PageProps) {
                       eventId={event.id}
                       initialCapacity={event.capacity}
                       initialTicketsSold={(event.tickets ?? event.reserved) || 0}
+                      reserved={event.reserved}
                     />
                   )}
                 </div>
 
-                <TicketButton eventId={event.id} initialHasTicket={hasTicket} />
+                <TicketButton eventId={event.id} initialHasTicket={hasTicket} initialTicketId={ticketId} />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
                 {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}

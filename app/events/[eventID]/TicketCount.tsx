@@ -7,15 +7,19 @@ type TicketCountProps = {
   eventId: string;
   initialCapacity: number;
   initialTicketsSold: number;
+  reserved?: number | null;
 };
 
 export default function TicketCount({
   eventId,
   initialCapacity,
   initialTicketsSold,
+  reserved = 0,
 }: TicketCountProps) {
   const [ticketsSold, setTicketsSold] = useState(initialTicketsSold);
   const [isLoading, setIsLoading] = useState(false);
+  
+  const maxTickets = Math.max(0, initialCapacity - (reserved || 0));
 
   const fetchTicketCount = () => {
     setIsLoading(true);
@@ -50,7 +54,7 @@ export default function TicketCount({
     };
   }, [eventId]);
 
-  const ticketsLeft = Math.max(0, initialCapacity - ticketsSold);
+  const ticketsLeft = Math.max(0, maxTickets - ticketsSold);
 
   return (
     <div className="flex items-center gap-2">
@@ -84,7 +88,7 @@ export default function TicketCount({
           </AnimatePresence>
           <span className="invisible">{ticketsLeft}</span>
         </span>{" "}
-        / {initialCapacity}
+        / {maxTickets}
       </p>
     </div>
   );

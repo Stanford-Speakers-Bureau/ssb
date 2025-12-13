@@ -142,14 +142,12 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   className="ml-auto"
                 >
                   {isAuthenticated ? (
-                    <button
-                      onClick={() => {
-                        window.location.href = `/api/auth/signout?redirect_to=${encodeURIComponent(pathname)}`;
-                      }}
+                    <Link
+                      href="/account"
                       className={linkClasses}
                     >
-                      Sign Out
-                    </button>
+                      Account
+                    </Link>
                   ) : (
                     <Link
                       href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
@@ -247,15 +245,13 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 </Link>
                 {isAuthenticated !== null &&
                   (isAuthenticated ? (
-                    <button
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        window.location.href = `/api/auth/signout?redirect_to=${encodeURIComponent(pathname)}`;
-                      }}
+                    <Link
+                      href="/account"
                       className={mobileLinkClasses}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      Sign Out
-                    </button>
+                      Account
+                    </Link>
                   ) : (
                     <Link
                       href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}

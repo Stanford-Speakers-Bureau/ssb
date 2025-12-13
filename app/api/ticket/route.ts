@@ -55,71 +55,88 @@ export async function POST(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-
-    // Verify event exists and get capacity info
-    const { data: event, error: eventError } = await adminClient
-      .from("events")
-      .select("id, capacity, tickets, reserved")
-      .eq("id", event_id)
-      .single();
-
-    if (eventError || !event) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
-        { status: 404 },
-      );
-    }
-
-    // Check if event is at capacity
-    const ticketsSold = event.tickets ?? event.reserved ?? 0;
-    if (event.capacity && ticketsSold >= event.capacity) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_CAPACITY_EXCEEDED },
-        { status: 400 },
-      );
-    }
-
-    // Check if user already has a ticket for this event
-    const { data: existingTicket } = await adminClient
-      .from("tickets")
-      .select("id")
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .eq("status", "VALID")
-      .single();
-
-    if (existingTicket) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },
-        { status: 400 },
-      );
-    }
-
     // Get referral from cookie if available
     const cookieStore = await cookies();
     const referral = cookieStore.get("referral")?.value || null;
 
-    // Create the ticket
-    const { error: insertError } = await adminClient.from("tickets").insert({
-      event_id,
-      email: user.email,
-      referral,
-      status: "VALID",
-    });
+    /**
+     * IMPORTANT: To prevent race conditions (two users grabbing the last ticket),
+     * ticket allocation MUST be enforced in the database atomically.
+     *
+     * This endpoint calls a Postgres function (`create_ticket`) that:
+     * - locks the event row (FOR UPDATE)
+     * - checks capacity using (capacity - reserved)
+     * - checks for an existing ticket for this email
+     * - inserts the ticket
+     */
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "create_ticket",
+      {
+        p_event_id: event_id,
+        p_referral: referral,
+      },
+    );
 
-    if (insertError) {
-      console.error("Ticket insert error:", insertError);
+    if (rpcError) {
+      // 42883 = undefined_function (RPC not installed)
+      if (rpcError.code === "42883") {
+        console.error("Ticket RPC missing:", rpcError);
+        return NextResponse.json(
+          {
+            error:
+              "Ticket creation RPC is not installed in the database (create_ticket).",
+          },
+          { status: 500 },
+        );
+      }
+
+      // P0001 is commonly used for raised exceptions in Postgres functions
+      const msg = (rpcError.message || "").toLowerCase();
+      if (rpcError.code === "P0001" || msg.includes("capacity")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_CAPACITY_EXCEEDED },
+          { status: 400 },
+        );
+      }
+      if (rpcError.code === "P0001" || msg.includes("already")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },
+          { status: 400 },
+        );
+      }
+      if (rpcError.code === "P0001" || msg.includes("event_not_found")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
+          { status: 404 },
+        );
+      }
+
+      console.error("Ticket RPC error:", rpcError);
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_GENERIC },
         { status: 500 },
       );
     }
 
+    // Fetch the created ticket to get its ID
+    const adminClient = getSupabaseClient();
+    const { data: ticket } = await adminClient
+      .from("tickets")
+      .select("id")
+      .eq("event_id", event_id)
+      .eq("email", user.email)
+      .eq("status", "VALID")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
     return NextResponse.json(
       {
         success: true,
         message: TICKET_MESSAGES.SUCCESS,
+        ticketId: ticket?.id ?? null,
+        // `rpcData` shape depends on the SQL function; included for debugging / future use.
+        data: rpcData ?? null,
       },
       { status: 200 },
     );

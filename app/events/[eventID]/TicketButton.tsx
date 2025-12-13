@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import TicketQRCode from "./TicketQRCode";
 
 type TicketButtonProps = {
   eventId: string;
   initialHasTicket?: boolean;
+  initialTicketId?: string | null;
 };
 
 const TICKET_MESSAGES = {
@@ -23,8 +25,10 @@ const TICKET_MESSAGES = {
 export default function TicketButton({
   eventId,
   initialHasTicket = false,
+  initialTicketId = null,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
+  const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -60,8 +64,17 @@ export default function TicketButton({
       const data = await response.json();
 
       if (response.ok) {
-        setHasTicket(!hasTicket);
-        setMessage(hasTicket ? TICKET_MESSAGES.DELETED : TICKET_MESSAGES.SUCCESS);
+        if (hasTicket) {
+          // Cancelling ticket
+          setHasTicket(false);
+          setTicketId(null);
+          setMessage(TICKET_MESSAGES.DELETED);
+        } else {
+          // Creating ticket
+          setHasTicket(true);
+          setTicketId(data.ticketId || null);
+          setMessage(TICKET_MESSAGES.SUCCESS);
+        }
         // Dispatch event to update ticket count
         window.dispatchEvent(new CustomEvent("ticketChanged"));
       } else {
@@ -81,7 +94,7 @@ export default function TicketButton({
         whileTap={{ scale: 0.95 }}
         onClick={handleTicketClick}
         disabled={isLoading}
-        className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="rounded px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
       >
         {isLoading
           ? hasTicket
@@ -93,7 +106,7 @@ export default function TicketButton({
       </motion.button>
       {message && (
         <p
-          className={`mt-2 text-sm ${
+          className={`mt-2 text-xs sm:text-sm ${
             message.includes("successfully")
               ? "text-green-400"
               : "text-red-400"
@@ -102,6 +115,7 @@ export default function TicketButton({
           {message}
         </p>
       )}
+      {hasTicket && ticketId && <TicketQRCode ticketId={ticketId} />}
     </div>
   );
 }

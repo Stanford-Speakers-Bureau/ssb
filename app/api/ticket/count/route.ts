@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { getSupabaseClient } from "../../../lib/supabase";
+import { getSupabaseClient } from "@/app/lib/supabase";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const event_id = searchParams.get("event_id");
 
-    if (!event_id || typeof event_id !== "string") {
+    if (!event_id) {
       return NextResponse.json(
         { error: "Missing required field: event_id" },
         { status: 400 },
