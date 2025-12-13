@@ -145,7 +145,7 @@ export default async function AccountPage() {
                             {eventDate && (
                               <div className="flex items-center gap-2">
                                 <svg
-                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0"
+                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -166,7 +166,7 @@ export default async function AccountPage() {
                             {event.venue && (
                               <div className="flex items-center gap-2">
                                 <svg
-                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0"
+                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -191,7 +191,7 @@ export default async function AccountPage() {
                             )}
                             <div className="flex items-center gap-2">
                               <svg
-                                className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0"
+                                className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminLayoutClient from "./AdminLayoutClient";
 import { verifyAdminRequest } from "../lib/supabase";
