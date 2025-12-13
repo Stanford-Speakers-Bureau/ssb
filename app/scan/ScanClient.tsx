@@ -185,7 +185,7 @@ export default function ScanClient() {
 
     // Prevent duplicate scans within 2 seconds
     const now = Date.now();
-    if (lastScannedRef.current === id && now - scanCooldownRef.current < 2000) {
+    if (lastScannedRef.current === id && now - scanCooldownRef.current < 5000) {
       return;
     }
 
