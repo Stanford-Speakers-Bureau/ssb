@@ -125,8 +125,8 @@ export default async function UpcomingSpeakers() {
                       ? `Event starts at ${formatTime(event.start_time_date)}`
                       : ""
                   }
-                  locationName={event.venue || ""}
-                  locationUrl={event.venue_link || ""}
+                  locationName={event.isMystery ? "" : event.venue || ""}
+                  locationUrl={event.isMystery ? "" : event.venue_link || ""}
                   backgroundImageUrl={
                     event.isMystery
                       ? "/speakers/mystery.jpg"
