@@ -30,7 +30,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const { data, error } = await supabase
     .from("events")
     .select("*")
-    .order("start_time_date", { ascending: false });
+    .order("start_time_date", { ascending: true });
 
   if (error) {
     return [];
