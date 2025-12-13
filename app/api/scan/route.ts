@@ -154,6 +154,22 @@ export async function POST(req: Request) {
       );
     }
 
+    // Increment the event's scanned count
+    const { error: eventUpdateError } = await adminClient.rpc(
+      "increment_event_scanned",
+      {
+        event_id: liveEvent.id,
+      },
+    );
+
+    if (eventUpdateError) {
+      console.error(
+        "Failed to update event scanned count:",
+        eventUpdateError,
+      );
+      // Don't fail the scan if count update fails, but log it
+    }
+
     // Get user information for the response
     let userNameResponse: string | null = null;
     if (updatedTicket.email) {

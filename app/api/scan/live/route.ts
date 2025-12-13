@@ -13,13 +13,16 @@ export async function GET(req: Request) {
     // Get the live event
     const { data: liveEvent, error: liveEventError } = await adminClient
       .from("events")
-      .select("id, name, venue, start_time_date")
+      .select("id, name, venue, start_time_date, scanned, tickets, reserved")
       .eq("live", true)
       .single();
 
     if (liveEventError || !liveEvent) {
       return NextResponse.json({ liveEvent: null }, { status: 200 });
     }
+
+    // Calculate total tickets sold (use tickets field, fallback to reserved)
+    const totalSold = liveEvent.tickets ?? liveEvent.reserved ?? 0;
 
     return NextResponse.json(
       {
@@ -28,6 +31,8 @@ export async function GET(req: Request) {
           name: liveEvent.name,
           venue: liveEvent.venue,
           start_time_date: liveEvent.start_time_date,
+          scanned: liveEvent.scanned || 0,
+          totalSold: totalSold,
         },
       },
       { status: 200 },

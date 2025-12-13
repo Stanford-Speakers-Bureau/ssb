@@ -22,12 +22,13 @@ type LiveEvent = {
   name: string | null;
   venue: string | null;
   start_time_date: string | null;
+  scanned?: number;
+  totalSold?: number;
 } | null;
 
 export default function ScanClient() {
   const [status, setStatus] = useState<TicketStatus>(null);
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isProcessingScan, setIsProcessingScan] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<
@@ -152,7 +153,7 @@ export default function ScanClient() {
                     : "prompt",
               );
             };
-          } catch (permError) {
+          } catch {
             // Permissions API might not support "camera" on WebKit
             // Fall through to getUserMedia check
             console.log(
@@ -209,24 +210,20 @@ export default function ScanClient() {
         // Update with new scan results
         setStatus(data.status);
         setTicketInfo(data.ticket);
-        setMessage(data.message || "");
       } else {
         // Handle error responses that still have status info
         if (data.status) {
           setStatus(data.status);
           setTicketInfo(data.ticket);
-          setMessage(data.error || "");
         } else {
           setStatus("invalid");
           setTicketInfo(null);
-          setMessage(data.error || "Error scanning ticket");
         }
       }
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
-      setMessage("Failed to scan ticket");
     } finally {
       setIsProcessingScan(false);
     }
@@ -477,7 +474,7 @@ export default function ScanClient() {
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="text-center mb-2 sm:mb-4">
             <h1
-              className={`text-2xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 font-serif ${
+              className={`text-4xl font-bold mb-1 sm:mb-2 font-serif ${
                 status ? getTextColor() : "text-black dark:text-white"
               }`}
             >
@@ -487,27 +484,33 @@ export default function ScanClient() {
               <div className="mt-1 sm:mt-2">
                 <p
                   className={`text-md md:text-lg ${
-                    status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
+                    status ? getTextColor() : "text-black dark:text-white"
                   }`}
                 >
-                  Scanning tickets for:{" "}
+                  Event:{" "}
                   <span
-                    className={`font-semibold ${
+                    className={`text-md font-semibold ${
                       status ? getTextColor() : "text-black dark:text-white"
                     }`}
                   >
-                    {liveEvent.name}
+                    {liveEvent.name} @
                   </span>
+                  {liveEvent.venue && (
+                    <>
+                      {" "}
+                      <span className={`text-md italic font-semibold ${status ? getTextColor() : "text-black dark:text-white"}`}>
+                        {liveEvent.venue}
+                      </span>
+                    </>
+                  )}
                 </p>
-                {liveEvent.venue && (
+                {liveEvent.scanned !== undefined && liveEvent.totalSold !== undefined && (
                   <p
-                    className={`text-sm italic bold md:text-base mt-0.5 ${
-                      status
-                        ? getTextColor()
-                        : "text-zinc-500 dark:text-zinc-500"
+                    className={`text-sm mt-1 ${
+                      status ? getTextColor() : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
-                    {liveEvent.venue}
+                    Tickets: {liveEvent.scanned} / {liveEvent.totalSold} scanned
                   </p>
                 )}
               </div>
@@ -626,19 +629,50 @@ export default function ScanClient() {
                     filter: blur(12px) !important;
                   }
                 ` : ''}
+                .border-blob-wrapper {
+                  position: relative;
+                }
+                .border-blob-content {
+                  position: relative;
+                  z-index: 0;
+                }
               `,
                 }}
               />
               <div className="mb-2 sm:mb-3 shrink-0 relative">
-                <div
-                  id="qr-reader"
-                  ref={scanAreaRef}
-                  className={`w-full max-w-md mx-auto rounded-xl overflow-hidden border-3 border-[#A80D0C] shadow-2xl bg-white dark:bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 ${
-                    isProcessingScan ? "blur-md" : ""
-                  }`}
-                />
-                {isProcessingScan && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
+                <div className="w-full max-w-md mx-auto border-blob-wrapper rounded-xl">
+                  <motion.div
+                    className="absolute inset-0 rounded-xl pointer-events-none z-1"
+                    style={{
+                      padding: "3px",
+                      background:
+                        "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
+                      WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMaskComposite: "xor",
+                      maskComposite: "exclude",
+                      // Animate the gradient angle (not a transform) to avoid loop flicker/snapping.
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      ["--angle" as any]: "0deg",
+                      willChange: "background",
+                    }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    animate={{ ["--angle" as any]: "360deg" }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <div className="border-blob-content">
+                    <div
+                      id="qr-reader"
+                      ref={scanAreaRef}
+                      className={`w-full rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 relative ${
+                        isProcessingScan ? "blur-md" : ""
+                      }`}
+                    />
+                    {isProcessingScan && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
                     <div className="text-center">
                       <div className="inline-flex items-center gap-3 mb-2">
                         <svg
@@ -670,7 +704,9 @@ export default function ScanClient() {
                       </p>
                     </div>
                   </div>
-                )}
+                  )}
+                  </div>
+                </div>
                 {cameraError && (
                   <p
                     className={`mt-1 text-center text-sm sm:text-base ${
@@ -744,7 +780,7 @@ export default function ScanClient() {
                       )}
                       {status === "already_scanned" &&
                         ticketInfo.scan_email && (
-                          <p className="text-sm sm:text-base break-words">
+                          <p className="text-sm sm:text-base wrap-break-word">
                             <span className="text-gray-600">
                               Scanner email:
                             </span>{" "}
@@ -761,7 +797,7 @@ export default function ScanClient() {
           </AnimatePresence>
 
           {!status && (
-            <div className="mt-2 sm:mt-3 text-center flex-shrink-0">
+            <div className="mt-2 sm:mt-3 text-center shrink-0">
               <p
                 className={`text-sm sm:text-base ${
                   status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
