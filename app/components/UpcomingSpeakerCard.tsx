@@ -22,6 +22,9 @@ export type UpcomingSpeakerCardProps = {
   calendarUrl?: string; // iCal URL for adding event
   eventId?: string; // Event ID for notify signup
   isAlreadyNotified?: boolean; // Whether user is signed up for notifications
+  capacity?: number | null; // Event capacity
+  ticketsSold?: number | null; // Number of tickets sold
+  reserved?: number | null; // Reserved seats
 };
 
 export default function UpcomingSpeakerCard({
@@ -41,6 +44,9 @@ export default function UpcomingSpeakerCard({
   calendarUrl = "",
   eventId = "",
   isAlreadyNotified = false,
+  capacity = null,
+  ticketsSold = null,
+  reserved = null,
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
@@ -54,10 +60,15 @@ export default function UpcomingSpeakerCard({
   const showSponsorName = !!sponsorName;
   const showSponsor = showSponsorPrefix || showSponsorName;
   const showCta = !!ctaText && !!ctaHref;
+  const showTicketInfo = !mystery && capacity !== null && capacity > 0;
   const showMeta =
-    showDate || showDoorsOpen || showEventTime || showLocation || showSponsor;
+    showDate || showDoorsOpen || showEventTime || showLocation || showSponsor || showTicketInfo;
   const showCalendarLink = !mystery && !!calendarUrl;
   const showNotifyButton = mystery && !!eventId;
+
+  // Calculate tickets left
+  const maxTickets = showTicketInfo ? Math.max(0, capacity - (reserved || 0)) : 0;
+  const ticketsLeft = showTicketInfo ? Math.max(0, maxTickets - (ticketsSold || 0)) : 0;
 
   const [notifyStatus, setNotifyStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -339,6 +350,27 @@ export default function UpcomingSpeakerCard({
                   {showSponsorName && (
                     <span className="font-semibold">{sponsorName}</span>
                   )}
+                </p>
+              </div>
+            )}
+
+            {showTicketInfo && (
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-red-500 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <p className="text-base text-white font-medium">
+                  Tickets left: {ticketsLeft} / {maxTickets}
                 </p>
               </div>
             )}
