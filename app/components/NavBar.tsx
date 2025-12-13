@@ -112,11 +112,11 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="/other-programs"
+                  href="/event-sponsorship"
                   className={linkClasses}
                   prefetch={false}
                 >
-                  Other Programs
+                  Event Sponsorship
                 </Link>
               </motion.div>
               <motion.div
@@ -225,11 +225,11 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   Suggest
                 </Link>
                 <Link
-                  href="/other-programs"
+                  href="/event-sponsorship"
                   className={mobileLinkClasses}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Other Programs
+                  Event Sponsorship
                 </Link>
                 <Link
                   href="/team"

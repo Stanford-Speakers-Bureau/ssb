@@ -24,6 +24,30 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  async redirects() {
+    return [
+      {
+        source: "/our-team",
+        destination: "/team",
+        permanent: true,
+      },
+      {
+        source: "/past-events",
+        destination: "/past-speakers",
+        permanent: true,
+      },
+      {
+        source: "/co-sponsorships-partnerships",
+        destination: "/event-sponsorship",
+        permanent: true,
+      },
+      {
+        source: "/other-programs",
+        destination: "/event-sponsorship",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
