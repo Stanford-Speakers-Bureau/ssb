@@ -48,6 +48,7 @@ export type Event = {
   created_at: string;
   name: string | null;
   desc: string | null;
+  tagline: string | null;
   img: string | null;
   capacity: number;
   venue: string | null;
@@ -64,7 +65,9 @@ export type Event = {
 type FormData = {
   name: string;
   desc: string;
+  tagline: string;
   capacity: string;
+  reserved: string;
   venue: string;
   venue_link: string;
   release_date: string;
@@ -77,7 +80,9 @@ type FormData = {
 const emptyForm: FormData = {
   name: "",
   desc: "",
+  tagline: "",
   capacity: "",
+  reserved: "",
   venue: "",
   venue_link: "",
   release_date: "",
@@ -171,7 +176,9 @@ export default function AdminEventsClient({
     setFormData({
       name: event.name || "",
       desc: event.desc || "",
+      tagline: event.tagline || "",
       capacity: event.capacity?.toString() || "",
+      reserved: event.reserved?.toString() || "",
       venue: event.venue || "",
       venue_link: event.venue_link || "",
       release_date: formatDateTimeForInput(event.release_date),
@@ -223,7 +230,9 @@ export default function AdminEventsClient({
       const submitData = new FormData();
       submitData.append("name", formData.name);
       submitData.append("desc", formData.desc);
+      submitData.append("tagline", formData.tagline);
       submitData.append("capacity", formData.capacity);
+      submitData.append("reserved", formData.reserved);
       submitData.append("venue", formData.venue);
       submitData.append("venue_link", formData.venue_link);
       submitData.append("release_date", formData.release_date);
@@ -491,6 +500,22 @@ export default function AdminEventsClient({
                 />
               </div>
 
+              {/* Reserved Seats */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Reserved Seats
+                </label>
+                <input
+                  type="number"
+                  value={formData.reserved}
+                  onChange={(e) =>
+                    setFormData({ ...formData, reserved: e.target.value })
+                  }
+                  placeholder="e.g., 50"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+                />
+              </div>
+
               {/* Venue */}
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -589,6 +614,22 @@ export default function AdminEventsClient({
                   Show in Banner
                 </label>
               </div>
+            </div>
+
+            {/* Tagline */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Tagline
+              </label>
+              <input
+                type="text"
+                value={formData.tagline}
+                onChange={(e) =>
+                  setFormData({ ...formData, tagline: e.target.value })
+                }
+                placeholder="Short tagline for the speaker..."
+                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+              />
             </div>
 
             {/* Description */}

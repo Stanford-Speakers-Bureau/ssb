@@ -17,6 +17,7 @@ export type Event = {
   created_at: string;
   name: string | null;
   desc: string | null;
+  tagline: string | null;
   img: string | null;
   capacity: number;
   venue: string | null;
@@ -264,7 +265,7 @@ export function isEventMystery(event: {
   release_date: string | null;
   name: string | null;
 }): boolean {
-  return false;
+  return false; // ONLY FOR TESTING
   const now = new Date();
   const releaseDate = event.release_date ? new Date(event.release_date) : null;
   return releaseDate ? now < releaseDate : !event.name;

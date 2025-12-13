@@ -25,7 +25,9 @@ export async function POST(req: Request) {
     const id = formData.get("id") as string | null;
     const name = formData.get("name") as string;
     const desc = formData.get("desc") as string;
+    const tagline = formData.get("tagline") as string;
     const capacity = formData.get("capacity") as string;
+    const reserved = formData.get("reserved") as string;
     const venue = formData.get("venue") as string;
     const venue_link = formData.get("venue_link") as string;
     const release_date = formData.get("release_date") as string;
@@ -140,10 +142,12 @@ export async function POST(req: Request) {
     }
 
     const eventData: Record<string, unknown> = {
-      name: sanitizedName,
-      desc: sanitizedDesc,
-      capacity: capacity ? parseInt(capacity, 10) : 0,
-      venue: sanitizedVenue,
+      name: name || null,
+      desc: desc || null,
+      tagline: tagline || null,
+      capacity: capacity ? parseInt(capacity) : 0,
+      reserved: reserved ? parseInt(reserved) : null,
+      venue: venue || null,
       venue_link: venue_link || null,
       release_date: release_date
         ? fromZonedTime(release_date, PACIFIC_TIMEZONE).toISOString()

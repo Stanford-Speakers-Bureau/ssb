@@ -19,7 +19,7 @@ type SanitizedEvent = {
   venue: string | null;
   venue_link: string | null;
   name: string | null;
-  desc: string | null;
+  tagline: string | null;
   route: string | null;
   signedImageUrl: string | null;
   isMystery: boolean;
@@ -51,7 +51,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         venue: event.venue,
         venue_link: event.venue_link,
         name: isMystery ? null : event.name,
-        desc: isMystery ? null : event.desc,
+        tagline: isMystery ? null : event.tagline,
         route: isMystery ? null : event.route,
         signedImageUrl: isMystery
           ? null
@@ -114,7 +114,7 @@ export default async function UpcomingSpeakers() {
                   header={
                     event.isMystery
                       ? "Speaker — To Be Announced"
-                      : event.desc || ""
+                      : event.tagline || ""
                   }
                   dateText={formatEventDate(event.start_time_date)}
                   doorsOpenText={

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { NOTIFY_MESSAGES } from "../lib/constants";
+import Image from "next/image";
 
 export type UpcomingSpeakerCardProps = {
   name?: string;
@@ -66,6 +67,11 @@ export default function UpcomingSpeakerCard({
   );
   const [imageLoaded, setImageLoaded] = useState(!backgroundImageUrl);
 
+  // If the background URL changes, treat it as "not loaded yet" until the new image finishes.
+  useEffect(() => {
+    setImageLoaded(!backgroundImageUrl);
+  }, [backgroundImageUrl]);
+
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
   useEffect(() => {
     if (isAlreadyNotified && notifyStatus !== "success") {
@@ -115,13 +121,21 @@ export default function UpcomingSpeakerCard({
   if (!imageLoaded && backgroundImageUrl) {
     return (
       <div className="relative rounded p-8 shadow-sm overflow-hidden bg-zinc-900">
-        {/* Hidden Image to trigger onLoad */}
-        <img
-          src={backgroundImageUrl}
-          alt=""
-          className="hidden"
-          onLoad={() => setImageLoaded(true)}
-        />
+        {/* Hidden optimized Image to trigger load completion */}
+        <div className="absolute inset-0 z-0">
+          <div className="relative w-full h-full">
+            <Image
+              src={backgroundImageUrl}
+              alt=""
+              fill
+              className="object-cover opacity-0"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onLoadingComplete={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+              quality={90}
+            />
+          </div>
+        </div>
         <div className="flex flex-col h-full">
           {/* Title / Name */}
           <div className="h-8 md:h-9 bg-zinc-800 rounded-md w-3/4 mb-2 animate-pulse"></div>
@@ -162,27 +176,33 @@ export default function UpcomingSpeakerCard({
 
   return (
     <div
-      className="relative rounded p-8 shadow-sm overflow-hidden"
+      className="relative isolate rounded p-8 shadow-sm overflow-hidden"
     >
       {/* Background Image */}
       {backgroundImageUrl && (
-        <div
-          className="absolute inset-0 transition-opacity duration-500"
-          style={{
-            backgroundImage: `url(${backgroundImageUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
+        <div className="absolute inset-0 z-0">
+          <div className="relative w-full h-full">
+            <Image
+              src={backgroundImageUrl}
+              alt={name || "Speaker"}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={false}
+              quality={90}
+              onLoadingComplete={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+            />
+          </div>
+        </div>
       )}
 
       {/* Semi-transparent overlay for better text readability */}
       <div
-        className={`absolute inset-0 z-0 ${mystery ? "backdrop-blur-xl bg-black/50" : "bg-black/70"}`}
+        className={`absolute inset-0 z-10 ${mystery ? "backdrop-blur-xl bg-black/50" : "bg-black/70"}`}
       ></div>
 
-      <div className="relative z-10">
+      <div className="relative z-20">
         {showName && (
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white mb-2">
             {name}
