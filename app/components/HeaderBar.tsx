@@ -11,15 +11,15 @@ type BannerProps = {
   prefaceLabel: string;
 };
 
-interface SiteChromeProps {
+interface HeaderBarProps {
   showBanner: boolean;
   bannerProps: BannerProps;
 }
 
-export default function SiteChrome({
+export default function HeaderBar({
   showBanner,
   bannerProps,
-}: SiteChromeProps) {
+}: HeaderBarProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
   const isScanRoute = pathname.startsWith("/scan");

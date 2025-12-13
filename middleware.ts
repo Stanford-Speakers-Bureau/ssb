@@ -56,7 +56,6 @@ async function handleScannerRedirect(request: NextRequest) {
   // Skip redirect logic if already on /scan, /api, or /admin routes
   if (
     pathname.startsWith("/scan") ||
-    pathname.startsWith("/api") ||
     pathname.startsWith("/admin")
   ) {
     return null;

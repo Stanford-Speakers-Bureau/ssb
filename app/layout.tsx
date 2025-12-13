@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
-import SiteChrome from "./components/SiteChrome";
+import HeaderBar from "./components/HeaderBar";
 import { getClosestUpcomingEvent } from "./lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
 
@@ -74,7 +74,7 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <SiteChrome
+        <HeaderBar
           showBanner={showBanner}
           bannerProps={{
             text: bannerText,
