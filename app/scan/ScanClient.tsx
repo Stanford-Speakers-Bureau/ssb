@@ -429,7 +429,7 @@ export default function ScanClient() {
                 SSB Scanner
               </h1>
             </div>
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 p-8 sm:p-12 text-center">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 sm:p-12 text-center">
               <svg
                 className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 text-zinc-400 dark:text-zinc-600"
                 fill="none"
