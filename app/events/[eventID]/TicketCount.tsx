@@ -18,7 +18,7 @@ export default function TicketCount({
 }: TicketCountProps) {
   const [ticketsSold, setTicketsSold] = useState(initialTicketsSold);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const maxTickets = Math.max(0, initialCapacity - (reserved || 0));
 
   const fetchTicketCount = () => {
@@ -93,4 +93,3 @@ export default function TicketCount({
     </div>
   );
 }
-

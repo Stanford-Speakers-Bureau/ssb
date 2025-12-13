@@ -62,13 +62,22 @@ export default function UpcomingSpeakerCard({
   const showCta = !!ctaText && !!ctaHref;
   const showTicketInfo = !mystery && capacity !== null && capacity > 0;
   const showMeta =
-    showDate || showDoorsOpen || showEventTime || showLocation || showSponsor || showTicketInfo;
+    showDate ||
+    showDoorsOpen ||
+    showEventTime ||
+    showLocation ||
+    showSponsor ||
+    showTicketInfo;
   const showCalendarLink = !mystery && !!calendarUrl;
   const showNotifyButton = mystery && !!eventId;
 
   // Calculate tickets left
-  const maxTickets = showTicketInfo ? Math.max(0, capacity - (reserved || 0)) : 0;
-  const ticketsLeft = showTicketInfo ? Math.max(0, maxTickets - (ticketsSold || 0)) : 0;
+  const maxTickets = showTicketInfo
+    ? Math.max(0, capacity - (reserved || 0))
+    : 0;
+  const ticketsLeft = showTicketInfo
+    ? Math.max(0, maxTickets - (ticketsSold || 0))
+    : 0;
 
   const [notifyStatus, setNotifyStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -186,9 +195,7 @@ export default function UpcomingSpeakerCard({
   }
 
   return (
-    <div
-      className="relative isolate rounded p-8 shadow-sm overflow-hidden"
-    >
+    <div className="relative isolate rounded p-8 shadow-sm overflow-hidden">
       {/* Background Image */}
       {backgroundImageUrl && (
         <div className="absolute inset-0 z-0">

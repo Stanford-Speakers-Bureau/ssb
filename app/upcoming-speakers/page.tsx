@@ -84,9 +84,9 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
           ? null
           : await getSignedImageUrl(event.img, 60),
         isMystery,
-        capacity: isMystery ? null : event.capacity ?? null,
+        capacity: isMystery ? null : (event.capacity ?? null),
         ticketsSold: isMystery ? null : ticketsSold,
-        reserved: isMystery ? null : event.reserved ?? null,
+        reserved: isMystery ? null : (event.reserved ?? null),
       };
     }),
   );

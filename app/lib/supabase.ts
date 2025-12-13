@@ -340,8 +340,13 @@ export function isEventMystery(event: {
 }): boolean {
   return false; // ONLY FOR TESTING
   const now = new Date();
-  const releaseDate = event.release_date ? new Date(event.release_date) : null;
-  return releaseDate ? now < releaseDate : !event.name;
+  const releaseDateStr = event.release_date;
+  if (releaseDateStr == null) {
+    return !event.name;
+  }
+  // TypeScript should narrow here, but if not, we explicitly assert
+  const releaseDate = new Date(releaseDateStr as string);
+  return now < releaseDate;
 }
 
 /**

@@ -46,10 +46,13 @@ export default async function RootLayout({
 
   // Determine if speaker is still a mystery (before release_date)
   const now = new Date();
-  const releaseDate = closestEvent?.release_date
-    ? new Date(closestEvent.release_date)
-    : null;
-  const isMystery = releaseDate ? now < releaseDate : !closestEvent?.name;
+  let isMystery: boolean;
+  if (!closestEvent?.release_date) {
+    isMystery = !closestEvent?.name;
+  } else {
+    const releaseDate = new Date(closestEvent.release_date);
+    isMystery = now < releaseDate;
+  }
 
   // Show banner if there's an upcoming event
   const showBanner = !!closestEvent;

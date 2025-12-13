@@ -87,10 +87,10 @@ export default function ScanClient() {
   useEffect(() => {
     const checkMobile = () => {
       // Check if it's a mobile device based on screen width and touch capability
-      const isMobileDevice = 
+      const isMobileDevice =
         window.innerWidth < 768 || // Tablet/mobile breakpoint
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
+          navigator.userAgent,
         ) ||
         Boolean(navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
       setIsMobile(isMobileDevice);
@@ -139,7 +139,7 @@ export default function ScanClient() {
                 ? "granted"
                 : permissionStatus.state === "denied"
                   ? "denied"
-                  : "prompt"
+                  : "prompt",
             );
 
             // Listen for permission changes
@@ -149,13 +149,15 @@ export default function ScanClient() {
                   ? "granted"
                   : permissionStatus.state === "denied"
                     ? "denied"
-                    : "prompt"
+                    : "prompt",
               );
             };
           } catch (permError) {
             // Permissions API might not support "camera" on WebKit
             // Fall through to getUserMedia check
-            console.log("Permissions API not fully supported, using getUserMedia check");
+            console.log(
+              "Permissions API not fully supported, using getUserMedia check",
+            );
             setCameraPermission("prompt");
           }
         } else {
@@ -244,17 +246,18 @@ export default function ScanClient() {
       // Check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error(
-          "Camera API not available. Please use a modern browser with camera support."
+          "Camera API not available. Please use a modern browser with camera support.",
         );
       }
 
       // WebKit-specific: Request camera permission explicitly with proper constraints
-      // Use ideal constraints for better WebKit compatibility
+      // Use ideal constraints for better WebKit compatibility and higher quality
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: { ideal: "environment" }, // Prefer back camera
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1920, min: 1280 }, // Higher resolution for better scanning
+          height: { ideal: 1080, min: 720 },
+          aspectRatio: { ideal: 16 / 9 },
         },
       };
 
@@ -272,21 +275,19 @@ export default function ScanClient() {
         ) {
           setCameraPermission("denied");
           setCameraError(
-            "Camera permission denied. Please enable camera access in your browser settings."
+            "Camera permission denied. Please enable camera access in your browser settings.",
           );
         } else if (permError?.name === "NotFoundError") {
           setCameraPermission("denied");
           setCameraError("No camera found on this device.");
         } else if (permError?.name === "NotReadableError") {
           setCameraPermission("denied");
-          setCameraError(
-            "Camera is already in use by another application."
-          );
+          setCameraError("Camera is already in use by another application.");
         } else {
           setCameraPermission("denied");
           setCameraError(
             permError?.message ||
-              "Failed to access camera. Please check permissions."
+              "Failed to access camera. Please check permissions.",
           );
         }
         return;
@@ -294,19 +295,15 @@ export default function ScanClient() {
 
       const scanner = new Html5Qrcode("qr-reader");
 
-      // WebKit-friendly scanner configuration
-      // Use responsive QR box size for mobile optimization
-      const isMobileView = window.innerWidth < 640;
-      const qrBoxSize = isMobileView 
-        ? Math.min(window.innerWidth * 0.65, 200) // Smaller on mobile
-        : Math.min(window.innerWidth * 0.7, 280);
-      
+      // Optimized scanner configuration - scan entire camera viewport
       const config = {
-        fps: 10,
-        qrbox: { width: qrBoxSize, height: qrBoxSize },
+        fps: 20, // Higher FPS for faster scanning
+        // No qrbox specified - scans entire camera viewport
         aspectRatio: 1.0,
         // Disable verbose logging for better performance on mobile
         verbose: false,
+        // Better error correction handling
+        rememberLastUsedCamera: true,
       };
 
       await scanner.start(
@@ -326,7 +323,7 @@ export default function ScanClient() {
           ) {
             console.debug("QR scan error:", errorMessage);
           }
-        }
+        },
       );
 
       // Only set the ref once the scanner is actually running.
@@ -342,14 +339,15 @@ export default function ScanClient() {
       ) {
         setCameraPermission("denied");
         setCameraError(
-          "Camera permission denied. Please enable camera access in your browser settings."
+          "Camera permission denied. Please enable camera access in your browser settings.",
         );
       } else if (error?.name === "NotFoundError") {
         setCameraPermission("denied");
         setCameraError("No camera found on this device.");
       } else {
         setCameraError(
-          error?.message || "Failed to access camera. Please check permissions."
+          error?.message ||
+            "Failed to access camera. Please check permissions.",
         );
       }
     }
@@ -375,7 +373,6 @@ export default function ScanClient() {
       void stopScanner();
     };
   }, [liveEvent, cameraPermission, cameraStarted, startCamera, stopScanner]);
-
 
   const getStatusText = () => {
     if (status === "scanned") {
@@ -462,8 +459,12 @@ export default function ScanClient() {
   }
 
   return (
-    <div className={`flex h-screen flex-col items-center font-sans bg-zinc-50 dark:bg-black transition-colors duration-500 overflow-hidden ${getStatusOverlay()}`}>
-      <main className={`flex w-full flex-1 justify-center bg-white dark:bg-black transition-colors duration-500 pt-12 sm:pt-16 overflow-y-auto ${getStatusOverlay()}`}>
+    <div
+      className={`flex h-screen flex-col items-center font-sans bg-zinc-50 dark:bg-black transition-colors duration-500 overflow-hidden ${getStatusOverlay()}`}
+    >
+      <main
+        className={`flex w-full flex-1 justify-center bg-white dark:bg-black transition-colors duration-500 pt-12 sm:pt-16 overflow-y-auto ${getStatusOverlay()}`}
+      >
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="text-center mb-2 sm:mb-4">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black dark:text-white mb-1 sm:mb-2 font-serif">
@@ -472,7 +473,10 @@ export default function ScanClient() {
             {liveEvent ? (
               <div className="mt-1 sm:mt-2">
                 <p className="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base md:text-lg">
-                  Scanning tickets for: <span className="font-semibold text-black dark:text-white">{liveEvent.name}</span>
+                  Scanning tickets for:{" "}
+                  <span className="font-semibold text-black dark:text-white">
+                    {liveEvent.name}
+                  </span>
                 </p>
                 {liveEvent.venue && (
                   <p className="text-zinc-500 dark:text-zinc-500 text-xs sm:text-sm md:text-base mt-0.5">
@@ -524,8 +528,8 @@ export default function ScanClient() {
                 Camera Access Denied
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base mb-3 sm:mb-4">
-                Please enable camera permissions in your browser settings to scan
-                tickets.
+                Please enable camera permissions in your browser settings to
+                scan tickets.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -544,7 +548,9 @@ export default function ScanClient() {
           {/* Camera View */}
           {liveEvent && (
             <>
-              <style dangerouslySetInnerHTML={{__html: `
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: `
                 #qr-reader__dashboard_section_swaplink,
                 #qr-reader__status_span,
                 #qr-reader__camera_selection,
@@ -557,18 +563,35 @@ export default function ScanClient() {
                 }
                 #qr-reader__scan_region {
                   border: none !important;
+                  box-shadow: none !important;
                 }
-              `}} />
+                #qr-reader__camera_permission_button_id,
+                #qr-reader__camera_permission_denied_id {
+                  display: none !important;
+                }
+                video {
+                  object-fit: cover !important;
+                }
+              `,
+                }}
+              />
               <div className="mb-2 sm:mb-3 flex-shrink-0">
                 <div
                   id="qr-reader"
                   ref={scanAreaRef}
-                  className="w-full max-w-md mx-auto rounded-xl overflow-hidden border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 h-[200px] sm:h-[250px] md:h-[320px]"
+                  className="w-full max-w-md mx-auto rounded-xl overflow-hidden border-3 border-[#A80D0C] shadow-2xl bg-white dark:bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px]"
                 />
                 {cameraError && (
                   <p className="mt-1 text-center text-red-600 dark:text-red-400 text-sm sm:text-base">
                     {cameraError}
                   </p>
+                )}
+                {cameraStarted && !cameraError && (
+                  <div className="mt-2 text-center">
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm">
+                      💡 Tip: Hold steady and ensure the QR code is well-lit
+                    </p>
+                  </div>
                 )}
               </div>
             </>
@@ -614,40 +637,61 @@ export default function ScanClient() {
                       )}
                       {ticketInfo.email && (
                         <p className="text-sm sm:text-base break-words">
-                          <span className="text-zinc-500 dark:text-zinc-400">Email:</span>{" "}
-                          <span className="font-medium">{ticketInfo.email}</span>
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            Email:
+                          </span>{" "}
+                          <span className="font-medium">
+                            {ticketInfo.email}
+                          </span>
                         </p>
                       )}
                       {ticketInfo.type && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-zinc-500 dark:text-zinc-400">Ticket Type:</span>{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            Ticket Type:
+                          </span>{" "}
                           <span className="font-medium capitalize">
                             {ticketInfo.type}
                           </span>
                         </p>
                       )}
                       <p className="text-sm sm:text-base break-all">
-                        <span className="text-zinc-500 dark:text-zinc-400">Ticket ID:</span>{" "}
-                        <span className="font-mono text-xs sm:text-sm">{ticketInfo.id}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">
+                          Ticket ID:
+                        </span>{" "}
+                        <span className="font-mono text-xs sm:text-sm">
+                          {ticketInfo.id}
+                        </span>
                       </p>
                       {ticketInfo.scan_time && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-zinc-500 dark:text-zinc-400">Scanned at:</span>{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            Scanned at:
+                          </span>{" "}
                           {formatScanTime(ticketInfo.scan_time)}
                         </p>
                       )}
                       {status === "already_scanned" && ticketInfo.scan_user && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-zinc-500 dark:text-zinc-400">Scanned by:</span>{" "}
-                          <span className="font-medium">{ticketInfo.scan_user}</span>
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            Scanned by:
+                          </span>{" "}
+                          <span className="font-medium">
+                            {ticketInfo.scan_user}
+                          </span>
                         </p>
                       )}
-                      {status === "already_scanned" && ticketInfo.scan_email && (
-                        <p className="text-sm sm:text-base break-words">
-                          <span className="text-zinc-500 dark:text-zinc-400">Scanner email:</span>{" "}
-                          <span className="font-medium">{ticketInfo.scan_email}</span>
-                        </p>
-                      )}
+                      {status === "already_scanned" &&
+                        ticketInfo.scan_email && (
+                          <p className="text-sm sm:text-base break-words">
+                            <span className="text-zinc-500 dark:text-zinc-400">
+                              Scanner email:
+                            </span>{" "}
+                            <span className="font-medium">
+                              {ticketInfo.scan_email}
+                            </span>
+                          </p>
+                        )}
                     </div>
                   )}
 
@@ -683,5 +727,3 @@ export default function ScanClient() {
     </div>
   );
 }
-
-

@@ -142,10 +142,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   className="ml-auto"
                 >
                   {isAuthenticated ? (
-                    <Link
-                      href="/account"
-                      className={linkClasses}
-                    >
+                    <Link href="/account" className={linkClasses}>
                       Account
                     </Link>
                   ) : (

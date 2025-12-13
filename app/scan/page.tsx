@@ -9,9 +9,7 @@ export default async function ScannerPage() {
 
   if (!auth.authorized) {
     if (auth.error === "Not authenticated") {
-      redirect(
-        `/api/auth/google?redirect_to=${encodeURIComponent("/scan")}`,
-      );
+      redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/scan")}`);
     }
 
     redirect(`/`);
@@ -19,4 +17,3 @@ export default async function ScannerPage() {
 
   return <ScanClient />;
 }
-

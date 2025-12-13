@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifyAdminOrScannerRequest, createServerSupabaseClient } from "@/app/lib/supabase";
+import {
+  verifyAdminOrScannerRequest,
+  createServerSupabaseClient,
+} from "@/app/lib/supabase";
 
 export async function POST(req: Request) {
   try {
@@ -19,17 +22,20 @@ export async function POST(req: Request) {
     }
 
     const adminClient = auth.adminClient!;
-    
+
     // Get scanner's user information
     const supabase = await createServerSupabaseClient();
-    const { data: { user: scannerUser } } = await supabase.auth.getUser();
+    const {
+      data: { user: scannerUser },
+    } = await supabase.auth.getUser();
     const scannerEmail = scannerUser?.email || null;
     let scannerName: string | null = null;
     if (scannerUser?.user_metadata) {
-      scannerName = scannerUser.user_metadata.full_name || 
-                   scannerUser.user_metadata.name || 
-                   scannerUser.user_metadata.display_name || 
-                   null;
+      scannerName =
+        scannerUser.user_metadata.full_name ||
+        scannerUser.user_metadata.name ||
+        scannerUser.user_metadata.display_name ||
+        null;
     }
 
     // Check if there's a live event
@@ -41,7 +47,10 @@ export async function POST(req: Request) {
 
     if (liveEventError || !liveEvent) {
       return NextResponse.json(
-        { error: "No event is currently live. Scanning is disabled.", status: "invalid" },
+        {
+          error: "No event is currently live. Scanning is disabled.",
+          status: "invalid",
+        },
         { status: 400 },
       );
     }
@@ -49,7 +58,9 @@ export async function POST(req: Request) {
     // First, check if the ticket exists and get its current status with user info
     const { data: ticket, error: fetchError } = await adminClient
       .from("tickets")
-      .select("id, type, scanned, scan_time, email, event_id, scan_user, scan_email")
+      .select(
+        "id, type, scanned, scan_time, email, event_id, scan_user, scan_email",
+      )
       .eq("id", ticket_id)
       .single();
 
@@ -75,16 +86,19 @@ export async function POST(req: Request) {
     let userName: string | null = null;
     if (ticket.email) {
       try {
-        // Try to get user metadata from auth using admin client
-        const { data: authUser, error: authError } =
-          await adminClient.auth.admin.getUserByEmail(ticket.email);
-        if (!authError && authUser?.user) {
-          if (authUser.user.user_metadata?.full_name) {
-            userName = authUser.user.user_metadata.full_name;
-          } else if (authUser.user.user_metadata?.name) {
-            userName = authUser.user.user_metadata.name;
-          } else if (authUser.user.user_metadata?.display_name) {
-            userName = authUser.user.user_metadata.display_name;
+        // Use listUsers to find user by email
+        const { data: usersList, error: authError } =
+          await adminClient.auth.admin.listUsers();
+        if (!authError && usersList?.users) {
+          const user = usersList.users.find((u) => u.email === ticket.email);
+          if (user?.user_metadata) {
+            if (user.user_metadata.full_name) {
+              userName = user.user_metadata.full_name;
+            } else if (user.user_metadata.name) {
+              userName = user.user_metadata.name;
+            } else if (user.user_metadata.display_name) {
+              userName = user.user_metadata.display_name;
+            }
           }
         }
       } catch (err) {
@@ -144,15 +158,21 @@ export async function POST(req: Request) {
     let userNameResponse: string | null = null;
     if (updatedTicket.email) {
       try {
-        const { data: authUser, error: authError } =
-          await adminClient.auth.admin.getUserByEmail(updatedTicket.email);
-        if (!authError && authUser?.user) {
-          if (authUser.user.user_metadata?.full_name) {
-            userNameResponse = authUser.user.user_metadata.full_name;
-          } else if (authUser.user.user_metadata?.name) {
-            userNameResponse = authUser.user.user_metadata.name;
-          } else if (authUser.user.user_metadata?.display_name) {
-            userNameResponse = authUser.user.user_metadata.display_name;
+        // Use listUsers to find user by email
+        const { data: usersList, error: authError } =
+          await adminClient.auth.admin.listUsers();
+        if (!authError && usersList?.users) {
+          const user = usersList.users.find(
+            (u) => u.email === updatedTicket.email,
+          );
+          if (user?.user_metadata) {
+            if (user.user_metadata.full_name) {
+              userNameResponse = user.user_metadata.full_name;
+            } else if (user.user_metadata.name) {
+              userNameResponse = user.user_metadata.name;
+            } else if (user.user_metadata.display_name) {
+              userNameResponse = user.user_metadata.display_name;
+            }
           }
         }
       } catch (err) {
@@ -209,7 +229,10 @@ export async function GET(req: Request) {
 
     if (liveEventError || !liveEvent) {
       return NextResponse.json(
-        { error: "No event is currently live. Scanning is disabled.", status: "invalid" },
+        {
+          error: "No event is currently live. Scanning is disabled.",
+          status: "invalid",
+        },
         { status: 400 },
       );
     }
@@ -217,7 +240,9 @@ export async function GET(req: Request) {
     // Get ticket status without updating it
     const { data: ticket, error: fetchError } = await adminClient
       .from("tickets")
-      .select("id, type, scanned, scan_time, email, event_id, scan_user, scan_email")
+      .select(
+        "id, type, scanned, scan_time, email, event_id, scan_user, scan_email",
+      )
       .eq("id", ticket_id)
       .single();
 
@@ -243,15 +268,19 @@ export async function GET(req: Request) {
     let userName: string | null = null;
     if (ticket.email) {
       try {
-        const { data: authUser, error: authError } =
-          await adminClient.auth.admin.getUserByEmail(ticket.email);
-        if (!authError && authUser?.user) {
-          if (authUser.user.user_metadata?.full_name) {
-            userName = authUser.user.user_metadata.full_name;
-          } else if (authUser.user.user_metadata?.name) {
-            userName = authUser.user.user_metadata.name;
-          } else if (authUser.user.user_metadata?.display_name) {
-            userName = authUser.user.user_metadata.display_name;
+        // Use listUsers to find user by email
+        const { data: usersList, error: authError } =
+          await adminClient.auth.admin.listUsers();
+        if (!authError && usersList?.users) {
+          const user = usersList.users.find((u) => u.email === ticket.email);
+          if (user?.user_metadata) {
+            if (user.user_metadata.full_name) {
+              userName = user.user_metadata.full_name;
+            } else if (user.user_metadata.name) {
+              userName = user.user_metadata.name;
+            } else if (user.user_metadata.display_name) {
+              userName = user.user_metadata.display_name;
+            }
           }
         }
       } catch (err) {
@@ -301,4 +330,3 @@ export async function GET(req: Request) {
     );
   }
 }
-

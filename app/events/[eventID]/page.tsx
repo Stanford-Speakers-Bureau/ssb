@@ -55,7 +55,7 @@ export default async function EventPage({ params }: PageProps) {
     getSignedImageUrl(event.img, 3600),
     getUserTicketStatus(event.id),
   ]);
-  
+
   const hasTicket = !!ticketId;
 
   return (
@@ -222,13 +222,19 @@ export default async function EventPage({ params }: PageProps) {
                     <TicketCount
                       eventId={event.id}
                       initialCapacity={event.capacity}
-                      initialTicketsSold={(event.tickets ?? event.reserved) || 0}
+                      initialTicketsSold={
+                        (event.tickets ?? event.reserved) || 0
+                      }
                       reserved={event.reserved}
                     />
                   )}
                 </div>
 
-                <TicketButton eventId={event.id} initialHasTicket={hasTicket} initialTicketId={ticketId} />
+                <TicketButton
+                  eventId={event.id}
+                  initialHasTicket={hasTicket}
+                  initialTicketId={ticketId}
+                />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
                 {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}

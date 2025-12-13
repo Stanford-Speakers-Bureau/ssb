@@ -17,7 +17,6 @@ const TICKET_MESSAGES = {
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
 } as const;
 
-
 export async function POST(req: Request) {
   try {
     const supabase = await createServerSupabaseClient();
@@ -40,10 +39,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { event_id } = body;
@@ -170,10 +166,7 @@ export async function DELETE(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { event_id } = body;
@@ -231,4 +224,3 @@ export async function DELETE(req: Request) {
     );
   }
 }
-

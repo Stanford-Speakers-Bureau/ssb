@@ -107,9 +107,7 @@ export default function TicketButton({
       {message && (
         <p
           className={`mt-2 text-xs sm:text-sm ${
-            message.includes("successfully")
-              ? "text-green-400"
-              : "text-red-400"
+            message.includes("successfully") ? "text-green-400" : "text-red-400"
           }`}
         >
           {message}
@@ -119,4 +117,3 @@ export default function TicketButton({
     </div>
   );
 }
-
