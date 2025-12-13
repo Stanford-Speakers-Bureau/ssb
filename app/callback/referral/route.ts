@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "../../lib/supabase";
+import { cookies } from "next/headers";
 import { isValidRedirect } from "../../lib/security";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
-  const code = requestUrl.searchParams.get("code");
+  const referral = requestUrl.searchParams.get("referral");
   const redirectTo =
     requestUrl.searchParams.get("redirect_to") || "/upcoming-speakers";
 
@@ -16,17 +16,16 @@ export async function GET(req: Request) {
   // Use the request origin to ensure we redirect back to the same domain
   const baseUrl = requestUrl.origin;
 
-  if (code) {
-    const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      // Log the error for debugging purposes (optional, could be more robust)
-      console.error("Supabase auth exchangeCodeForSession error:", error);
-      // Redirect to the safeRedirect with an error parameter
-      return NextResponse.redirect(
-        new URL(`${safeRedirect}?error=auth_failed`, baseUrl),
-      );
-    }
+  // Store referral in cookie if provided
+  if (referral) {
+    const cookieStore = await cookies();
+    cookieStore.set("referral", referral, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: "/",
+    });
   }
 
   return NextResponse.redirect(new URL(safeRedirect, baseUrl));

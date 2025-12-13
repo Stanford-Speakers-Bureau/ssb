@@ -7,10 +7,38 @@ import {
   getSignedImageUrl,
   formatEventDate,
   formatTime,
+  createServerSupabaseClient,
+  getSupabaseClient,
 } from "../../lib/supabase";
+import TicketButton from "./TicketButton";
+import TicketCount from "./TicketCount";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;
+}
+
+async function getUserTicketStatus(eventId: string): Promise<boolean> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) return false;
+
+    const adminClient = getSupabaseClient();
+    const { data } = await adminClient
+      .from("tickets")
+      .select("id")
+      .eq("event_id", eventId)
+      .eq("email", user.email)
+      .eq("status", "VALID")
+      .single();
+
+    return !!data;
+  } catch {
+    return false;
+  }
 }
 
 export default async function EventPage({ params }: PageProps) {
@@ -23,8 +51,11 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  // Get the signed image URL for the event
-  const signedImageUrl = await getSignedImageUrl(event.img, 3600);
+  // Get the signed image URL for the event and check if user has a ticket
+  const [signedImageUrl, hasTicket] = await Promise.all([
+    getSignedImageUrl(event.img, 3600),
+    getUserTicketStatus(event.id),
+  ]);
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
@@ -187,32 +218,15 @@ export default async function EventPage({ params }: PageProps) {
                   )}
 
                   {event.capacity && (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                      </svg>
-                      <p className="text-sm sm:text-base text-white font-medium">
-                        Tickets left:{" "}
-                        {Math.max(
-                          0,
-                          event.capacity -
-                            ((event.tickets ?? event.reserved) || 0),
-                        )}{" "}
-                        / {event.capacity}
-                      </p>
-                    </div>
+                    <TicketCount
+                      eventId={event.id}
+                      initialCapacity={event.capacity}
+                      initialTicketsSold={(event.tickets ?? event.reserved) || 0}
+                    />
                   )}
                 </div>
+
+                <TicketButton eventId={event.id} initialHasTicket={hasTicket} />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
                 {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}
