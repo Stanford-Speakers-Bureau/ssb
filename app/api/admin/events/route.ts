@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
+import { randomUUID } from "crypto";
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     // Handle image upload
     if (imageFile && imageFile.size > 0) {
       const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `${Date.now()}-${randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await auth
         .adminClient!.storage.from("speakers")

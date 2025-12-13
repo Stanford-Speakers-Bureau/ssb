@@ -1,27 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../lib/supabase";
-
-// Allowed redirect paths (must start with /)
-const ALLOWED_REDIRECTS = [
-  "/upcoming-speakers",
-  "/events",
-  "/suggest",
-  "/admin",
-];
-
-function isValidRedirect(path: string): boolean {
-  // Must be a relative path starting with /
-  if (!path.startsWith("/")) return false;
-  // Prevent protocol-relative URLs (//evil.com)
-  if (path.startsWith("//")) return false;
-  // Check if path starts with an allowed prefix
-  return ALLOWED_REDIRECTS.some(
-    (allowed) =>
-      path === allowed ||
-      path.startsWith(allowed + "?") ||
-      path.startsWith(allowed + "/"),
-  );
-}
+import { isValidRedirect } from "../../lib/security";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);

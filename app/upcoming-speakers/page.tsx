@@ -99,15 +99,6 @@ export default async function UpcomingSpeakers() {
             <NotifyHandler />
           </Suspense>
 
-          <div className="mb-10 flex flex-col gap-4 rounded bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-lg font-semibold">
-                Want to see someone on stage? Suggest a speaker!
-              </p>
-            </div>
-            <SuggestSpeakerButton />
-          </div>
-
           {events.length === 0 ? (
             <p className="text-zinc-600 dark:text-zinc-400">
               No upcoming events at this time. Check back soon!
@@ -150,11 +141,20 @@ export default async function UpcomingSpeakers() {
             </div>
           )}
 
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 mt-10 text-center drop-shadow-lg">
+          <div className="mt-5 mb-10 flex flex-col gap-4 rounded bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-lg font-semibold">
+                Want to see someone on stage? Suggest a speaker!
+              </p>
+            </div>
+            <SuggestSpeakerButton />
+          </div>
+
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 mt-0 text-center drop-shadow-lg">
             To Hear About Upcoming Events:
           </h2>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-10">
             <a
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"

@@ -1,10 +1,13 @@
 import {NextResponse} from "next/server";
 import {createServerSupabaseClient} from "@/app/lib/supabase";
+import {isValidRedirect} from "@/app/lib/security";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
   const redirectTo = requestUrl.searchParams.get("redirect_to") || "/";
   const baseUrl = requestUrl.origin;
+  
+  const safeRedirect = isValidRedirect(redirectTo) ? redirectTo : "/";
 
   const supabase = await createServerSupabaseClient();
 
@@ -16,5 +19,5 @@ export async function GET(req: Request) {
     // Still redirect even on error to ensure user can navigate
   }
 
-  return NextResponse.redirect(new URL(redirectTo, baseUrl));
+  return NextResponse.redirect(new URL(safeRedirect, baseUrl));
 }
