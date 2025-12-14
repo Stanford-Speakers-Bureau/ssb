@@ -37,12 +37,12 @@ export default function OtherPrograms() {
                 Since 2020, Stanford Speakers Bureau has prioritized organizations on Stanford's campus who want to host events that center the voices of traditionally marginalized communities. This includes, but is not limited to:
               </p>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 justify-center">
                 {["Communities of Color", "LGBTQ+ Community", "Disabled Community", "Neurodivergent Community", "FLI Community"].map(
                   (tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 text-xs font-medium bg-[#A80D0C]/10 dark:bg-[#A80D0C]/20 text-[#A80D0C] rounded-full"
+                      className="px-3 py-1 text-xs font-medium bg-[#A80D0C]/10 dark:bg-[#A80D0C]/20 text-[#A80D0C] rounded-full transition-all cursor-pointer hover:bg-[#A80D0C]/20 dark:hover:bg-[#A80D0C]/30 hover:scale-105"
                     >
                       {tag}
                     </span>
@@ -161,7 +161,7 @@ export default function OtherPrograms() {
               </div>
 
               <p className="text-base text-zinc-700 dark:text-zinc-300 mb-6">
-                Need help bringing your event idea to life? We'll provide full support from funding to execution.
+                Need help bringing your event idea to life? We'll provide <strong>full support</strong> from funding to execution.
               </p>
 
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
