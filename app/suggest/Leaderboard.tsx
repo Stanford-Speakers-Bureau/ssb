@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 type Suggestion = {
@@ -33,6 +33,7 @@ export default function Leaderboard({
   const [votingId, setVotingId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleVote = async (speakerId: string, hasVoted: boolean) => {
     if (!isLoggedIn) return;
@@ -82,6 +83,17 @@ export default function Leaderboard({
     }
   };
 
+  // Filter suggestions based on search query while preserving global rankings
+  const filteredSuggestions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return suggestions;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return suggestions.filter((s) =>
+      s.speaker.toLowerCase().includes(query),
+    );
+  }, [suggestions, searchQuery]);
+
   return (
     <div className="flex flex-col lg:flex-1 lg:h-full max-w-lg mx-0">
       <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4 font-serif">
@@ -90,6 +102,58 @@ export default function Leaderboard({
       <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed mb-6">
         Vote for the speakers you&apos;d most like to see at Stanford
       </p>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search speaker suggestions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C] focus:border-transparent transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+              aria-label="Clear search"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            Showing {filteredSuggestions.length} of {suggestions.length} speakers
+          </p>
+        )}
+      </div>
 
       <AnimatePresence>
         {error && (
@@ -143,30 +207,57 @@ export default function Leaderboard({
               Stanford!
             </p>
           </div>
+        ) : filteredSuggestions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-zinc-400 dark:text-zinc-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
+              No speakers found
+            </h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
+              Try adjusting your search query
+            </p>
+          </div>
         ) : (
-          suggestions.map((suggestion, index) => (
+          filteredSuggestions.map((suggestion) => {
+            // Find the global index to preserve ranking
+            const globalIndex = suggestions.findIndex((s) => s.id === suggestion.id);
+            return (
             <motion.div
               key={suggestion.id}
               layout
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.01, duration: 0.2 }}
+              transition={{ duration: 0.2 }}
               className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
             >
               {/* Rank */}
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
               ${
-                index === 0
+                globalIndex === 0
                   ? "bg-amber-400 text-amber-900"
-                  : index === 1
+                  : globalIndex === 1
                     ? "bg-zinc-300 text-zinc-700"
-                    : index === 2
+                    : globalIndex === 2
                       ? "bg-amber-600 text-amber-100"
                       : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
               }`}
               >
-                {index + 1}
+                {globalIndex + 1}
               </div>
 
               {/* Speaker Name */}
@@ -269,7 +360,8 @@ export default function Leaderboard({
                 )}
               </div>
             </motion.div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
