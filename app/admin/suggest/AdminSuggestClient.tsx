@@ -38,6 +38,12 @@ export default function AdminSuggestClient({
     useState<Suggestion | null>(null);
   const [isMergingDuplicate, setIsMergingDuplicate] = useState(false);
   const [mergeError, setMergeError] = useState<string | null>(null);
+  const [isSyncingVotes, setIsSyncingVotes] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [editingVotes, setEditingVotes] = useState<Suggestion | null>(null);
+  const [voteCount, setVoteCount] = useState<number>(0);
+  const [isSavingVoteCount, setIsSavingVoteCount] = useState(false);
+  const [voteEditError, setVoteEditError] = useState<string | null>(null);
 
   async function handleAction(id: string, action: "approve" | "reject") {
     setProcessingIds((prev) => new Set(prev).add(id));
@@ -179,6 +185,95 @@ export default function AdminSuggestClient({
     }
   }
 
+  async function handleSyncVotes() {
+    setIsSyncingVotes(true);
+    setSyncError(null);
+
+    try {
+      const response = await fetch("/api/admin/suggestions/sync-votes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSyncError(data.error || "Failed to sync votes.");
+        setIsSyncingVotes(false);
+        return;
+      }
+
+      if (Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
+        // Update editingVotes if modal is open
+        if (editingVotes) {
+          const updated = data.suggestions.find((s: Suggestion) => s.id === editingVotes.id);
+          if (updated) {
+            setEditingVotes(updated);
+          }
+        }
+      }
+      setIsSyncingVotes(false);
+    } catch (error) {
+      console.error("Failed to sync votes:", error);
+      setSyncError("Failed to sync votes. Please try again.");
+      setIsSyncingVotes(false);
+    }
+  }
+
+  function startEditingVotes(suggestion: Suggestion) {
+    setEditingVotes(suggestion);
+    setVoteCount(suggestion.votes);
+    setVoteEditError(null);
+  }
+
+  function closeEditingVotes() {
+    setEditingVotes(null);
+    setVoteCount(0);
+    setIsSavingVoteCount(false);
+    setVoteEditError(null);
+  }
+
+  async function handleSaveVoteCount() {
+    if (!editingVotes) return;
+
+    if (voteCount < 0 || !Number.isInteger(voteCount)) {
+      setVoteEditError("Vote count must be a non-negative integer.");
+      return;
+    }
+
+    setIsSavingVoteCount(true);
+    setVoteEditError(null);
+
+    try {
+      const response = await fetch("/api/admin/suggestions/votes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          speaker_id: editingVotes.id,
+          votes: voteCount,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setVoteEditError(data.error || "Failed to update vote count.");
+        setIsSavingVoteCount(false);
+        return;
+      }
+
+      if (Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
+      }
+      closeEditingVotes();
+    } catch (error) {
+      console.error("Failed to update vote count:", error);
+      setVoteEditError("Failed to update vote count. Please try again.");
+      setIsSavingVoteCount(false);
+    }
+  }
+
   const pendingCount = suggestions.filter((s) => !s.reviewed).length;
 
   // Pre-compute approved suggestions with tokenized speaker names for fuzzy matching
@@ -219,12 +314,43 @@ export default function AdminSuggestClient({
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-serif mb-2">
-          Speaker Suggestions
-        </h1>
-        <p className="text-zinc-400">
-          Review and manage speaker suggestions from users.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white font-serif mb-2">
+              Speaker Suggestions
+            </h1>
+            <p className="text-zinc-400">
+              Review and manage speaker suggestions from users.
+            </p>
+          </div>
+          <button
+            onClick={handleSyncVotes}
+            disabled={isSyncingVotes}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded text-sm font-medium hover:bg-blue-500/30 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {isSyncingVotes ? (
+              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            )}
+            {isSyncingVotes ? "Syncing..." : "Resync Votes"}
+          </button>
+        </div>
+        {syncError && (
+          <p className="mt-2 text-sm text-rose-400">{syncError}</p>
+        )}
       </div>
 
       {/* Filter Tabs */}
@@ -461,24 +587,32 @@ export default function AdminSuggestClient({
 
                     {/* Voters */}
                     <div className="mt-3">
-                      <div className="flex items-center gap-1.5 text-sm text-zinc-400 mb-2">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                            />
+                          </svg>
+                          <span>
+                            {suggestion.voters?.length ?? 0} voter
+                            {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => startEditingVotes(suggestion)}
+                          className="text-xs px-2 py-1 bg-zinc-800 text-zinc-300 rounded hover:bg-zinc-700 transition-colors"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                          />
-                        </svg>
-                        <span>
-                          {suggestion.voters?.length ?? 0} voter
-                          {(suggestion.voters?.length ?? 0) === 1 ? "" : "s"}
-                        </span>
+                          Edit Votes
+                        </button>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {(suggestion.voters ?? []).length === 0 ? (
@@ -827,6 +961,104 @@ export default function AdminSuggestClient({
             </div>
           );
         })()}
+
+      {editingVotes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-semibold text-white">
+                  Edit Votes for {editingVotes.speaker}
+                </h3>
+                <p className="text-sm text-zinc-400">
+                  Update the vote count directly (does not modify votes table)
+                </p>
+              </div>
+              <button
+                onClick={closeEditingVotes}
+                className="text-zinc-500 hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              Vote Count
+            </label>
+            <input
+              type="number"
+              value={voteCount}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 0) {
+                  setVoteCount(val);
+                } else if (e.target.value === "") {
+                  setVoteCount(0);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isSavingVoteCount) {
+                  handleSaveVoteCount();
+                }
+              }}
+              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50"
+              placeholder="Enter vote count"
+              min="0"
+              step="1"
+              disabled={isSavingVoteCount}
+            />
+            {voteEditError && (
+              <p className="mt-2 text-sm text-rose-400">{voteEditError}</p>
+            )}
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={closeEditingVotes}
+                disabled={isSavingVoteCount}
+                className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveVoteCount}
+                disabled={isSavingVoteCount}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium bg-blue-500 hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {isSavingVoteCount ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
