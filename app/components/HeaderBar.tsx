@@ -21,13 +21,12 @@ export default function HeaderBar({ showBanner, bannerProps }: HeaderBarProps) {
   const isAdminRoute = pathname.startsWith("/admin");
   const isScanRoute = pathname.startsWith("/scan");
   const isEventRoute = pathname.startsWith("/events/");
-  const isUpcomingRoute = pathname.startsWith("/upcoming-speakers");
 
   if (isAdminRoute || isScanRoute) {
     return null;
   }
 
-  if (isEventRoute || isUpcomingRoute) {
+  if (isEventRoute) {
     return <NavBar banner={false} />;
   }
 
