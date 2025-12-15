@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     options: {
       redirectTo: `${baseUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`,
       queryParams: {
-        access_type: "offline",
+        access_type: "online",
         prompt: "none",
         hd: "stanford.edu",
       },
