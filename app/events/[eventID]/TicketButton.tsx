@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 import TicketQRCode from "./TicketQRCode";
 
@@ -33,6 +33,7 @@ export default function TicketButton({
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isLiveEvent, setIsLiveEvent] = useState(false);
+  const autoTicketProcessed = useRef(false);
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -42,30 +43,24 @@ export default function TicketButton({
     }
   }, [message]);
 
-  // Check if there's a live event
-  useEffect(() => {
-    const checkLiveEvent = async () => {
-      try {
-        const response = await fetch("/api/events/live");
-        const data = await response.json();
-        setIsLiveEvent(data.isLive || false);
-      } catch (error) {
-        console.error("Error checking live event:", error);
-        setIsLiveEvent(false);
-      }
-    };
+  const checkLiveEvent = useCallback(async () => {
+    try {
+      const response = await fetch("/api/events/live");
+      const data = await response.json();
+      setIsLiveEvent(data.liveEvent?.[0]?.id == eventId || false);
+    } catch (error) {
+      console.error("Error checking live event:", error);
+      setIsLiveEvent(false);
+    }
+  }, [eventId]);
 
-    checkLiveEvent();
-    // Refresh live event status every 30 seconds
-    const interval = setInterval(checkLiveEvent, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleTicketClick = async () => {
+  const handleTicketClick = useCallback(async () => {
     setIsLoading(true);
     setMessage(null);
 
     try {
+      await checkLiveEvent();
+
       const url = hasTicket ? "/api/ticket" : "/api/ticket";
       const method = hasTicket ? "DELETE" : "POST";
 
@@ -76,9 +71,10 @@ export default function TicketButton({
       });
 
       if (response.status === 401) {
-        // Not authenticated, redirect to Google sign-in
+        // Not authenticated, redirect to Google sign-in with auto_ticket flag
         const currentPath = window.location.pathname;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(currentPath)}`;
+        const redirectUrl = `${currentPath}?ticket=true`;
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
 
@@ -111,7 +107,37 @@ export default function TicketButton({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [checkLiveEvent, eventId, hasTicket]);
+
+  // Auto-create ticket after redirect from authentication.
+  // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
+  // before removing `ticket=true` from the URL.
+  useEffect(() => {
+    const autoTicketKey = `auto_ticket_pending:${eventId}`;
+    const url = new URL(window.location.href);
+    const autoTicketParam = url.searchParams.get("ticket");
+
+    if (autoTicketParam === "true") {
+      sessionStorage.setItem(autoTicketKey, "1");
+      url.searchParams.delete("ticket");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+  }, [eventId]);
+
+  useEffect(() => {
+    const autoTicketKey = `auto_ticket_pending:${eventId}`;
+    const pending = sessionStorage.getItem(autoTicketKey) === "1";
+    if (!pending) return;
+    if (autoTicketProcessed.current) return;
+    if (hasTicket) {
+      sessionStorage.removeItem(autoTicketKey);
+      return;
+    }
+
+    autoTicketProcessed.current = true;
+    sessionStorage.removeItem(autoTicketKey);
+    void handleTicketClick();
+  }, [eventId, handleTicketClick, hasTicket]);
 
   const isCancelDisabled = hasTicket && isLiveEvent;
   const isButtonDisabled = isLoading || isCancelDisabled;

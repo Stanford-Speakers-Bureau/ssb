@@ -22,12 +22,14 @@ export async function GET(req: Request) {
     if (error) {
       // Log the error for debugging purposes (optional, could be more robust)
       console.error("Supabase auth exchangeCodeForSession error:", error);
-      // Redirect to the safeRedirect with an error parameter
-      return NextResponse.redirect(
-        new URL(`${safeRedirect}?error=auth_failed`, baseUrl),
-      );
+      // Parse the redirect URL to preserve existing query parameters
+      const redirectUrl = new URL(safeRedirect, baseUrl);
+      redirectUrl.searchParams.set("error", "auth_failed");
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  return NextResponse.redirect(new URL(safeRedirect, baseUrl));
+  // Parse the redirect URL to ensure query parameters are preserved
+  const redirectUrl = new URL(safeRedirect, baseUrl);
+  return NextResponse.redirect(redirectUrl);
 }
