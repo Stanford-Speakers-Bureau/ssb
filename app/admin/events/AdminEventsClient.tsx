@@ -513,11 +513,9 @@ export default function AdminEventsClient({
                 <input
                   type="number"
                   value={formData.tickets}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tickets: e.target.value })
-                  }
+                  disabled={true}
                   placeholder="e.g., 250"
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 cursor-not-allowed"
                 />
               </div>
 
