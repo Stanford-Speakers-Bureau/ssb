@@ -30,10 +30,7 @@ export async function GET(
       .single();
 
     if (eventError || !event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     // Determine time range
@@ -62,7 +59,7 @@ export async function GET(
     // Calculate time intervals
     const timeRange = endDate.getTime() - startDate.getTime();
     const hours = Math.max(1, Math.ceil(timeRange / (1000 * 60 * 60)));
-    
+
     // Determine interval size based on time range
     let intervalHours: number;
     if (hours <= 24) {
@@ -127,4 +124,3 @@ export async function GET(
     );
   }
 }
-

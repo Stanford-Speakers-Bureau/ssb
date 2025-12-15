@@ -27,7 +27,9 @@ export default function TicketSection({
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
-  const [ticketType, setTicketType] = useState<string | null>(initialTicketType);
+  const [ticketType, setTicketType] = useState<string | null>(
+    initialTicketType,
+  );
 
   useEffect(() => {
     const handleTicketChange = async (event: Event) => {
@@ -39,7 +41,7 @@ export default function TicketSection({
       if (customEvent.detail) {
         setHasTicket(customEvent.detail.hasTicket);
         setTicketId(customEvent.detail.ticketId);
-        
+
         // Fetch ticket type if we have a ticket ID
         if (customEvent.detail.ticketId) {
           try {
@@ -48,7 +50,8 @@ export default function TicketSection({
               const data = await response.json();
               const ticket = data.tickets?.find(
                 (t: { id: string; event_id: string }) =>
-                  t.id === customEvent.detail.ticketId && t.event_id === eventId
+                  t.id === customEvent.detail.ticketId &&
+                  t.event_id === eventId,
               );
               if (ticket) {
                 setTicketType(ticket.type || null);
@@ -86,7 +89,12 @@ export default function TicketSection({
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
           {ticketId && (
             <div className="order-1 flex justify-center lg:order-1 lg:justify-self-start">
-              <TicketQRCode ticketId={ticketId} size={190} compact ticketType={ticketType} />
+              <TicketQRCode
+                ticketId={ticketId}
+                size={190}
+                compact
+                ticketType={ticketType}
+              />
             </div>
           )}
           {referralCode && (
@@ -105,4 +113,3 @@ export default function TicketSection({
     </div>
   );
 }
-

@@ -58,7 +58,11 @@ export async function GET(req: Request) {
         const eventId = ref.event_id;
         if (!groupedByEvent[eventId]) {
           groupedByEvent[eventId] = {
-            event: ref.events as { id: string; name: string | null; route: string | null },
+            event: ref.events as {
+              id: string;
+              name: string | null;
+              route: string | null;
+            },
             referrals: [],
           };
         }
@@ -100,4 +104,3 @@ export async function GET(req: Request) {
     );
   }
 }
-

@@ -16,10 +16,7 @@ interface HeaderBarProps {
   bannerProps: BannerProps;
 }
 
-export default function HeaderBar({
-  showBanner,
-  bannerProps,
-}: HeaderBarProps) {
+export default function HeaderBar({ showBanner, bannerProps }: HeaderBarProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
   const isScanRoute = pathname.startsWith("/scan");

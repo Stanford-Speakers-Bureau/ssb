@@ -49,8 +49,6 @@ type AuthorizedResult = {
 
 export type AdminVerificationResult = UnauthorizedResult | AuthorizedResult;
 
-export type ScannerVerificationResult = UnauthorizedResult | AuthorizedResult;
-
 /**
  * Verify that the current request is authenticated and belongs to an admin user.
  * Returns the admin client for privileged database access when authorized.
@@ -74,35 +72,6 @@ export async function verifyAdminRequest(): Promise<AdminVerificationResult> {
     .single();
 
   if (!adminRecord || !adminRecord.roles?.split(",").includes("admin")) {
-    return { authorized: false, error: "Not authorized" };
-  }
-
-  return { authorized: true, email: user.email, adminClient };
-}
-
-/**
- * Verify that the current request is authenticated and belongs to a scanner user.
- * Returns the admin client for privileged database access when authorized.
- */
-export async function verifyScannerRequest(): Promise<ScannerVerificationResult> {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user?.email) {
-    return { authorized: false, error: "Not authenticated" };
-  }
-
-  const adminClient = getSupabaseClient();
-  const { data: scannerRecord } = await adminClient
-    .from("roles")
-    .select("roles")
-    .eq("email", user.email)
-    .single();
-
-  if (!scannerRecord || !scannerRecord.roles?.split(",").includes("scanner")) {
     return { authorized: false, error: "Not authorized" };
   }
 
@@ -379,7 +348,7 @@ export { generateReferralCode };
 /**
  * Update referral records when a ticket is created.
  * Ensures a referral record exists for the user's referral code.
- * 
+ *
  * This function is non-blocking and logs errors without throwing.
  */
 export async function updateReferralRecords(

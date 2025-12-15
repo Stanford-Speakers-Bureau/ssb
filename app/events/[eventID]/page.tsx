@@ -39,8 +39,8 @@ async function getUserTicketStatus(eventId: string): Promise<{
       .eq("email", user.email)
       .single();
 
-    return { 
-      ticketId: data?.id ?? null, 
+    return {
+      ticketId: data?.id ?? null,
       userEmail: user.email,
       ticketType: data?.type ?? null,
     };

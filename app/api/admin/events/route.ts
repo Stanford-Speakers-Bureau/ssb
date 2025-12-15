@@ -253,10 +253,7 @@ export async function PATCH(req: Request) {
 
     if (live) {
       // Set all events to not live first
-      await adminClient
-        .from("events")
-        .update({ live: false })
-        .neq("id", id);
+      await adminClient.from("events").update({ live: false }).neq("id", id);
 
       // Set the specified event to live
       const { data, error } = await adminClient

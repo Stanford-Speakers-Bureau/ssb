@@ -64,7 +64,7 @@ export default function TicketSalesGraph({ eventId }: TicketSalesGraphProps) {
     const minutes = date.getMinutes();
     const month = date.toLocaleDateString("en-US", { month: "short" });
     const day = date.getDate();
-    
+
     // Format label based on data density
     let label: string;
     if (data.length <= 24) {
@@ -139,7 +139,9 @@ export default function TicketSalesGraph({ eventId }: TicketSalesGraphProps) {
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-          <p className="text-zinc-400 text-sm">No ticket sales data available</p>
+          <p className="text-zinc-400 text-sm">
+            No ticket sales data available
+          </p>
         </div>
       </div>
     );
@@ -152,11 +154,15 @@ export default function TicketSalesGraph({ eventId }: TicketSalesGraphProps) {
           Ticket Sales Over Time
         </h3>
         <p className="text-sm text-zinc-400">
-          Total tickets sold: <span className="text-white font-medium">{totalTickets}</span>
+          Total tickets sold:{" "}
+          <span className="text-white font-medium">{totalTickets}</span>
         </p>
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+        <LineChart
+          data={chartData}
+          margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
           <XAxis
             dataKey="time"
@@ -180,10 +186,7 @@ export default function TicketSalesGraph({ eventId }: TicketSalesGraphProps) {
             }}
             labelStyle={{ color: "#a1a1aa", marginBottom: "4px" }}
           />
-          <Legend
-            wrapperStyle={{ paddingTop: "20px" }}
-            iconType="line"
-          />
+          <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="line" />
           <Line
             type="monotone"
             dataKey="Tickets Sold This Period"
@@ -207,4 +210,3 @@ export default function TicketSalesGraph({ eventId }: TicketSalesGraphProps) {
     </div>
   );
 }
-

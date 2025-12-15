@@ -41,7 +41,10 @@ export async function GET(req: Request) {
       query = query.eq("event_id", eventId);
     }
 
-    const { data: tickets, error } = await query.range(offset, offset + limit - 1);
+    const { data: tickets, error } = await query.range(
+      offset,
+      offset + limit - 1,
+    );
 
     if (error) {
       console.error("Tickets fetch error:", error);
@@ -200,10 +203,7 @@ export async function POST(req: Request) {
     const { email, eventId, type } = body;
 
     if (!email || typeof email !== "string") {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     if (!eventId || typeof eventId !== "string") {
@@ -223,10 +223,7 @@ export async function POST(req: Request) {
       .single();
 
     if (eventError || !event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     // Check if user already has a ticket for this event
@@ -289,4 +286,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

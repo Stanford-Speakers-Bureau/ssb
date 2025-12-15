@@ -9,7 +9,7 @@ import { generateReferralCode } from "../../lib/utils";
  * GET /api/referrals
  * Gets the referral count for the authenticated user's referral code and event.
  * Users can only view their own referral count.
- * 
+ *
  * Query params: { event_id: string }
  */
 export async function GET(req: Request) {
@@ -23,10 +23,7 @@ export async function GET(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -69,10 +66,7 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json(
-      { count: data?.count ?? 0 },
-      { status: 200 },
-    );
+    return NextResponse.json({ count: data?.count ?? 0 }, { status: 200 });
   } catch (error) {
     console.error("Referral GET API error:", error);
     return NextResponse.json(

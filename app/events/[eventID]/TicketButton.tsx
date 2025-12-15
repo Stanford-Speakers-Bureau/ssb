@@ -19,7 +19,8 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
-  ERROR_EVENT_STARTED: "Ticket sales have ended. This event has already started.",
+  ERROR_EVENT_STARTED:
+    "Ticket sales have ended. This event has already started.",
   CREATING: "Creating ticket...",
   CANCELLING: "Cancelling ticket...",
 } as const;
@@ -141,7 +142,7 @@ export default function TicketButton({
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
             },
-          })
+          }),
         );
       } else {
         const errorMessage = data.error || TICKET_MESSAGES.ERROR_GENERIC;
@@ -245,7 +246,11 @@ export default function TicketButton({
     if (autoTicketParam === "true") {
       sessionStorage.setItem(autoTicketKey, "1");
       url.searchParams.delete("ticket");
-      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
     }
   }, [eventId]);
 

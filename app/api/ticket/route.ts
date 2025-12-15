@@ -18,7 +18,8 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
-  ERROR_EVENT_STARTED: "Ticket sales have ended. This event has already started.",
+  ERROR_EVENT_STARTED:
+    "Ticket sales have ended. This event has already started.",
 } as const;
 
 export async function POST(req: Request) {
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
     // Validate referral code if provided
     if (referral) {
       const userReferralCode = generateReferralCode(user.email);
-      
+
       // Check if it's the user's own referral code
       if (referral.trim() === userReferralCode) {
         return NextResponse.json(

@@ -57,7 +57,9 @@ export default function ReferralLeaderboardClient({
           params.append("eventId", selectedEventId);
         }
 
-        const response = await fetch(`/api/admin/referrals/leaderboard?${params}`);
+        const response = await fetch(
+          `/api/admin/referrals/leaderboard?${params}`,
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -69,7 +71,9 @@ export default function ReferralLeaderboardClient({
         setIsGrouped(data.grouped || false);
       } catch (err) {
         console.error("Error fetching leaderboard:", err);
-        setError(err instanceof Error ? err.message : "Failed to load leaderboard");
+        setError(
+          err instanceof Error ? err.message : "Failed to load leaderboard",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -86,9 +90,7 @@ export default function ReferralLeaderboardClient({
           <h1 className="text-3xl font-bold text-white font-serif mb-2">
             Referral Leaderboard
           </h1>
-          <p className="text-zinc-400">
-            Top referrers across all events
-          </p>
+          <p className="text-zinc-400">Top referrers across all events</p>
         </div>
 
         {/* Event Filter */}
@@ -183,9 +185,7 @@ export default function ReferralLeaderboardClient({
         <h1 className="text-3xl font-bold text-white font-serif mb-2">
           Referral Leaderboard
         </h1>
-        <p className="text-zinc-400">
-          Top referrers for this event
-        </p>
+        <p className="text-zinc-400">Top referrers for this event</p>
       </div>
 
       {/* Event Filter */}
@@ -280,4 +280,3 @@ export default function ReferralLeaderboardClient({
     </div>
   );
 }
-

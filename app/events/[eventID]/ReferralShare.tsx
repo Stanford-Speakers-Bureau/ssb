@@ -24,7 +24,7 @@ export default function ReferralShare({
   useEffect(() => {
     // Generate URL on client side using route in path and referral code as query param
     setReferralUrl(
-      `${window.location.origin}/events/${route}?referral_code=${referralCode}`
+      `${window.location.origin}/events/${route}?referral_code=${referralCode}`,
     );
   }, [route, referralCode]);
 
@@ -33,7 +33,7 @@ export default function ReferralShare({
     const fetchReferralCount = async () => {
       try {
         const response = await fetch(
-          `/api/referrals?event_id=${encodeURIComponent(eventId)}`
+          `/api/referrals?event_id=${encodeURIComponent(eventId)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -80,13 +80,15 @@ export default function ReferralShare({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex-1">
           <p className="text-white text-sm sm:text-base font-semibold mb-1">
-            Share your referral code: <span className="text-red-400">{referralCode}</span>
+            Share your referral code:{" "}
+            <span className="text-red-400">{referralCode}</span>
           </p>
           <p className="text-zinc-300 text-xs sm:text-sm">
             Share this link with friends to get them tickets!
             {referralCount !== null && (
               <span className="ml-2 text-white font-medium">
-                ({referralCount} {referralCount === 1 ? "referral" : "referrals"})
+                ({referralCount}{" "}
+                {referralCount === 1 ? "referral" : "referrals"})
               </span>
             )}
           </p>
@@ -101,4 +103,3 @@ export default function ReferralShare({
     </div>
   );
 }
-

@@ -47,7 +47,7 @@ export default function TicketManagementClient({
 }: TicketManagementClientProps) {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [total, setTotal] = useState(initialTotal);
-  
+
   // Calculate statistics
   const scannedCount = tickets.filter((t) => t.scanned).length;
   const unscannedCount = tickets.filter((t) => !t.scanned).length;
@@ -186,8 +186,10 @@ export default function TicketManagementClient({
       .split(",")
       .map((e) => e.trim())
       .filter((e) => e);
-    
-    const invalidEmails = emails.filter((e) => !e.includes("@") || !e.includes("."));
+
+    const invalidEmails = emails.filter(
+      (e) => !e.includes("@") || !e.includes("."),
+    );
 
     if (invalidEmails.length > 0) {
       setError(`Invalid email(s): ${invalidEmails.join(", ")}`);
@@ -223,7 +225,9 @@ export default function TicketManagementClient({
         successCount++;
       } catch (err) {
         console.error(`Error creating ticket for ${email}:`, err);
-        errors.push(`${email}: ${err instanceof Error ? err.message : "Failed to create ticket"}`);
+        errors.push(
+          `${email}: ${err instanceof Error ? err.message : "Failed to create ticket"}`,
+        );
       }
     }
 
@@ -269,17 +273,23 @@ export default function TicketManagementClient({
           <div className="flex items-center gap-6 mt-2">
             <div className="flex items-center gap-2">
               <span className="text-zinc-400">Total Tickets Sold:</span>
-              <span className="text-white font-bold text-lg">{total.toLocaleString()}</span>
+              <span className="text-white font-bold text-lg">
+                {total.toLocaleString()}
+              </span>
             </div>
             {tickets.length > 0 && (
               <>
                 <div className="flex items-center gap-2">
                   <span className="text-zinc-400">Scanned:</span>
-                  <span className="text-emerald-400 font-semibold">{scannedCount}</span>
+                  <span className="text-emerald-400 font-semibold">
+                    {scannedCount}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-zinc-400">Not Scanned:</span>
-                  <span className="text-zinc-300 font-semibold">{unscannedCount}</span>
+                  <span className="text-zinc-300 font-semibold">
+                    {unscannedCount}
+                  </span>
                 </div>
               </>
             )}
@@ -583,7 +593,9 @@ export default function TicketManagementClient({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-zinc-300">{ticket.email}</div>
+                      <div className="text-sm text-zinc-300">
+                        {ticket.email}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -677,7 +689,8 @@ export default function TicketManagementClient({
           {total > limit && (
             <div className="px-6 py-4 border-t border-zinc-800 flex items-center justify-between">
               <div className="text-sm text-zinc-400">
-                Showing {offset + 1} to {Math.min(offset + limit, total)} of {total} tickets
+                Showing {offset + 1} to {Math.min(offset + limit, total)} of{" "}
+                {total} tickets
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -702,4 +715,3 @@ export default function TicketManagementClient({
     </div>
   );
 }
-

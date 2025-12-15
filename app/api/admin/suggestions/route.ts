@@ -3,24 +3,6 @@ import { verifyAdminRequest } from "../../../lib/supabase";
 import { getAdminSuggestions } from "../../../admin/suggest/data";
 import { isValidUUID, sanitizeString } from "../../../lib/validation";
 
-const MIN_SPEAKER_LENGTH = 2;
-const MAX_SPEAKER_LENGTH = 500;
-
-function sanitizeInput(input: string): string {
-  return input
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function toTitleCase(input: string): string {
-  return input
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export async function POST(req: Request) {
   try {
     const auth = await verifyAdminRequest();

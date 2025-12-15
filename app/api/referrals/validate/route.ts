@@ -8,9 +8,9 @@ import { generateReferralCode } from "../../../lib/utils";
 /**
  * POST /api/referrals/validate
  * Validates a referral code for the current user and event.
- * 
+ *
  * Body: { referral_code: string, event_id: string }
- * 
+ *
  * Returns:
  * - { valid: true } if the referral code is valid and not the user's own
  * - { valid: false, reason: "self_referral" } if it's the user's own referral code
@@ -27,10 +27,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     // Parse request body
@@ -105,4 +102,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
