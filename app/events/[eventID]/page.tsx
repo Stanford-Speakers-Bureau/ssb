@@ -248,6 +248,7 @@ export default async function EventPage({ params }: PageProps) {
                   initialTicketType={ticketType}
                   userEmail={ticketStatus.userEmail}
                   eventRoute={event.route || eventID}
+                  eventStartTime={event.start_time_date}
                 />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}

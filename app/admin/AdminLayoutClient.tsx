@@ -88,11 +88,6 @@ export default function AdminLayoutClient({
           </div>
 
           <div className="flex items-center gap-4">
-            {userEmail && (
-              <span className="text-zinc-500 text-sm hidden sm:block">
-                {userEmail}
-              </span>
-            )}
             <Link
               href="/"
               prefetch={false}

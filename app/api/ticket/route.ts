@@ -18,6 +18,7 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
+  ERROR_EVENT_STARTED: "Ticket sales have ended. This event has already started.",
 } as const;
 
 export async function POST(req: Request) {
@@ -61,6 +62,35 @@ export async function POST(req: Request) {
       referral = cookieStore.get("referral")?.value || null;
     }
 
+    // Check if event has started - block ticket sales if it has
+    const adminClient = getSupabaseClient();
+    const { data: event } = await adminClient
+      .from("events")
+      .select("start_time_date")
+      .eq("id", event_id)
+      .single();
+
+    if (!event) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
+        { status: 404 },
+      );
+    }
+
+    // If event has a start time and it has passed, block ticket sales
+    // Note: event.start_time_date is stored as UTC ISO string, and Date objects
+    // compare UTC timestamps internally, so this comparison is timezone-safe
+    if (event.start_time_date) {
+      const eventStartTime = new Date(event.start_time_date);
+      const now = new Date();
+      if (now >= eventStartTime) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
+          { status: 400 },
+        );
+      }
+    }
+
     // Validate referral code if provided
     if (referral) {
       const userReferralCode = generateReferralCode(user.email);
@@ -74,7 +104,6 @@ export async function POST(req: Request) {
       }
 
       // Check if the referral code exists for this event
-      const adminClient = getSupabaseClient();
       const { data: referralRecord } = await adminClient
         .from("referrals")
         .select("id")
@@ -150,7 +179,6 @@ export async function POST(req: Request) {
     }
 
     // Fetch the created ticket to get its ID
-    const adminClient = getSupabaseClient();
     const { data: ticket } = await adminClient
       .from("tickets")
       .select("id")
@@ -182,97 +210,98 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
-  try {
-    const supabase = await createServerSupabaseClient();
-
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user?.email) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 },
-      );
-    }
-
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
-
-    const { event_id } = body;
-
-    if (!event_id || typeof event_id !== "string") {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_MISSING_EVENT_ID },
-        { status: 400 },
-      );
-    }
-
-    const adminClient = getSupabaseClient();
-
-    // Check if there's a live event - prevent cancellation if any event is live
-    const { data: liveEvent } = await adminClient
-      .from("events")
-      .select("id, name")
-      .eq("live", true)
-      .single();
-
-    if (liveEvent) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
-        { status: 400 },
-      );
-    }
-
-    // Check if user has a ticket for this event
-    const { data: existingTicket } = await adminClient
-      .from("tickets")
-      .select("id")
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .single();
-
-    if (!existingTicket) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_NO_TICKET },
-        { status: 400 },
-      );
-    }
-
-    // Delete the ticket (hard delete)
-    const { error: deleteError } = await adminClient
-      .from("tickets")
-      .delete()
-      .eq("id", existingTicket.id);
-
-    if (deleteError) {
-      console.error("Ticket delete error:", deleteError);
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: TICKET_MESSAGES.DELETED,
-      },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.error("Ticket deletion error:", error);
-    return NextResponse.json(
-      { error: TICKET_MESSAGES.ERROR_GENERIC },
-      { status: 500 },
-    );
-  }
-}
+// commenting this out for now
+// export async function DELETE(req: Request) {
+//   try {
+//     const supabase = await createServerSupabaseClient();
+//
+//     // Get current user
+//     const {
+//       data: { user },
+//       error: userError,
+//     } = await supabase.auth.getUser();
+//
+//     if (userError || !user?.email) {
+//       return NextResponse.json(
+//         { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
+//         { status: 401 },
+//       );
+//     }
+//
+//     // Parse request body
+//     let body;
+//     try {
+//       body = await req.json();
+//     } catch {
+//       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+//     }
+//
+//     const { event_id } = body;
+//
+//     if (!event_id || typeof event_id !== "string") {
+//       return NextResponse.json(
+//         { error: TICKET_MESSAGES.ERROR_MISSING_EVENT_ID },
+//         { status: 400 },
+//       );
+//     }
+//
+//     const adminClient = getSupabaseClient();
+//
+//     // Check if there's a live event - prevent cancellation if any event is live
+//     const { data: liveEvent } = await adminClient
+//       .from("events")
+//       .select("id, name")
+//       .eq("live", true)
+//       .single();
+//
+//     if (liveEvent) {
+//       return NextResponse.json(
+//         { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
+//         { status: 400 },
+//       );
+//     }
+//
+//     // Check if user has a ticket for this event
+//     const { data: existingTicket } = await adminClient
+//       .from("tickets")
+//       .select("id")
+//       .eq("event_id", event_id)
+//       .eq("email", user.email)
+//       .single();
+//
+//     if (!existingTicket) {
+//       return NextResponse.json(
+//         { error: TICKET_MESSAGES.ERROR_NO_TICKET },
+//         { status: 400 },
+//       );
+//     }
+//
+//     // Delete the ticket (hard delete)
+//     const { error: deleteError } = await adminClient
+//       .from("tickets")
+//       .delete()
+//       .eq("id", existingTicket.id);
+//
+//     if (deleteError) {
+//       console.error("Ticket delete error:", deleteError);
+//       return NextResponse.json(
+//         { error: TICKET_MESSAGES.ERROR_GENERIC },
+//         { status: 500 },
+//       );
+//     }
+//
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         message: TICKET_MESSAGES.DELETED,
+//       },
+//       { status: 200 },
+//     );
+//   } catch (error) {
+//     console.error("Ticket deletion error:", error);
+//     return NextResponse.json(
+//       { error: TICKET_MESSAGES.ERROR_GENERIC },
+//       { status: 500 },
+//     );
+//   }
+// }

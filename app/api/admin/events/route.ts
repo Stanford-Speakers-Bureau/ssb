@@ -232,6 +232,95 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PATCH(req: Request) {
+  try {
+    const auth = await verifyAdminRequest();
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, live } = body;
+
+    if (!id || typeof live !== "boolean") {
+      return NextResponse.json(
+        { error: "Event ID and live status are required" },
+        { status: 400 },
+      );
+    }
+
+    const adminClient = auth.adminClient!;
+
+    if (live) {
+      // Set all events to not live first
+      await adminClient
+        .from("events")
+        .update({ live: false })
+        .neq("id", id);
+
+      // Set the specified event to live
+      const { data, error } = await adminClient
+        .from("events")
+        .update({ live: true })
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("Event live update error:", error);
+        return NextResponse.json(
+          { error: "Failed to update live status" },
+          { status: 500 },
+        );
+      }
+
+      const eventWithImage = data
+        ? {
+            ...data,
+            image_url: data.img
+              ? await getSignedImageUrl(data.img, 60 * 60)
+              : null,
+          }
+        : null;
+
+      return NextResponse.json({ success: true, event: eventWithImage });
+    } else {
+      // Just set this event to not live
+      const { data, error } = await adminClient
+        .from("events")
+        .update({ live: false })
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("Event live update error:", error);
+        return NextResponse.json(
+          { error: "Failed to update live status" },
+          { status: 500 },
+        );
+      }
+
+      const eventWithImage = data
+        ? {
+            ...data,
+            image_url: data.img
+              ? await getSignedImageUrl(data.img, 60 * 60)
+              : null,
+          }
+        : null;
+
+      return NextResponse.json({ success: true, event: eventWithImage });
+    }
+  } catch (error) {
+    console.error("Event live update error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const auth = await verifyAdminRequest();
