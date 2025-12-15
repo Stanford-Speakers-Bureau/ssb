@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "ssb",
@@ -12,9 +13,8 @@
         "date-fns-tz": "^3.2.0",
         "html5-qrcode": "^2.3.8",
         "motion": "^12.23.25",
-        "next": "^16.0.7",
-        "qrcode.react": "^4.2.0",
         "next": "16.0.10",
+        "qrcode.react": "^4.2.0",
         "react": "19.2.1",
         "react-dom": "19.2.1",
         "sharp": "^0.34.5",
