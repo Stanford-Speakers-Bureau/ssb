@@ -4,6 +4,7 @@ import {
   getSupabaseClient,
   updateReferralRecords,
 } from "../../lib/supabase";
+import { generateReferralCode } from "../../lib/utils";
 import { cookies } from "next/headers";
 
 const TICKET_MESSAGES = {
@@ -58,6 +59,35 @@ export async function POST(req: Request) {
     if (!referral) {
       const cookieStore = await cookies();
       referral = cookieStore.get("referral")?.value || null;
+    }
+
+    // Validate referral code if provided
+    if (referral) {
+      const userReferralCode = generateReferralCode(user.email);
+      
+      // Check if it's the user's own referral code
+      if (referral.trim() === userReferralCode) {
+        return NextResponse.json(
+          { error: "You cannot use your own referral code" },
+          { status: 400 },
+        );
+      }
+
+      // Check if the referral code exists for this event
+      const adminClient = getSupabaseClient();
+      const { data: referralRecord } = await adminClient
+        .from("referrals")
+        .select("id")
+        .eq("event_id", event_id)
+        .eq("referral_code", referral.trim())
+        .single();
+
+      if (!referralRecord) {
+        return NextResponse.json(
+          { error: "Invalid referral code for this event" },
+          { status: 400 },
+        );
+      }
     }
 
     /**

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
-import TicketQRCode from "./TicketQRCode";
 
 type TicketButtonProps = {
   eventId: string;
@@ -33,7 +32,11 @@ export default function TicketButton({
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isLiveEvent, setIsLiveEvent] = useState(false);
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [referralWarning, setReferralWarning] = useState<string | null>(null);
+  const [isValidatingReferral, setIsValidatingReferral] = useState(false);
   const autoTicketProcessed = useRef(false);
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -61,14 +64,26 @@ export default function TicketButton({
     try {
       await checkLiveEvent();
 
+      // If there's a referral warning, don't proceed
+      if (referralWarning) {
+        setIsLoading(false);
+        return;
+      }
+
       const url = hasTicket ? "/api/ticket" : "/api/ticket";
       const method = hasTicket ? "DELETE" : "POST";
 
-      // Get referral from session storage if creating a ticket
+      // Get referral from input or session storage if creating a ticket
       let referral: string | null = null;
       if (!hasTicket) {
         const referralKey = `referral`;
-        referral = sessionStorage.getItem(referralKey);
+        // Use input value if provided, otherwise check session storage
+        if (referralCode.trim()) {
+          referral = referralCode.trim();
+          sessionStorage.setItem(referralKey, referral);
+        } else {
+          referral = sessionStorage.getItem(referralKey);
+        }
       }
 
       const requestBody: { event_id: string; referral?: string | null } = {
@@ -131,17 +146,63 @@ export default function TicketButton({
     } finally {
       setIsLoading(false);
     }
-  }, [checkLiveEvent, eventId, hasTicket]);
+  }, [checkLiveEvent, eventId, hasTicket, referralCode, referralWarning]);
+
+  // Validate referral code
+  const validateReferralCode = useCallback(
+    async (code: string) => {
+      if (!code.trim()) {
+        setReferralWarning(null);
+        return;
+      }
+
+      setIsValidatingReferral(true);
+      try {
+        const response = await fetch("/api/referrals/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referral_code: code.trim(),
+            event_id: eventId,
+          }),
+        });
+
+        if (response.status === 401) {
+          // Not authenticated, clear warning (will be handled on submit)
+          setReferralWarning(null);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.valid) {
+          setReferralWarning(null);
+        } else {
+          setReferralWarning(data.message || "Invalid referral code");
+        }
+      } catch (error) {
+        console.error("Error validating referral code:", error);
+        // Don't show error on validation failure, just clear warning
+        setReferralWarning(null);
+      } finally {
+        setIsValidatingReferral(false);
+      }
+    },
+    [eventId],
+  );
 
   // Track referral parameters from URL and store in session storage
   useEffect(() => {
     const referralKey = `referral`;
     const url = new URL(window.location.href);
-    const referralCode = url.searchParams.get("referral_code");
+    const urlReferralCode = url.searchParams.get("referral_code");
 
-    // If we have referral parameters, store the referral code in session storage
-    if (referralCode) {
-      sessionStorage.setItem(referralKey, referralCode);
+    // If we have referral parameters, store the referral code in session storage and input
+    if (urlReferralCode) {
+      sessionStorage.setItem(referralKey, urlReferralCode);
+      setReferralCode(urlReferralCode);
+      // Validate the referral code from URL
+      void validateReferralCode(urlReferralCode);
       // Clean up the URL by removing the referral parameters
       url.searchParams.delete("referral_code");
       window.history.replaceState(
@@ -149,8 +210,15 @@ export default function TicketButton({
         "",
         `${url.pathname}${url.search}${url.hash}`,
       );
+    } else {
+      // Check if there's already a referral code in session storage
+      const storedReferral = sessionStorage.getItem(referralKey);
+      if (storedReferral) {
+        setReferralCode(storedReferral);
+        void validateReferralCode(storedReferral);
+      }
     }
-  }, [eventId]);
+  }, [eventId, validateReferralCode]);
 
   // Auto-create ticket after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
@@ -182,11 +250,79 @@ export default function TicketButton({
     void handleTicketClick();
   }, [eventId, handleTicketClick, hasTicket]);
 
+  // Cleanup validation timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleReferralCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setReferralCode(value);
+    const referralKey = `referral`;
+    if (value.trim()) {
+      sessionStorage.setItem(referralKey, value.trim());
+    } else {
+      sessionStorage.removeItem(referralKey);
+    }
+
+    // Clear previous warning
+    setReferralWarning(null);
+
+    // Clear previous timeout
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    // Debounce validation
+    if (value.trim()) {
+      validationTimeoutRef.current = setTimeout(() => {
+        void validateReferralCode(value);
+      }, 500);
+    }
+  };
+
   const isCancelDisabled = hasTicket && isLiveEvent;
-  const isButtonDisabled = isLoading || isCancelDisabled;
+  const isButtonDisabled =
+    isLoading || isCancelDisabled || (!!referralWarning && !hasTicket);
 
   return (
     <div className="mb-4 md:mb-6">
+      {!hasTicket && (
+        <div className="mb-3">
+          <label
+            htmlFor="referral-code-input"
+            className="block text-sm sm:text-base text-white font-medium mb-2"
+          >
+            Referral Code (Optional)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="referral-code-input"
+              type="text"
+              value={referralCode}
+              onChange={handleReferralCodeChange}
+              placeholder="Enter referral code"
+              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
+                referralWarning
+                  ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
+                  : "border-white/20 focus:ring-2 focus:ring-red-500"
+              } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+            />
+            {isValidatingReferral && (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
+            )}
+          </div>
+          {referralWarning && (
+            <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+              {referralWarning}
+            </p>
+          )}
+        </div>
+      )}
       <motion.button
         whileHover={isButtonDisabled ? {} : { scale: 1.05 }}
         whileTap={isButtonDisabled ? {} : { scale: 0.95 }}
@@ -216,7 +352,6 @@ export default function TicketButton({
           {message}
         </p>
       )}
-      {hasTicket && ticketId && <TicketQRCode ticketId={ticketId} />}
     </div>
   );
 }

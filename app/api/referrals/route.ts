@@ -1,25 +1,22 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  updateReferralRecords,
   getSupabaseClient,
 } from "../../lib/supabase";
 import { generateReferralCode } from "../../lib/utils";
 
 /**
- * POST /api/referrals
- * Creates or updates a referral record when a ticket is created.
+ * GET /api/referrals
+ * Gets the referral count for the authenticated user's referral code and event.
+ * Users can only view their own referral count.
  * 
- * Body: { event_id: string }
- * 
- * Creates/ensures a referral record exists for the current user's referral code.
- * Skips if the referral code used is the user's own referral code.
+ * Query params: { event_id: string }
  */
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get current user
+    // Get current user - require authentication
     const {
       data: { user },
       error: userError,
@@ -32,65 +29,55 @@ export async function POST(req: Request) {
       );
     }
 
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
+    const { searchParams } = new URL(req.url);
+    const eventId = searchParams.get("event_id");
 
-    const { event_id } = body;
-
-    if (!event_id || typeof event_id !== "string") {
+    if (!eventId) {
       return NextResponse.json(
-        { error: "Missing required field: event_id" },
+        { error: "Missing required query parameter: event_id" },
         { status: 400 },
       );
     }
 
-    // Get the ticket to check what referral code was used
-    const adminClient = getSupabaseClient();
-    const { data: ticket } = await adminClient
-      .from("tickets")
-      .select("referral")
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+    // Generate the user's referral code from their email
+    const userReferralCode = generateReferralCode(user.email);
 
-    // Check if the referral code used is the user's own referral code
-    if (ticket?.referral) {
-      const userReferralCode = generateReferralCode(user.email);
-      if (ticket.referral === userReferralCode) {
-        // Don't count self-referrals
-        return NextResponse.json(
-          {
-            success: true,
-            message: "Self-referral detected, skipping referral record update",
-          },
-          { status: 200 },
-        );
-      }
+    if (!userReferralCode) {
+      return NextResponse.json(
+        { error: "Unable to generate referral code" },
+        { status: 500 },
+      );
     }
 
-    // Update referral records
-    await updateReferralRecords(event_id, user.email);
+    // Only query for the authenticated user's referral code
+    const adminClient = getSupabaseClient();
+    const { data, error } = await adminClient
+      .from("referrals")
+      .select("count")
+      .eq("event_id", eventId)
+      .eq("referral_code", userReferralCode)
+      .single();
+
+    if (error) {
+      // If no record found, return 0 count
+      if (error.code === "PGRST116") {
+        return NextResponse.json({ count: 0 }, { status: 200 });
+      }
+      return NextResponse.json(
+        { error: "Failed to fetch referral count" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Referral record updated",
-      },
+      { count: data?.count ?? 0 },
       { status: 200 },
     );
   } catch (error) {
-    console.error("Referral API error:", error);
+    console.error("Referral GET API error:", error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 },
     );
   }
 }
-

@@ -654,7 +654,7 @@ export default function ScanClient() {
                   <motion.div
                     className="absolute inset-0 rounded-xl pointer-events-none z-1"
                     style={{
-                      padding: "3px",
+                      padding: "6px",
                       background:
                         "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
                       WebkitMask:

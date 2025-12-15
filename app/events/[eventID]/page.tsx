@@ -20,6 +20,7 @@ interface PageProps {
 async function getUserTicketStatus(eventId: string): Promise<{
   ticketId: string | null;
   userEmail: string | null;
+  ticketType: string | null;
 }> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -28,19 +29,23 @@ async function getUserTicketStatus(eventId: string): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null };
+      return { ticketId: null, userEmail: null, ticketType: null };
 
     const adminClient = getSupabaseClient();
     const { data } = await adminClient
       .from("tickets")
-      .select("id")
+      .select("id, type")
       .eq("event_id", eventId)
       .eq("email", user.email)
       .single();
 
-    return { ticketId: data?.id ?? null, userEmail: user.email };
+    return { 
+      ticketId: data?.id ?? null, 
+      userEmail: user.email,
+      ticketType: data?.type ?? null,
+    };
   } catch {
-    return { ticketId: null, userEmail: null };
+    return { ticketId: null, userEmail: null, ticketType: null };
   }
 }
 
@@ -62,6 +67,7 @@ export default async function EventPage({ params }: PageProps) {
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
+  const ticketType = ticketStatus.ticketType;
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
@@ -239,6 +245,7 @@ export default async function EventPage({ params }: PageProps) {
                   eventId={event.id}
                   initialHasTicket={hasTicket}
                   initialTicketId={ticketId}
+                  initialTicketType={ticketType}
                   userEmail={ticketStatus.userEmail}
                   eventRoute={event.route || eventID}
                 />
