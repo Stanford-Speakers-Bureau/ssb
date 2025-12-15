@@ -89,9 +89,7 @@ export default function Leaderboard({
       return suggestions;
     }
     const query = searchQuery.toLowerCase().trim();
-    return suggestions.filter((s) =>
-      s.speaker.toLowerCase().includes(query),
-    );
+    return suggestions.filter((s) => s.speaker.toLowerCase().includes(query));
   }, [suggestions, searchQuery]);
 
   return (
@@ -150,7 +148,8 @@ export default function Leaderboard({
         </div>
         {searchQuery && (
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Showing {filteredSuggestions.length} of {suggestions.length} speakers
+            Showing {filteredSuggestions.length} of {suggestions.length}{" "}
+            speakers
           </p>
         )}
       </div>
@@ -234,19 +233,21 @@ export default function Leaderboard({
         ) : (
           filteredSuggestions.map((suggestion) => {
             // Find the global index to preserve ranking
-            const globalIndex = suggestions.findIndex((s) => s.id === suggestion.id);
+            const globalIndex = suggestions.findIndex(
+              (s) => s.id === suggestion.id,
+            );
             return (
-            <motion.div
-              key={suggestion.id}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
-            >
-              {/* Rank */}
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
+              <motion.div
+                key={suggestion.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
+              >
+                {/* Rank */}
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
               ${
                 globalIndex === 0
                   ? "bg-amber-400 text-amber-900"
@@ -256,110 +257,110 @@ export default function Leaderboard({
                       ? "bg-amber-600 text-amber-100"
                       : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
               }`}
-              >
-                {globalIndex + 1}
-              </div>
+                >
+                  {globalIndex + 1}
+                </div>
 
-              {/* Speaker Name */}
-              <div className="flex-1 min-w-0">
-                <p className="text-black dark:text-white font-medium truncate">
-                  {suggestion.speaker}
-                </p>
-              </div>
+                {/* Speaker Name */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-black dark:text-white font-medium truncate">
+                    {suggestion.speaker}
+                  </p>
+                </div>
 
-              {/* Vote Count */}
-              <div className="flex items-center gap-2">
-                {/* Vote Button */}
-                {isLoggedIn ? (
-                  <motion.button
-                    onClick={() =>
-                      handleVote(suggestion.id, suggestion.hasVoted)
-                    }
-                    onMouseEnter={() => setHoveredId(suggestion.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    onTouchEnd={() => setHoveredId(null)}
-                    disabled={votingId === suggestion.id}
-                    whileHover={{ scale: 1.05 }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150 active:scale-95
+                {/* Vote Count */}
+                <div className="flex items-center gap-2">
+                  {/* Vote Button */}
+                  {isLoggedIn ? (
+                    <motion.button
+                      onClick={() =>
+                        handleVote(suggestion.id, suggestion.hasVoted)
+                      }
+                      onMouseEnter={() => setHoveredId(suggestion.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      onTouchEnd={() => setHoveredId(null)}
+                      disabled={votingId === suggestion.id}
+                      whileHover={{ scale: 1.05 }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150 active:scale-95
                     ${
                       suggestion.hasVoted
                         ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400"
                         : "bg-[#A80D0C] hover:bg-[#8a0b0a] text-white shadow-sm hover:bg-[#C11211]"
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {votingId === suggestion.id ? (
-                      <svg
-                        className="animate-spin w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    ) : suggestion.hasVoted ? (
-                      <>
+                    >
+                      {votingId === suggestion.id ? (
                         <svg
-                          className="w-4 h-4"
+                          className="animate-spin w-4 h-4"
                           fill="none"
-                          stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
                           <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           />
                         </svg>
-                        <span
-                          className={`${hoveredId === suggestion.id ? "hidden lg:inline" : ""}`}
-                        >
-                          Voted
-                        </span>
-                        <span
-                          className={`${hoveredId === suggestion.id ? "lg:hidden" : "hidden"}`}
-                        >
-                          Unvote
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                        <span>Vote</span>
-                      </>
-                    )}
-                  </motion.button>
-                ) : (
-                  <div className="text-xs text-zinc-400 dark:text-zinc-500">
-                    Sign in to vote
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                      ) : suggestion.hasVoted ? (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          <span
+                            className={`${hoveredId === suggestion.id ? "hidden lg:inline" : ""}`}
+                          >
+                            Voted
+                          </span>
+                          <span
+                            className={`${hoveredId === suggestion.id ? "lg:hidden" : "hidden"}`}
+                          >
+                            Unvote
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 15l7-7 7 7"
+                            />
+                          </svg>
+                          <span>Vote</span>
+                        </>
+                      )}
+                    </motion.button>
+                  ) : (
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500">
+                      Sign in to vote
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             );
           })
         )}

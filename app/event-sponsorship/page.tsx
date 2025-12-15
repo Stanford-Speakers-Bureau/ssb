@@ -20,20 +20,27 @@ export default function EventSponsorshipPage() {
               </h2>
 
               <p className="text-base text-zinc-700 dark:text-zinc-300 mb-4">
-                Since 2020, Stanford Speakers Bureau has prioritized organizations on Stanford's campus who want to host events that center the voices of traditionally marginalized communities. This includes, but is not limited to:
+                Since 2020, Stanford Speakers Bureau has prioritized
+                organizations on Stanford's campus who want to host events that
+                center the voices of traditionally marginalized communities.
+                This includes, but is not limited to:
               </p>
 
               <div className="flex flex-wrap gap-2 justify-center">
-                {["Communities of Color", "LGBTQ+ Community", "Disabled Community", "Neurodivergent Community", "FLI Community"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 text-xs font-medium bg-white dark:bg-zinc-800 text-[#A80D0C] rounded-full transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700"
-                    >
-                      {tag}
-                    </span>
-                  )
-                )}
+                {[
+                  "Communities of Color",
+                  "LGBTQ+ Community",
+                  "Disabled Community",
+                  "Neurodivergent Community",
+                  "FLI Community",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 text-xs font-medium bg-white dark:bg-zinc-800 text-[#A80D0C] rounded-full transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -73,7 +80,8 @@ export default function EventSponsorshipPage() {
                     Funding Information
                   </h3>
                   <p className="text-base text-zinc-700 dark:text-zinc-300 mb-6">
-                    For events looking for additional funding, we'll provide up to $1,500 in monetary support!
+                    For events looking for additional funding, we'll provide up
+                    to $1,500 in monetary support!
                   </p>
                 </div>
                 <div className="bg-white dark:bg-zinc-800 rounded p-6">
@@ -149,7 +157,8 @@ export default function EventSponsorshipPage() {
               </div>
 
               <p className="text-base text-zinc-700 dark:text-zinc-300 mb-6">
-                Need help bringing your event idea to life? We'll provide <strong>full support</strong> from funding to execution.
+                Need help bringing your event idea to life? We'll provide{" "}
+                <strong>full support</strong> from funding to execution.
               </p>
 
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -178,7 +187,9 @@ export default function EventSponsorshipPage() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{service}</span>
+                    <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                      {service}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -192,7 +203,10 @@ export default function EventSponsorshipPage() {
                 Applying for Co-Sponsorships & Partnerships
               </h2>
               <p className="text-base text-zinc-600 dark:text-zinc-400">
-                On average, the review process takes under 2 weeks. Speakers Bureau processes applications on a first-come, first-served basis and we encourage you to apply <strong>as early as possible!</strong>
+                On average, the review process takes under 2 weeks. Speakers
+                Bureau processes applications on a first-come, first-served
+                basis and we encourage you to apply{" "}
+                <strong>as early as possible!</strong>
               </p>
             </div>
 

@@ -32,7 +32,11 @@ export default function SuggestForm() {
         // If just comma/enter with no text, don't add empty pill
         return;
       }
-    } else if (e.key === "Backspace" && currentInput === "" && pills.length > 0) {
+    } else if (
+      e.key === "Backspace" &&
+      currentInput === "" &&
+      pills.length > 0
+    ) {
       // Remove last pill when backspace is pressed on empty input
       setPills(pills.slice(0, -1));
     }
@@ -92,9 +96,12 @@ export default function SuggestForm() {
   };
 
   const isDisabled = status === "submitting";
-  
+
   // Calculate total length: all suggestions joined with ", "
-  const allSuggestions = [...pills, ...(currentInput.trim() ? [currentInput.trim()] : [])];
+  const allSuggestions = [
+    ...pills,
+    ...(currentInput.trim() ? [currentInput.trim()] : []),
+  ];
   const totalLength = allSuggestions.join(", ").length;
 
   return (

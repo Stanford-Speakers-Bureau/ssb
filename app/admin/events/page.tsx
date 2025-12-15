@@ -24,7 +24,7 @@ async function getInitialEvents(): Promise<Event[]> {
 
     const eventsWithImages = events
       ? await Promise.all(
-        events.map(async (event: Event) => ({
+          events.map(async (event: Event) => ({
             ...event,
             image_url: event.img
               ? await getSignedImageUrl(event.img, 60 * 60) // 1 hour expiry

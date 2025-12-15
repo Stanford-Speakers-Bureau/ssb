@@ -222,9 +222,9 @@ export default function HomeClient() {
                   Event Sponsorship Programs
                 </h3>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
-                  We provide event sponsorship for speaker fees and
-                  event service costs, prioritizing our Community Uplift Fund
-                  for events centering traditionally marginalized communities.
+                  We provide event sponsorship for speaker fees and event
+                  service costs, prioritizing our Community Uplift Fund for
+                  events centering traditionally marginalized communities.
                 </p>
                 <MotionLink
                   href="/event-sponsorship"
