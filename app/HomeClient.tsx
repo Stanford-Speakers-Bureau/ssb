@@ -219,15 +219,15 @@ export default function HomeClient() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               <div className="relative z-10">
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 font-serif">
-                  Co-Sponsorships
+                  Event Sponsorship Programs
                 </h3>
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed mb-3 sm:mb-4">
-                  We provide co-sponsorships up to $1500 in speaker fees and
+                  We provide event sponsorship for speaker fees and
                   event service costs, prioritizing our Community Uplift Fund
                   for events centering traditionally marginalized communities.
                 </p>
                 <MotionLink
-                  href="/other-programs"
+                  href="/event-sponsorship"
                   prefetch={false}
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline inline-block"
                   whileHover={{ scale: 1.05 }}
@@ -259,13 +259,13 @@ export default function HomeClient() {
                   their work and insights.
                 </p>
                 <MotionLink
-                  href="/other-programs"
+                  href="mailto:amock@stanford.edu,ajoshi17@stanford.edu,anishan@stanford.edu"
                   prefetch={false}
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline inline-block"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  Learn more
+                  Contact Andrea Mock
                 </MotionLink>
               </div>
             </div>

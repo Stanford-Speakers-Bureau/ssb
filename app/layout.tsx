@@ -56,7 +56,7 @@ export default async function RootLayout({
 
   // Banner text and countdown target based on mystery status
   const bannerText = isMystery
-    ? "GET NOTIFIED ABOUT OUR NEXT SPEAKER!!"
+    ? "GET EARLY ACCESS TO OUR NEXT SPEAKER!!"
     : `${closestEvent?.name} is coming to Stanford!`;
   const countdownTarget = isMystery
     ? closestEvent?.release_date

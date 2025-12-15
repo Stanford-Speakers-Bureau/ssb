@@ -49,12 +49,12 @@ export default function Contact() {
               If you are looking for Stanford Speakers Bureau to co-sponsor an
               event, please first check out the{" "}
               <Link
-                href="/other-programs"
+                href="/event-sponsorship"
                 prefetch={false}
                 className="font-semibold hover:underline"
                 style={{ color: "#A80D0C" }}
               >
-                Other Programs section
+                Event Sponroship page
               </Link>{" "}
               for our interests and guidelines.
             </p>
