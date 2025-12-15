@@ -4,6 +4,10 @@ import {
   getSupabaseClient,
 } from "../../../lib/supabase";
 import { generateReferralCode } from "../../../lib/utils";
+import {
+  checkRateLimit,
+  referralValidateRatelimit,
+} from "../../../lib/ratelimit";
 
 /**
  * POST /api/referrals/validate
@@ -29,6 +33,13 @@ export async function POST(req: Request) {
     if (userError || !user?.email) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Rate limit by user email
+    const rateLimitResponse = await checkRateLimit(
+      referralValidateRatelimit,
+      `referral-validate:${user.email}`,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Parse request body
     let body;

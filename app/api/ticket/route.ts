@@ -6,6 +6,7 @@ import {
 } from "../../lib/supabase";
 import { generateReferralCode } from "../../lib/utils";
 import { cookies } from "next/headers";
+import { checkRateLimit, ticketRatelimit } from "../../lib/ratelimit";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Ticket created successfully!",
@@ -38,6 +39,13 @@ export async function POST(req: Request) {
         { status: 401 },
       );
     }
+
+    // Rate limit by user email
+    const rateLimitResponse = await checkRateLimit(
+      ticketRatelimit,
+      `ticket:${user.email}`,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Parse request body
     let body;
