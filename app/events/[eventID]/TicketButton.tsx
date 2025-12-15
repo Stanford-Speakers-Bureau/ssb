@@ -64,10 +64,24 @@ export default function TicketButton({
       const url = hasTicket ? "/api/ticket" : "/api/ticket";
       const method = hasTicket ? "DELETE" : "POST";
 
+      // Get referral from session storage if creating a ticket
+      let referral: string | null = null;
+      if (!hasTicket) {
+        const referralKey = `referral`;
+        referral = sessionStorage.getItem(referralKey);
+      }
+
+      const requestBody: { event_id: string; referral?: string | null } = {
+        event_id: eventId,
+      };
+      if (referral) {
+        requestBody.referral = referral;
+      }
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_id: eventId }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.status === 401) {
@@ -91,9 +105,19 @@ export default function TicketButton({
           setHasTicket(true);
           setTicketId(data.ticketId || null);
           setMessage(TICKET_MESSAGES.SUCCESS);
+          // Clear referral from session storage after successful ticket creation
+          const referralKey = `referral`;
+          sessionStorage.removeItem(referralKey);
         }
-        // Dispatch event to update ticket count
-        window.dispatchEvent(new CustomEvent("ticketChanged"));
+        // Dispatch event to update ticket count and ticket status
+        window.dispatchEvent(
+          new CustomEvent("ticketChanged", {
+            detail: {
+              hasTicket: !hasTicket,
+              ticketId: !hasTicket ? data.ticketId || null : null,
+            },
+          })
+        );
       } else {
         const errorMessage = data.error || TICKET_MESSAGES.ERROR_GENERIC;
         setMessage(errorMessage);
@@ -108,6 +132,25 @@ export default function TicketButton({
       setIsLoading(false);
     }
   }, [checkLiveEvent, eventId, hasTicket]);
+
+  // Track referral parameters from URL and store in session storage
+  useEffect(() => {
+    const referralKey = `referral`;
+    const url = new URL(window.location.href);
+    const referralCode = url.searchParams.get("referral_code");
+
+    // If we have referral parameters, store the referral code in session storage
+    if (referralCode) {
+      sessionStorage.setItem(referralKey, referralCode);
+      // Clean up the URL by removing the referral parameters
+      url.searchParams.delete("referral_code");
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+    }
+  }, [eventId]);
 
   // Auto-create ticket after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage

@@ -3,6 +3,8 @@ import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
 const nextConfig: NextConfig = {
   images: {
+    remotePatterns,
+    qualities: [70, 75, 90],
     loader: "custom",
     loaderFile: "./image-loader.ts",
   },

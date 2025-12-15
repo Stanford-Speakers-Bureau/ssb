@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { generateReferralCode } from "./utils";
 
 /**
  * Simple Supabase client for public data queries (bypasses RLS with service key)
@@ -366,4 +367,55 @@ export async function getEventByRoute(route: string): Promise<Event | null> {
   }
 
   return data;
+}
+
+/**
+ * Generate a referral code from a user's email address.
+ * Re-exported from utils.ts for backward compatibility.
+ * @deprecated Import from "./utils" instead for use in Client Components.
+ */
+export { generateReferralCode };
+
+/**
+ * Update referral records when a ticket is created.
+ * Ensures a referral record exists for the user's referral code.
+ * 
+ * This function is non-blocking and logs errors without throwing.
+ */
+export async function updateReferralRecords(
+  eventId: string,
+  userEmail: string,
+): Promise<void> {
+  try {
+    const adminClient = getSupabaseClient();
+    const userReferralCode = generateReferralCode(userEmail);
+
+    // Ensure the current user has a referral record for this event (for sharing)
+    if (userReferralCode) {
+      const { data: userReferral } = await adminClient
+        .from("referrals")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("referral_code", userReferralCode)
+        .single();
+
+      if (!userReferral) {
+        // Create referral record for the user
+        const { error: insertError } = await adminClient
+          .from("referrals")
+          .insert({
+            event_id: eventId,
+            referral_code: userReferralCode,
+            count: 0,
+          });
+
+        if (insertError) {
+          console.error("Error creating user referral record:", insertError);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error updating referral records:", error);
+    // Don't throw - this is a non-critical operation
+  }
 }

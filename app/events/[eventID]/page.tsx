@@ -10,21 +10,25 @@ import {
   createServerSupabaseClient,
   getSupabaseClient,
 } from "../../lib/supabase";
-import TicketButton from "./TicketButton";
+import TicketSection from "./TicketSection";
 import TicketCount from "./TicketCount";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;
 }
 
-async function getUserTicketStatus(eventId: string): Promise<string | null> {
+async function getUserTicketStatus(eventId: string): Promise<{
+  ticketId: string | null;
+  userEmail: string | null;
+}> {
   try {
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user?.email) return null;
+    if (!user?.email)
+      return { ticketId: null, userEmail: null };
 
     const adminClient = getSupabaseClient();
     const { data } = await adminClient
@@ -34,9 +38,9 @@ async function getUserTicketStatus(eventId: string): Promise<string | null> {
       .eq("email", user.email)
       .single();
 
-    return data?.id ?? null;
+    return { ticketId: data?.id ?? null, userEmail: user.email };
   } catch {
-    return null;
+    return { ticketId: null, userEmail: null };
   }
 }
 
@@ -51,12 +55,13 @@ export default async function EventPage({ params }: PageProps) {
   }
 
   // Get the signed image URL for the event and check if user has a ticket
-  const [signedImageUrl, ticketId] = await Promise.all([
+  const [signedImageUrl, ticketStatus] = await Promise.all([
     getSignedImageUrl(event.img, 3600),
     getUserTicketStatus(event.id),
   ]);
 
-  const hasTicket = !!ticketId;
+  const hasTicket = !!ticketStatus.ticketId;
+  const ticketId = ticketStatus.ticketId;
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
@@ -230,10 +235,12 @@ export default async function EventPage({ params }: PageProps) {
                   )}
                 </div>
 
-                <TicketButton
+                <TicketSection
                   eventId={event.id}
                   initialHasTicket={hasTicket}
                   initialTicketId={ticketId}
+                  userEmail={ticketStatus.userEmail}
+                  eventRoute={event.route || eventID}
                 />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}

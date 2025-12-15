@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
+  updateReferralRecords,
 } from "../../lib/supabase";
 import { cookies } from "next/headers";
 
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id } = body;
+    const { event_id, referral: referralFromBody } = body;
 
     if (!event_id || typeof event_id !== "string") {
       return NextResponse.json(
@@ -52,9 +53,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get referral from cookie if available
-    const cookieStore = await cookies();
-    const referral = cookieStore.get("referral")?.value || null;
+    // Get referral from request body first, then fall back to cookie if not provided
+    let referral: string | null = referralFromBody || null;
+    if (!referral) {
+      const cookieStore = await cookies();
+      referral = cookieStore.get("referral")?.value || null;
+    }
 
     /**
      * IMPORTANT: To prevent race conditions (two users grabbing the last ticket),
@@ -125,6 +129,9 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
+
+    // Update referral records (non-blocking - don't fail ticket creation if this fails)
+    await updateReferralRecords(event_id, user.email);
 
     return NextResponse.json(
       {

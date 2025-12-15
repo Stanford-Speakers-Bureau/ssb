@@ -150,7 +150,7 @@ export default function UpcomingSpeakerCard({
               fill
               className="object-cover opacity-0"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onLoadingComplete={() => setImageLoaded(true)}
+              onLoad={() => setImageLoaded(true)}
               onError={() => setImageLoaded(true)}
               quality={90}
             />
@@ -208,7 +208,7 @@ export default function UpcomingSpeakerCard({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority={false}
               quality={90}
-              onLoadingComplete={() => setImageLoaded(true)}
+              onLoad={() => setImageLoaded(true)}
               onError={() => setImageLoaded(true)}
             />
           </div>
