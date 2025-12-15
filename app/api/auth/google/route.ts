@@ -18,7 +18,7 @@ export async function GET(req: Request) {
       redirectTo: `${baseUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`,
       queryParams: {
         access_type: "offline",
-        prompt: "consent",
+        prompt: "none",
         hd: "stanford.edu",
       },
     },
