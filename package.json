@@ -5,12 +5,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
     "u": "bunx npm-check-updates -u && bun install",
     "lint": "eslint",
     "prettier": "prettier --write ."
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.14.6",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
     "@upstash/ratelimit": "^2.0.7",
@@ -20,7 +25,8 @@
     "motion": "^12.23.25",
     "next": "16.0.10",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "wrangler": "^4.55.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
