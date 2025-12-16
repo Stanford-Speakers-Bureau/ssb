@@ -3,7 +3,10 @@
 	"main": ".open-next/worker.js",
 	"name": "ssb",
 	"compatibility_date": "2025-12-16",
-	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
@@ -24,7 +27,12 @@
 			// Create the bucket before deploying
 			// You can change the bucket name if you want
 			// See https://developers.cloudflare.com/workers/wrangler/commands/#r2-bucket-create
-			"bucket_name": "cache"
+			"bucket_name": "ssb-cache"
+		},
+		{
+			"bucket_name": "ssb-cache",
+			"binding": "ssb_cache",
+			"remote": true
 		}
 	],
 	"images": {
