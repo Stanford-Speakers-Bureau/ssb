@@ -177,9 +177,35 @@ async function generateQRCodeDataURI(ticketId: string): Promise<string> {
 }
 
 /**
- * Generate HTML email content for ticket confirmation
+ * Generate QR code PNG as a Buffer for attaching to an email
  */
-async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
+async function generateQRCodePngBuffer(ticketId: string): Promise<Buffer | null> {
+  try {
+    const buffer: Buffer = await QRCode.toBuffer(ticketId, {
+      errorCorrectionLevel: "H",
+      type: "png",
+      width: 400,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+    } as any);
+    return buffer;
+  } catch (error) {
+    console.error("Error generating QR code buffer:", error);
+    return null;
+  }
+}
+
+/**
+ * Generate HTML email content for ticket confirmation
+ * If qrCid is provided, the QR image will be referenced via cid:qrCid
+ */
+async function generateTicketEmailHTML(
+  data: TicketEmailData,
+  options?: { qrCid?: string },
+): Promise<string> {
   const {
     eventName,
     ticketType,
@@ -224,8 +250,8 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
       ? `${baseUrl}/events/${data.eventRoute}?referral_code=${referralCode}`
       : null;
 
-  // Generate QR code
-  const qrCodeDataURI = await generateQRCodeDataURI(ticketId);
+  // If sending as CID, build the src accordingly; otherwise leave empty to hide section
+  const qrImageSrc = options?.qrCid ? `cid:${options.qrCid}` : "";
   const isVIP = ticketType?.toUpperCase() === "VIP";
 
   return `
@@ -416,25 +442,25 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
           </div>
           
           ${
-            qrCodeDataURI
+            qrImageSrc
               ? `
           <!-- QR Code Section -->
           <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;">
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: ${isVIP ? "20px" : "16px"}; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
-              <img src="${qrCodeDataURI}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; height: 350px; max-width: 100%; height: auto;" />
+              <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
             </div>
             ${
-              isVIP
-                ? `
+                isVIP
+                  ? `
             <div style="margin-top: 12px;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #A80D0C; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
                 VIP
               </span>
             </div>
             `
-                : ""
-            }
+                  : ""
+              }
             <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Show this QR code at the event entrance for quick check-in.
             </p>
@@ -454,7 +480,7 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
               <td align="center" class="button-wrapper" style="padding: 0;">
-                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #4285F4; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #357AE8; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   <img src="${baseUrl}/g.png" alt="Google" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
                   Add to Google Calendar
                 </a>
@@ -549,22 +575,82 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     return;
   }
 
-  const htmlContent = await generateTicketEmailHTML(data);
+  const subject = `Your Ticket Confirmation - ${data.eventName || "Event"}`;
   const textContent = generateTicketEmailText(data);
 
-  // Generate ICS file content for calendar invite
-  const icsContent = generateICalContent(data);
+  // Generate QR and prepare cid
+  const qrCid = `ticket-qr-${data.ticketId}@stanfordspeakersbureau`;
+  const qrBuffer = await generateQRCodePngBuffer(data.ticketId);
+  const htmlContent = await generateTicketEmailHTML(data, {
+    qrCid: qrBuffer ? qrCid : undefined,
+  });
 
-  // Build attachments array
-  const attachments = [];
-  if (icsContent) {
-    const icsBuffer = Buffer.from(icsContent, "utf-8");
-    attachments.push({
-      FileName: `stanford-speakers-bureau-event.ics`,
-      RawContent: new Uint8Array(icsBuffer),
-      ContentType: "text/calendar; charset=utf-8",
-    });
+  // Optional ICS content
+  const icsContent = generateICalContent(data);
+  const icsBuffer = icsContent ? Buffer.from(icsContent, "utf-8") : null;
+
+  // Build MIME message with CID image
+  const mixBoundary = `mix_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const altBoundary = `alt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const lines: string[] = [];
+  lines.push(
+    `From: ${FROM_EMAIL}`,
+    `To: ${data.email}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/mixed; boundary="${mixBoundary}"`,
+    "",
+    `--${mixBoundary}`,
+    `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+    "",
+    `--${altBoundary}`,
+    `Content-Type: text/plain; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    textContent,
+    "",
+    `--${altBoundary}`,
+    `Content-Type: text/html; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    htmlContent,
+    "",
+    `--${altBoundary}--`
+  );
+
+  // Attach inline QR image via CID (optional)
+  if (qrBuffer) {
+    const qrBase64 = qrBuffer.toString("base64");
+    lines.push(
+      `--${mixBoundary}`,
+      `Content-Type: image/png; name="ticket-qr.png"`,
+      `Content-Transfer-Encoding: base64`,
+      `Content-Disposition: inline; filename="ticket-qr.png"`,
+      `Content-ID: <${qrCid}>`,
+      "",
+      qrBase64,
+      ""
+    );
   }
+
+  // Attach ICS file (optional)
+  if (icsBuffer) {
+    const icsBase64 = icsBuffer.toString("base64");
+    lines.push(
+      `--${mixBoundary}`,
+      `Content-Type: text/calendar; charset="utf-8"; name="stanford-speakers-bureau-event.ics"`,
+      `Content-Transfer-Encoding: base64`,
+      `Content-Disposition: attachment; filename="stanford-speakers-bureau-event.ics"`,
+      "",
+      icsBase64,
+      ""
+    );
+  }
+
+  lines.push(`--${mixBoundary}--`, "");
+
+  const rawMessage = lines.join("\r\n");
 
   const command = new SendEmailCommand({
     FromEmailAddress: FROM_EMAIL,
@@ -572,24 +658,8 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
       ToAddresses: [data.email],
     },
     Content: {
-      Simple: {
-        Subject: {
-          Data: `Your Ticket Confirmation - ${data.eventName || "Event"}`,
-          Charset: "UTF-8",
-        },
-        Body: {
-          Html: {
-            Data: htmlContent,
-            Charset: "UTF-8",
-          },
-          Text: {
-            Data: textContent,
-            Charset: "UTF-8",
-          },
-        },
-        ...(attachments.length > 0 && {
-          Attachments: attachments,
-        }),
+      Raw: {
+        Data: new Uint8Array(Buffer.from(rawMessage, "utf-8")),
       },
     },
   });

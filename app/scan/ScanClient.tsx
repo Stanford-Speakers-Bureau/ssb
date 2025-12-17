@@ -229,13 +229,12 @@ export default function ScanClient() {
         }
       }
 
-      // Clear status after 10 seconds
+      // Clear status after 5 seconds
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
-        setSpinTime(2.0);
         statusTimeoutRef.current = null;
-      }, 10000);
+      }, 5000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
@@ -249,7 +248,7 @@ export default function ScanClient() {
       }, 3000);
     } finally {
       setIsProcessingScan(false);
-      setSpinTime(0.1);
+      setSpinTime(2.0);
     }
   }, []);
 
