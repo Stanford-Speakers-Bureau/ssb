@@ -73,17 +73,17 @@ export default function ReferralShare({
     <div
       className={[
         "bg-white/10 backdrop-blur-sm rounded-lg",
-        compact ? "px-3 sm:px-4 py-2.5 sm:py-3" : "px-4 md:px-6 py-3 md:py-4",
+        compact ? "px-4 py-3 sm:px-5 sm:py-4" : "px-6 py-4 md:px-8 md:py-6",
         className ?? "",
       ].join(" ")}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1">
-          <p className="text-white text-sm sm:text-base font-semibold mb-1">
+          <p className="text-white text-base sm:text-lg font-semibold mb-1">
             Share your referral code:{" "}
             <span className="text-red-400">{referralCode}</span>
           </p>
-          <p className="text-zinc-300 text-xs sm:text-sm">
+          <p className="text-zinc-300 text-sm sm:text-base">
             Share this link with friends to get them tickets!
             {referralCount !== null && (
               <span className="ml-2 text-white font-medium">
@@ -95,7 +95,7 @@ export default function ReferralShare({
         </div>
         <button
           onClick={handleCopy}
-          className="px-4 py-2 bg-[#A80D0C] hover:bg-[#C11211] text-white text-sm font-semibold rounded transition-colors whitespace-nowrap"
+          className="px-4 py-2 bg-[#A80D0C] hover:bg-[#C11211] text-white text-sm sm:text-base font-semibold rounded transition-colors whitespace-nowrap"
         >
           {copied ? "Copied!" : "Copy Link"}
         </button>

@@ -536,6 +536,12 @@ If you have any questions, please contact us at ${FROM_EMAIL}
  * Throws an error if email sending fails
  */
 export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
+  // Check if email sending is disabled
+  if (process.env.DISABLE_EMAIL?.toLowerCase().trim() == "true") {
+    console.log(`Email sending is disabled (DISABLE_EMAIL=true). Skipping email to ${data.email}`);
+    return;
+  }
+
   const htmlContent = await generateTicketEmailHTML(data);
   const textContent = generateTicketEmailText(data);
 

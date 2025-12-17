@@ -131,6 +131,123 @@ export default function TicketButton({
           setHasTicket(true);
           setTicketId(data.ticketId || null);
           setMessage(TICKET_MESSAGES.SUCCESS);
+          // Confetti on successful ticket creation - full screen coverage with delays
+          void import("canvas-confetti").then(({ default: confetti }) => {
+            // CSP may block blob: worker scripts; avoid workers so this works under strict CSP.
+            const fire = confetti.create(undefined, { resize: true, useWorker: false });
+            
+            // Center burst - massive (immediate)
+            fire({
+              particleCount: 300,
+              spread: 180,
+              startVelocity: 60,
+              scalar: 1.3,
+              origin: { y: 0.5 },
+              zIndex: 9999,
+            });
+            
+            // Top center - raining down (100ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 200,
+                spread: 180,
+                startVelocity: 50,
+                scalar: 1.2,
+                origin: { x: 0.5, y: 0 },
+                zIndex: 9999,
+              });
+            }, 100);
+            
+            // Bottom center - shooting up (200ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 200,
+                spread: 180,
+                startVelocity: 50,
+                scalar: 1.2,
+                origin: { x: 0.5, y: 1 },
+                zIndex: 9999,
+              });
+            }, 200);
+            
+            // Left side - full height coverage (300ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 150,
+                angle: 90,
+                spread: 180,
+                startVelocity: 55,
+                scalar: 1.1,
+                origin: { x: 0, y: 0.5 },
+                zIndex: 9999,
+              });
+            }, 300);
+            
+            // Right side - full height coverage (400ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 150,
+                angle: 90,
+                spread: 180,
+                startVelocity: 55,
+                scalar: 1.1,
+                origin: { x: 1, y: 0.5 },
+                zIndex: 9999,
+              });
+            }, 400);
+            
+            // Top-left corner (500ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 100,
+                angle: 45,
+                spread: 90,
+                startVelocity: 45,
+                scalar: 1.0,
+                origin: { x: 0, y: 0 },
+                zIndex: 9999,
+              });
+            }, 500);
+            
+            // Top-right corner (600ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 100,
+                angle: 135,
+                spread: 90,
+                startVelocity: 45,
+                scalar: 1.0,
+                origin: { x: 1, y: 0 },
+                zIndex: 9999,
+              });
+            }, 600);
+            
+            // Bottom-left corner (700ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 100,
+                angle: 315,
+                spread: 90,
+                startVelocity: 45,
+                scalar: 1.0,
+                origin: { x: 0, y: 1 },
+                zIndex: 9999,
+              });
+            }, 700);
+            
+            // Bottom-right corner (800ms delay)
+            setTimeout(() => {
+              fire({
+                particleCount: 100,
+                angle: 225,
+                spread: 90,
+                startVelocity: 45,
+                scalar: 1.0,
+                origin: { x: 1, y: 1 },
+                zIndex: 9999,
+              });
+            }, 800);
+          });
           // Clear referral from session storage after successful ticket creation
           const referralKey = `referral`;
           sessionStorage.removeItem(referralKey);
@@ -358,7 +475,7 @@ export default function TicketButton({
           whileTap={isButtonDisabled ? {} : { scale: 0.95 }}
           onClick={handleTicketClick}
           disabled={isButtonDisabled}
-          className="rounded px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
         >
           {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
         </motion.button>

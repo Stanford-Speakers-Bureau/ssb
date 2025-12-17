@@ -63,12 +63,8 @@ export default function TicketManagementClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offset, setOffset] = useState(0);
   const limit = 50;
-  const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
-  const [editingTicketType, setEditingTicketType] = useState<string>("");
-  const [editingScannedId, setEditingScannedId] = useState<string | null>(null);
-  const [editingScannedStatus, setEditingScannedStatus] =
-    useState<boolean>(false);
   const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
@@ -171,6 +167,7 @@ export default function TicketManagementClient({
   }
 
   async function handleUpdateType(id: string, newType: string) {
+    setUpdatingTicketId(id);
     try {
       const response = await fetch("/api/admin/tickets", {
         method: "PATCH",
@@ -187,28 +184,19 @@ export default function TicketManagementClient({
       setTickets((prev) =>
         prev.map((t) => (t.id === id ? (data.ticket as Ticket) : t)),
       );
-      setEditingTicketId(null);
       setSuccess("Ticket type updated successfully!");
     } catch (err) {
       console.error("Error updating ticket type:", err);
       setError(
         err instanceof Error ? err.message : "Failed to update ticket type",
       );
-      setEditingTicketId(null);
+    } finally {
+      setUpdatingTicketId(null);
     }
   }
 
-  function startEditingType(ticket: Ticket) {
-    setEditingTicketId(ticket.id);
-    setEditingTicketType(ticket.type || "STANDARD");
-  }
-
-  function cancelEditingType() {
-    setEditingTicketId(null);
-    setEditingTicketType("");
-  }
-
   async function handleUpdateScanned(id: string, newScanned: boolean) {
+    setUpdatingTicketId(id);
     try {
       const response = await fetch("/api/admin/tickets", {
         method: "PATCH",
@@ -229,25 +217,15 @@ export default function TicketManagementClient({
       setTickets((prev) =>
         prev.map((t) => (t.id === id ? (data.ticket as Ticket) : t)),
       );
-      setEditingScannedId(null);
       setSuccess("Scanned status updated successfully!");
     } catch (err) {
       console.error("Error updating scanned status:", err);
       setError(
         err instanceof Error ? err.message : "Failed to update scanned status",
       );
-      setEditingScannedId(null);
+    } finally {
+      setUpdatingTicketId(null);
     }
-  }
-
-  function startEditingScanned(ticket: Ticket) {
-    setEditingScannedId(ticket.id);
-    setEditingScannedStatus(ticket.scanned);
-  }
-
-  function cancelEditingScanned() {
-    setEditingScannedId(null);
-    setEditingScannedStatus(false);
   }
 
   async function handleResendEmail(id: string) {
@@ -717,102 +695,23 @@ export default function TicketManagementClient({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {editingTicketId === ticket.id ? (
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={editingTicketType}
-                            onChange={(e) =>
-                              setEditingTicketType(e.target.value)
-                            }
-                            onBlur={() => {
-                              if (editingTicketType !== ticket.type) {
-                                handleUpdateType(ticket.id, editingTicketType);
-                              } else {
-                                cancelEditingType();
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                if (editingTicketType !== ticket.type) {
-                                  handleUpdateType(
-                                    ticket.id,
-                                    editingTicketType,
-                                  );
-                                } else {
-                                  cancelEditingType();
-                                }
-                              } else if (e.key === "Escape") {
-                                cancelEditingType();
-                              }
-                            }}
-                            autoFocus
-                            className="px-2 py-1 text-xs font-medium rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
-                          >
-                            <option value="VIP">VIP</option>
-                            <option value="STANDARD">STANDARD</option>
-                          </select>
-                          <button
-                            onClick={() => {
-                              if (editingTicketType !== ticket.type) {
-                                handleUpdateType(ticket.id, editingTicketType);
-                              } else {
-                                cancelEditingType();
-                              }
-                            }}
-                            className="text-emerald-400 hover:text-emerald-300 transition-colors"
-                            title="Save"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={cancelEditingType}
-                            className="text-zinc-400 hover:text-zinc-300 transition-colors"
-                            title="Cancel"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => startEditingType(ticket)}
-                          className="group"
-                          title="Click to edit type"
-                        >
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full transition-colors ${
-                              ticket.type === "VIP"
-                                ? "bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30"
-                                : "bg-zinc-700 text-zinc-300 group-hover:bg-zinc-600"
-                            }`}
-                          >
-                            {ticket.type || "STANDARD"}
-                          </span>
-                        </button>
-                      )}
+                      <select
+                        value={ticket.type || "STANDARD"}
+                        onChange={(e) => {
+                          if (e.target.value !== ticket.type) {
+                            handleUpdateType(ticket.id, e.target.value);
+                          }
+                        }}
+                        disabled={updatingTicketId === ticket.id}
+                        className={`px-2 py-1 text-xs font-medium rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          ticket.type === "VIP"
+                            ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                            : ""
+                        }`}
+                      >
+                        <option value="VIP">VIP</option>
+                        <option value="STANDARD">STANDARD</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-zinc-400">
@@ -820,123 +719,24 @@ export default function TicketManagementClient({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {editingScannedId === ticket.id ? (
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={
-                              editingScannedStatus ? "scanned" : "not-scanned"
-                            }
-                            onChange={(e) =>
-                              setEditingScannedStatus(
-                                e.target.value === "scanned",
-                              )
-                            }
-                            onBlur={() => {
-                              if (editingScannedStatus !== ticket.scanned) {
-                                handleUpdateScanned(
-                                  ticket.id,
-                                  editingScannedStatus,
-                                );
-                              } else {
-                                cancelEditingScanned();
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                if (editingScannedStatus !== ticket.scanned) {
-                                  handleUpdateScanned(
-                                    ticket.id,
-                                    editingScannedStatus,
-                                  );
-                                } else {
-                                  cancelEditingScanned();
-                                }
-                              } else if (e.key === "Escape") {
-                                cancelEditingScanned();
-                              }
-                            }}
-                            autoFocus
-                            className="px-2 py-1 text-xs font-medium rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
-                          >
-                            <option value="scanned">Scanned</option>
-                            <option value="not-scanned">Not Scanned</option>
-                          </select>
-                          <button
-                            onClick={() => {
-                              if (editingScannedStatus !== ticket.scanned) {
-                                handleUpdateScanned(
-                                  ticket.id,
-                                  editingScannedStatus,
-                                );
-                              } else {
-                                cancelEditingScanned();
-                              }
-                            }}
-                            className="text-emerald-400 hover:text-emerald-300 transition-colors"
-                            title="Save"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={cancelEditingScanned}
-                            className="text-zinc-400 hover:text-zinc-300 transition-colors"
-                            title="Cancel"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => startEditingScanned(ticket)}
-                          className="group"
-                          title="Click to edit status"
-                        >
-                          {ticket.scanned ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/30 transition-colors">
-                              <svg
-                                className="w-3 h-3"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              Scanned
-                            </span>
-                          ) : (
-                            <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-zinc-700 text-zinc-300 group-hover:bg-zinc-600 transition-colors">
-                              Not Scanned
-                            </span>
-                          )}
-                        </button>
-                      )}
+                      <select
+                        value={ticket.scanned ? "scanned" : "not-scanned"}
+                        onChange={(e) => {
+                          const newScanned = e.target.value === "scanned";
+                          if (newScanned !== ticket.scanned) {
+                            handleUpdateScanned(ticket.id, newScanned);
+                          }
+                        }}
+                        disabled={updatingTicketId === ticket.id}
+                        className={`px-2 py-1 text-xs font-medium rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          ticket.scanned
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                            : ""
+                        }`}
+                      >
+                        <option value="scanned">Scanned</option>
+                        <option value="not-scanned">Not Scanned</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
