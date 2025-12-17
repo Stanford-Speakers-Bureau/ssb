@@ -16,10 +16,10 @@ const hedvigLettersSerif = Hedvig_Letters_Serif({
   weight: ["400"],
 });
 
-const baseURL = "https://ssb.stanford.edu";
+const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ssb.stanford.edu"),
+  metadataBase: new URL(baseURL),
   title: "Stanford Speakers Bureau",
   description:
     "Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
