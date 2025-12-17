@@ -6,9 +6,8 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : null;
 
 const remotePatterns: RemotePattern[] = [
   {
-    protocol: "https",
-    hostname: "lh3.googleusercontent.com",
-    pathname: "/**",
+    loader: "custom",
+    loaderFile: "./image-loader.ts",
   },
 ];
 
@@ -81,10 +80,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-  images: {
-    loader: "custom",
-    loaderFile: "./image-loader.ts",
   },
 };
 
