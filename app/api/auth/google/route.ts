@@ -6,6 +6,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const redirectToParam =
     searchParams.get("redirect_to") || "/upcoming-speakers";
+  const forcePrompt = searchParams.get("force_prompt") === "true";
 
   // Validate redirect path to prevent open redirect attacks
   const redirectTo = isValidRedirect(redirectToParam)
@@ -21,15 +22,22 @@ export async function GET(req: Request) {
 
   const supabase = await createServerSupabaseClient();
 
+  // Build query params - skip prompt: "none" if force_prompt is set (retry after interaction_required)
+  const queryParams: Record<string, string> = {
+    access_type: "online",
+    hd: "stanford.edu",
+  };
+  
+  // Only use prompt: "none" if not forcing a prompt (i.e., not retrying after interaction_required)
+  if (!forcePrompt) {
+    queryParams.prompt = "none";
+  }
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: `${baseUrl}/callback/auth?redirect_to=${encodeURIComponent(redirectTo)}`,
-      queryParams: {
-        access_type: "online",
-        prompt: "none",
-        hd: "stanford.edu",
-      },
+      queryParams,
     },
   });
 

@@ -5,6 +5,8 @@ import { isValidRedirect } from "@/app/lib/security";
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
   const code = requestUrl.searchParams.get("code");
+  const error = requestUrl.searchParams.get("error");
+  const errorDescription = requestUrl.searchParams.get("error_description");
   const redirectTo =
     requestUrl.searchParams.get("redirect_to") || "/upcoming-speakers";
 
@@ -15,6 +17,27 @@ export async function GET(req: Request) {
 
   // Use the request origin to ensure we redirect back to the same domain
   const baseUrl = requestUrl.origin;
+
+  // Handle OAuth errors from the provider
+  if (error) {
+    console.error("OAuth error:", error, errorDescription);
+    
+    // For interaction_required, retry OAuth without prompt: "none"
+    if (error === "interaction_required") {
+      const authUrl = new URL("/api/auth/google", baseUrl);
+      authUrl.searchParams.set("redirect_to", redirectTo);
+      authUrl.searchParams.set("force_prompt", "true"); // Flag to skip prompt: "none"
+      return NextResponse.redirect(authUrl);
+    }
+    
+    // For other errors, redirect with error message
+    const redirectUrl = new URL(safeRedirect, baseUrl);
+    redirectUrl.searchParams.set("error", "auth_failed");
+    if (errorDescription) {
+      redirectUrl.searchParams.set("error_description", errorDescription);
+    }
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (code) {
     const supabase = await createServerSupabaseClient();
