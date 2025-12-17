@@ -33,7 +33,7 @@ export default function ScanClient() {
   const [isProcessingScan, setIsProcessingScan] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<
     "prompt" | "granted" | "denied" | "checking"
-  >("checking");
+  >("prompt");
   const [cameraStarted, setCameraStarted] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
   const [isMobile, setIsMobile] = useState(true);
