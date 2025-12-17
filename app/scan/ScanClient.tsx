@@ -30,6 +30,7 @@ export default function ScanClient() {
   const [status, setStatus] = useState<TicketStatus>(null);
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [spinTime, setSpinTime] = useState<number>(2.0);
   const [isProcessingScan, setIsProcessingScan] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<
     "prompt" | "granted" | "denied" | "checking"
@@ -203,6 +204,7 @@ export default function ScanClient() {
     // Don't pause scanner - keep it running to avoid showing "paused" message
 
     setIsProcessingScan(true);
+    setSpinTime(0.5);
     try {
       const response = await fetch("/api/scan", {
         method: "POST",
@@ -227,12 +229,13 @@ export default function ScanClient() {
         }
       }
 
-      // Clear status after 3 seconds
+      // Clear status after 10 seconds
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
+        setSpinTime(2.0);
         statusTimeoutRef.current = null;
-      }, 5000);
+      }, 10000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
@@ -246,6 +249,7 @@ export default function ScanClient() {
       }, 3000);
     } finally {
       setIsProcessingScan(false);
+      setSpinTime(0.1);
     }
   }, []);
 
@@ -430,9 +434,9 @@ export default function ScanClient() {
   const getStatusOverlay = () => {
     if (status === "scanned") {
       if (ticketInfo?.type?.toLowerCase() === "vip") {
-        return "bg-[#A80D0C]/90";
+        return "bg-teal-600/90";
       }
-      return "bg-[#A80D0C]/90";
+      return "bg-green-600/90";
     }
     if (status === "already_scanned") {
       return "bg-yellow-600/90";
@@ -696,6 +700,7 @@ export default function ScanClient() {
               <div className="mb-2 sm:mb-3 shrink-0 relative">
                 <div className="w-full max-w-md mx-auto border-blob-wrapper rounded-xl">
                   <motion.div
+                    key={spinTime}
                     className="absolute inset-0 rounded-xl pointer-events-none z-1"
                     style={{
                       padding: "6px",
@@ -706,14 +711,12 @@ export default function ScanClient() {
                       WebkitMaskComposite: "xor",
                       maskComposite: "exclude",
                       // Animate the gradient angle (not a transform) to avoid loop flicker/snapping.
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       ["--angle" as any]: "0deg",
                       willChange: "background",
                     }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    animate={{ ["--angle" as any]: "360deg" }}
+                    animate={{ ["--angle" as const]: "360deg" }}
                     transition={{
-                      duration: 2,
+                      duration: spinTime,
                       repeat: Infinity,
                       ease: "linear",
                     }}
@@ -851,7 +854,7 @@ export default function ScanClient() {
             )}
           </AnimatePresence>
 
-          {!status && (
+          {!status && liveEvent && (
             <div className="mt-2 sm:mt-3 text-center shrink-0">
               <p
                 className={`text-sm sm:text-base ${

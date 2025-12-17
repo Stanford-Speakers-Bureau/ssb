@@ -1,6 +1,7 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
 import { PACIFIC_TIMEZONE } from "./constants";
+import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // Initialize SES client
 const sesClient = new SESv2Client({
@@ -175,47 +176,6 @@ async function generateQRCodeDataURI(ticketId: string): Promise<string> {
   }
 }
 
-/**
- * Generate Google Calendar URL for ticket email
- */
-function generateGoogleCalendarUrl(data: TicketEmailData): string {
-  if (!data.eventStartTime) return "";
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
-  const eventUrl = data.eventRoute
-    ? `${baseUrl}/events/${data.eventRoute}`
-    : baseUrl;
-
-  const startDate = new Date(data.eventStartTime);
-  const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90 minutes default
-
-  // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
-  const formatGoogleDate = (date: Date) => {
-    return date
-      .toISOString()
-      .replace(/[-:]/g, "")
-      .replace(/\.\d{3}/, "");
-  };
-
-  const title = encodeURIComponent(
-    `Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`,
-  );
-  let details = data.eventDescription || "Stanford Speakers Bureau event";
-  if (eventUrl) {
-    details += `\n\nView Event: ${eventUrl}`;
-  }
-  details += `\n\nTicket ID: ${data.ticketId}`;
-  if (data.ticketType === "VIP") {
-    details += "\nTicket Type: VIP";
-  }
-  const encodedDetails = encodeURIComponent(details);
-  const location = encodeURIComponent(data.eventVenue || "");
-  const start = formatGoogleDate(startDate);
-  const end = formatGoogleDate(endDate);
-
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodedDetails}&location=${location}`;
-}
 
 /**
  * Generate HTML email content for ticket confirmation
@@ -248,7 +208,21 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
   const logoUrl = `${baseUrl}/logo.png`;
-  const googleCalendarUrl = generateGoogleCalendarUrl(data);
+  const googleCalendarUrl = generateGoogleCalendarUrl({
+    eventName: data.eventName,
+    eventStartTime: data.eventStartTime,
+    eventRoute: data.eventRoute,
+    eventVenue: data.eventVenue,
+    eventDescription: data.eventDescription,
+    ticketId: data.ticketId,
+    ticketType: data.ticketType,
+  });
+
+  // Generate referral code from email
+  const referralCode = generateReferralCode(data.email);
+  const referralUrl = referralCode && data.eventRoute
+    ? `${baseUrl}/events/${data.eventRoute}?referral_code=${referralCode}`
+    : null;
 
   // Generate QR code
   const qrCodeDataURI = await generateQRCodeDataURI(ticketId);
@@ -402,6 +376,28 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Ticket ID:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-family: monospace; word-break: break-all;">${ticketId}</td>
               </tr>
+              ${
+                referralCode
+                  ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Referral Code:</td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500; font-family: monospace;">${referralCode}</td>
+              </tr>
+              ${
+                referralUrl
+                  ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Referral Link:</td>
+                <td class="details-value" style="padding: 8px 0;">
+                  <a href="${referralUrl}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${referralUrl}</a>
+                </td>
+              </tr>
+              `
+                  : ""
+              }
+              `
+                  : ""
+              }
             </table>
             ${
               eventUrl
@@ -512,6 +508,12 @@ function generateTicketEmailText(data: TicketEmailData): string {
     ? `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/events/${eventRoute}`
     : null;
 
+  // Generate referral code from email
+  const referralCode = generateReferralCode(data.email);
+  const referralUrl = referralCode && data.eventRoute
+    ? `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/events/${data.eventRoute}?referral_code=${referralCode}`
+    : null;
+
   return `
 Ticket Confirmed!
 
@@ -522,6 +524,8 @@ Event Details:
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
+${referralCode ? `- Referral Code: ${referralCode}` : ""}
+${referralUrl ? `- Referral Link: ${referralUrl}` : ""}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
