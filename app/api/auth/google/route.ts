@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "../../../lib/supabase";
-import { isValidRedirect } from "../../../lib/security";
+import { createServerSupabaseClient } from "@/app/lib/supabase";
+import { isValidRedirect } from "@/app/lib/security";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

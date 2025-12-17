@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { verifyAdminRequest } from "../../../../lib/supabase";
-import { getAdminSuggestions } from "../../../../admin/suggest/data";
+import { verifyAdminRequest } from "@/app/lib/supabase";
+import { getAdminSuggestions } from "@/app/admin/suggest/data";
 
 export async function PATCH(req: Request) {
   try {

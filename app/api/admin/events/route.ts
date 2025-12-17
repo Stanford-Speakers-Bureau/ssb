@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
+import { getSignedImageUrl, verifyAdminRequest } from "@/app/lib/supabase";
 import { randomUUID } from "crypto";
 import { fromZonedTime } from "date-fns-tz";
-import { PACIFIC_TIMEZONE } from "../../../lib/constants";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import {
   isValidUUID,
   isValidUrl,
@@ -11,7 +11,7 @@ import {
   isValidImageExtension,
   isValidImageSize,
   isValidDateString,
-} from "../../../lib/validation";
+} from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {

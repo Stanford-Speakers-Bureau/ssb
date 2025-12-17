@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSupabaseClient } from "../lib/supabase";
+import { getSupabaseClient } from "@/app/lib/supabase";
 
 type Stats = {
   pendingSuggestions: number;

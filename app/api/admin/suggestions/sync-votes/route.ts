@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifyAdminRequest } from "../../../../lib/supabase";
-import { getAdminSuggestions } from "../../../../admin/suggest/data";
-import { getSupabaseClient } from "../../../../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
+import { getAdminSuggestions } from "@/app/admin/suggest/data";
+import { getSupabaseClient } from "@/app/lib/supabase";
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const auth = await verifyAdminRequest();
     if (!auth.authorized) {

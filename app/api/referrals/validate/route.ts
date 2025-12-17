@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../../lib/supabase";
-import { generateReferralCode } from "../../../lib/utils";
-import {
-  checkRateLimit,
-  referralValidateRatelimit,
-} from "../../../lib/ratelimit";
+} from "@/app/lib/supabase";
+import { generateReferralCode } from "@/app/lib/utils";
+import { checkRateLimit, referralValidateRatelimit } from "@/app/lib/ratelimit";
 
 /**
  * POST /api/referrals/validate

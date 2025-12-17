@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { PACIFIC_TIMEZONE } from "../../lib/constants";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import TicketSalesGraph from "./TicketSalesGraph";
 
 function formatDateTimeForInput(dateString: string | null): string {

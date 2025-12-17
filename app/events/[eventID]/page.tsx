@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import WaitForImages from "../../components/WaitForImages";
+import WaitForImages from "@/app/components/WaitForImages";
 import {
   getEventByRoute,
   isEventMystery,
@@ -9,7 +9,7 @@ import {
   formatTime,
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../lib/supabase";
+} from "@/app/lib/supabase";
 import TicketSection from "./TicketSection";
 import TicketCount from "./TicketCount";
 

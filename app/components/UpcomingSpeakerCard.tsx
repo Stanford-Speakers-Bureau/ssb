@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { NOTIFY_MESSAGES } from "../lib/constants";
+import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import Image from "next/image";
 
 export type UpcomingSpeakerCardProps = {

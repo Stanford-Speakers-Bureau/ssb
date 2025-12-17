@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import TicketButton from "./TicketButton";
 import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
-import { generateReferralCode } from "../../lib/utils";
+import { generateReferralCode } from "@/app/lib/utils";
 
 type TicketSectionProps = {
   eventId: string;

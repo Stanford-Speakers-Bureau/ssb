@@ -1,5 +1,5 @@
 import type { Suggestion } from "./AdminSuggestClient";
-import { verifyAdminRequest } from "../../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
 
 export async function getAdminSuggestions(): Promise<{
   suggestions: Suggestion[];

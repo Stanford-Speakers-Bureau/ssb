@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { verifyAdminOrScannerRequest } from "../lib/supabase";
+import { verifyAdminOrScannerRequest } from "@/app/lib/supabase";
 import ScanClient from "./ScanClient";
 
 export const dynamic = "force-dynamic";

@@ -3,10 +3,10 @@ import {
   createServerSupabaseClient,
   getSupabaseClient,
   updateReferralRecords,
-} from "../../lib/supabase";
-import { generateReferralCode } from "../../lib/utils";
+} from "@/app/lib/supabase";
+import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
-import { checkRateLimit, ticketRatelimit } from "../../lib/ratelimit";
+import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Ticket created successfully!",

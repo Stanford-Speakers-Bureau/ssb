@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getEventByRoute, isEventMystery } from "../lib/supabase";
+import { getEventByRoute, isEventMystery } from "@/app/lib/supabase";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;

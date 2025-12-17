@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../lib/supabase";
-import { generateReferralCode } from "../../lib/utils";
+} from "@/app/lib/supabase";
+import { generateReferralCode } from "@/app/lib/utils";
 
 /**
  * GET /api/referrals

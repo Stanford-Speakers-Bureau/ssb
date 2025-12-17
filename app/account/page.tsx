@@ -5,7 +5,7 @@ import {
   getSupabaseClient,
   formatEventDate,
   formatTime,
-} from "../lib/supabase";
+} from "@/app/lib/supabase";
 import SignOutButton from "./SignOutButton";
 
 interface Ticket {

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import AdminLayoutClient from "./AdminLayoutClient";
-import { verifyAdminRequest } from "../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
 
 type AdminLayoutProps = {
   children: React.ReactNode;

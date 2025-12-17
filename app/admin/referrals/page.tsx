@@ -1,5 +1,5 @@
 import ReferralLeaderboardClient from "./ReferralLeaderboardClient";
-import { verifyAdminRequest } from "../../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
+import UpcomingSpeakerCard from "@/app/components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
 import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import {
@@ -10,7 +10,7 @@ import {
   getSignedImageUrl,
   getSupabaseClient,
   isEventMystery,
-} from "../lib/supabase";
+} from "@/app/lib/supabase";
 
 type SanitizedEvent = {
   id: string;

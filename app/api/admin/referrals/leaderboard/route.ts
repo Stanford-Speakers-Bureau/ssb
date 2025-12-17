@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAdminRequest } from "../../../../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
 
 type EventData = {
   id: string;
