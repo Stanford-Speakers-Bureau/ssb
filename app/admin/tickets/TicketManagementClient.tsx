@@ -94,7 +94,7 @@ export default function TicketManagementClient({
         params.append("eventId", selectedEventId);
       }
 
-      const response = await fetch(`/api/admin/tickets?${params}`);
+      const response = await fetch(`/api/tickets?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -120,7 +120,7 @@ export default function TicketManagementClient({
     if (!confirm("Are you sure you want to delete this ticket?")) return;
 
     try {
-      const response = await fetch("/api/admin/tickets", {
+      const response = await fetch("/api/tickets", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -144,7 +144,7 @@ export default function TicketManagementClient({
     if (!confirm("Are you sure you want to unscan this ticket?")) return;
 
     try {
-      const response = await fetch("/api/admin/tickets", {
+      const response = await fetch("/api/tickets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "unscan" }),
@@ -169,7 +169,7 @@ export default function TicketManagementClient({
   async function handleUpdateType(id: string, newType: string) {
     setUpdatingTicketId(id);
     try {
-      const response = await fetch("/api/admin/tickets", {
+      const response = await fetch("/api/tickets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "updateType", type: newType }),
@@ -198,7 +198,7 @@ export default function TicketManagementClient({
   async function handleUpdateScanned(id: string, newScanned: boolean) {
     setUpdatingTicketId(id);
     try {
-      const response = await fetch("/api/admin/tickets", {
+      const response = await fetch("/api/tickets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -241,7 +241,7 @@ export default function TicketManagementClient({
     setSuccess(null);
 
     try {
-      const response = await fetch("/api/admin/tickets", {
+      const response = await fetch("/api/tickets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "resendEmail" }),
@@ -301,7 +301,7 @@ export default function TicketManagementClient({
     // Create tickets for each email
     for (const email of emails) {
       try {
-        const response = await fetch("/api/admin/tickets", {
+        const response = await fetch("/api/tickets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

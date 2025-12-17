@@ -81,7 +81,7 @@ export default function TicketButton({
         return;
       }
 
-      const url = hasTicket ? "/api/ticket" : "/api/ticket";
+      const url = hasTicket ? "/api/tickets" : "/api/tickets";
       const method = hasTicket ? "DELETE" : "POST";
 
       // Get referral from input or session storage if creating a ticket
@@ -290,7 +290,7 @@ export default function TicketButton({
 
       setIsValidatingReferral(true);
       try {
-        const response = await fetch("/api/referrals/validate", {
+        const response = await fetch("/api/referrals", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

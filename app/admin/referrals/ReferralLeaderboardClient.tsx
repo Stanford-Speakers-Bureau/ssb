@@ -58,7 +58,7 @@ export default function ReferralLeaderboardClient({
         }
 
         const response = await fetch(
-          `/api/admin/referrals/leaderboard?${params}`,
+          `/api/referrals?${params}`,
         );
 
         if (!response.ok) {
