@@ -67,6 +67,7 @@ export default function TicketManagementClient({
   const [editingTicketType, setEditingTicketType] = useState<string>("");
   const [editingScannedId, setEditingScannedId] = useState<string | null>(null);
   const [editingScannedStatus, setEditingScannedStatus] = useState<boolean>(false);
+  const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
@@ -248,6 +249,34 @@ export default function TicketManagementClient({
   function cancelEditingScanned() {
     setEditingScannedId(null);
     setEditingScannedStatus(false);
+  }
+
+  async function handleResendEmail(id: string) {
+    if (!confirm("Are you sure you want to resend the confirmation email to this ticket holder?")) return;
+
+    setResendingEmailId(id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/admin/tickets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "resendEmail" }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to resend email");
+      }
+
+      setSuccess("Email resent successfully!");
+    } catch (err) {
+      console.error("Error resending email:", err);
+      setError(err instanceof Error ? err.message : "Failed to resend email");
+    } finally {
+      setResendingEmailId(null);
+    }
   }
 
   async function handleAddTicket(e: React.FormEvent) {
@@ -889,6 +918,30 @@ export default function TicketManagementClient({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleResendEmail(ticket.id)}
+                          disabled={resendingEmailId === ticket.id}
+                          className="text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Resend email"
+                        >
+                          {resendingEmailId === ticket.id ? (
+                            <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
+                            </svg>
+                          )}
+                        </button>
                         <button
                           onClick={() => handleDelete(ticket.id)}
                           className="text-rose-400 hover:text-rose-300 transition-colors"

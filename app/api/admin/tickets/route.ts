@@ -275,9 +275,70 @@ export async function PATCH(req: Request) {
       }
 
       return NextResponse.json({ success: true, ticket });
+    } else if (action === "resendEmail") {
+      // Resend ticket confirmation email
+      const { data: ticket, error: fetchError } = await adminClient
+        .from("tickets")
+        .select(
+          `
+          id,
+          email,
+          type,
+          created_at,
+          scanned,
+          scan_time,
+          referral,
+          event_id,
+          events (
+            id,
+            name,
+            route,
+            start_time_date,
+            venue,
+            venue_link,
+            desc
+          )
+        `,
+        )
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !ticket) {
+        console.error("Ticket fetch error:", fetchError);
+        return NextResponse.json(
+          { error: "Ticket not found" },
+          { status: 404 },
+        );
+      }
+
+      // Send ticket confirmation email
+      try {
+        const event = Array.isArray(ticket.events)
+          ? ticket.events[0]
+          : ticket.events;
+        await sendTicketEmail({
+          email: ticket.email,
+          eventName: event?.name || "Event",
+          ticketType: ticket.type || "STANDARD",
+          eventStartTime: event?.start_time_date || null,
+          eventRoute: event?.route || null,
+          ticketId: ticket.id,
+          eventVenue: event?.venue || null,
+          eventVenueLink: event?.venue_link || null,
+          eventDescription: event?.desc || null,
+        });
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        return NextResponse.json(
+          { error: "Failed to send email" },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ success: true, message: "Email sent successfully" });
     } else {
       return NextResponse.json(
-        { error: "Invalid action. Use 'unscan', 'updateType', or 'updateScanned'." },
+        { error: "Invalid action. Use 'unscan', 'updateType', 'updateScanned', or 'resendEmail'." },
         { status: 400 },
       );
     }
