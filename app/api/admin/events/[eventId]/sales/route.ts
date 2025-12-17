@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/app/lib/supabase";
 
 export async function GET(
-  req: Request,
   { params }: { params: Promise<{ eventId: string }> },
 ) {
   try {

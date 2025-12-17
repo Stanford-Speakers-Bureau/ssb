@@ -176,7 +176,6 @@ async function generateQRCodeDataURI(ticketId: string): Promise<string> {
   }
 }
 
-
 /**
  * Generate HTML email content for ticket confirmation
  */
