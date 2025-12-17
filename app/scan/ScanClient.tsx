@@ -108,7 +108,7 @@ export default function ScanClient() {
   useEffect(() => {
     const fetchLiveEvent = async () => {
       try {
-        const response = await fetch("/api/scan/live");
+        const response = await fetch("/api/events/live");
         const data = await response.json();
         setLiveEvent(data.liveEvent || null);
       } catch (error) {
