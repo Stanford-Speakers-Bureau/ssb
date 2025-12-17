@@ -179,14 +179,17 @@ export async function POST(req: Request) {
 
     // Check if Admin
     const auth = await verifyAdminRequest();
-    
+
     if (auth.authorized) {
       // --- ADMIN CREATE TICKET ---
       const body = await req.json();
       const { email, eventId, type } = body;
 
       if (!email || typeof email !== "string") {
-        return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Email is required" },
+          { status: 400 },
+        );
       }
 
       if (!eventId || typeof eventId !== "string") {
@@ -313,7 +316,10 @@ export async function POST(req: Request) {
       try {
         body = await req.json();
       } catch {
-        return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid JSON body" },
+          { status: 400 },
+        );
       }
 
       const { event_id, referral: referralFromBody } = body;
@@ -775,4 +781,3 @@ export async function DELETE(req: Request) {
     );
   }
 }
-

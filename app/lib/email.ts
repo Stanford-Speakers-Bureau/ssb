@@ -219,9 +219,10 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
 
   // Generate referral code from email
   const referralCode = generateReferralCode(data.email);
-  const referralUrl = referralCode && data.eventRoute
-    ? `${baseUrl}/events/${data.eventRoute}?referral_code=${referralCode}`
-    : null;
+  const referralUrl =
+    referralCode && data.eventRoute
+      ? `${baseUrl}/events/${data.eventRoute}?referral_code=${referralCode}`
+      : null;
 
   // Generate QR code
   const qrCodeDataURI = await generateQRCodeDataURI(ticketId);
@@ -509,9 +510,10 @@ function generateTicketEmailText(data: TicketEmailData): string {
 
   // Generate referral code from email
   const referralCode = generateReferralCode(data.email);
-  const referralUrl = referralCode && data.eventRoute
-    ? `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/events/${data.eventRoute}?referral_code=${referralCode}`
-    : null;
+  const referralUrl =
+    referralCode && data.eventRoute
+      ? `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/events/${data.eventRoute}?referral_code=${referralCode}`
+      : null;
 
   return `
 Ticket Confirmed!
@@ -541,7 +543,9 @@ If you have any questions, please contact us at ${FROM_EMAIL}
 export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   // Check if email sending is disabled
   if (process.env.DISABLE_EMAIL?.toLowerCase().trim() == "true") {
-    console.log(`Email sending is disabled (DISABLE_EMAIL=true). Skipping email to ${data.email}`);
+    console.log(
+      `Email sending is disabled (DISABLE_EMAIL=true). Skipping email to ${data.email}`,
+    );
     return;
   }
 

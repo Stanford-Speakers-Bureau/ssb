@@ -16,31 +16,29 @@ export function generateReferralCode(
  * Generate Google Calendar URL for an event
  * Supports both event display and ticket email use cases
  */
-export function generateGoogleCalendarUrl(
-  event: {
-    name?: string | null;
-    desc?: string | null;
-    start_time_date?: string | null;
-    venue?: string | null;
-    venue_link?: string | null;
-    route?: string | null;
-    // Ticket email fields (alternative to event fields)
-    eventName?: string | null;
-    eventStartTime?: string | null;
-    eventRoute?: string | null;
-    eventVenue?: string | null;
-    eventDescription?: string | null;
-    ticketId?: string;
-    ticketType?: string;
-  },
-): string {
+export function generateGoogleCalendarUrl(event: {
+  name?: string | null;
+  desc?: string | null;
+  start_time_date?: string | null;
+  venue?: string | null;
+  venue_link?: string | null;
+  route?: string | null;
+  // Ticket email fields (alternative to event fields)
+  eventName?: string | null;
+  eventStartTime?: string | null;
+  eventRoute?: string | null;
+  eventVenue?: string | null;
+  eventDescription?: string | null;
+  ticketId?: string;
+  ticketType?: string;
+}): string {
   // Support both event.start_time_date (for event pages) and eventStartTime (for ticket emails)
   const startTime = event.start_time_date || event.eventStartTime;
   if (!startTime) return "";
 
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
-  
+
   // Use route from event or ticket email fields
   const route = event.route || event.eventRoute;
   const eventUrl = route ? `${baseUrl}/events/${route}` : baseUrl;
@@ -61,9 +59,10 @@ export function generateGoogleCalendarUrl(
   const title = encodeURIComponent(
     `Stanford Speakers Bureau: ${eventName || "Speaker Event"}`,
   );
-  
+
   // Build details - support both event desc and ticket-specific description
-  let details = event.desc || event.eventDescription || "Stanford Speakers Bureau event";
+  let details =
+    event.desc || event.eventDescription || "Stanford Speakers Bureau event";
   if (eventUrl) {
     details += `\n\nView Event: ${eventUrl}`;
   }
@@ -75,11 +74,9 @@ export function generateGoogleCalendarUrl(
     details += "\nTicket Type: VIP";
   }
   const encodedDetails = encodeURIComponent(details);
-  
+
   // Use venue from event or ticket email fields
-  const location = encodeURIComponent(
-    event.venue || event.eventVenue || "",
-  );
+  const location = encodeURIComponent(event.venue || event.eventVenue || "");
   const start = formatGoogleDate(startDate);
   const end = formatGoogleDate(endDate);
 

@@ -240,7 +240,7 @@ export default function ScanClient() {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
-      
+
       // Clear status after 3 seconds even on error
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);

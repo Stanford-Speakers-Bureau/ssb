@@ -134,8 +134,11 @@ export default function TicketButton({
           // Confetti on successful ticket creation - full screen coverage with delays
           void import("canvas-confetti").then(({ default: confetti }) => {
             // CSP may block blob: worker scripts; avoid workers so this works under strict CSP.
-            const fire = confetti.create(undefined, { resize: true, useWorker: false });
-            
+            const fire = confetti.create(undefined, {
+              resize: true,
+              useWorker: false,
+            });
+
             // Center burst - massive (immediate)
             fire({
               particleCount: 300,
@@ -145,7 +148,7 @@ export default function TicketButton({
               origin: { y: 0.5 },
               zIndex: 9999,
             });
-            
+
             // Top center - raining down (100ms delay)
             setTimeout(() => {
               fire({
@@ -157,7 +160,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 100);
-            
+
             // Bottom center - shooting up (200ms delay)
             setTimeout(() => {
               fire({
@@ -169,7 +172,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 200);
-            
+
             // Left side - full height coverage (300ms delay)
             setTimeout(() => {
               fire({
@@ -182,7 +185,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 300);
-            
+
             // Right side - full height coverage (400ms delay)
             setTimeout(() => {
               fire({
@@ -195,7 +198,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 400);
-            
+
             // Top-left corner (500ms delay)
             setTimeout(() => {
               fire({
@@ -208,7 +211,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 500);
-            
+
             // Top-right corner (600ms delay)
             setTimeout(() => {
               fire({
@@ -221,7 +224,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 600);
-            
+
             // Bottom-left corner (700ms delay)
             setTimeout(() => {
               fire({
@@ -234,7 +237,7 @@ export default function TicketButton({
                 zIndex: 9999,
               });
             }, 700);
-            
+
             // Bottom-right corner (800ms delay)
             setTimeout(() => {
               fire({

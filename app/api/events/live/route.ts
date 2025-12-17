@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import {getSupabaseClient, verifyAdminOrScannerRequest} from "@/app/lib/supabase";
+import {
+  getSupabaseClient,
+  verifyAdminOrScannerRequest,
+} from "@/app/lib/supabase";
 
 /**
  * Public endpoint to check if there's a live event
@@ -37,8 +40,7 @@ export async function GET() {
         },
         { status: 200 },
       );
-    }
-    else {
+    } else {
       return NextResponse.json(
         {
           liveEvent: {
@@ -53,7 +55,6 @@ export async function GET() {
         { status: 200 },
       );
     }
-
   } catch (error) {
     console.error("Live event fetch error:", error);
     return NextResponse.json(

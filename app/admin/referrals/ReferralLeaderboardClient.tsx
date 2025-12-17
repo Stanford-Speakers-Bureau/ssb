@@ -57,9 +57,7 @@ export default function ReferralLeaderboardClient({
           params.append("eventId", selectedEventId);
         }
 
-        const response = await fetch(
-          `/api/referrals?${params}`,
-        );
+        const response = await fetch(`/api/referrals?${params}`);
 
         if (!response.ok) {
           const errorData = await response.json();
