@@ -40,6 +40,7 @@ export default function ScanClient() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
   const stopInFlightRef = useRef<Promise<void> | null>(null);
+  const statusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopScanner = useCallback(async () => {
     // Idempotent stop: if we already stopped or are stopping, reuse that.
@@ -193,7 +194,12 @@ export default function ScanClient() {
     lastScannedRef.current = id;
     scanCooldownRef.current = now;
 
-    // Don't clear status/ticketInfo - keep showing until new scan completes
+    // Clear any existing timeout
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = null;
+    }
+
     // Don't pause scanner - keep it running to avoid showing "paused" message
 
     setIsProcessingScan(true);
@@ -220,10 +226,24 @@ export default function ScanClient() {
           setTicketInfo(null);
         }
       }
+
+      // Clear status after 3 seconds
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
+      
+      // Clear status after 3 seconds even on error
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
     } finally {
       setIsProcessingScan(false);
     }
@@ -370,6 +390,15 @@ export default function ScanClient() {
       void stopScanner();
     };
   }, [liveEvent, cameraPermission, cameraStarted, startCamera, stopScanner]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const getStatusText = () => {
     if (status === "scanned") {
@@ -521,13 +550,34 @@ export default function ScanClient() {
                   )}
               </div>
             ) : (
-              <p
-                className={`text-sm sm:text-base md:text-lg mt-1 sm:mt-2 ${
-                  status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
-                }`}
-              >
-                No event is currently live. Scanning is disabled.
-              </p>
+              <div className="mt-2 sm:mt-4">
+                <div
+                  className={`text-center p-4 sm:p-6 rounded-xl ${
+                    status
+                      ? "bg-transparent border-0"
+                      : "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-500/50"
+                  }`}
+                >
+                  <p
+                    className={`font-semibold mb-2 text-base sm:text-lg ${
+                      status
+                        ? getTextColor()
+                        : "text-yellow-600 dark:text-yellow-400"
+                    }`}
+                  >
+                    No Live Event
+                  </p>
+                  <p
+                    className={`text-sm sm:text-base ${
+                      status
+                        ? getTextColor()
+                        : "text-zinc-600 dark:text-zinc-400"
+                    }`}
+                  >
+                    No event is currently live. Scanning is disabled.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
