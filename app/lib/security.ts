@@ -4,6 +4,7 @@ export const ALLOWED_REDIRECTS = [
   "/suggest",
   "/admin",
   "/account",
+  "/scan",
   "/",
 ];
 
