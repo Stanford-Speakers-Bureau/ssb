@@ -1,27 +1,10 @@
 import type { NextConfig } from "next";
 import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : null;
-
-const remotePatterns: RemotePattern[] = [
-  {
-    loader: "custom",
-    loaderFile: "./image-loader.ts",
-  },
-];
-
-if (supabaseHostname) {
-  remotePatterns.push({
-    protocol: "https",
-    hostname: supabaseHostname,
-    pathname: "/storage/v1/object/**",
-  });
-}
-
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns,
+    loader: "custom",
+    loaderFile: "./image-loader.ts",
   },
   async redirects() {
     return [
