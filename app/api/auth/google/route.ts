@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../lib/supabase";
+import { isValidRedirect } from "../../../lib/security";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  // this is not an issue because we are checking redirect links in supabase
-  const redirectTo = searchParams.get("redirect_to") || "/upcoming-speakers";
+  const redirectToParam =
+    searchParams.get("redirect_to") || "/upcoming-speakers";
+
+  // Validate redirect path to prevent open redirect attacks
+  const redirectTo = isValidRedirect(redirectToParam)
+    ? redirectToParam
+    : "/upcoming-speakers";
 
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   const host = req.headers.get("host") || "localhost:3000";

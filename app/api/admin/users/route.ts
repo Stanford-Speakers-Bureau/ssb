@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/app/lib/supabase";
+import { isValidEmail, isValidUUID } from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +28,14 @@ export async function POST(req: Request) {
       if (!email) {
         return NextResponse.json(
           { error: "Email is required" },
+          { status: 400 },
+        );
+      }
+
+      // Validate email format
+      if (!isValidEmail(email)) {
+        return NextResponse.json(
+          { error: "Invalid email format" },
           { status: 400 },
         );
       }
@@ -89,6 +98,14 @@ export async function POST(req: Request) {
       // Remove
       if (!id) {
         return NextResponse.json({ error: "ID is required" }, { status: 400 });
+      }
+
+      // Validate UUID format
+      if (!isValidUUID(id)) {
+        return NextResponse.json(
+          { error: "Invalid user ID format" },
+          { status: 400 },
+        );
       }
 
       const { data: existing } = await auth

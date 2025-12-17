@@ -5,6 +5,7 @@ import {
 } from "../../lib/supabase";
 import { NOTIFY_MESSAGES } from "../../lib/constants";
 import { notifyRatelimit, checkRateLimit } from "../../lib/ratelimit";
+import { isValidUUID } from "../../lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -22,6 +23,14 @@ export async function POST(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_MISSING_SPEAKER_ID },
+        { status: 400 },
+      );
+    }
+
+    // Validate UUID format
+    if (!isValidUUID(speaker_id)) {
+      return NextResponse.json(
+        { error: "Invalid event ID format" },
         { status: 400 },
       );
     }

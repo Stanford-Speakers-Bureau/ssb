@@ -3,6 +3,16 @@ import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
 import { randomUUID } from "crypto";
 import { fromZonedTime } from "date-fns-tz";
 import { PACIFIC_TIMEZONE } from "../../../lib/constants";
+import {
+  isValidUUID,
+  isValidUrl,
+  isValidRoute,
+  isValidCapacity,
+  isValidImageExtension,
+  isValidImageSize,
+  isValidDateString,
+  sanitizeString,
+} from "../../../lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -25,10 +35,89 @@ export async function POST(req: Request) {
     const banner = formData.get("banner") === "true";
     const imageFile = formData.get("image") as File | null;
 
+    // Validate ID if provided
+    if (id && !isValidUUID(id)) {
+      return NextResponse.json(
+        { error: "Invalid event ID format" },
+        { status: 400 },
+      );
+    }
+
+    // Validate capacity
+    if (capacity && !isValidCapacity(capacity)) {
+      return NextResponse.json(
+        { error: "Invalid capacity value" },
+        { status: 400 },
+      );
+    }
+
+    // Validate venue_link URL
+    if (venue_link && !isValidUrl(venue_link)) {
+      return NextResponse.json(
+        { error: "Invalid venue link URL" },
+        { status: 400 },
+      );
+    }
+
+    // Validate route slug
+    if (route && !isValidRoute(route)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid route format. Use only lowercase letters, numbers, hyphens, and underscores.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Validate dates
+    if (release_date && !isValidDateString(release_date)) {
+      return NextResponse.json(
+        { error: "Invalid release date format" },
+        { status: 400 },
+      );
+    }
+    if (start_time_date && !isValidDateString(start_time_date)) {
+      return NextResponse.json(
+        { error: "Invalid start time date format" },
+        { status: 400 },
+      );
+    }
+    if (doors_open && !isValidDateString(doors_open)) {
+      return NextResponse.json(
+        { error: "Invalid doors open date format" },
+        { status: 400 },
+      );
+    }
+
+    // Sanitize text inputs
+    const sanitizedName = sanitizeString(name, 500);
+    const sanitizedDesc = sanitizeString(desc, 5000);
+    const sanitizedVenue = sanitizeString(venue, 200);
+
     let imgName: string | null = null;
 
-    // Handle image upload
+    // Handle image upload with validation
     if (imageFile && imageFile.size > 0) {
+      // Validate file size
+      if (!isValidImageSize(imageFile.size)) {
+        return NextResponse.json(
+          { error: "Image file too large. Maximum size is 5MB." },
+          { status: 400 },
+        );
+      }
+
+      // Validate file extension
+      if (!isValidImageExtension(imageFile.name)) {
+        return NextResponse.json(
+          {
+            error:
+              "Invalid image file type. Allowed types: JPG, PNG, GIF, WebP.",
+          },
+          { status: 400 },
+        );
+      }
+
       const fileExt = imageFile.name.split(".").pop();
       const fileName = `${Date.now()}-${randomUUID()}.${fileExt}`;
 
@@ -51,10 +140,10 @@ export async function POST(req: Request) {
     }
 
     const eventData: Record<string, unknown> = {
-      name: name || null,
-      desc: desc || null,
-      capacity: capacity ? parseInt(capacity) : 0,
-      venue: venue || null,
+      name: sanitizedName,
+      desc: sanitizedDesc,
+      capacity: capacity ? parseInt(capacity, 10) : 0,
+      venue: sanitizedVenue,
       venue_link: venue_link || null,
       release_date: release_date
         ? fromZonedTime(release_date, PACIFIC_TIMEZONE).toISOString()
@@ -144,6 +233,14 @@ export async function DELETE(req: Request) {
     if (!id) {
       return NextResponse.json(
         { error: "Event ID is required" },
+        { status: 400 },
+      );
+    }
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: "Invalid event ID format" },
         { status: 400 },
       );
     }

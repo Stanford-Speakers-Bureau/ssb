@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "../../../lib/supabase";
 import { getAdminSuggestions } from "../../../admin/suggest/data";
+import { isValidUUID, sanitizeString } from "../../../lib/validation";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -32,6 +33,14 @@ export async function POST(req: Request) {
 
     if (!id || !action || !["approve", "reject"].includes(action)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: "Invalid suggestion ID format" },
+        { status: 400 },
+      );
     }
 
     const { error } = await auth
@@ -76,6 +85,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: "Invalid suggestion ID format" },
+        { status: 400 },
+      );
+    }
+
     // Handle marking as duplicate
     if (typeof duplicate === "boolean") {
       const { error } = await auth
@@ -101,9 +118,22 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
+    // Sanitize and validate speaker name
+    const sanitizedSpeaker = sanitizeString(speaker, MAX_SPEAKER_LENGTH);
+    if (!sanitizedSpeaker || sanitizedSpeaker.length < MIN_SPEAKER_LENGTH) {
+      return NextResponse.json(
+        {
+          error: `Speaker name must be between ${MIN_SPEAKER_LENGTH} and ${MAX_SPEAKER_LENGTH} characters`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const formattedSpeaker = toTitleCase(sanitizedSpeaker);
+
     const { error } = await auth
       .adminClient!.from("suggest")
-      .update({ speaker: speaker })
+      .update({ speaker: formattedSpeaker })
       .eq("id", id);
 
     if (error) {
@@ -143,6 +173,14 @@ export async function PUT(req: Request) {
       typeof targetId !== "string"
     ) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    // Validate UUID formats
+    if (!isValidUUID(sourceId) || !isValidUUID(targetId)) {
+      return NextResponse.json(
+        { error: "Invalid suggestion ID format" },
+        { status: 400 },
+      );
     }
 
     const client = auth.adminClient!;

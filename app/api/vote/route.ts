@@ -4,6 +4,7 @@ import {
   getSupabaseClient,
 } from "../../lib/supabase";
 import { voteRatelimit, checkRateLimit } from "../../lib/ratelimit";
+import { isValidUUID } from "../../lib/validation";
 
 export const VOTE_MESSAGES = {
   SUCCESS: "Vote recorded!",
@@ -53,6 +54,14 @@ export async function POST(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_MISSING_SPEAKER_ID },
+        { status: 400 },
+      );
+    }
+
+    // Validate UUID format
+    if (!isValidUUID(speaker_id)) {
+      return NextResponse.json(
+        { error: "Invalid speaker ID format" },
         { status: 400 },
       );
     }
@@ -177,6 +186,14 @@ export async function DELETE(req: Request) {
     if (!speaker_id || typeof speaker_id !== "string") {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_MISSING_SPEAKER_ID },
+        { status: 400 },
+      );
+    }
+
+    // Validate UUID format
+    if (!isValidUUID(speaker_id)) {
+      return NextResponse.json(
+        { error: "Invalid speaker ID format" },
         { status: 400 },
       );
     }
