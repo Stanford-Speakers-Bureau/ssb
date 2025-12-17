@@ -161,7 +161,7 @@ async function generateQRCodeDataURI(ticketId: string): Promise<string> {
     return await QRCode.toDataURL(ticketId, {
       errorCorrectionLevel: "H",
       type: "image/png",
-      width: 300,
+      width: 400,
       margin: 2,
       color: {
         dark: "#000000",
@@ -313,8 +313,8 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
         padding: 12px !important;
       }
       .qr-code-img {
-        width: 200px !important;
-        height: 200px !important;
+        width: 280px !important;
+        height: 280px !important;
       }
       .button {
         padding: 10px 20px !important;
@@ -360,36 +360,13 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
     <!-- Content -->
     <tr>
       <td align="center" class="email-container" style="padding: 40px 20px; max-width: 900px; width: 100%;">
-        <div class="email-content" style="padding: 0;">
+        <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           <p style="margin: 0 0 24px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
             Thank you for your ticket purchase. Your ticket has been confirmed!
           </p>
           
-          ${
-            googleCalendarUrl
-              ? `
-          <!-- Add to Google Calendar Button -->
-          <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-            <tr>
-              <td align="center" class="button-wrapper" style="padding: 0;">
-                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background-color: #4285F4; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  Add to Google Calendar
-                </a>
-              </td>
-            </tr>
-          </table>
-          `
-              : ""
-          }
-          
           <!-- Ticket Details Card -->
-          <div class="details-card" style="background-color: #18181b; border: 1px solid #3f3f46; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;">
             <h2 class="details-title" style="margin: 0 0 20px 0; color: #ffffff; font-size: 22px; font-weight: 600;">Event Details</h2>
             
             <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -426,16 +403,30 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-family: monospace; word-break: break-all;">${ticketId}</td>
               </tr>
             </table>
+            ${
+              eventUrl
+                ? `
+            <!-- View Event Button -->
+            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+              <tr>
+                <td align="center" class="button-wrapper" style="padding: 0;">
+                  <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">View Event Details</a>
+                </td>
+              </tr>
+            </table>
+            `
+                : ""
+            }
           </div>
           
           ${
             qrCodeDataURI
               ? `
           <!-- QR Code Section -->
-          <div class="qr-section" style="background-color: #18181b; border: 1px solid #3f3f46; border-radius: 8px; padding: 24px; margin-bottom: 24px; text-align: center;">
+          <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;">
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: ${isVIP ? "20px" : "16px"}; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
-              <img src="${qrCodeDataURI}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 250px; height: 250px; max-width: 100%; height: auto;" />
+              <img src="${qrCodeDataURI}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; height: 350px; max-width: 100%; height: auto;" />
             </div>
             ${
               isVIP
@@ -455,25 +446,28 @@ async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
           `
               : ""
           }
+
+          <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
+            Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
+          </p>
           
           ${
-            eventUrl
+            googleCalendarUrl
               ? `
-          <!-- View Event Button -->
+          <!-- Add to Google Calendar Button -->
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
               <td align="center" class="button-wrapper" style="padding: 0;">
-                <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">View Event Details</a>
+                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #4285F4; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  <img src="${baseUrl}/g.png" alt="Google" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
+                  Add to Google Calendar
+                </a>
               </td>
             </tr>
           </table>
           `
               : ""
           }
-
-          <p style="margin: 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-            Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
-          </p>
         </div>
       </td>
     </tr>
