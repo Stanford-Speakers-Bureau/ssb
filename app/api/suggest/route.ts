@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../lib/supabase";
-import { SUGGEST_MESSAGES } from "../../lib/constants";
-import { checkRateLimit, suggestRatelimit } from "../../lib/ratelimit";
+} from "@/app/lib/supabase";
+import { SUGGEST_MESSAGES } from "@/app/lib/constants";
+import { checkRateLimit, suggestRatelimit } from "@/app/lib/ratelimit";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;

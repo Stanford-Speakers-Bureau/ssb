@@ -1,4 +1,7 @@
-import { createServerSupabaseClient, getSupabaseClient } from "../lib/supabase";
+import {
+  createServerSupabaseClient,
+  getSupabaseClient,
+} from "@/app/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
 import SuggestForm from "./SuggestForm";

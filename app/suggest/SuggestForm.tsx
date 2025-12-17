@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { SUGGEST_MESSAGES } from "../lib/constants";
+import { SUGGEST_MESSAGES } from "@/app/lib/constants";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 

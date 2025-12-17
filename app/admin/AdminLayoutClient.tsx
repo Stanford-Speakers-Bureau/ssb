@@ -33,7 +33,7 @@ export default function AdminLayoutClient({
               prefetch={false}
               className="flex items-center gap-3"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-orange-500 rounded flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-rose-500 to-orange-500 rounded flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -88,11 +88,6 @@ export default function AdminLayoutClient({
           </div>
 
           <div className="flex items-center gap-4">
-            {userEmail && (
-              <span className="text-zinc-500 text-sm hidden sm:block">
-                {userEmail}
-              </span>
-            )}
             <Link
               href="/"
               prefetch={false}

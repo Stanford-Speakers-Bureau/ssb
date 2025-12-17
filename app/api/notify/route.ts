@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../lib/supabase";
-import { NOTIFY_MESSAGES } from "../../lib/constants";
-import { notifyRatelimit, checkRateLimit } from "../../lib/ratelimit";
-import { isValidUUID } from "../../lib/validation";
+} from "@/app/lib/supabase";
+import { NOTIFY_MESSAGES } from "@/app/lib/constants";
+import { notifyRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
+import { isValidUUID } from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {

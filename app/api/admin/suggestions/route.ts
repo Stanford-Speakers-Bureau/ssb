@@ -1,23 +1,17 @@
 import { NextResponse } from "next/server";
-import { verifyAdminRequest } from "../../../lib/supabase";
-import { getAdminSuggestions } from "../../../admin/suggest/data";
-import { isValidUUID, sanitizeString } from "../../../lib/validation";
+import { verifyAdminRequest } from "@/app/lib/supabase";
+import { getAdminSuggestions } from "@/app/admin/suggest/data";
+import { isValidUUID } from "@/app/lib/validation";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
 
-function sanitizeInput(input: string): string {
-  return input
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function toTitleCase(input: string): string {
   return input
-    .toLowerCase()
     .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) =>
+      word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : "",
+    )
     .join(" ");
 }
 
@@ -118,9 +112,11 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    // Sanitize and validate speaker name
-    const sanitizedSpeaker = sanitizeString(speaker, MAX_SPEAKER_LENGTH);
-    if (!sanitizedSpeaker || sanitizedSpeaker.length < MIN_SPEAKER_LENGTH) {
+    // Validate speaker name length
+    if (
+      speaker.length < MIN_SPEAKER_LENGTH ||
+      speaker.length > MAX_SPEAKER_LENGTH
+    ) {
       return NextResponse.json(
         {
           error: `Speaker name must be between ${MIN_SPEAKER_LENGTH} and ${MAX_SPEAKER_LENGTH} characters`,
@@ -129,7 +125,7 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const formattedSpeaker = toTitleCase(sanitizedSpeaker);
+    const formattedSpeaker = toTitleCase(speaker);
 
     const { error } = await auth
       .adminClient!.from("suggest")

@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { PACIFIC_TIMEZONE } from "../../lib/constants";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
+import TicketSalesGraph from "./TicketSalesGraph";
 
 function formatDateTimeForInput(dateString: string | null): string {
   if (!dateString) return "";
@@ -48,8 +49,10 @@ export type Event = {
   created_at: string;
   name: string | null;
   desc: string | null;
+  tagline: string | null;
   img: string | null;
   capacity: number;
+  tickets?: number | null;
   venue: string | null;
   reserved: number | null;
   venue_link: string | null;
@@ -59,12 +62,16 @@ export type Event = {
   doors_open: string | null;
   route: string | null;
   image_url?: string | null;
+  live?: boolean | null;
 };
 
 type FormData = {
   name: string;
   desc: string;
+  tagline: string;
   capacity: string;
+  tickets: string;
+  reserved: string;
   venue: string;
   venue_link: string;
   release_date: string;
@@ -77,7 +84,10 @@ type FormData = {
 const emptyForm: FormData = {
   name: "",
   desc: "",
+  tagline: "",
   capacity: "",
+  tickets: "",
+  reserved: "",
   venue: "",
   venue_link: "",
   release_date: "",
@@ -147,6 +157,7 @@ function EventCardImage({ event }: EventCardImageProps) {
         }`}
         onLoad={() => setIsLoading(false)}
         priority
+        unoptimized
       />
     </>
   );
@@ -164,6 +175,7 @@ export default function AdminEventsClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleEdit(event: Event) {
@@ -171,7 +183,10 @@ export default function AdminEventsClient({
     setFormData({
       name: event.name || "",
       desc: event.desc || "",
+      tagline: event.tagline || "",
       capacity: event.capacity?.toString() || "",
+      tickets: event.tickets?.toString() || "",
+      reserved: event.reserved?.toString() || "",
       venue: event.venue || "",
       venue_link: event.venue_link || "",
       release_date: formatDateTimeForInput(event.release_date),
@@ -223,7 +238,10 @@ export default function AdminEventsClient({
       const submitData = new FormData();
       submitData.append("name", formData.name);
       submitData.append("desc", formData.desc);
+      submitData.append("tagline", formData.tagline);
       submitData.append("capacity", formData.capacity);
+      submitData.append("tickets", formData.tickets);
+      submitData.append("reserved", formData.reserved);
       submitData.append("venue", formData.venue);
       submitData.append("venue_link", formData.venue_link);
       submitData.append("release_date", formData.release_date);
@@ -273,6 +291,48 @@ export default function AdminEventsClient({
       setError("Failed to save event. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleToggleLive(event: Event) {
+    const newLiveStatus = !event.live;
+
+    if (
+      newLiveStatus &&
+      !confirm(
+        `Set "${event.name || "this event"}" as live? This will make all other events not live.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/admin/events", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: event.id, live: newLiveStatus }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.event) {
+        const updatedEvent = data.event as Event;
+        setEvents((prev) =>
+          prev.map((e) =>
+            e.id === updatedEvent.id ? updatedEvent : { ...e, live: false },
+          ),
+        );
+        setSuccess(
+          newLiveStatus
+            ? "Event set to live successfully!"
+            : "Event set to not live successfully!",
+        );
+      } else {
+        setError(data.error || "Failed to update live status");
+      }
+    } catch (error) {
+      console.error("Failed to toggle live status:", error);
+      setError("Failed to update live status. Please try again.");
     }
   }
 
@@ -491,6 +551,36 @@ export default function AdminEventsClient({
                 />
               </div>
 
+              {/* Tickets Sold */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Tickets Sold
+                </label>
+                <input
+                  type="number"
+                  value={formData.tickets}
+                  disabled={true}
+                  placeholder="e.g., 250"
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 cursor-not-allowed"
+                />
+              </div>
+
+              {/* Reserved Seats (legacy / optional) */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Reserved Seats (optional)
+                </label>
+                <input
+                  type="number"
+                  value={formData.reserved}
+                  onChange={(e) =>
+                    setFormData({ ...formData, reserved: e.target.value })
+                  }
+                  placeholder="e.g., 50"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+                />
+              </div>
+
               {/* Venue */}
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -589,6 +679,22 @@ export default function AdminEventsClient({
                   Show in Banner
                 </label>
               </div>
+            </div>
+
+            {/* Tagline */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Tagline
+              </label>
+              <input
+                type="text"
+                value={formData.tagline}
+                onChange={(e) =>
+                  setFormData({ ...formData, tagline: e.target.value })
+                }
+                placeholder="Short tagline for the speaker..."
+                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
+              />
             </div>
 
             {/* Description */}
@@ -747,100 +853,310 @@ export default function AdminEventsClient({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-colors group"
-            >
-              <div className="relative h-48 bg-zinc-800">
-                <EventCardImage event={event} />
-                {event.banner && (
-                  <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full z-10">
-                    Banner
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-colors group"
+              >
+                <div className="relative h-48 bg-zinc-800">
+                  <EventCardImage event={event} />
+                  {event.banner && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full z-10">
+                      Banner
+                    </div>
+                  )}
+                  {event.live && (
+                    <div className="absolute top-3 right-3 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-full z-10 flex items-center gap-1">
+                      <svg
+                        className="w-3 h-3"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      LIVE
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-white mb-1 truncate">
+                    {event.name || "Mystery Speaker"}
+                  </h3>
+                  <div className="flex items-center gap-3 text-sm text-zinc-500 mb-4">
+                    <span className="flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      {formatDisplayDate(event.start_time_date)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                      {event.capacity}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setViewingEvent(event)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 rounded text-sm font-medium transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                      View Sales
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleLive(event);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors ${
+                        event.live
+                          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                          : "bg-zinc-800 text-white hover:bg-zinc-700"
+                      }`}
+                    >
+                      {event.live ? (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 012 0v4a1 1 0 11-2 0V7zM12 9a1 1 0 10-2 0v2a1 1 0 102 0V9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Set Not Live
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Set Live
+                        </>
+                      )}
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(event);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 text-white rounded text-sm font-medium hover:bg-zinc-700 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(event.id);
+                        }}
+                        className="px-4 py-2 text-rose-400 hover:bg-rose-500/10 rounded text-sm font-medium transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Event Detail Modal */}
+      {viewingEvent && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setViewingEvent(null)}
+        >
+          <div
+            className="bg-zinc-900 rounded-2xl border border-zinc-800 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-zinc-900 border-b border-zinc-800 p-6 flex items-center justify-between z-10">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">
+                  {viewingEvent.name || "Mystery Speaker"}
+                </h2>
+                <p className="text-sm text-zinc-400">
+                  {formatDisplayDate(viewingEvent.start_time_date)}
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingEvent(null)}
+                className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-lg"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Event Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-zinc-400">Capacity:</span>
+                  <span className="text-white ml-2 font-medium">
+                    {viewingEvent.capacity}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-zinc-400">Tickets Sold:</span>
+                  <span className="text-white ml-2 font-medium">
+                    {viewingEvent.tickets ?? viewingEvent.reserved ?? 0}
+                  </span>
+                </div>
+                {viewingEvent.venue && (
+                  <div className="col-span-2">
+                    <span className="text-zinc-400">Venue:</span>
+                    <span className="text-white ml-2 font-medium">
+                      {viewingEvent.venue}
+                    </span>
                   </div>
                 )}
               </div>
-              <div className="p-5">
-                <h3 className="text-lg font-semibold text-white mb-1 truncate">
-                  {event.name || "Mystery Speaker"}
-                </h3>
-                <div className="flex items-center gap-3 text-sm text-zinc-500 mb-4">
-                  <span className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {formatDisplayDate(event.start_time_date)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    {event.capacity}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEdit(event)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 text-white rounded text-sm font-medium hover:bg-zinc-700 transition-colors"
+
+              {/* Ticket Sales Graph */}
+              <TicketSalesGraph eventId={viewingEvent.id} />
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-4 border-t border-zinc-800">
+                <button
+                  onClick={() => {
+                    setViewingEvent(null);
+                    handleEdit(viewingEvent);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    className="px-4 py-2 text-rose-400 hover:bg-rose-500/10 rounded text-sm font-medium transition-colors"
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit Event
+                </button>
+                <button
+                  onClick={() => {
+                    if (
+                      confirm("Are you sure you want to delete this event?")
+                    ) {
+                      handleDelete(viewingEvent.id);
+                      setViewingEvent(null);
+                    }
+                  }}
+                  className="px-4 py-2 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

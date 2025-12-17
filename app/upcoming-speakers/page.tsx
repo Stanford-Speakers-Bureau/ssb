@@ -1,16 +1,15 @@
 import { Suspense } from "react";
-import UpcomingSpeakerCard from "../components/UpcomingSpeakerCard";
+import UpcomingSpeakerCard from "@/app/components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
 import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import {
   createServerSupabaseClient,
   formatEventDate,
   formatTime,
-  generateICalUrl,
   getSignedImageUrl,
   getSupabaseClient,
   isEventMystery,
-} from "../lib/supabase";
+} from "@/app/lib/supabase";
 
 type SanitizedEvent = {
   id: string;
@@ -20,9 +19,33 @@ type SanitizedEvent = {
   venue_link: string | null;
   name: string | null;
   desc: string | null;
+  tagline: string | null;
+  route: string | null;
   signedImageUrl: string | null;
   isMystery: boolean;
+  capacity: number | null;
+  ticketsSold: number | null;
+  reserved: number | null;
 };
+
+async function getTicketCount(eventId: string): Promise<number> {
+  try {
+    const supabase = getSupabaseClient();
+    const { count, error } = await supabase
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
+    if (error) {
+      console.error("Ticket count error:", error);
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const supabase = getSupabaseClient();
@@ -42,6 +65,9 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
     events.map(async (event) => {
       const isMystery = isEventMystery(event);
 
+      // Fetch ticket count for non-mystery events
+      const ticketsSold = isMystery ? null : await getTicketCount(event.id);
+
       // Only expose safe fields - never leak speaker info for mystery events
       return {
         id: event.id,
@@ -51,10 +77,15 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         venue_link: event.venue_link,
         name: isMystery ? null : event.name,
         desc: isMystery ? null : event.desc,
+        tagline: isMystery ? null : event.tagline,
+        route: isMystery ? null : event.route,
         signedImageUrl: isMystery
           ? null
           : await getSignedImageUrl(event.img, 60),
         isMystery,
+        capacity: isMystery ? null : (event.capacity ?? null),
+        ticketsSold: isMystery ? null : ticketsSold,
+        reserved: isMystery ? null : (event.reserved ?? null),
       };
     }),
   );
@@ -112,7 +143,7 @@ export default async function UpcomingSpeakers() {
                   header={
                     event.isMystery
                       ? "Speaker — To Be Announced"
-                      : event.desc || ""
+                      : event.tagline || ""
                   }
                   dateText={formatEventDate(event.start_time_date)}
                   doorsOpenText={
@@ -132,10 +163,14 @@ export default async function UpcomingSpeakers() {
                       ? "/speakers/mystery.jpg"
                       : event.signedImageUrl || "/speakers/mystery.jpg"
                   }
+                  ctaHref={event.isMystery ? "" : `/events/${event.route}`}
+                  ctaText={event.isMystery ? "" : "Get Tickets"}
                   mystery={event.isMystery}
-                  calendarUrl={event.isMystery ? "" : generateICalUrl(event)}
                   eventId={event.id}
                   isAlreadyNotified={userNotifications.has(event.id)}
+                  capacity={event.capacity}
+                  ticketsSold={event.ticketsSold}
+                  reserved={event.reserved}
                 />
               ))}
             </div>

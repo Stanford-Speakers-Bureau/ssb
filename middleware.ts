@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { getSupabaseClient } from "./app/lib/supabase";
 
 export const runtime = "experimental-edge";
 
@@ -16,7 +18,7 @@ function getAllowedOrigins(request: NextRequest): string[] {
   const host = request.headers.get("host") || "";
   const isProduction = process.env.NODE_ENV === "production";
 
-  const origins = [`https://${host}`, `http://${host}`];
+  const origins = [`https://${host}`];
 
   // Only allow localhost in development
   if (!isProduction) {
@@ -46,13 +48,101 @@ function isValidOrigin(request: NextRequest): boolean {
 }
 
 /**
- * Proxy to enforce security policies on API routes
+ * Check if user has scanner role and redirect to /scan if event is live
  */
-export function middleware(request: NextRequest) {
+async function handleScannerRedirect(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Skip redirect logic if already on /scan, /api, or /admin routes
+  if (pathname.startsWith("/scan") || pathname.startsWith("/admin")) {
+    return null;
+  }
+
+  try {
+    // Check if there's a live event
+    const adminClient = getSupabaseClient();
+    const { data: liveEvent } = await adminClient
+      .from("events")
+      .select("id")
+      .eq("live", true)
+      .single();
+
+    // If no live event, continue normally
+    if (!liveEvent) {
+      return null;
+    }
+
+    // Check if user has scanner role
+    let response = NextResponse.next();
+    const supabase = createServerClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll().map((cookie) => ({
+              name: cookie.name,
+              value: cookie.value,
+            }));
+          },
+          setAll(cookiesToSet) {
+            response = NextResponse.next();
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      },
+    );
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // If not authenticated, continue normally
+    if (!user?.email) {
+      return null;
+    }
+
+    // Check if user has scanner role
+    const { data: scannerRecord } = await adminClient
+      .from("roles")
+      .select("roles")
+      .eq("email", user.email)
+      .single();
+
+    const hasScannerRole =
+      scannerRecord?.roles?.split(",").includes("scanner") || false;
+
+    // If user has scanner role and there's a live event, redirect to /scan
+    if (hasScannerRole) {
+      return NextResponse.redirect(new URL("/scan", request.url));
+    }
+  } catch (error) {
+    // If any error occurs, continue normally
+    console.error("Scanner redirect error:", error);
+  }
+
+  return null;
+}
+
+/**
+ * Proxy to enforce security policies on API routes and handle redirects
+ */
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
-  // Skip validation for non-mutating methods
+  // Handle scanner redirect for non-API routes
+  if (!pathname.startsWith("/api")) {
+    const redirectResponse = await handleScannerRedirect(request);
+    if (redirectResponse) {
+      return redirectResponse;
+    }
+  }
+
+  // Skip validation for non-mutating methods on API routes
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
     return NextResponse.next();
   }
@@ -104,5 +194,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

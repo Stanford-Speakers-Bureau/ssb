@@ -39,6 +39,28 @@ export const notifyRatelimit = new Ratelimit({
 });
 
 /**
+ * Rate limiter for tickets
+ * 10 ticket operations per minute per user
+ */
+export const ticketRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60 s"),
+  prefix: "ratelimit:ticket",
+  analytics: true,
+});
+
+/**
+ * Rate limiter for referral validation
+ * 20 validations per minute per user
+ */
+export const referralValidateRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "60 s"),
+  prefix: "ratelimit:referral-validate",
+  analytics: true,
+});
+
+/**
  * Check rate limit and return error response if exceeded
  * Returns null if rate limit is OK, or a NextResponse if rate limited
  */

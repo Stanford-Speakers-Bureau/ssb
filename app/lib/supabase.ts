@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { generateReferralCode } from "./utils";
 
 /**
  * Simple Supabase client for public data queries (bypasses RLS with service key)
@@ -17,8 +18,14 @@ export type Event = {
   created_at: string;
   name: string | null;
   desc: string | null;
+  tagline: string | null;
   img: string | null;
   capacity: number;
+  /**
+   * Number of tickets sold so far.
+   * (Newer schema field; fall back to `reserved` in older rows/clients.)
+   */
+  tickets?: number | null;
   venue: string | null;
   reserved: number | null;
   venue_link: string | null;
@@ -65,6 +72,43 @@ export async function verifyAdminRequest(): Promise<AdminVerificationResult> {
     .single();
 
   if (!adminRecord || !adminRecord.roles?.split(",").includes("admin")) {
+    return { authorized: false, error: "Not authorized" };
+  }
+
+  return { authorized: true, email: user.email, adminClient };
+}
+
+/**
+ * Verify that the current request is authenticated and belongs to either an admin or scanner user.
+ * Returns the admin client for privileged database access when authorized.
+ */
+export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user?.email) {
+    return { authorized: false, error: "Not authenticated" };
+  }
+
+  const adminClient = getSupabaseClient();
+  const { data: roleRecord } = await adminClient
+    .from("roles")
+    .select("roles")
+    .eq("email", user.email)
+    .single();
+
+  if (!roleRecord) {
+    return { authorized: false, error: "Not authorized" };
+  }
+
+  const roles = roleRecord.roles?.split(",") || [];
+  const isAdmin = roles.includes("admin");
+  const isScanner = roles.includes("scanner");
+
+  if (!isAdmin && !isScanner) {
     return { authorized: false, error: "Not authorized" };
   }
 
@@ -264,9 +308,15 @@ export function isEventMystery(event: {
   release_date: string | null;
   name: string | null;
 }): boolean {
+  // return false; // ONLY FOR TESTING
   const now = new Date();
-  const releaseDate = event.release_date ? new Date(event.release_date) : null;
-  return releaseDate ? now < releaseDate : !event.name;
+  const releaseDateStr = event.release_date;
+  if (releaseDateStr == null) {
+    return !event.name;
+  }
+  // TypeScript should narrow here, but if not, we explicitly assert
+  const releaseDate = new Date(releaseDateStr as string);
+  return now < releaseDate;
 }
 
 /**
@@ -286,4 +336,55 @@ export async function getEventByRoute(route: string): Promise<Event | null> {
   }
 
   return data;
+}
+
+/**
+ * Generate a referral code from a user's email address.
+ * Re-exported from utils.ts for backward compatibility.
+ * @deprecated Import from "./utils" instead for use in Client Components.
+ */
+export { generateReferralCode };
+
+/**
+ * Update referral records when a ticket is created.
+ * Ensures a referral record exists for the user's referral code.
+ *
+ * This function is non-blocking and logs errors without throwing.
+ */
+export async function updateReferralRecords(
+  eventId: string,
+  userEmail: string,
+): Promise<void> {
+  try {
+    const adminClient = getSupabaseClient();
+    const userReferralCode = generateReferralCode(userEmail);
+
+    // Ensure the current user has a referral record for this event (for sharing)
+    if (userReferralCode) {
+      const { data: userReferral } = await adminClient
+        .from("referrals")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("referral_code", userReferralCode)
+        .single();
+
+      if (!userReferral) {
+        // Create referral record for the user
+        const { error: insertError } = await adminClient
+          .from("referrals")
+          .insert({
+            event_id: eventId,
+            referral_code: userReferralCode,
+            count: 0,
+          });
+
+        if (insertError) {
+          console.error("Error creating user referral record:", insertError);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error updating referral records:", error);
+    // Don't throw - this is a non-critical operation
+  }
 }

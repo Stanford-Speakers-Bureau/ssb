@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-} from "../../lib/supabase";
-import { voteRatelimit, checkRateLimit } from "../../lib/ratelimit";
-import { isValidUUID } from "../../lib/validation";
+} from "@/app/lib/supabase";
+import { voteRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
+import { isValidUUID } from "@/app/lib/validation";
 
 export const VOTE_MESSAGES = {
   SUCCESS: "Vote recorded!",

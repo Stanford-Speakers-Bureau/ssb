@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getSignedImageUrl, verifyAdminRequest } from "../../../lib/supabase";
+import { getSignedImageUrl, verifyAdminRequest } from "@/app/lib/supabase";
 import { randomUUID } from "crypto";
 import { fromZonedTime } from "date-fns-tz";
-import { PACIFIC_TIMEZONE } from "../../../lib/constants";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import {
   isValidUUID,
   isValidUrl,
@@ -11,8 +11,7 @@ import {
   isValidImageExtension,
   isValidImageSize,
   isValidDateString,
-  sanitizeString,
-} from "../../../lib/validation";
+} from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +24,10 @@ export async function POST(req: Request) {
     const id = formData.get("id") as string | null;
     const name = formData.get("name") as string;
     const desc = formData.get("desc") as string;
+    const tagline = formData.get("tagline") as string;
     const capacity = formData.get("capacity") as string;
+    const tickets = formData.get("tickets") as string;
+    const reserved = formData.get("reserved") as string;
     const venue = formData.get("venue") as string;
     const venue_link = formData.get("venue_link") as string;
     const release_date = formData.get("release_date") as string;
@@ -90,11 +92,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Sanitize text inputs
-    const sanitizedName = sanitizeString(name, 500);
-    const sanitizedDesc = sanitizeString(desc, 5000);
-    const sanitizedVenue = sanitizeString(venue, 200);
-
     let imgName: string | null = null;
 
     // Handle image upload with validation
@@ -140,10 +137,19 @@ export async function POST(req: Request) {
     }
 
     const eventData: Record<string, unknown> = {
-      name: sanitizedName,
-      desc: sanitizedDesc,
-      capacity: capacity ? parseInt(capacity, 10) : 0,
-      venue: sanitizedVenue,
+      name: name || null,
+      desc: desc || null,
+      tagline: tagline || null,
+      capacity: capacity ? parseInt(capacity) : 0,
+      // tickets = tickets sold so far (new field)
+      tickets: tickets
+        ? parseInt(tickets)
+        : reserved
+          ? parseInt(reserved)
+          : null,
+      // reserved is legacy (kept for backwards compatibility / older rows)
+      reserved: reserved ? parseInt(reserved) : null,
+      venue: venue || null,
       venue_link: venue_link || null,
       release_date: release_date
         ? fromZonedTime(release_date, PACIFIC_TIMEZONE).toISOString()
@@ -213,6 +219,92 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, event: eventWithImage });
   } catch (error) {
     console.error("Event save error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const auth = await verifyAdminRequest();
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, live } = body;
+
+    if (!id || typeof live !== "boolean") {
+      return NextResponse.json(
+        { error: "Event ID and live status are required" },
+        { status: 400 },
+      );
+    }
+
+    const adminClient = auth.adminClient!;
+
+    if (live) {
+      // Set all events to not live first
+      await adminClient.from("events").update({ live: false }).neq("id", id);
+
+      // Set the specified event to live
+      const { data, error } = await adminClient
+        .from("events")
+        .update({ live: true })
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("Event live update error:", error);
+        return NextResponse.json(
+          { error: "Failed to update live status" },
+          { status: 500 },
+        );
+      }
+
+      const eventWithImage = data
+        ? {
+            ...data,
+            image_url: data.img
+              ? await getSignedImageUrl(data.img, 60 * 60)
+              : null,
+          }
+        : null;
+
+      return NextResponse.json({ success: true, event: eventWithImage });
+    } else {
+      // Just set this event to not live
+      const { data, error } = await adminClient
+        .from("events")
+        .update({ live: false })
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("Event live update error:", error);
+        return NextResponse.json(
+          { error: "Failed to update live status" },
+          { status: 500 },
+        );
+      }
+
+      const eventWithImage = data
+        ? {
+            ...data,
+            image_url: data.img
+              ? await getSignedImageUrl(data.img, 60 * 60)
+              : null,
+          }
+        : null;
+
+      return NextResponse.json({ success: true, event: eventWithImage });
+    }
+  } catch (error) {
+    console.error("Event live update error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

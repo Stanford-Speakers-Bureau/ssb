@@ -1,5 +1,5 @@
 import AdminNotifyClient, { EventWithNotifications } from "./AdminNotifyClient";
-import { verifyAdminRequest } from "../../lib/supabase";
+import { verifyAdminRequest } from "@/app/lib/supabase";
 
 export const dynamic = "force-dynamic";
 

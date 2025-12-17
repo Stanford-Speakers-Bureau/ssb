@@ -1,5 +1,5 @@
 import AdminEventsClient, { Event } from "./AdminEventsClient";
-import { getSignedImageUrl, verifyAdminRequest } from "../../lib/supabase";
+import { getSignedImageUrl, verifyAdminRequest } from "@/app/lib/supabase";
 
 export const dynamic = "force-dynamic";
 

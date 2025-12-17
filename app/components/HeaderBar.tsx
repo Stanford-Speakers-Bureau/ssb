@@ -11,20 +11,23 @@ type BannerProps = {
   prefaceLabel: string;
 };
 
-interface SiteChromeProps {
+interface HeaderBarProps {
   showBanner: boolean;
   bannerProps: BannerProps;
 }
 
-export default function SiteChrome({
-  showBanner,
-  bannerProps,
-}: SiteChromeProps) {
+export default function HeaderBar({ showBanner, bannerProps }: HeaderBarProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const isScanRoute = pathname.startsWith("/scan");
+  const isEventRoute = pathname.startsWith("/events/");
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isScanRoute) {
     return null;
+  }
+
+  if (isEventRoute) {
+    return <NavBar banner={false} />;
   }
 
   return (

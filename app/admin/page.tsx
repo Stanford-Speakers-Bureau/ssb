@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSupabaseClient } from "../lib/supabase";
+import { getSupabaseClient } from "@/app/lib/supabase";
 
 type Stats = {
   pendingSuggestions: number;
@@ -163,7 +163,7 @@ export default async function AdminDashboard() {
             </div>
             <p className="text-zinc-400 text-sm mb-1">{card.title}</p>
             <p
-              className={`text-3xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}
+              className={`text-3xl font-bold bg-linear-to-r ${card.color} bg-clip-text text-transparent`}
             >
               {card.value.toLocaleString()}
             </p>

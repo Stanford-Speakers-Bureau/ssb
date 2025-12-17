@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
-import SiteChrome from "./components/SiteChrome";
+import HeaderBar from "./components/HeaderBar";
 import { getClosestUpcomingEvent } from "./lib/supabase";
+import { BANNER_MESSAGES } from "@/app/lib/constants";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -46,31 +47,34 @@ export default async function RootLayout({
 
   // Determine if speaker is still a mystery (before release_date)
   const now = new Date();
-  const releaseDate = closestEvent?.release_date
-    ? new Date(closestEvent.release_date)
-    : null;
-  const isMystery = releaseDate ? now < releaseDate : !closestEvent?.name;
+  let isMystery: boolean;
+  if (!closestEvent?.release_date) {
+    isMystery = !closestEvent?.name;
+  } else {
+    const releaseDate = new Date(closestEvent.release_date);
+    isMystery = now < releaseDate;
+  }
 
   // Show banner if there's an upcoming event
   const showBanner = !!closestEvent;
 
   // Banner text and countdown target based on mystery status
   const bannerText = isMystery
-    ? "GET EARLY ACCESS TO OUR NEXT SPEAKER!!"
-    : `${closestEvent?.name} is coming to Stanford!`;
+    ? BANNER_MESSAGES.NOTIFY_MESSAGE
+    : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
   const countdownTarget = isMystery
     ? closestEvent?.release_date
     : closestEvent?.start_time_date;
   const prefaceLabel = isMystery
-    ? "Speaker Name & Ticket Reveal in"
-    : "Event starts in";
+    ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
+    : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
   return (
     <html lang="en">
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <SiteChrome
+        <HeaderBar
           showBanner={showBanner}
           bannerProps={{
             text: bannerText,
