@@ -232,7 +232,7 @@ export default function ScanClient() {
         setStatus(null);
         setTicketInfo(null);
         statusTimeoutRef.current = null;
-      }, 3000);
+      }, 5000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
@@ -426,42 +426,42 @@ export default function ScanClient() {
     });
   };
 
-  // Get background color based on scan status (bright full-screen overlay)
+  // Get background color based on scan status (subtle overlay matching site style)
   const getStatusOverlay = () => {
     if (status === "scanned") {
       if (ticketInfo?.type?.toLowerCase() === "vip") {
-        return "bg-[#92BADF]";
+        return "bg-[#A80D0C]/90";
       }
-      return "bg-green-500";
+      return "bg-[#A80D0C]/90";
     }
     if (status === "already_scanned") {
-      return "bg-yellow-500";
+      return "bg-yellow-600/90";
     }
     if (status === "invalid") {
-      return "bg-red-500";
+      return "bg-red-600/90";
     }
     return "";
   };
 
-  // Get text color - always black when status is set for readability
+  // Get text color - always white when status is set for readability
   const getTextColor = () => {
-    return status ? "text-black" : "";
+    return status ? "text-white" : "";
   };
 
   // Show desktop message if not on mobile
   if (!isMobile) {
     return (
-      <div className="flex min-h-screen flex-col items-center font-sans bg-zinc-50 dark:bg-black">
-        <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-16">
+      <div className="flex min-h-screen flex-col items-center font-sans bg-black">
+        <main className="flex w-full flex-1 justify-center bg-black pt-16">
           <section className="w-full max-w-5xl flex flex-col py-6 lg:py-8 px-6 sm:px-12 md:px-16">
             <div className="text-center mb-8">
-              <h1 className="text-4xl sm:text-4xl font-bold text-black dark:text-white mb-4 font-serif">
+              <h1 className="text-4xl sm:text-4xl font-bold text-[#A80D0C] mb-4 font-serif">
                 SSB Scanner
               </h1>
             </div>
-            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 sm:p-12 text-center">
+            <div className="bg-zinc-900 rounded-xl p-8 sm:p-12 text-center border border-zinc-800">
               <svg
-                className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 text-zinc-400 dark:text-zinc-600"
+                className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 text-zinc-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -473,13 +473,13 @@ export default function ScanClient() {
                   d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
                 />
               </svg>
-              <h2 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-4 font-serif">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-serif">
                 Please Use Mobile Device
               </h2>
-              <p className="text-zinc-600 dark:text-zinc-400 text-base sm:text-lg mb-2">
+              <p className="text-zinc-300 text-base sm:text-lg mb-2">
                 The scanner is optimized for mobile devices.
               </p>
-              <p className="text-zinc-500 dark:text-zinc-500 text-sm sm:text-base">
+              <p className="text-zinc-400 text-sm sm:text-base">
                 Please open this page on your phone or tablet to scan tickets.
               </p>
             </div>
@@ -492,19 +492,19 @@ export default function ScanClient() {
   return (
     <div
       className={`flex h-screen flex-col items-center font-sans transition-colors duration-500 overflow-hidden ${
-        status ? getStatusOverlay() : "bg-zinc-50 dark:bg-black"
+        status ? getStatusOverlay() : "bg-black"
       }`}
     >
       <main
         className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-6 overflow-y-auto ${
-          status ? getStatusOverlay() : "bg-white dark:bg-black"
+          status ? getStatusOverlay() : "bg-black"
         }`}
       >
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="text-center mb-2 sm:mb-4">
             <h1
               className={`text-4xl font-bold mb-1 sm:mb-2 font-serif ${
-                status ? getTextColor() : "text-black dark:text-white"
+                status ? getTextColor() : "text-[#A80D0C]"
               }`}
             >
               SSB Scanner
@@ -513,13 +513,13 @@ export default function ScanClient() {
               <div className="mt-1 sm:mt-2">
                 <p
                   className={`text-md md:text-lg ${
-                    status ? getTextColor() : "text-black dark:text-white"
+                    status ? getTextColor() : "text-white"
                   }`}
                 >
                   Event:{" "}
                   <span
                     className={`text-md font-semibold ${
-                      status ? getTextColor() : "text-black dark:text-white"
+                      status ? getTextColor() : "text-white"
                     }`}
                   >
                     {liveEvent.name} @
@@ -528,7 +528,7 @@ export default function ScanClient() {
                     <>
                       {" "}
                       <span
-                        className={`text-md italic font-semibold ${status ? getTextColor() : "text-black dark:text-white"}`}
+                        className={`text-md italic font-semibold ${status ? getTextColor() : "text-white"}`}
                       >
                         {liveEvent.venue}
                       </span>
@@ -539,9 +539,7 @@ export default function ScanClient() {
                   liveEvent.totalSold !== undefined && (
                     <p
                       className={`text-sm mt-1 ${
-                        status
-                          ? getTextColor()
-                          : "text-gray-600 dark:text-gray-400"
+                        status ? getTextColor() : "text-zinc-300"
                       }`}
                     >
                       Tickets: {liveEvent.scanned} / {liveEvent.totalSold}{" "}
@@ -555,23 +553,19 @@ export default function ScanClient() {
                   className={`text-center p-4 sm:p-6 rounded-xl ${
                     status
                       ? "bg-transparent border-0"
-                      : "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-500/50"
+                      : "bg-zinc-900 border border-zinc-800"
                   }`}
                 >
                   <p
                     className={`font-semibold mb-2 text-base sm:text-lg ${
-                      status
-                        ? getTextColor()
-                        : "text-yellow-600 dark:text-yellow-400"
+                      status ? getTextColor() : "text-yellow-400"
                     }`}
                   >
                     No Live Event
                   </p>
                   <p
                     className={`text-sm sm:text-base ${
-                      status
-                        ? getTextColor()
-                        : "text-zinc-600 dark:text-zinc-400"
+                      status ? getTextColor() : "text-zinc-300"
                     }`}
                   >
                     No event is currently live. Scanning is disabled.
@@ -607,7 +601,7 @@ export default function ScanClient() {
               </motion.button>
               <p
                 className={`text-sm sm:text-base ${
-                  status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
+                  status ? getTextColor() : "text-zinc-300"
                 }`}
               >
                 Camera access is required to scan QR codes
@@ -621,19 +615,19 @@ export default function ScanClient() {
               className={`mb-3 sm:mb-4 text-center p-4 sm:p-6 rounded-xl ${
                 status
                   ? "bg-transparent border-0"
-                  : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/50"
+                  : "bg-zinc-900 border border-red-500/50"
               }`}
             >
               <p
                 className={`font-semibold mb-2 text-base sm:text-lg ${
-                  status ? getTextColor() : "text-red-600 dark:text-red-400"
+                  status ? getTextColor() : "text-red-400"
                 }`}
               >
                 Camera Access Denied
               </p>
               <p
                 className={`text-sm sm:text-base mb-3 sm:mb-4 ${
-                  status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
+                  status ? getTextColor() : "text-zinc-300"
                 }`}
               >
                 Please enable camera permissions in your browser settings to
@@ -728,7 +722,7 @@ export default function ScanClient() {
                     <div
                       id="qr-reader"
                       ref={scanAreaRef}
-                      className={`w-full rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 relative ${
+                      className={`w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 relative ${
                         isProcessingScan ? "blur-md" : ""
                       }`}
                     />
@@ -771,7 +765,7 @@ export default function ScanClient() {
                 {cameraError && (
                   <p
                     className={`mt-1 text-center text-sm sm:text-base ${
-                      status ? getTextColor() : "text-red-600 dark:text-red-400"
+                      status ? getTextColor() : "text-red-400"
                     }`}
                   >
                     {cameraError}
@@ -790,51 +784,51 @@ export default function ScanClient() {
                 className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl transition-colors duration-500 shrink-0 bg-transparent`}
               >
                 <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-black ">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-white">
                     {getStatusText()}
                   </h2>
 
                   {ticketInfo && (
-                    <div className="space-y-1.5 sm:space-y-2 md:space-y-3 text-gray-800">
+                    <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
                       {ticketInfo.name && (
-                        <p className="text-base sm:text-lg md:text-xl font-semibold text-black">
+                        <p className="text-base sm:text-lg md:text-xl font-semibold text-white">
                           {ticketInfo.name}
                         </p>
                       )}
                       {ticketInfo.email && (
                         <p className="text-sm sm:text-base wrap-break-word">
-                          <span className="text-gray-600">Email:</span>{" "}
-                          <span className="font-medium text-black">
+                          <span className="text-zinc-300">Email:</span>{" "}
+                          <span className="font-medium text-white">
                             {ticketInfo.email}
                           </span>
                         </p>
                       )}
                       {ticketInfo.type && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-gray-600">Ticket Type:</span>{" "}
-                          <span className="font-medium capitalize text-black">
+                          <span className="text-zinc-300">Ticket Type:</span>{" "}
+                          <span className="font-medium capitalize text-white">
                             {ticketInfo.type}
                           </span>
                         </p>
                       )}
                       <p className="text-sm sm:text-base break-all">
-                        <span className="text-gray-600">Ticket ID:</span>{" "}
-                        <span className="font-mono text-xs sm:text-sm text-black">
+                        <span className="text-zinc-300">Ticket ID:</span>{" "}
+                        <span className="font-mono text-xs sm:text-sm text-white">
                           {ticketInfo.id}
                         </span>
                       </p>
                       {ticketInfo.scan_time && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-gray-600">Scanned at:</span>{" "}
-                          <span className="text-black">
+                          <span className="text-zinc-300">Scanned at:</span>{" "}
+                          <span className="text-white">
                             {formatScanTime(ticketInfo.scan_time)}
                           </span>
                         </p>
                       )}
                       {status === "already_scanned" && ticketInfo.scan_user && (
                         <p className="text-sm sm:text-base">
-                          <span className="text-gray-600">Scanned by:</span>{" "}
-                          <span className="font-medium text-black">
+                          <span className="text-zinc-300">Scanned by:</span>{" "}
+                          <span className="font-medium text-white">
                             {ticketInfo.scan_user}
                           </span>
                         </p>
@@ -842,10 +836,10 @@ export default function ScanClient() {
                       {status === "already_scanned" &&
                         ticketInfo.scan_email && (
                           <p className="text-sm sm:text-base wrap-break-word">
-                            <span className="text-gray-600">
+                            <span className="text-zinc-300">
                               Scanner email:
                             </span>{" "}
-                            <span className="font-medium text-black">
+                            <span className="font-medium text-white">
                               {ticketInfo.scan_email}
                             </span>
                           </p>
@@ -861,7 +855,7 @@ export default function ScanClient() {
             <div className="mt-2 sm:mt-3 text-center shrink-0">
               <p
                 className={`text-sm sm:text-base ${
-                  status ? getTextColor() : "text-zinc-600 dark:text-zinc-400"
+                  status ? getTextColor() : "text-zinc-300"
                 }`}
               >
                 Point camera at QR code to scan
