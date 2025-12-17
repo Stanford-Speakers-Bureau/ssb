@@ -126,7 +126,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, action } = body;
+    const { id, action, type, scanned } = body;
 
     if (!id || typeof id !== "string") {
       return NextResponse.json(
@@ -135,56 +135,153 @@ export async function PATCH(req: Request) {
       );
     }
 
-    if (action !== "unscan") {
+    const adminClient = auth.adminClient!;
+
+    // Handle different actions
+    if (action === "unscan") {
+      // Unscan the ticket: set scanned to false and clear scan-related fields
+      const { data: ticket, error: updateError } = await adminClient
+        .from("tickets")
+        .update({
+          scanned: false,
+          scan_time: null,
+          scan_user: null,
+          scan_email: null,
+        })
+        .eq("id", id)
+        .select(
+          `
+          id,
+          email,
+          type,
+          created_at,
+          scanned,
+          scan_time,
+          referral,
+          event_id,
+          events (
+            id,
+            name,
+            route,
+            start_time_date
+          )
+        `,
+        )
+        .single();
+
+      if (updateError) {
+        console.error("Ticket unscan error:", updateError);
+        return NextResponse.json(
+          { error: "Failed to unscan ticket" },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ success: true, ticket });
+    } else if (action === "updateType" || type) {
+      // Update ticket type
+      if (type !== "VIP" && type !== "STANDARD") {
+        return NextResponse.json(
+          { error: "Invalid ticket type. Must be 'VIP' or 'STANDARD'." },
+          { status: 400 },
+        );
+      }
+
+      const { data: ticket, error: updateError } = await adminClient
+        .from("tickets")
+        .update({ type })
+        .eq("id", id)
+        .select(
+          `
+          id,
+          email,
+          type,
+          created_at,
+          scanned,
+          scan_time,
+          referral,
+          event_id,
+          events (
+            id,
+            name,
+            route,
+            start_time_date
+          )
+        `,
+        )
+        .single();
+
+      if (updateError) {
+        console.error("Ticket type update error:", updateError);
+        return NextResponse.json(
+          { error: "Failed to update ticket type" },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ success: true, ticket });
+    } else if (action === "updateScanned" || typeof scanned === "boolean") {
+      // Update scanned status
+      const updateData: {
+        scanned: boolean;
+        scan_time?: string | null;
+        scan_user?: string | null;
+        scan_email?: string | null;
+      } = {
+        scanned,
+      };
+
+      // If unscanning, clear scan-related fields
+      if (!scanned) {
+        updateData.scan_time = null;
+        updateData.scan_user = null;
+        updateData.scan_email = null;
+      } else {
+        // If scanning, set scan_time to now
+        updateData.scan_time = new Date().toISOString();
+      }
+
+      const { data: ticket, error: updateError } = await adminClient
+        .from("tickets")
+        .update(updateData)
+        .eq("id", id)
+        .select(
+          `
+          id,
+          email,
+          type,
+          created_at,
+          scanned,
+          scan_time,
+          referral,
+          event_id,
+          events (
+            id,
+            name,
+            route,
+            start_time_date
+          )
+        `,
+        )
+        .single();
+
+      if (updateError) {
+        console.error("Ticket scanned status update error:", updateError);
+        return NextResponse.json(
+          { error: "Failed to update scanned status" },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ success: true, ticket });
+    } else {
       return NextResponse.json(
-        { error: "Invalid action. Use 'unscan' to unscan a ticket." },
+        { error: "Invalid action. Use 'unscan', 'updateType', or 'updateScanned'." },
         { status: 400 },
       );
     }
-
-    const adminClient = auth.adminClient!;
-
-    // Unscan the ticket: set scanned to false and clear scan-related fields
-    const { data: ticket, error: updateError } = await adminClient
-      .from("tickets")
-      .update({
-        scanned: false,
-        scan_time: null,
-        scan_user: null,
-        scan_email: null,
-      })
-      .eq("id", id)
-      .select(
-        `
-        id,
-        email,
-        type,
-        created_at,
-        scanned,
-        scan_time,
-        referral,
-        event_id,
-        events (
-          id,
-          name,
-          route,
-          start_time_date
-        )
-      `,
-      )
-      .single();
-
-    if (updateError) {
-      console.error("Ticket unscan error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to unscan ticket" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ success: true, ticket });
   } catch (error) {
-    console.error("Ticket unscan error:", error);
+    console.error("Ticket update error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
