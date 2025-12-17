@@ -1,7 +1,8 @@
-import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import {SendEmailCommand, SESv2Client} from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
-import { PACIFIC_TIMEZONE } from "./constants";
-import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
+import type { QRCodeToBufferOptions } from "qrcode";
+import {PACIFIC_TIMEZONE} from "./constants";
+import {generateGoogleCalendarUrl, generateReferralCode} from "./utils";
 
 // Initialize SES client
 const sesClient = new SESv2Client({
@@ -28,6 +29,15 @@ type TicketEmailData = {
   eventVenueLink?: string | null;
   eventDescription?: string | null;
 };
+
+// Wrap base64 (or any long) strings to 76-character lines for MIME compatibility
+function wrapToMimeLines(input: string, lineLength: number = 76): string {
+  const chunks: string[] = [];
+  for (let i = 0; i < input.length; i += lineLength) {
+    chunks.push(input.slice(i, i + lineLength));
+  }
+  return chunks.join("\r\n");
+}
 
 /**
  * Escape text for iCalendar format
@@ -155,33 +165,11 @@ function generateICalContent(data: TicketEmailData): string {
 }
 
 /**
- * Generate QR code as data URI for embedding in email
- */
-async function generateQRCodeDataURI(ticketId: string): Promise<string> {
-  try {
-    return await QRCode.toDataURL(ticketId, {
-      errorCorrectionLevel: "H",
-      type: "image/png",
-      width: 400,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#FFFFFF",
-      },
-    });
-  } catch (error) {
-    console.error("Error generating QR code:", error);
-    // Return empty string if QR code generation fails
-    return "";
-  }
-}
-
-/**
  * Generate QR code PNG as a Buffer for attaching to an email
  */
 async function generateQRCodePngBuffer(ticketId: string): Promise<Buffer | null> {
   try {
-    const buffer: Buffer = await QRCode.toBuffer(ticketId, {
+    const options: QRCodeToBufferOptions = {
       errorCorrectionLevel: "H",
       type: "png",
       width: 400,
@@ -190,7 +178,8 @@ async function generateQRCodePngBuffer(ticketId: string): Promise<Buffer | null>
         dark: "#000000",
         light: "#FFFFFF",
       },
-    } as any);
+    };
+    const buffer = await QRCode.toBuffer(ticketId, options);
     return buffer;
   } catch (error) {
     console.error("Error generating QR code buffer:", error);
@@ -589,9 +578,10 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   const icsContent = generateICalContent(data);
   const icsBuffer = icsContent ? Buffer.from(icsContent, "utf-8") : null;
 
-  // Build MIME message with CID image
+  // Build MIME message with CID image inside multipart/related for HTML part
   const mixBoundary = `mix_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const altBoundary = `alt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const relBoundary = `rel_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
   const lines: string[] = [];
   lines.push(
@@ -609,34 +599,51 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     `Content-Transfer-Encoding: 7bit`,
     "",
     textContent,
-    "",
-    `--${altBoundary}`,
-    `Content-Type: text/html; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    htmlContent,
-    "",
-    `--${altBoundary}--`
+    ""
   );
 
-  // Attach inline QR image via CID (optional)
   if (qrBuffer) {
-    const qrBase64 = qrBuffer.toString("base64");
+    // multipart/related containing HTML and inline image
+    const qrBase64 = wrapToMimeLines(qrBuffer.toString("base64"));
     lines.push(
-      `--${mixBoundary}`,
+      `--${altBoundary}`,
+      `Content-Type: multipart/related; boundary="${relBoundary}"`,
+      "",
+      `--${relBoundary}`,
+      `Content-Type: text/html; charset=UTF-8`,
+      `Content-Transfer-Encoding: 7bit`,
+      "",
+      htmlContent,
+      "",
+      `--${relBoundary}`,
       `Content-Type: image/png; name="ticket-qr.png"`,
       `Content-Transfer-Encoding: base64`,
       `Content-Disposition: inline; filename="ticket-qr.png"`,
       `Content-ID: <${qrCid}>`,
       "",
       qrBase64,
+      "",
+      `--${relBoundary}--`,
+      ""
+    );
+  } else {
+    // No QR image; include HTML directly
+    lines.push(
+      `--${altBoundary}`,
+      `Content-Type: text/html; charset=UTF-8`,
+      `Content-Transfer-Encoding: 7bit`,
+      "",
+      htmlContent,
       ""
     );
   }
 
+  // Close alternative part
+  lines.push(`--${altBoundary}--`);
+
   // Attach ICS file (optional)
   if (icsBuffer) {
-    const icsBase64 = icsBuffer.toString("base64");
+    const icsBase64 = wrapToMimeLines(icsBuffer.toString("base64"));
     lines.push(
       `--${mixBoundary}`,
       `Content-Type: text/calendar; charset="utf-8"; name="stanford-speakers-bureau-event.ics"`,
