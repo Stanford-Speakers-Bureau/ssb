@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/app/lib/supabase";
+import { sendTicketEmail } from "@/app/lib/email";
 
 export async function GET(req: Request) {
   try {
@@ -372,6 +373,33 @@ export async function POST(req: Request) {
         { error: "Failed to create ticket" },
         { status: 500 },
       );
+    }
+
+    // Send ticket confirmation email
+    if (ticket) {
+      try {
+        const event = Array.isArray(ticket.events)
+          ? ticket.events[0]
+          : ticket.events;
+        await sendTicketEmail({
+          email: ticket.email,
+          eventName: event?.name || "Event",
+          ticketType: ticket.type || "VIP",
+          eventStartTime: event?.start_time_date || null,
+          eventRoute: event?.route || null,
+          ticketId: ticket.id,
+        });
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        // Ticket was created but email failed - return error
+        return NextResponse.json(
+          {
+            error:
+              "Ticket was created but failed to send confirmation email. Please contact support.",
+          },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({ success: true, ticket });

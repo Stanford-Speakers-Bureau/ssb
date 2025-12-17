@@ -7,6 +7,7 @@ import {
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
+import { sendTicketEmail } from "@/app/lib/email";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Ticket created successfully!",
@@ -187,10 +188,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fetch the created ticket to get its ID
+    // Fetch the created ticket with event details
     const { data: ticket } = await adminClient
       .from("tickets")
-      .select("id")
+      .select(
+        `
+        id,
+        email,
+        type,
+        event_id,
+        events (
+          id,
+          name,
+          route,
+          start_time_date
+        )
+      `,
+      )
       .eq("event_id", event_id)
       .eq("email", user.email)
       .order("created_at", { ascending: false })
@@ -199,6 +213,33 @@ export async function POST(req: Request) {
 
     // Update referral records (non-blocking - don't fail ticket creation if this fails)
     await updateReferralRecords(event_id, user.email);
+
+    // Send ticket confirmation email
+    if (ticket) {
+      try {
+        const event = Array.isArray(ticket.events)
+          ? ticket.events[0]
+          : ticket.events;
+        await sendTicketEmail({
+          email: ticket.email,
+          eventName: event?.name || "Event",
+          ticketType: ticket.type || "STANDARD",
+          eventStartTime: event?.start_time_date || null,
+          eventRoute: event?.route || null,
+          ticketId: ticket.id,
+        });
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        // Ticket was created but email failed - return error
+        return NextResponse.json(
+          {
+            error:
+              "Ticket was created but failed to send confirmation email. Please contact support.",
+          },
+          { status: 500 },
+        );
+      }
+    }
 
     return NextResponse.json(
       {
