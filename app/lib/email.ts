@@ -406,14 +406,14 @@ async function generateTicketEmailHTML(
                 referralCode
                   ? `
               <tr>
-                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Referral Code:</td>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Code:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500; font-family: monospace;">${referralCode}</td>
               </tr>
               ${
                 referralUrl
                   ? `
               <tr>
-                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Referral Link:</td>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Link:</td>
                 <td class="details-value" style="padding: 8px 0;">
                   <a href="${referralUrl}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${referralUrl}</a>
                 </td>
@@ -551,8 +551,8 @@ Event Details:
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
-${referralCode ? `- Referral Code: ${referralCode}` : ""}
-${referralUrl ? `- Referral Link: ${referralUrl}` : ""}
+${referralCode ? `- Your Referral Code: ${referralCode}` : ""}
+${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
