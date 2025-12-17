@@ -6,15 +6,15 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS",
+    "binding": "ASSETS"
   },
   "services": [
     {
       // Self-reference service binding, the service name must match the worker name
       // see https://opennext.js.org/cloudflare/caching
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "ssb",
-    },
+      "service": "ssb"
+    }
   ],
   "r2_buckets": [
     // Use R2 incremental cache
@@ -24,18 +24,18 @@
       // Create the bucket before deploying
       // You can change the bucket name if you want
       // See https://developers.cloudflare.com/workers/wrangler/commands/#r2-bucket-create
-      "bucket_name": "ssb-cache",
+      "bucket_name": "ssb-cache"
     },
     {
       "bucket_name": "ssb-cache",
       "binding": "ssb_cache",
-      "remote": true,
-    },
+      "remote": true
+    }
   ],
   "images": {
     // Enable image optimization
     // see https://opennext.js.org/cloudflare/howtos/image
-    "binding": "IMAGES",
+    "binding": "IMAGES"
   },
   "observability": {
     "enabled": false,
@@ -44,12 +44,17 @@
       "enabled": true,
       "head_sampling_rate": 1,
       "persist": true,
-      "invocation_logs": true,
+      "invocation_logs": true
     },
     "traces": {
       "enabled": false,
       "persist": true,
-      "head_sampling_rate": 1,
-    },
+      "head_sampling_rate": 1
+    }
   },
+  "vars": {
+    "SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
+    "NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
+    "UPSTASH_REDIS_REST_URL": "https://concrete-vervet-23231.upstash.io"
+  }
 }
