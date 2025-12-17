@@ -25,7 +25,8 @@ export function generateGoogleCalendarUrl(event: {
 }): string {
   if (!event.start_time_date) return "";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = event.route ? `${baseUrl}/events/${event.route}` : baseUrl;
 
   const startDate = new Date(event.start_time_date);
@@ -33,12 +34,17 @@ export function generateGoogleCalendarUrl(event: {
 
   // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
   const formatGoogleDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    return date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "");
   };
 
-  const title = encodeURIComponent(`Stanford Speakers Bureau: ${event.name || "Speaker Event"}`);
+  const title = encodeURIComponent(
+    `Stanford Speakers Bureau: ${event.name || "Speaker Event"}`,
+  );
   const details = encodeURIComponent(
-    `${event.desc || "Stanford Speakers Bureau event"}\n\nView Event: ${eventUrl}`
+    `${event.desc || "Stanford Speakers Bureau event"}\n\nView Event: ${eventUrl}`,
   );
   const location = encodeURIComponent(event.venue || "");
   const start = formatGoogleDate(startDate);

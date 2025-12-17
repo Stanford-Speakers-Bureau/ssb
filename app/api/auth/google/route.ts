@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     access_type: "online",
     hd: "stanford.edu",
   };
-  
+
   // Only use prompt: "none" if not forcing a prompt (i.e., not retrying after interaction_required)
   if (!forcePrompt) {
     queryParams.prompt = "none";

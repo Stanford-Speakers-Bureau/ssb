@@ -335,10 +335,16 @@ export async function PATCH(req: Request) {
         );
       }
 
-      return NextResponse.json({ success: true, message: "Email sent successfully" });
+      return NextResponse.json({
+        success: true,
+        message: "Email sent successfully",
+      });
     } else {
       return NextResponse.json(
-        { error: "Invalid action. Use 'unscan', 'updateType', 'updateScanned', or 'resendEmail'." },
+        {
+          error:
+            "Invalid action. Use 'unscan', 'updateType', 'updateScanned', or 'resendEmail'.",
+        },
         { status: 400 },
       );
     }

@@ -66,7 +66,8 @@ export default function TicketManagementClient({
   const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
   const [editingTicketType, setEditingTicketType] = useState<string>("");
   const [editingScannedId, setEditingScannedId] = useState<string | null>(null);
-  const [editingScannedStatus, setEditingScannedStatus] = useState<boolean>(false);
+  const [editingScannedStatus, setEditingScannedStatus] =
+    useState<boolean>(false);
   const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -233,9 +234,7 @@ export default function TicketManagementClient({
     } catch (err) {
       console.error("Error updating scanned status:", err);
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to update scanned status",
+        err instanceof Error ? err.message : "Failed to update scanned status",
       );
       setEditingScannedId(null);
     }
@@ -252,7 +251,12 @@ export default function TicketManagementClient({
   }
 
   async function handleResendEmail(id: string) {
-    if (!confirm("Are you sure you want to resend the confirmation email to this ticket holder?")) return;
+    if (
+      !confirm(
+        "Are you sure you want to resend the confirmation email to this ticket holder?",
+      )
+    )
+      return;
 
     setResendingEmailId(id);
     setError(null);
@@ -717,7 +721,9 @@ export default function TicketManagementClient({
                         <div className="flex items-center gap-2">
                           <select
                             value={editingTicketType}
-                            onChange={(e) => setEditingTicketType(e.target.value)}
+                            onChange={(e) =>
+                              setEditingTicketType(e.target.value)
+                            }
                             onBlur={() => {
                               if (editingTicketType !== ticket.type) {
                                 handleUpdateType(ticket.id, editingTicketType);
@@ -728,7 +734,10 @@ export default function TicketManagementClient({
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 if (editingTicketType !== ticket.type) {
-                                  handleUpdateType(ticket.id, editingTicketType);
+                                  handleUpdateType(
+                                    ticket.id,
+                                    editingTicketType,
+                                  );
                                 } else {
                                   cancelEditingType();
                                 }
@@ -814,13 +823,20 @@ export default function TicketManagementClient({
                       {editingScannedId === ticket.id ? (
                         <div className="flex items-center gap-2">
                           <select
-                            value={editingScannedStatus ? "scanned" : "not-scanned"}
+                            value={
+                              editingScannedStatus ? "scanned" : "not-scanned"
+                            }
                             onChange={(e) =>
-                              setEditingScannedStatus(e.target.value === "scanned")
+                              setEditingScannedStatus(
+                                e.target.value === "scanned",
+                              )
                             }
                             onBlur={() => {
                               if (editingScannedStatus !== ticket.scanned) {
-                                handleUpdateScanned(ticket.id, editingScannedStatus);
+                                handleUpdateScanned(
+                                  ticket.id,
+                                  editingScannedStatus,
+                                );
                               } else {
                                 cancelEditingScanned();
                               }
@@ -828,7 +844,10 @@ export default function TicketManagementClient({
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 if (editingScannedStatus !== ticket.scanned) {
-                                  handleUpdateScanned(ticket.id, editingScannedStatus);
+                                  handleUpdateScanned(
+                                    ticket.id,
+                                    editingScannedStatus,
+                                  );
                                 } else {
                                   cancelEditingScanned();
                                 }
@@ -845,7 +864,10 @@ export default function TicketManagementClient({
                           <button
                             onClick={() => {
                               if (editingScannedStatus !== ticket.scanned) {
-                                handleUpdateScanned(ticket.id, editingScannedStatus);
+                                handleUpdateScanned(
+                                  ticket.id,
+                                  editingScannedStatus,
+                                );
                               } else {
                                 cancelEditingScanned();
                               }

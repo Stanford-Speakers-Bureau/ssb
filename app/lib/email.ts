@@ -1,4 +1,4 @@
-import {SendEmailCommand, SESv2Client} from "@aws-sdk/client-sesv2";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
 import { PACIFIC_TIMEZONE } from "./constants";
 
@@ -13,7 +13,8 @@ const sesClient = new SESv2Client({
     : undefined,
 });
 
-const FROM_EMAIL = process.env.SES_FROM_EMAIL || "hello@stanfordspeakersbureau.com";
+const FROM_EMAIL =
+  process.env.SES_FROM_EMAIL || "hello@stanfordspeakersbureau.com";
 
 type TicketEmailData = {
   email: string;
@@ -42,10 +43,12 @@ function escapeICalText(text: string): string {
  * Format date for iCalendar (UTC format with Z suffix)
  */
 function formatForICalUTC(date: Date): string {
-  return date
-    .toISOString()
-    .replace(/[-:]/g, "")
-    .replace(/\.\d{3}/, "") + "Z";
+  return (
+    date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "") + "Z"
+  );
 }
 
 /**
@@ -63,7 +66,7 @@ function formatForICalLocal(date: Date): string {
     second: "2-digit",
     hour12: false,
   });
-  
+
   const parts = formatter.formatToParts(date);
   const year = parts.find((p) => p.type === "year")?.value || "";
   const month = parts.find((p) => p.type === "month")?.value || "";
@@ -71,7 +74,7 @@ function formatForICalLocal(date: Date): string {
   const hour = parts.find((p) => p.type === "hour")?.value || "";
   const minute = parts.find((p) => p.type === "minute")?.value || "";
   const second = parts.find((p) => p.type === "second")?.value || "";
-  
+
   return `${year}${month}${day}T${hour}${minute}${second}`;
 }
 
@@ -81,16 +84,19 @@ function formatForICalLocal(date: Date): string {
 function generateICalContent(data: TicketEmailData): string {
   if (!data.eventStartTime) return "";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
-  const eventUrl = data.eventRoute ? `${baseUrl}/events/${data.eventRoute}` : null;
-  
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  const eventUrl = data.eventRoute
+    ? `${baseUrl}/events/${data.eventRoute}`
+    : null;
+
   const startDate = new Date(data.eventStartTime);
   // Default to 90 minutes duration
   const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
 
   const title = `Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`;
   const location = data.eventVenue || "";
-  
+
   // Build description with View Ticket link
   let description = data.eventDescription || "Stanford Speakers Bureau event";
   if (eventUrl) {
@@ -175,18 +181,26 @@ async function generateQRCodeDataURI(ticketId: string): Promise<string> {
 function generateGoogleCalendarUrl(data: TicketEmailData): string {
   if (!data.eventStartTime) return "";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
-  const eventUrl = data.eventRoute ? `${baseUrl}/events/${data.eventRoute}` : baseUrl;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  const eventUrl = data.eventRoute
+    ? `${baseUrl}/events/${data.eventRoute}`
+    : baseUrl;
 
   const startDate = new Date(data.eventStartTime);
   const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90 minutes default
 
   // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
   const formatGoogleDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    return date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "");
   };
 
-  const title = encodeURIComponent(`Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`);
+  const title = encodeURIComponent(
+    `Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`,
+  );
   let details = data.eventDescription || "Stanford Speakers Bureau event";
   if (eventUrl) {
     details += `\n\nView Event: ${eventUrl}`;
@@ -206,11 +220,17 @@ function generateGoogleCalendarUrl(data: TicketEmailData): string {
 /**
  * Generate HTML email content for ticket confirmation
  */
-async function generateTicketEmailHTML(
-  data: TicketEmailData,
-): Promise<string> {
-  const { eventName, ticketType, eventStartTime, eventRoute, ticketId, eventVenue, eventVenueLink } = data;
-  
+async function generateTicketEmailHTML(data: TicketEmailData): Promise<string> {
+  const {
+    eventName,
+    ticketType,
+    eventStartTime,
+    eventRoute,
+    ticketId,
+    eventVenue,
+    eventVenueLink,
+  } = data;
+
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
         weekday: "long",
@@ -224,7 +244,8 @@ async function generateTicketEmailHTML(
       }).format(new Date(eventStartTime))
     : "TBA";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
   const logoUrl = `${baseUrl}/logo.png`;
   const googleCalendarUrl = generateGoogleCalendarUrl(data);
@@ -344,7 +365,9 @@ async function generateTicketEmailHTML(
             Thank you for your ticket purchase. Your ticket has been confirmed!
           </p>
           
-          ${googleCalendarUrl ? `
+          ${
+            googleCalendarUrl
+              ? `
           <!-- Add to Google Calendar Button -->
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
@@ -361,7 +384,9 @@ async function generateTicketEmailHTML(
               </td>
             </tr>
           </table>
-          ` : ""}
+          `
+              : ""
+          }
           
           <!-- Ticket Details Card -->
           <div class="details-card" style="background-color: #18181b; border: 1px solid #3f3f46; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
@@ -376,14 +401,18 @@ async function generateTicketEmailHTML(
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Date & Time:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">${formattedDate}</td>
               </tr>
-              ${eventVenue ? `
+              ${
+                eventVenue
+                  ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Location:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
                   ${eventVenueLink ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>` : eventVenue}
                 </td>
               </tr>
-              ` : ""}
+              `
+                  : ""
+              }
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Ticket Type:</td>
                 <td class="details-value" style="padding: 8px 0;">
@@ -399,27 +428,37 @@ async function generateTicketEmailHTML(
             </table>
           </div>
           
-          ${qrCodeDataURI ? `
+          ${
+            qrCodeDataURI
+              ? `
           <!-- QR Code Section -->
           <div class="qr-section" style="background-color: #18181b; border: 1px solid #3f3f46; border-radius: 8px; padding: 24px; margin-bottom: 24px; text-align: center;">
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: ${isVIP ? "20px" : "16px"}; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
               <img src="${qrCodeDataURI}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 250px; height: 250px; max-width: 100%; height: auto;" />
             </div>
-            ${isVIP ? `
+            ${
+              isVIP
+                ? `
             <div style="margin-top: 12px;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #A80D0C; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
                 VIP
               </span>
             </div>
-            ` : ""}
+            `
+                : ""
+            }
             <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Show this QR code at the event entrance for quick check-in.
             </p>
           </div>
-          ` : ""}
+          `
+              : ""
+          }
           
-          ${eventUrl ? `
+          ${
+            eventUrl
+              ? `
           <!-- View Event Button -->
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
@@ -428,7 +467,9 @@ async function generateTicketEmailHTML(
               </td>
             </tr>
           </table>
-          ` : ""}
+          `
+              : ""
+          }
 
           <p style="margin: 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
             Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
@@ -459,7 +500,7 @@ async function generateTicketEmailHTML(
  */
 function generateTicketEmailText(data: TicketEmailData): string {
   const { eventName, ticketType, eventStartTime, eventRoute, ticketId } = data;
-  
+
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
         weekday: "long",
@@ -503,10 +544,10 @@ If you have any questions, please contact us at ${FROM_EMAIL}
 export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   const htmlContent = await generateTicketEmailHTML(data);
   const textContent = generateTicketEmailText(data);
-  
+
   // Generate ICS file content for calendar invite
   const icsContent = generateICalContent(data);
-  
+
   // Build attachments array
   const attachments = [];
   if (icsContent) {
@@ -549,5 +590,3 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   await sesClient.send(command);
   console.log(`Ticket confirmation email sent to ${data.email}`);
 }
-
-

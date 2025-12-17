@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   // Handle OAuth errors from the provider
   if (error) {
     console.error("OAuth error:", error, errorDescription);
-    
+
     // For interaction_required, retry OAuth without prompt: "none"
     if (error === "interaction_required") {
       const authUrl = new URL("/api/auth/google", baseUrl);
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       authUrl.searchParams.set("force_prompt", "true"); // Flag to skip prompt: "none"
       return NextResponse.redirect(authUrl);
     }
-    
+
     // For other errors, redirect with error message
     const redirectUrl = new URL(safeRedirect, baseUrl);
     redirectUrl.searchParams.set("error", "auth_failed");
