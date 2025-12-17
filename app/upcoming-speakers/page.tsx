@@ -6,7 +6,6 @@ import {
   createServerSupabaseClient,
   formatEventDate,
   formatTime,
-  generateICalUrl,
   getSignedImageUrl,
   getSupabaseClient,
   isEventMystery,
@@ -167,7 +166,6 @@ export default async function UpcomingSpeakers() {
                   ctaHref={event.isMystery ? "" : `/events/${event.route}`}
                   ctaText={event.isMystery ? "" : "Get Tickets"}
                   mystery={event.isMystery}
-                  calendarUrl={event.isMystery ? "" : generateICalUrl(event)}
                   eventId={event.id}
                   isAlreadyNotified={userNotifications.has(event.id)}
                   capacity={event.capacity}

@@ -201,7 +201,10 @@ export async function POST(req: Request) {
           id,
           name,
           route,
-          start_time_date
+          start_time_date,
+          venue,
+          venue_link,
+          desc
         )
       `,
       )
@@ -227,6 +230,9 @@ export async function POST(req: Request) {
           eventStartTime: event?.start_time_date || null,
           eventRoute: event?.route || null,
           ticketId: ticket.id,
+          eventVenue: event?.venue || null,
+          eventVenueLink: event?.venue_link || null,
+          eventDescription: event?.desc || null,
         });
       } catch (emailError) {
         console.error("Email sending error:", emailError);

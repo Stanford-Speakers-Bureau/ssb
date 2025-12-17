@@ -19,7 +19,8 @@ export type UpcomingSpeakerCardProps = {
   ctaHref?: string;
   backgroundImageUrl?: string; // e.g., "/events/speaker"
   mystery?: boolean; // Adds blur effect to hide identity
-  calendarUrl?: string; // iCal URL for adding event
+  googleCalendarUrl?: string; // Google Calendar URL
+  appleCalendarUrl?: string; // Apple Calendar URL (ICS data URL)
   eventId?: string; // Event ID for notify signup
   isAlreadyNotified?: boolean; // Whether user is signed up for notifications
   capacity?: number | null; // Event capacity
@@ -41,7 +42,8 @@ export default function UpcomingSpeakerCard({
   ctaHref = "",
   backgroundImageUrl = "",
   mystery = false,
-  calendarUrl = "",
+  googleCalendarUrl = "",
+  appleCalendarUrl = "",
   eventId = "",
   isAlreadyNotified = false,
   capacity = null,
@@ -68,7 +70,6 @@ export default function UpcomingSpeakerCard({
     showLocation ||
     showSponsor ||
     showTicketInfo;
-  const showCalendarLink = !mystery && !!calendarUrl;
   const showNotifyButton = mystery && !!eventId;
 
   // Calculate tickets left
@@ -153,6 +154,7 @@ export default function UpcomingSpeakerCard({
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageLoaded(true)}
               quality={90}
+              unoptimized
             />
           </div>
         </div>
@@ -210,6 +212,7 @@ export default function UpcomingSpeakerCard({
               quality={90}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageLoaded(true)}
+              unoptimized
             />
           </div>
         </div>
@@ -249,17 +252,7 @@ export default function UpcomingSpeakerCard({
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                {showCalendarLink ? (
-                  <a
-                    href={calendarUrl}
-                    download="event.ics"
-                    className="text-base text-white font-medium underline decoration-zinc-300 decoration-1 underline-offset-2 transition-all hover:scale-105 active:scale-95 inline-block"
-                  >
-                    {dateText}
-                  </a>
-                ) : (
-                  <p className="text-base text-white font-medium">{dateText}</p>
-                )}
+                <p className="text-base text-white font-medium">{dateText}</p>
               </div>
             )}
 

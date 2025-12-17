@@ -157,6 +157,7 @@ function EventCardImage({ event }: EventCardImageProps) {
         }`}
         onLoad={() => setIsLoading(false)}
         priority
+        unoptimized
       />
     </>
   );
