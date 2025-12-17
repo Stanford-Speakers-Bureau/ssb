@@ -11,4 +11,3 @@ export function generateReferralCode(
   if (!email) return null;
   return email.split("@")[0] || null;
 }
-

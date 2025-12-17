@@ -207,7 +207,9 @@ export default function AdminSuggestClient({
         setSuggestions(data.suggestions);
         // Update editingVotes if modal is open
         if (editingVotes) {
-          const updated = data.suggestions.find((s: Suggestion) => s.id === editingVotes.id);
+          const updated = data.suggestions.find(
+            (s: Suggestion) => s.id === editingVotes.id,
+          );
           if (updated) {
             setEditingVotes(updated);
           }
@@ -348,9 +350,7 @@ export default function AdminSuggestClient({
             {isSyncingVotes ? "Syncing..." : "Resync Votes"}
           </button>
         </div>
-        {syncError && (
-          <p className="mt-2 text-sm text-rose-400">{syncError}</p>
-        )}
+        {syncError && <p className="mt-2 text-sm text-rose-400">{syncError}</p>}
       </div>
 
       {/* Filter Tabs */}

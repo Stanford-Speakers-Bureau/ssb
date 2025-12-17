@@ -45,12 +45,30 @@ async function getInitialLeaderboard() {
 
     referrals?.forEach((ref) => {
       const eventId = ref.event_id;
+      if (!eventId) return;
+
+      // Handle events relation - Supabase may return it as array or object
+      let eventData: {
+        id: string;
+        name: string | null;
+        route: string | null;
+        start_time_date: string | null;
+      } | null = null;
+
+      if (Array.isArray(ref.events)) {
+        eventData = ref.events[0] || null;
+      } else if (ref.events) {
+        eventData = ref.events as typeof eventData;
+      }
+
+      if (!eventData || !eventData.id) return;
+
       if (!groupedByEvent[eventId]) {
         groupedByEvent[eventId] = {
-          event: ref.events as {
-            id: string;
-            name: string | null;
-            route: string | null;
+          event: {
+            id: eventData.id,
+            name: eventData.name ?? null,
+            route: eventData.route ?? null,
           },
           referrals: [],
         };

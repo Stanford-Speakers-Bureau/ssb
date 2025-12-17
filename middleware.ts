@@ -18,7 +18,7 @@ function getAllowedOrigins(request: NextRequest): string[] {
   const host = request.headers.get("host") || "";
   const isProduction = process.env.NODE_ENV === "production";
 
-  const origins = [`https://${host}`, `http://${host}`];
+  const origins = [`https://${host}`];
 
   // Only allow localhost in development
   if (!isProduction) {
@@ -130,8 +130,7 @@ async function handleScannerRedirect(request: NextRequest) {
 /**
  * Proxy to enforce security policies on API routes and handle redirects
  */
-export async function proxy(request: NextRequest) {
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 

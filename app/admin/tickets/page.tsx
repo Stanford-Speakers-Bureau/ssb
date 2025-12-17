@@ -1,7 +1,26 @@
 import TicketManagementClient, { Ticket } from "./TicketManagementClient";
-import { verifyAdminRequest, getSupabaseClient } from "../../lib/supabase";
+import { verifyAdminRequest } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
+
+type EventData = {
+  id: string;
+  name: string | null;
+  route: string | null;
+  start_time_date: string | null;
+};
+
+type TicketRow = {
+  id: string;
+  email: string;
+  type: string | null;
+  created_at: string;
+  scanned: boolean;
+  scan_time: string | null;
+  referral: string | null;
+  event_id: string;
+  events: EventData | EventData[] | null;
+};
 
 async function getInitialTickets(): Promise<{
   tickets: Ticket[];
@@ -47,8 +66,30 @@ async function getInitialTickets(): Promise<{
       .from("tickets")
       .select("id", { count: "exact", head: true });
 
+    // Handle events relation - Supabase may return it as array or object
+    const typedTickets = (tickets || []) as TicketRow[];
+    const transformedTickets: Ticket[] = typedTickets.map((ticket) => {
+      let eventData: EventData | null = null;
+      if (Array.isArray(ticket.events)) {
+        eventData = ticket.events[0] || null;
+      } else if (ticket.events) {
+        eventData = ticket.events;
+      }
+      return {
+        ...ticket,
+        events: eventData
+          ? {
+              id: eventData.id,
+              name: eventData.name ?? null,
+              route: eventData.route ?? null,
+              start_time_date: eventData.start_time_date ?? null,
+            }
+          : null,
+      };
+    });
+
     return {
-      tickets: (tickets as Ticket[]) || [],
+      tickets: transformedTickets,
       total: count || 0,
     };
   } catch (error) {

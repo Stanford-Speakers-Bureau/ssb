@@ -11,7 +11,6 @@ import {
   isValidImageExtension,
   isValidImageSize,
   isValidDateString,
-  sanitizeString,
 } from "../../../lib/validation";
 
 export async function POST(req: Request) {
@@ -92,11 +91,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
-    // Sanitize text inputs
-    const sanitizedName = sanitizeString(name, 500);
-    const sanitizedDesc = sanitizeString(desc, 5000);
-    const sanitizedVenue = sanitizeString(venue, 200);
 
     let imgName: string | null = null;
 

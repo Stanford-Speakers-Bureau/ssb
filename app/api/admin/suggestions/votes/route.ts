@@ -20,7 +20,10 @@ export async function PATCH(req: Request) {
       !Number.isInteger(votes)
     ) {
       return NextResponse.json(
-        { error: "Invalid request: speaker_id and votes (non-negative integer) are required" },
+        {
+          error:
+            "Invalid request: speaker_id and votes (non-negative integer) are required",
+        },
         { status: 400 },
       );
     }
@@ -66,4 +69,3 @@ export async function PATCH(req: Request) {
     );
   }
 }
-
