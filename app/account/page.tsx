@@ -7,6 +7,7 @@ import {
   formatTime,
 } from "@/app/lib/supabase";
 import SignOutButton from "./SignOutButton";
+import { motion } from "motion/react";
 
 interface Ticket {
   id: string;
@@ -136,7 +137,7 @@ export default async function AccountPage() {
                       key={ticket.id}
                       className="bg-white dark:bg-zinc-800 rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
                             {event.name || "Event"}
@@ -210,12 +211,12 @@ export default async function AccountPage() {
                           </div>
                         </div>
                         {event.route && (
-                          <Link
-                            href={`/events/${event.route}`}
-                            className="px-4 py-2 text-sm font-semibold text-white bg-[#A80D0C] rounded transition-colors hover:bg-[#C11211] text-center whitespace-nowrap"
-                          >
-                            View Event
-                          </Link>
+                            <a
+                              href={`/events/${event.route}`}
+                              className="inline-flex items-center gap-2 rounded px-4 py-2 md:text-base text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
+                            >
+                              <span>View Event</span>
+                            </a>
                         )}
                       </div>
                     </div>
