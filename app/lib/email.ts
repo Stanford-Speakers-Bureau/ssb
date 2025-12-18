@@ -392,14 +392,14 @@ async function generateTicketEmailHTML(
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-family: monospace; word-break: break-all;">${ticketId}</td>
               </tr>
               ${
-                referralCode
+                referralCode && !(ticketType.toUpperCase() == "VIP")
                   ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Code:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500; font-family: monospace;">${referralCode}</td>
               </tr>
               ${
-                referralUrl
+                referralUrl && !(ticketType.toUpperCase() == "VIP")
                   ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Link:</td>
@@ -540,8 +540,8 @@ Event Details:
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
-${referralCode ? `- Your Referral Code: ${referralCode}` : ""}
-${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
+${referralCode && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Code: ${referralCode}` : ""}
+${referralUrl && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Link: ${referralUrl}` : ""}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
