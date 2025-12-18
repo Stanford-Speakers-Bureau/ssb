@@ -55,20 +55,27 @@ export default async function EventPage({ params }: PageProps) {
 
   const event = await getEventByRoute(eventID);
 
-  // If no event found or event is still a mystery, redirect to upcoming events
-  if (!event || isEventMystery(event)) {
+  if (!event) {
     redirect("/upcoming-speakers");
   }
 
-  // Get the signed image URL for the event and check if user has a ticket
-  const [signedImageUrl, ticketStatus] = await Promise.all([
-    getSignedImageUrl(event.img, 3600),
+  const [ticketStatus] = await Promise.all([
     getUserTicketStatus(event.id),
   ]);
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
+
+  // If no event found or event is still a mystery, redirect to upcoming events
+  if (isEventMystery(event) && !hasTicket) {
+    redirect("/upcoming-speakers");
+  }
+
+  // Get the signed image URL for the event and check if user has a ticket
+  const [signedImageUrl] = await Promise.all([
+    getSignedImageUrl(event.img, 3600),
+  ]);
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
