@@ -1,4 +1,9 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## stack
+- AWS simple email service
+- Hosted on Cloudflare Workers
+- Cloudflare R2 for image caching
+- Supabase Auth + DB
+- Upstash Redis for rate limiting
 
 ## supabase auth
 
