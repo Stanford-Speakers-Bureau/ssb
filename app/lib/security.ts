@@ -2,7 +2,6 @@ export const ALLOWED_REDIRECTS = [
   "/upcoming-speakers",
   "/events", // Also covers /events/[eventid] paths (e.g., /events/mark-rober)
   "/suggest",
-  "/admin",
   "/account",
   "/scan",
   "/",

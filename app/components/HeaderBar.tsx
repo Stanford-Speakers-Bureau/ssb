@@ -18,11 +18,10 @@ interface HeaderBarProps {
 
 export default function HeaderBar({ showBanner, bannerProps }: HeaderBarProps) {
   const pathname = usePathname();
-  const isAdminRoute = pathname.startsWith("/admin");
   const isScanRoute = pathname.startsWith("/scan");
   const isEventRoute = pathname.startsWith("/events/");
 
-  if (isAdminRoute || isScanRoute) {
+  if (isScanRoute) {
     return null;
   }
 
