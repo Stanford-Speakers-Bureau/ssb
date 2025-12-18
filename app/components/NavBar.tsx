@@ -71,7 +71,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           <div className="flex items-center gap-8 pt-2 flex-1">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/" className={logoClasses} prefetch={false}>
-                <Image src="/logo.png" alt="Logo" width={40} height={40} />
+                <Image src="/logo.png" alt="Stanford Speakers Bureau (SSB) Logo" width={40} height={40} />
               </Link>
             </motion.div>
             <div className="hidden items-center gap-6 md:flex flex-1">
@@ -201,6 +201,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/upcoming-speakers"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Upcoming Speakers
@@ -208,6 +209,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/past-speakers"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Past Speakers
@@ -215,6 +217,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/suggest"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Suggest
@@ -222,6 +225,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/event-sponsorship"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Event Sponsorship
@@ -229,6 +233,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/team"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Team
@@ -236,6 +241,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Link
                   href="/contact"
                   className={mobileLinkClasses}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Contact
@@ -245,6 +251,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     <Link
                       href="/account"
                       className={mobileLinkClasses}
+                      prefetch={false}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Account
@@ -253,6 +260,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     <Link
                       href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
                       className={mobileLinkClasses}
+                      prefetch={false}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Sign In

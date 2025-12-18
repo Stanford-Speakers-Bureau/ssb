@@ -10,6 +10,7 @@ import {
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
+import WaitForImages from "@/app/components/WaitForImages";
 
 type SanitizedEvent = {
   id: string;
@@ -59,7 +60,22 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
     return [];
   }
 
-  const events = data || [];
+  const events = (data || []) as Array<{
+    id: string;
+    start_time_date: string | null;
+    doors_open: string | null;
+    venue: string | null;
+    venue_link: string | null;
+    name: string | null;
+    desc: string | null;
+    tagline: string | null;
+    route: string | null;
+    img: string | null;
+    capacity: number | null;
+    reserved: number | null;
+    speaker_id?: string | null;
+    release_date: string | null;
+  }>;
 
   return await Promise.all(
     events.map(async (event) => {
@@ -137,41 +153,57 @@ export default async function UpcomingSpeakers() {
           ) : (
             <div className="space-y-8">
               {events.map((event) => (
-                <UpcomingSpeakerCard
+                <WaitForImages
                   key={event.id}
-                  name={event.isMystery ? "???" : event.name || "???"}
-                  header={
-                    event.isMystery
-                      ? "Speaker — To Be Announced"
-                      : event.tagline || ""
+                  urls={event.signedImageUrl ? [event.signedImageUrl] : []}
+                  maxToWait={1}
+                  timeoutMs={12000}
+                  fallback={
+                    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black">
+                      <div className="flex items-center gap-3 text-zinc-200">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="text-sm font-medium">Loading…</span>
+                      </div>
+                    </div>
                   }
-                  dateText={formatEventDate(event.start_time_date)}
-                  doorsOpenText={
-                    !event.isMystery && event.doors_open
-                      ? `Doors open at ${formatTime(event.doors_open)}`
-                      : ""
-                  }
-                  eventTimeText={
-                    event.start_time_date
-                      ? `Event starts at ${formatTime(event.start_time_date)}`
-                      : ""
-                  }
-                  locationName={event.isMystery ? "" : event.venue || ""}
-                  locationUrl={event.isMystery ? "" : event.venue_link || ""}
-                  backgroundImageUrl={
-                    event.isMystery
-                      ? "/speakers/mystery.jpg"
-                      : event.signedImageUrl || "/speakers/mystery.jpg"
-                  }
-                  ctaHref={event.isMystery ? "" : `/events/${event.route}`}
-                  ctaText={event.isMystery ? "" : "Get Tickets"}
-                  mystery={event.isMystery}
-                  eventId={event.id}
-                  isAlreadyNotified={userNotifications.has(event.id)}
-                  capacity={event.capacity}
-                  ticketsSold={event.ticketsSold}
-                  reserved={event.reserved}
-                />
+                >
+
+                  <UpcomingSpeakerCard
+                    key={event.id}
+                    name={event.isMystery ? "???" : event.name || "???"}
+                    header={
+                      event.isMystery
+                        ? "Speaker — To Be Announced"
+                        : event.tagline || ""
+                    }
+                    dateText={formatEventDate(event.start_time_date)}
+                    doorsOpenText={
+                      !event.isMystery && event.doors_open
+                        ? `Doors open at ${formatTime(event.doors_open)}`
+                        : ""
+                    }
+                    eventTimeText={
+                      event.start_time_date
+                        ? `Event starts at ${formatTime(event.start_time_date)}`
+                        : ""
+                    }
+                    locationName={event.isMystery ? "" : event.venue || ""}
+                    locationUrl={event.isMystery ? "" : event.venue_link || ""}
+                    backgroundImageUrl={
+                      event.isMystery
+                        ? "/speakers/mystery.jpg"
+                        : event.signedImageUrl || "/speakers/mystery.jpg"
+                    }
+                    ctaHref={event.isMystery ? "" : `/events/${event.route}`}
+                    ctaText={event.isMystery ? "" : "Get Tickets"}
+                    mystery={event.isMystery}
+                    eventId={event.id}
+                    isAlreadyNotified={userNotifications.has(event.id)}
+                    capacity={event.capacity}
+                    ticketsSold={event.ticketsSold}
+                    reserved={event.reserved}
+                  />
+                </WaitForImages>
               ))}
             </div>
           )}

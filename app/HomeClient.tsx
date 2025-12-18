@@ -16,7 +16,7 @@ export default function HomeClient() {
         <Image
           className="object-cover"
           src="/speakers/john-green.jpg"
-          alt="Hero image"
+          alt="John Green speaking at Stanford University from Stanford Speakers Bureau (SSB)"
           priority
           fill
           sizes="100vw"
@@ -120,7 +120,7 @@ export default function HomeClient() {
             <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mark-rober.jpeg"
-                alt="Mark Rober"
+                alt="Mark Rober speaking at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -144,7 +144,7 @@ export default function HomeClient() {
             <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/jojo-siwa.jpg"
-                alt="JoJo Siwa"
+                alt="JoJo Siwa speaking at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -168,7 +168,7 @@ export default function HomeClient() {
             <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
                 src="/speakers/mikey-day.JPG"
-                alt="Mikey Day"
+                alt="Mikey Day speaking at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -211,7 +211,7 @@ export default function HomeClient() {
             <div className="relative rounded overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/meeting.JPG"
-                alt="Co-Sponsorships"
+                alt="Students meeting to discuss who will speak at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -242,7 +242,7 @@ export default function HomeClient() {
             <div className="relative rounded overflow-hidden shadow-lg min-h-[400px] flex flex-col justify-end p-6 sm:p-8">
               <Image
                 src="/coffee-chat.jpg"
-                alt="Coffee Chats"
+                alt="Coffee Chats at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"

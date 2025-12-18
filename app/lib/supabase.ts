@@ -308,7 +308,9 @@ export function isEventMystery(event: {
   release_date: string | null;
   name: string | null;
 }): boolean {
-  // return false; // ONLY FOR TESTING
+  if (process.env.LOCAL_EVENTS_ENABLED === "true") {
+    return false;
+  }
   const now = new Date();
   const releaseDateStr = event.release_date;
   if (releaseDateStr == null) {

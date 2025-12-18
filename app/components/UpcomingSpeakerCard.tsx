@@ -42,8 +42,6 @@ export default function UpcomingSpeakerCard({
   ctaHref = "",
   backgroundImageUrl = "",
   mystery = false,
-  googleCalendarUrl = "",
-  appleCalendarUrl = "",
   eventId = "",
   isAlreadyNotified = false,
   capacity = null,
@@ -86,12 +84,6 @@ export default function UpcomingSpeakerCard({
   const [notifyMessage, setNotifyMessage] = useState(
     isAlreadyNotified ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP : "",
   );
-  const [imageLoaded, setImageLoaded] = useState(!backgroundImageUrl);
-
-  // If the background URL changes, treat it as "not loaded yet" until the new image finishes.
-  useEffect(() => {
-    setImageLoaded(!backgroundImageUrl);
-  }, [backgroundImageUrl]);
 
   // Sync state with prop when it changes (e.g., after redirect and page refresh)
   useEffect(() => {
@@ -139,63 +131,6 @@ export default function UpcomingSpeakerCard({
     }
   };
 
-  if (!imageLoaded && backgroundImageUrl) {
-    return (
-      <div className="relative rounded p-8 shadow-sm overflow-hidden bg-zinc-900">
-        {/* Hidden optimized Image to trigger load completion */}
-        <div className="absolute inset-0 z-0">
-          <div className="relative w-full h-full">
-            <Image
-              src={backgroundImageUrl}
-              alt=""
-              fill
-              className="object-cover opacity-0"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)}
-              quality={90}
-              unoptimized
-            />
-          </div>
-        </div>
-        <div className="flex flex-col h-full">
-          {/* Title / Name */}
-          <div className="h-8 md:h-9 bg-zinc-800 rounded-md w-3/4 mb-2 animate-pulse"></div>
-
-          {/* Subtitle / Header */}
-          <div className="h-5 md:h-6 bg-zinc-800 rounded-md w-1/2 mb-6 animate-pulse"></div>
-
-          {/* Meta Information Section */}
-          <div className="space-y-3 mb-6 flex-1">
-            {/* Date */}
-            <div className="flex items-center gap-2 animate-pulse">
-              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
-              <div className="h-4 bg-zinc-800 rounded w-48"></div>
-            </div>
-            {/* Doors Open */}
-            <div className="flex items-center gap-2 animate-pulse">
-              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
-              <div className="h-4 bg-zinc-800 rounded w-40"></div>
-            </div>
-            {/* Event Time */}
-            <div className="flex items-center gap-2 animate-pulse">
-              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
-              <div className="h-4 bg-zinc-800 rounded w-36"></div>
-            </div>
-            {/* Location */}
-            <div className="flex items-center gap-2 animate-pulse">
-              <div className="w-5 h-5 bg-zinc-800 rounded shrink-0"></div>
-              <div className="h-4 bg-zinc-800 rounded w-56"></div>
-            </div>
-          </div>
-
-          {/* Button Placeholder */}
-          <div className="h-10 w-32 bg-zinc-800 rounded-md mt-auto animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative isolate rounded p-8 shadow-sm overflow-hidden">
       {/* Background Image */}
@@ -209,9 +144,7 @@ export default function UpcomingSpeakerCard({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority={false}
-              quality={90}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)}
+              quality={70}
               unoptimized
             />
           </div>
