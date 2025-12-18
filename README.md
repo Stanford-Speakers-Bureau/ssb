@@ -1,11 +1,47 @@
-## stack
+# Stanford Speakers Bureau Site
+Custom designed ticketing system to allow for referral tracking and more powerful analytics built in.
+
+## Stack
 - AWS simple email service
-- Hosted on Cloudflare Workers
+- Hosted on Cloudflare Workers using Open Next
 - Cloudflare R2 for image caching
 - Supabase Auth + DB
 - Upstash Redis for rate limiting
 
-## supabase auth
+## Development
+
+### Dev Env
+
+for local dev these must be set
+```
+SUPABASE_URL=
+SUPABASE_KEY=
+SUPABASE_KEY_PUBLIC=
+NEXT_PUBLIC_BASE_URL=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+SES_FROM_EMAIL=
+AWS_REGION=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+```
+additional config options:
+```
+DISABLE_EMAIL=(setting this to true disabled sending emails while debugging)
+LOCAL_EVENTS_ENABLED=(settings this to true shows all events)
+```
+
+### Prod Env
+these must be set in your ```wrangler.jsonc``` or ```wrangler.toml```
+```
+SUPABASE_URL
+NEXT_PUBLIC_BASE_URL
+UPSTASH_REDIS_REST_URL
+SES_FROM_EMAIL
+AWS_REGION
+```
+
+### Authenticating Locally
 
 whitelist:
 
@@ -15,37 +51,7 @@ http://localhost:3000/callback/auth*
 
 @ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## todo:
+- apple wallet 
+- google wallet
+- 
