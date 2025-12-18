@@ -50,8 +50,3 @@ http://localhost:3000/callback/auth*
 ```
 
 @ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration
-
-## todo:
-- apple wallet 
-- google wallet
-- 
