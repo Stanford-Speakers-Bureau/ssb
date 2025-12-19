@@ -342,7 +342,7 @@ async function generateTicketEmailHTML(
           <img src="${logoUrl}" alt="Stanford Speakers Bureau Logo" class="logo" style="width: 60px; height: 60px; margin: 0 auto; display: block;" />
         </div>
         <h2 class="header-subtitle" style="margin: 0 0 12px 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</h2>
-        <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">Ticket Confirmed!</h1>
+        <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">Your seat is reserved!</h1>
       </td>
     </tr>
     
@@ -351,7 +351,7 @@ async function generateTicketEmailHTML(
       <td align="center" class="email-container" style="padding: 40px 20px; max-width: 900px; width: 100%;">
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           <p style="margin: 0 0 24px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
-            Thank you for your ticket purchase. Your ticket has been confirmed!
+            Your ticket is enclosed below. We can't wait to see you!
           </p>
           
           <!-- Ticket Details Card -->
@@ -564,7 +564,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     return;
   }
 
-  const subject = `Your Ticket Confirmation - ${data.eventName || "Event"}`;
+  const subject = data.eventName ? `Your Ticket for ${data.eventName} is enclosed!` : "Your Ticket is enclosed!";
   const textContent = generateTicketEmailText(data);
 
   // Generate QR and prepare cid
