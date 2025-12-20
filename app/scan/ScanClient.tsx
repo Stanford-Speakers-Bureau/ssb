@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
+import {isValidEmail} from "@/app/lib/validation";
 
 type TicketStatus = "scanned" | "already_scanned" | "invalid" | null;
 
@@ -31,12 +32,13 @@ export default function ScanClient() {
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [spinTime, setSpinTime] = useState<number>(2.0);
-  const [isProcessingScan, setIsProcessingScan] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<
     "prompt" | "granted" | "denied" | "checking"
   >("prompt");
   const [cameraStarted, setCameraStarted] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
+  const [email, setEmail] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
@@ -203,13 +205,13 @@ export default function ScanClient() {
 
     // Don't pause scanner - keep it running to avoid showing "paused" message
 
-    setIsProcessingScan(true);
+    setIsLoading(true);
     setSpinTime(0.5);
     try {
       const response = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: id.trim() }),
+        body: JSON.stringify({ ticket_id: id.trim(), email: null, event_id: null }),
       });
 
       const data = await response.json();
@@ -247,10 +249,62 @@ export default function ScanClient() {
         statusTimeoutRef.current = null;
       }, 3000);
     } finally {
-      setIsProcessingScan(false);
+      setIsLoading(false);
       setSpinTime(2.0);
     }
   }, []);
+
+  const handleEmailSubmit = useCallback(async () => {
+    if (!email.trim() || !isValidEmail(email)) return;
+
+    setIsLoading(true);
+    setSpinTime(0.5);
+    try {
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: null, email: email.trim(), event_id: liveEvent?.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update with new scan results
+        setStatus(data.status);
+        setTicketInfo(data.ticket);
+      } else {
+        // Handle error responses that still have status info
+        if (data.status) {
+          setStatus(data.status);
+          setTicketInfo(data.ticket);
+        } else {
+          setStatus("invalid");
+          setTicketInfo(null);
+        }
+      }
+
+      // Clear status after 5 seconds
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 5000);
+    } catch (error) {
+      console.error("Scan error:", error);
+      setStatus("invalid");
+      setTicketInfo(null);
+
+      // Clear status after 3 seconds even on error
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
+    } finally {
+      setIsLoading(false);
+      setSpinTime(2.0);
+    }
+  }, [email, liveEvent?.id]);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -678,7 +732,7 @@ export default function ScanClient() {
                   object-fit: cover !important;
                 }
                 ${
-                  isProcessingScan
+                  isLoading
                     ? `
                   #qr-reader video {
                     filter: blur(12px) !important;
@@ -725,10 +779,10 @@ export default function ScanClient() {
                       id="qr-reader"
                       ref={scanAreaRef}
                       className={`w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 relative ${
-                        isProcessingScan ? "blur-md" : ""
+                        isLoading ? "blur-md" : ""
                       }`}
                     />
-                    {isProcessingScan && (
+                    {isLoading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
                         <div className="text-center">
                           <div className="inline-flex items-center gap-3 mb-2">
@@ -754,7 +808,7 @@ export default function ScanClient() {
                             </svg>
                           </div>
                           <p className="text-white text-xl sm:text-2xl font-bold">
-                            Processing QR Code...
+                            Processing...
                           </p>
                           <p className="text-white/80 text-sm sm:text-base mt-1">
                             Please wait
@@ -773,6 +827,27 @@ export default function ScanClient() {
                     {cameraError}
                   </p>
                 )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="referral-code-input"
+                  type="text"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  placeholder="Enter their email"
+                  className={`w-full min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm focus:outline-none  placeholder:text-zinc-400`}
+                />
+                <motion.button
+                  whileHover={isLoading ? {} : { scale: 1.05 }}
+                  whileTap={isLoading ? {} : { scale: 0.95 }}
+                  onClick={handleEmailSubmit}
+                  disabled={isLoading}
+                  className="rounded px-4 py-2 text-sm font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-auto"
+                >
+                  ✓
+                </motion.button>
               </div>
             </>
           )}
