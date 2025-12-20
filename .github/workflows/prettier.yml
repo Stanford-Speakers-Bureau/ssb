@@ -1,0 +1,14 @@
+name: prettier.yml
+on:
+  [pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prettier Action
+        uses: creyD/prettier_action@v4.6
+        with:
+          prettier_options: --check
+          dry: true
+          no_commit: true
