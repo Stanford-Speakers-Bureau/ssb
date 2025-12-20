@@ -46,7 +46,6 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     teamIdentifier: "SNC2X5N2CY",                    // Your Apple Team ID
     serialNumber: ticket.ticketId,                       // Unique ID for THIS specific pass
     organizationName: "Stanford Speakers Bureau",
-    type: "eventTicket",
 
     // --- Appearance ---
     description: ticket.ticketType,
@@ -62,62 +61,60 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
         altText: ticket.email
       }
     ],
-
-    eventTicket: {
-      primaryFields: [
-        {
-          key: "event",
-          label: "Event",
-          value: ticket.eventName,
-          textAlignment: "PKTextAlignmentCenter"
-        }
-      ],
-      secondaryFields: [
-        {
-          key: "type",
-          label: "Type",
-          value: ticket.ticketType
-        },
-        {
-          key: "loc",
-          label: "Location",
-          value: ticket.eventVenue
-        }
-      ],
-      auxiliaryFields: [
-        {
-          key: "door-time",
-          label: "Doors Open",
-          value: new Intl.DateTimeFormat("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-            timeZone: PACIFIC_TIMEZONE,
-          }).format(new Date(ticket.eventDoorTime))
-        },
-        {
-          key: "start-time",
-          label: "Start Time",
-          value: new Intl.DateTimeFormat("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-            timeZone: PACIFIC_TIMEZONE,
-          }).format(new Date(ticket.eventStartTime))
-        }
-      ]
-    }
   };
 
   const pass = new PKPass(buffers, certificates, props);
+  pass.type = "eventTicket";
+  pass.primaryFields.push(
+    {
+      key: "event",
+      label: "Event",
+      value: ticket.eventName,
+      textAlignment: "PKTextAlignmentCenter"
+    }
+  )
+  pass.secondaryFields.push(
+    {
+      key: "type",
+      label: "Type",
+      value: ticket.ticketType
+    },
+    {
+      key: "loc",
+      label: "Location",
+      value: ticket.eventVenue
+    }
+  )
+  pass.auxiliaryFields.push(
+    {
+      key: "door-time",
+      label: "Doors Open",
+      value: new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.eventDoorTime))
+    },
+    {
+      key: "start-time",
+      label: "Start Time",
+      value: new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.eventStartTime))
+    }
+  )
 
   return pass.getAsBuffer();
 }
