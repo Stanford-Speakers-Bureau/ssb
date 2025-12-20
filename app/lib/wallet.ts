@@ -46,6 +46,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     teamIdentifier: "SNC2X5N2CY",                    // Your Apple Team ID
     serialNumber: ticket.ticketId,                       // Unique ID for THIS specific pass
     organizationName: "Stanford Speakers Bureau",
+    type: "eventTicket",
 
     // --- Appearance ---
     description: ticket.ticketType,
@@ -117,7 +118,6 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   };
 
   const pass = new PKPass(buffers, certificates, props);
-  pass.type = "eventTicket";
 
   return pass.getAsBuffer();
 }
