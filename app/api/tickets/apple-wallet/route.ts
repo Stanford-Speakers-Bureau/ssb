@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 import {createServerSupabaseClient, getSignedImageUrl, getSupabaseClient} from "@/app/lib/supabase";
 import {getWalletPass} from "@/app/lib/wallet";
 
@@ -113,17 +113,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Create response with the pass data
-  const response = new NextResponse(passBuf as BodyInit, {
-    status: 200,
-    headers: {
-      // This tells the browser/phone "This is an Apple Wallet Pass"
-      'Content-Type': 'application/vnd.apple.pkpass',
-      // This gives the file a name when downloaded
-      'Content-Disposition': 'attachment; filename=event-ticket.pkpass',
-    },
-  });
-
-    return response;
+    return new NextResponse(passBuf as BodyInit, {
+      status: 200,
+      headers: {
+        // This tells the browser/phone "This is an Apple Wallet Pass"
+        'Content-Type': 'application/vnd.apple.pkpass',
+        // This gives the file a name when downloaded
+        'Content-Disposition': 'attachment; filename=event-ticket.pkpass',
+      },
+    });
   } catch (error) {
     console.error('Error generating Apple Wallet pass:', error);
     return NextResponse.json(
