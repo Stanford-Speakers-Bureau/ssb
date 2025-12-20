@@ -20,17 +20,26 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-  const [logoRes] = await Promise.all([
+  const [logoTextRes, logoRes] = await Promise.all([
     fetch(`${baseUrl}/logo_text.png`),
+    fetch(`${baseUrl}/logo.png`),
   ]);
 
+  if (!logoTextRes.ok) throw new Error("Failed to load logo_text.png");
   if (!logoRes.ok) throw new Error("Failed to load logo.png");
 
-  const logoBuffer = Buffer.from(await logoRes.arrayBuffer());
+  const [logoTextBuffer, logoBuffer] = await Promise.all([
+    Buffer.from(await logoTextRes.arrayBuffer()),
+    Buffer.from(await logoRes.arrayBuffer())
+  ]);
 
   const buffers = {
-    "logo.png": logoBuffer,
+    "logo.png": logoTextBuffer,
+    "logo.png@2": logoTextBuffer,
+    "logo.png@3": logoTextBuffer,
     "icon.png": logoBuffer,
+    "icon.png@2": logoBuffer,
+    "icon.png@3": logoBuffer,
     "strip.png": image_buffer
   }
 
@@ -51,70 +60,60 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     description: ticket.ticketType,
     backgroundColor: "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
-    labelColor: "rgb(200, 200, 200)",
-
-    barcodes: [
-      {
-        format: "PKBarcodeFormatQR",
-        message: ticket.ticketId,
-        messageEncoding: "iso-8859-1",
-        altText: ticket.email
-      }
-    ],
+    labelColor: "rgb(255, 215, 0)",
   };
 
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
-  pass.primaryFields.push(
+  pass.headerFields.push(
     {
-      key: "event",
-      label: "Event",
-      value: ticket.eventName,
-      textAlignment: "PKTextAlignmentCenter"
+      key: "date-time",
+      label: new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.eventStartTime)),
+      value:
+        new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          timeZone: PACIFIC_TIMEZONE,
+        }).format(new Date(ticket.eventStartTime)),
+      textAlignment: "PKTextAlignmentLeft"
     }
   )
   pass.secondaryFields.push(
     {
-      key: "type",
-      label: "Type",
-      value: ticket.ticketType
+      key: "event",
+      label: "Event",
+      value: ticket.eventName,
+      textAlignment: "PKTextAlignmentLeft"
     },
     {
       key: "loc",
       label: "Location",
-      value: ticket.eventVenue
+      value: ticket.eventVenue,
+      textAlignment: "PKTextAlignmentLeft"
     }
   )
   pass.auxiliaryFields.push(
     {
-      key: "door-time",
-      label: "Doors Open",
-      value: new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.eventDoorTime))
+      key: "type",
+      label: "Type",
+      value: ticket.ticketType,
+      textAlignment: "PKTextAlignmentLeft"
     },
-    {
-      key: "start-time",
-      label: "Start Time",
-      value: new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.eventStartTime))
-    }
   )
+  pass.setBarcodes(
+    {
+      format: "PKBarcodeFormatQR",
+      message: ticket.ticketId,
+      messageEncoding: "iso-8859-1",
+      altText: ticket.email
+    }
+  );
 
   return pass.getAsBuffer();
 }
