@@ -18,19 +18,9 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     throw new Error('Missing required Apple Wallet environment variables');
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-  const [logoTextRes, logoRes] = await Promise.all([
-    fetch(`${baseUrl}/logo_text.png`),
-    fetch(`${baseUrl}/logo.png`),
-  ]);
-
-  if (!logoTextRes.ok) throw new Error("Failed to load logo_text.png");
-  if (!logoRes.ok) throw new Error("Failed to load logo.png");
-
   const [logoTextBuffer, logoBuffer] = await Promise.all([
-    Buffer.from(await logoTextRes.arrayBuffer()),
-    Buffer.from(await logoRes.arrayBuffer())
+    fs.promises.readFile(path.join(process.cwd(), "public", "logo_text.png")),
+    fs.promises.readFile(path.join(process.cwd(), "public", "logo.png")),
   ]);
 
   const buffers = {
@@ -50,13 +40,11 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   };
 
   const props = {
-    // --- Identity ---
-    passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket", // Must match your Apple Developer Portal ID
-    teamIdentifier: "SNC2X5N2CY",                    // Your Apple Team ID
-    serialNumber: ticket.ticketId,                       // Unique ID for THIS specific pass
+    passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
+    teamIdentifier: "SNC2X5N2CY",
+    serialNumber: ticket.ticketId,
     organizationName: "Stanford Speakers Bureau",
 
-    // --- Appearance ---
     description: ticket.ticketType,
     backgroundColor: "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
