@@ -167,7 +167,6 @@ export default async function UpcomingSpeakers() {
                     </div>
                   }
                 >
-
                   <UpcomingSpeakerCard
                     key={event.id}
                     name={event.isMystery ? "???" : event.name || "???"}

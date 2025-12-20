@@ -18,12 +18,14 @@ export default function SignOutButton() {
   };
 
   return (
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       onClick={handleSignOut}
       disabled={isSigningOut}
       className="rounded px-4 py-2 text-base font-semibold text-white shadow-lg bg-[#A80D0C] cursor-pointer transition-colors hover:bg-[#C11211]"
     >
-        {isSigningOut ? "Signing out..." : "Sign Out"}
+      {isSigningOut ? "Signing out..." : "Sign Out"}
     </motion.button>
   );
 }

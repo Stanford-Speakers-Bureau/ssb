@@ -12,15 +12,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { ticket_id } = body;
+    const { ticket_id, email, event_id } = body;
 
-    if (!ticket_id || typeof ticket_id !== "string") {
+    if (!ticket_id && !email && !event_id) {
       return NextResponse.json(
-        { error: "Missing required field: ticket_id" },
+        { error: "Missing required field: ticket_id and email and event_id" },
         { status: 400 },
       );
     }
-
     const adminClient = auth.adminClient!;
 
     // Get scanner's user information
@@ -55,14 +54,31 @@ export async function POST(req: Request) {
       );
     }
 
-    // First, check if the ticket exists and get its current status with user info
-    const { data: ticket, error: fetchError } = await adminClient
-      .from("tickets")
-      .select(
-        "id, type, scanned, scan_time, email, event_id, scan_user, scan_email",
-      )
-      .eq("id", ticket_id)
-      .single();
+    let ticket: any = null;
+    let fetchError: any = null;
+
+    const selectFields =
+      "id, type, scanned, scan_time, email, event_id, scan_user, scan_email";
+
+    if (ticket_id) {
+      const res = await adminClient
+        .from("tickets")
+        .select(selectFields)
+        .eq("id", ticket_id)
+        .single();
+      ticket = res.data;
+      fetchError = res.error;
+    } else if (email) {
+      const res = await adminClient
+        .from("tickets")
+        .select(selectFields)
+        .eq("email", email)
+        .eq("event_id", event_id)
+        .single();
+      ticket = res.data;
+      fetchError = res.error;
+    }
+    // don't need else here since we did a check above
 
     if (fetchError || !ticket) {
       return NextResponse.json(
@@ -142,7 +158,7 @@ export async function POST(req: Request) {
         scan_user: scannerName,
         scan_email: scannerEmail,
       })
-      .eq("id", ticket_id)
+      .eq("id", ticket.id)
       .select("id, type, scanned, scan_time, email, scan_user, scan_email")
       .single();
 
