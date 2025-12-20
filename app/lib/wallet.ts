@@ -25,7 +25,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
   if (!logoRes.ok) throw new Error("Failed to load logo.png");
 
-  const logoBuffer = await logoRes.arrayBuffer();
+  const logoBuffer = Buffer.from(await logoRes.arrayBuffer());
 
   const buffers = {
     "logo.png": logoBuffer,
