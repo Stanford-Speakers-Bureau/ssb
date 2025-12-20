@@ -1,6 +1,7 @@
 import {PKPass} from "passkit-generator";
 import * as fs from "node:fs";
 import path from "node:path";
+import {PACIFIC_TIMEZONE} from "@/app/lib/constants";
 
 type TicketWalletData = {
   email: string;
@@ -82,12 +83,30 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
         {
           key: "door-time",
           label: "DOOR OPEN TIME",
-          value: ticket.eventDoorTime
+          value: new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: PACIFIC_TIMEZONE,
+          }).format(new Date(ticket.eventDoorTime))
         },
         {
           key: "start-time",
           label: "EVENT START TIME",
-          value: ticket.eventStartTime
+          value: new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: PACIFIC_TIMEZONE,
+          }).format(new Date(ticket.eventStartTime))
         }
       ]
     }
