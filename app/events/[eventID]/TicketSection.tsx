@@ -30,8 +30,16 @@ export default function TicketSection({
   const [ticketType, setTicketType] = useState<string | null>(
     initialTicketType,
   );
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Check if the device is iOS
+    const checkIOS = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    };
+    setIsIOS(checkIOS());
+
     const handleTicketChange = async (event: Event) => {
       // When ticket changes, update state from event detail
       const customEvent = event as CustomEvent<{
@@ -88,13 +96,27 @@ export default function TicketSection({
       {hasTicket && (
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
           {ticketId && (
-            <div className="order-1 flex justify-center lg:order-1 lg:justify-self-start">
+            <div className="order-0 flex justify-center lg:order-0 lg:justify-self-start">
               <TicketQRCode
                 ticketId={ticketId}
                 size={190}
                 compact
                 ticketType={ticketType}
               />
+            </div>
+          )}
+          {isIOS && (
+            <div className="order-1 flex justify-center lg:justify-start">
+              <a
+                href={`/api/tickets/apple-wallet?event_id=${eventId}`}
+                className="inline-block"
+              >
+                <img
+                  src="/images/add-to-apple-wallet.svg"
+                  alt="Add to Apple Wallet"
+                  className="h-[48px] w-auto"
+                />
+              </a>
             </div>
           )}
           {referralCode && (

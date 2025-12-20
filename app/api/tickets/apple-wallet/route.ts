@@ -27,14 +27,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
-
-    const { event_id } = body;
+    const { searchParams } = new URL(req.url);
+    const event_id = searchParams.get('event_id');
 
     if (!event_id) {
       return NextResponse.json(

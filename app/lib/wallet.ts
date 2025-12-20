@@ -1,4 +1,4 @@
-import { PKPass } from "passkit-generator";
+import {PKPass} from "passkit-generator";
 import * as fs from "node:fs";
 
 type TicketWalletData = {
@@ -23,9 +23,9 @@ export function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
   }
 
   const certificates = {
-    wwdr: process.env.APPLE_WALLET_G4,
-    signerCert: process.env.APPLE_WALLET_CERT,
-    signerKey: process.env.APPLE_WALLET_KEY,
+    wwdr: Buffer.from(process.env.APPLE_WALLET_G4, 'base64').toString('utf-8'),
+    signerCert: Buffer.from(process.env.APPLE_WALLET_CERT, 'base64').toString('utf-8'),
+    signerKey: Buffer.from(process.env.APPLE_WALLET_KEY, 'base64').toString('utf-8'),
     signerKeyPassphrase: process.env.APPPLE_WALLET_PASSPHRASE
   };
 
@@ -84,6 +84,7 @@ export function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
   };
 
   const pass = new PKPass(buffers, certificates, props);
+  pass.type = "eventTicket";
 
   return pass.getAsBuffer();
 }
