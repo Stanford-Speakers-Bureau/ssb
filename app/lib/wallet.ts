@@ -48,7 +48,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
     // --- Appearance ---
     description: ticket.ticketType,
-    logoText: "Stanford Speakers Bureau",
+    logoText: "SSB",
     backgroundColor: "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
     labelColor: "rgb(200, 200, 200)",
