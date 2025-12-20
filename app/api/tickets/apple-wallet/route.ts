@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
       eventVenue: event.venue,
     }
 
-    const passBuf = getWalletPass(imgBuffer, ticketData);
+    const passBuf = await getWalletPass(imgBuffer, ticketData);
 
     if (!passBuf) {
       return NextResponse.json(

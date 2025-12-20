@@ -1,5 +1,6 @@
 import {PKPass} from "passkit-generator";
 import * as fs from "node:fs";
+import path from "node:path";
 
 type TicketWalletData = {
   email: string;
@@ -11,14 +12,24 @@ type TicketWalletData = {
   eventVenue: string;
 };
 
-export function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
+export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
   if (!process.env.APPLE_WALLET_G4 || !process.env.APPLE_WALLET_CERT || !process.env.APPLE_WALLET_KEY || !process.env.APPPLE_WALLET_PASSPHRASE) {
     throw new Error('Missing required Apple Wallet environment variables');
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  const [logoRes] = await Promise.all([
+    fetch(`${baseUrl}/logo.png`),
+  ]);
+
+  if (!logoRes.ok) throw new Error("Failed to load logo.png");
+
+  const logoBuffer = await logoRes.arrayBuffer();
+
   const buffers = {
-    "logo.png": fs.readFileSync("public/logo.png"),
-    "icon.png": fs.readFileSync("public/logo.png"),
+    "logo.png": logoBuffer,
+    "icon.png": logoBuffer,
     "strip.png": image_buffer
   }
 
