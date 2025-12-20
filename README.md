@@ -1,7 +1,9 @@
 # Stanford Speakers Bureau Site
+
 Custom designed ticketing system to allow for referral tracking and more powerful analytics built in.
 
 ## Stack
+
 - AWS simple email service
 - Hosted on Cloudflare Workers using Open Next
 - Cloudflare R2 for image caching
@@ -13,6 +15,7 @@ Custom designed ticketing system to allow for referral tracking and more powerfu
 ### Dev Env
 
 for local dev these must be set
+
 ```
 SUPABASE_URL=
 SUPABASE_KEY=
@@ -25,14 +28,18 @@ AWS_REGION=
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 ```
+
 additional config options:
+
 ```
 DISABLE_EMAIL=(setting this to true disabled sending emails while debugging)
 LOCAL_EVENTS_ENABLED=(settings this to true shows all events)
 ```
 
 ### Prod Env
-these must be set in your ```wrangler.jsonc``` or ```wrangler.toml```
+
+these must be set in your `wrangler.jsonc` or `wrangler.toml`
+
 ```
 SUPABASE_URL
 NEXT_PUBLIC_BASE_URL

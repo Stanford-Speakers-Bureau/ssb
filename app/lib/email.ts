@@ -1,8 +1,8 @@
-import {SendEmailCommand, SESv2Client} from "@aws-sdk/client-sesv2";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
 import type { QRCodeToBufferOptions } from "qrcode";
-import {PACIFIC_TIMEZONE} from "./constants";
-import {generateGoogleCalendarUrl, generateReferralCode} from "./utils";
+import { PACIFIC_TIMEZONE } from "./constants";
+import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // Initialize SES client
 const sesClient = new SESv2Client({
@@ -167,7 +167,9 @@ function generateICalContent(data: TicketEmailData): string {
 /**
  * Generate QR code PNG as a Buffer for attaching to an email
  */
-async function generateQRCodePngBuffer(ticketId: string): Promise<Buffer | null> {
+async function generateQRCodePngBuffer(
+  ticketId: string,
+): Promise<Buffer | null> {
   try {
     const options: QRCodeToBufferOptions = {
       errorCorrectionLevel: "H",
@@ -440,16 +442,16 @@ async function generateTicketEmailHTML(
               <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
             </div>
             ${
-                isVIP
-                  ? `
+              isVIP
+                ? `
             <div style="margin-top: 12px;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #A80D0C; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
                 VIP
               </span>
             </div>
             `
-                  : ""
-              }
+                : ""
+            }
             <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Show this QR code at the event entrance for quick check-in.
             </p>
@@ -599,7 +601,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     `Content-Transfer-Encoding: 7bit`,
     "",
     textContent,
-    ""
+    "",
   );
 
   if (qrBuffer) {
@@ -624,7 +626,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
       qrBase64,
       "",
       `--${relBoundary}--`,
-      ""
+      "",
     );
   } else {
     // No QR image; include HTML directly
@@ -634,7 +636,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
       `Content-Transfer-Encoding: 7bit`,
       "",
       htmlContent,
-      ""
+      "",
     );
   }
 
@@ -651,7 +653,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
       `Content-Disposition: attachment; filename="stanford-speakers-bureau-event.ics"`,
       "",
       icsBase64,
-      ""
+      "",
     );
   }
 

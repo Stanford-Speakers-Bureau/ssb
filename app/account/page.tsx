@@ -211,12 +211,12 @@ export default async function AccountPage() {
                           </div>
                         </div>
                         {event.route && (
-                            <a
-                              href={`/events/${event.route}`}
-                              className="inline-flex items-center gap-2 rounded px-4 py-2 md:text-base text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
-                            >
-                              <span>View Event</span>
-                            </a>
+                          <a
+                            href={`/events/${event.route}`}
+                            className="inline-flex items-center gap-2 rounded px-4 py-2 md:text-base text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
+                          >
+                            <span>View Event</span>
+                          </a>
                         )}
                       </div>
                     </div>

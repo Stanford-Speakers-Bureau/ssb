@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
-import {isValidEmail} from "@/app/lib/validation";
+import { isValidEmail } from "@/app/lib/validation";
 
 type TicketStatus = "scanned" | "already_scanned" | "invalid" | null;
 
@@ -211,7 +211,11 @@ export default function ScanClient() {
       const response = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: id.trim(), email: null, event_id: null }),
+        body: JSON.stringify({
+          ticket_id: id.trim(),
+          email: null,
+          event_id: null,
+        }),
       });
 
       const data = await response.json();
@@ -263,7 +267,11 @@ export default function ScanClient() {
       const response = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: null, email: email.trim(), event_id: liveEvent?.id }),
+        body: JSON.stringify({
+          ticket_id: null,
+          email: email.trim(),
+          event_id: liveEvent?.id,
+        }),
       });
 
       const data = await response.json();

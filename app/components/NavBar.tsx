@@ -71,7 +71,12 @@ export default function NavBar({ banner }: { banner: boolean }) {
           <div className="flex items-center gap-8 pt-2 flex-1">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/" className={logoClasses} prefetch={false}>
-                <Image src="/logo.png" alt="Stanford Speakers Bureau (SSB) Logo" width={40} height={40} />
+                <Image
+                  src="/logo.png"
+                  alt="Stanford Speakers Bureau (SSB) Logo"
+                  width={40}
+                  height={40}
+                />
               </Link>
             </motion.div>
             <div className="hidden items-center gap-6 md:flex flex-1">

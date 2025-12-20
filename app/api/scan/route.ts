@@ -54,31 +54,31 @@ export async function POST(req: Request) {
       );
     }
 
-  let ticket: any = null;
-  let fetchError: any = null;
+    let ticket: any = null;
+    let fetchError: any = null;
 
-  const selectFields =
-    "id, type, scanned, scan_time, email, event_id, scan_user, scan_email";
+    const selectFields =
+      "id, type, scanned, scan_time, email, event_id, scan_user, scan_email";
 
-  if (ticket_id) {
-    const res = await adminClient
-      .from("tickets")
-      .select(selectFields)
-      .eq("id", ticket_id)
-      .single();
-    ticket = res.data;
-    fetchError = res.error;
-  } else if (email){
-    const res = await adminClient
-      .from("tickets")
-      .select(selectFields)
-      .eq("email", email)
-      .eq("event_id", event_id)
-      .single();
-    ticket = res.data;
-    fetchError = res.error;
-  }
-  // don't need else here since we did a check above
+    if (ticket_id) {
+      const res = await adminClient
+        .from("tickets")
+        .select(selectFields)
+        .eq("id", ticket_id)
+        .single();
+      ticket = res.data;
+      fetchError = res.error;
+    } else if (email) {
+      const res = await adminClient
+        .from("tickets")
+        .select(selectFields)
+        .eq("email", email)
+        .eq("event_id", event_id)
+        .single();
+      ticket = res.data;
+      fetchError = res.error;
+    }
+    // don't need else here since we did a check above
 
     if (fetchError || !ticket) {
       return NextResponse.json(

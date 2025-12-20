@@ -59,9 +59,7 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  const [ticketStatus] = await Promise.all([
-    getUserTicketStatus(event.id),
-  ]);
+  const [ticketStatus] = await Promise.all([getUserTicketStatus(event.id)]);
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
