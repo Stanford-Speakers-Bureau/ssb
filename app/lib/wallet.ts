@@ -67,22 +67,27 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
       primaryFields: [
         {
           key: "event",
-          label: "EVENT",
+          label: "Event",
           value: ticket.eventName,
           textAlignment: "PKTextAlignmentCenter"
         }
       ],
       secondaryFields: [
         {
+          key: "type",
+          label: "Type",
+          value: ticket.ticketType
+        },
+        {
           key: "loc",
-          label: "LOCATION",
+          label: "Location",
           value: ticket.eventVenue
         }
       ],
       auxiliaryFields: [
         {
           key: "door-time",
-          label: "DOOR OPEN TIME",
+          label: "Doors Open",
           value: new Intl.DateTimeFormat("en-US", {
             weekday: "long",
             year: "numeric",
@@ -96,7 +101,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
         },
         {
           key: "start-time",
-          label: "EVENT START TIME",
+          label: "Start Time",
           value: new Intl.DateTimeFormat("en-US", {
             weekday: "long",
             year: "numeric",
