@@ -21,7 +21,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   const [logoRes] = await Promise.all([
-    fetch(`${baseUrl}/logo.png`),
+    fetch(`${baseUrl}/logo_text.png`),
   ]);
 
   if (!logoRes.ok) throw new Error("Failed to load logo.png");
@@ -49,7 +49,6 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
     // --- Appearance ---
     description: ticket.ticketType,
-    logoText: "SSB",
     backgroundColor: "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
     labelColor: "rgb(200, 200, 200)",
