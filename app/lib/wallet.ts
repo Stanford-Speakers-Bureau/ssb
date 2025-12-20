@@ -13,7 +13,7 @@ type TicketWalletData = {
 };
 
 export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
-  if (!process.env.APPLE_WALLET_G4 || !process.env.APPLE_WALLET_CERT || !process.env.APPLE_WALLET_KEY || !process.env.APPPLE_WALLET_PASSPHRASE) {
+  if (!process.env.APPLE_WALLET_G4 || !process.env.APPLE_WALLET_CERT || !process.env.APPLE_WALLET_KEY || !process.env.APPLE_WALLET_PASSPHRASE) {
     throw new Error('Missing required Apple Wallet environment variables');
   }
 
