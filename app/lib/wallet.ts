@@ -17,8 +17,8 @@ export function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
   }
 
   const buffers = {
-    "logo.png": fs.readFileSync("./public/logo.png"),
-    "icon.png": fs.readFileSync("./public/logo.png"),
+    "logo.png": fs.readFileSync("public/logo.png"),
+    "icon.png": fs.readFileSync("public/logo.png"),
     "strip.png": image_buffer
   }
 
