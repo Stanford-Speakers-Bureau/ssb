@@ -477,11 +477,6 @@ async function generateTicketEmailHTML(
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
               <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
-              <div style="margin-top: 16px; text-align: center;">
-                <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer" style="display: inline-block;">
-                  <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" style="height: 48px; width: auto;" />
-                </a>
-              </div>
             </div>
             ${
               isVIP
@@ -494,6 +489,11 @@ async function generateTicketEmailHTML(
             `
                 : ""
             }
+            <div style="margin-top: 16px; text-align: center;">
+              <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer" style="display: inline-block;">
+                <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" style="height: 48px; width: auto;" />
+              </a>
+            </div>
             <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Show this QR code at the event entrance for quick check-in.
             </p>
