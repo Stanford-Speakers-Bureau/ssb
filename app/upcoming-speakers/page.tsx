@@ -177,7 +177,7 @@ export default async function UpcomingSpeakers() {
                     }
                     dateText={formatEventDate(event.start_time_date)}
                     doorsOpenText={
-                      !event.isMystery && event.doors_open
+                      event.doors_open
                         ? `Doors open at ${formatTime(event.doors_open)}`
                         : ""
                     }
