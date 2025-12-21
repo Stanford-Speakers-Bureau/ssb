@@ -11,7 +11,7 @@ import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { sendTicketEmail } from "@/app/lib/email";
 
 const TICKET_MESSAGES = {
-  SUCCESS: "Ticket created successfully!",
+  SUCCESS: "You're ticket has been emailed to you!d",
   DELETED: "Ticket cancelled successfully!",
   ERROR_GENERIC: "Something went wrong. Please try again.",
   ERROR_MISSING_EVENT_ID: "Missing required field: event_id",

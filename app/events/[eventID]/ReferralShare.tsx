@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {REFERRAL_MESSAGE} from "@/app/lib/constants";
 
 type ReferralShareProps = {
   referralCode: string;
@@ -84,9 +85,9 @@ export default function ReferralShare({
             <span className="text-red-400">{referralCode}</span>
           </p>
           <p className="text-zinc-300 text-sm sm:text-base">
-            Share this link with friends to get them tickets!
+            {REFERRAL_MESSAGE}{" "}
             {referralCount !== null && (
-              <span className="ml-2 text-white font-medium">
+              <span className="text-white font-medium">
                 ({referralCount}{" "}
                 {referralCount === 1 ? "referral" : "referrals"})
               </span>
