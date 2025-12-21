@@ -2,7 +2,6 @@ import {PKPass} from "passkit-generator";
 import * as fs from "node:fs";
 import path from "node:path";
 import {PACIFIC_TIMEZONE} from "@/app/lib/constants";
-import sharp from "sharp";
 
 type TicketWalletData = {
   email: string;
@@ -20,30 +19,36 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   }
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-  const [logoTextRes, logoRes] = await Promise.all([
-    fetch(`${baseUrl}/logo_text.png`),
-    fetch(`${baseUrl}/logo.png`),
+  const [logoText1xRes, logoText2xRes, logoText3xRes, logo1xRes, logo2xRes, logo3xRes] = await Promise.all([
+    fetch(`${baseUrl}/wallet/logo_text1x.png`),
+    fetch(`${baseUrl}/wallet/logo_text2x.png`),
+    fetch(`${baseUrl}/wallet/logo_text3x.png`),
+    fetch(`${baseUrl}/wallet/logo1x.png`),
+    fetch(`${baseUrl}/wallet/logo2x.png`),
+    fetch(`${baseUrl}/wallet/logo3x.png`),
   ]);
 
-  if (!logoTextRes.ok) throw new Error("Failed to load logo_text.png");
-  if (!logoRes.ok) throw new Error("Failed to load logo.png");
+  if (!logoText1xRes.ok || !logoText2xRes.ok || !logoText3xRes.ok) throw new Error("Failed to load logo_text.png");
+  if (!logo1xRes.ok || !logo2xRes.ok || !logo3xRes.ok) throw new Error("Failed to load logo.png");
 
-  const [logoTextBuffer, logoBuffer] = await Promise.all([
-    Buffer.from(await logoTextRes.arrayBuffer()),
-    Buffer.from(await logoRes.arrayBuffer())
+  const [logoTextBuffer1x, logoTextBuffer2x, logoTextBuffer3x, logoBuffer1x, logoBuffer2x, logoBuffer3x] = await Promise.all([
+    Buffer.from(await logoText1xRes.arrayBuffer()),
+    Buffer.from(await logoText2xRes.arrayBuffer()),
+    Buffer.from(await logoText3xRes.arrayBuffer()),
+    Buffer.from(await logo1xRes.arrayBuffer()),
+    Buffer.from(await logo2xRes.arrayBuffer()),
+    Buffer.from(await logo3xRes.arrayBuffer())
   ]);
-  const resize = (buffer: Buffer, width: number) =>
-      sharp(buffer).resize({ width }).toBuffer();
 
   const buffers = {
-    "logo.png":   await resize(logoTextBuffer, 200),
-    "icon.png":   await resize(logoBuffer, 29),
-    "logo.png@2": await resize(logoTextBuffer, 400),
-    "icon.png@2": await resize(logoBuffer, 58),
-    "logo.png@3": await resize(logoTextBuffer, 600),
-    "icon.png@3": await resize(logoBuffer, 87),
+    "logo.png": logoTextBuffer1x,
+    "logo.png@2": logoTextBuffer2x,
+    "logo.png@3": logoTextBuffer3x,
+    "icon.png": logoBuffer1x,
+    "icon.png@2": logoBuffer2x,
+    "icon.png@3": logoBuffer3x, 
     "strip.png": image_buffer
-  }
+  };
 
   const certificates = {
     wwdr: Buffer.from(process.env.APPLE_WALLET_G4, 'base64').toString('utf-8'),

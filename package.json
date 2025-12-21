@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.953.0",
+    "@jsquash/png": "^3.1.1",
+    "@jsquash/resize": "^2.1.0",
     "@opennextjs/cloudflare": "^1.14.6",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
