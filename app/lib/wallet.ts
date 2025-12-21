@@ -2,6 +2,7 @@ import {PKPass} from "passkit-generator";
 import * as fs from "node:fs";
 import path from "node:path";
 import {PACIFIC_TIMEZONE} from "@/app/lib/constants";
+import sharp from "sharp";
 
 type TicketWalletData = {
   email: string;
@@ -31,14 +32,16 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     Buffer.from(await logoTextRes.arrayBuffer()),
     Buffer.from(await logoRes.arrayBuffer())
   ]);
+  const resize = (buffer, width) =>
+    sharp(buffer).resize({ width }).toBuffer();
 
   const buffers = {
-    "logo.png": logoTextBuffer,
-    "logo.png@2": logoTextBuffer,
-    "logo.png@3": logoTextBuffer,
-    "icon.png": logoBuffer,
-    "icon.png@2": logoBuffer,
-    "icon.png@3": logoBuffer,
+    "logo.png":   await resize(logoTextBuffer, 200),
+    "icon.png":   await resize(logoBuffer, 29),
+    "logo.png@2": await resize(logoTextBuffer, 400),
+    "icon.png@2": await resize(logoBuffer, 58),
+    "logo.png@3": await resize(logoTextBuffer, 600),
+    "icon.png@3": await resize(logoBuffer, 87),
     "strip.png": image_buffer
   }
 
