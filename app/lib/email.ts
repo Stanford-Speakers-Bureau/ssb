@@ -252,8 +252,39 @@ async function generateTicketEmailHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>Your Ticket Confirmation</title>
   <style type="text/css">
+    /* Prevent dark mode color inversion - force light theme colors */
+    * {
+      color-scheme: light !important;
+      supported-color-schemes: light !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body, table, td, div, p, span, h1, h2, h3 {
+        color: #f4f4f5 !important;
+        background-color: #18181b !important;
+      }
+      .email-container {
+        background-color: #27272a !important;
+      }
+      .email-header {
+        background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%) !important;
+      }
+      .details-card {
+        background-color: #18181b !important;
+      }
+      .qr-section {
+        background-color: #18181b !important;
+      }
+      .footer {
+        background-color: #18181b !important;
+        border-top: 1px solid #3f3f46 !important;
+      }
+    }
+
     /* Mobile-first responsive styles */
     @media only screen and (max-width: 600px) {
       .email-container {
@@ -446,6 +477,11 @@ async function generateTicketEmailHTML(
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
               <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
+              <div style="margin-top: 16px; text-align: center;">
+                <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer" style="display: inline-block;">
+                  <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" style="height: 48px; width: auto;" />
+                </a>
+              </div>
             </div>
             ${
               isVIP
@@ -479,15 +515,10 @@ async function generateTicketEmailHTML(
               <td align="center" class="calendar-buttons" style="padding: 0;">
                 <table role="presentation" style="width: 100%; border-collapse: collapse;">
                   <tr>
-                    <td align="center" style="padding: 0 5px;">
+                    <td align="center" style="padding: 0;">
                       <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #175dcd; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                         <img src="${baseUrl}/g.png" alt="Google" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
                         Add to Google Calendar
-                      </a>
-                    </td>
-                    <td align="center" style="padding: 0 5px;">
-                      <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-block;">
-                        <img src="${baseUrl}/images/add-to-apple-wallet.svg" alt="Add to Apple Wallet" style="height: 48px; width: auto;" />
                       </a>
                     </td>
                   </tr>
