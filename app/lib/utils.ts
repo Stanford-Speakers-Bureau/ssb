@@ -30,6 +30,7 @@ export function generateGoogleCalendarUrl(event: {
   eventVenue?: string | null;
   eventDescription?: string | null;
   ticketId?: string;
+  ticketEmail?: string;
   ticketType?: string;
 }): string {
   // Support both event.start_time_date (for event pages) and eventStartTime (for ticket emails)
@@ -67,6 +68,9 @@ export function generateGoogleCalendarUrl(event: {
     details += `\n\nView Event: ${eventUrl}`;
   }
   // Add ticket-specific info if provided
+  if (event.ticketEmail) {
+    details += `\n\nTicket Email: ${event.ticketEmail}`;
+  }
   if (event.ticketId) {
     details += `\n\nTicket ID: ${event.ticketId}`;
   }
