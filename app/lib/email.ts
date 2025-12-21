@@ -1,7 +1,7 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
 import type { QRCodeToBufferOptions } from "qrcode";
-import { PACIFIC_TIMEZONE } from "./constants";
+import {PACIFIC_TIMEZONE, REFERRAL_MESSAGE} from "./constants";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // Initialize SES client
@@ -400,36 +400,42 @@ async function generateTicketEmailHTML(
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Code:</td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500; font-family: monospace;">${referralCode}</td>
               </tr>
-              ${
-                referralUrl && !(ticketType.toUpperCase() == "VIP")
-                  ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">Your Referral Link:</td>
                 <td class="details-value" style="padding: 8px 0;">
-                  <a href="${referralUrl}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${referralUrl}</a>
+                  <a href="${referralUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14px; color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${referralUrl}</a>
                 </td>
               </tr>
-              `
-                  : ""
-              }
               `
                   : ""
               }
             </table>
             ${
-              eventUrl
+              referralCode && !(ticketType.toUpperCase() == "VIP")
                 ? `
-            <!-- View Event Button -->
-            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-              <tr>
-                <td align="center" class="button-wrapper" style="padding: 0;">
-                  <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">View Event Details</a>
-                </td>
-              </tr>
-            </table>
+            <div style="margin-top: 20px; padding: 16px 0; text-align: center; border-top: 1px solid #3f3f46;">
+              <p style="margin: 0; color: #ffffff; font-size: 15px; font-weight: 700; line-height: 1.6;">
+                ${REFERRAL_MESSAGE}
+              </p>
+            </div>
             `
                 : ""
             }
+              
+              ${
+                eventUrl
+                  ? `
+              <!-- View Event Button -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                  <td align="center" class="button-wrapper" style="padding: 0;">
+                    <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">View Event Details</a>
+                  </td>
+                </tr>
+              </table>
+              `
+                  : ""
+              }
           </div>
           
           ${
@@ -438,7 +444,7 @@ async function generateTicketEmailHTML(
           <!-- QR Code Section -->
           <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;">
             <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
-            <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: ${isVIP ? "20px" : "16px"}; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
+            <div class="qr-code-wrapper" style="display: inline-block; background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); ${isVIP ? "border: 4px solid #A80D0C;" : ""}">
               <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
             </div>
             ${
@@ -542,9 +548,11 @@ Event Details:
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
+${eventUrl ? `- Event URL: ${eventUrl}` : ""}
+
 ${referralCode && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Code: ${referralCode}` : ""}
 ${referralUrl && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Link: ${referralUrl}` : ""}
-${eventUrl ? `- Event URL: ${eventUrl}` : ""}
+${REFERRAL_MESSAGE}
 
 Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
 
