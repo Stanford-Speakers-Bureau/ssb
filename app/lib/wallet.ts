@@ -19,8 +19,8 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   }
 
   const [logoTextBuffer, logoBuffer] = await Promise.all([
-    fs.promises.readFile("logo_text.png"),
-    fs.promises.readFile("logo.png"),
+    fs.promises.readFile(path.join(process.cwd(), 'wallet', "logo_text.png")),
+    fs.promises.readFile(path.join(process.cwd(), 'wallet', "logo.png")),
   ]);
 
   const buffers = {

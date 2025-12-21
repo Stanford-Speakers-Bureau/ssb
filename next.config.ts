@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/tickets/apple-wallet': [
+        './wallet/**/*',
+      ],
+    }
+  } as any,
   images: {
     qualities: [70, 75, 90],
     loader: "custom",
