@@ -17,10 +17,19 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
   if (!process.env.APPLE_WALLET_G4 || !process.env.APPLE_WALLET_CERT || !process.env.APPLE_WALLET_KEY) {
     throw new Error('Missing required Apple Wallet environment variables');
   }
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  const [logoTextRes, logoRes] = await Promise.all([
+    fetch(`${baseUrl}/logo_text.png`),
+    fetch(`${baseUrl}/logo.png`),
+  ]);
+
+  if (!logoTextRes.ok) throw new Error("Failed to load logo_text.png");
+  if (!logoRes.ok) throw new Error("Failed to load logo.png");
 
   const [logoTextBuffer, logoBuffer] = await Promise.all([
-    fs.promises.readFile(path.join(process.cwd(), 'wallet', "logo_text.png")),
-    fs.promises.readFile(path.join(process.cwd(), 'wallet', "logo.png")),
+    Buffer.from(await logoTextRes.arrayBuffer()),
+    Buffer.from(await logoRes.arrayBuffer())
   ]);
 
   const buffers = {
