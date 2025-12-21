@@ -132,7 +132,7 @@ export default async function EventPage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                <div className="space-y-2 md:space-y-3 mb-6">
                   {event.start_time_date && (
                     <>
                       <div className="flex items-center gap-2">

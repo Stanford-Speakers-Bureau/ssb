@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import TicketButton from "./TicketButton";
 import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
-import { generateReferralCode } from "@/app/lib/utils";
+import {generateReferralCode} from "@/app/lib/utils";
+import Image from "next/image";
 
 type TicketSectionProps = {
   eventId: string;
@@ -17,29 +18,26 @@ type TicketSectionProps = {
 };
 
 export default function TicketSection({
-  eventId,
-  initialHasTicket,
-  initialTicketId,
-  initialTicketType,
-  userEmail,
-  eventRoute,
-  eventStartTime,
-}: TicketSectionProps) {
+                                        eventId,
+                                        initialHasTicket,
+                                        initialTicketId,
+                                        initialTicketType,
+                                        userEmail,
+                                        eventRoute,
+                                        eventStartTime,
+                                      }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [ticketType, setTicketType] = useState<string | null>(
     initialTicketType,
   );
-  const [isIOS, setIsIOS] = useState(false);
+  const [isIOS] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
+  });
 
   useEffect(() => {
-    // Check if the device is iOS
-    const checkIOS = () => {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      return /iphone|ipad|ipod/.test(userAgent);
-    };
-    setIsIOS(checkIOS());
-
     const handleTicketChange = async (event: Event) => {
       // When ticket changes, update state from event detail
       const customEvent = event as CustomEvent<{
@@ -111,16 +109,13 @@ export default function TicketSection({
                 href={`/api/tickets/apple-wallet?event_id=${eventId}`}
                 className="inline-block"
               >
-                <img
-                  src="/images/add-to-apple-wallet.svg"
-                  alt="Add to Apple Wallet"
-                  className="h-[48px] w-auto"
-                />
+                <Image src="/images/add-to-apple-wallet.svg" alt="Add to Apple Wallet" width={157} height={48}
+                       className="h-12 w-auto"/>
               </a>
             </div>
           )}
           {referralCode && (
-            <div className="order-2 lg:order-2">
+            <div className="order-2 mt-2 md:mt-0 lg:order-2">
               <ReferralShare
                 referralCode={referralCode}
                 route={eventRoute}
