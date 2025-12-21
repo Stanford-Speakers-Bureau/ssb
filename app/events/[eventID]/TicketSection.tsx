@@ -1,10 +1,10 @@
 "use client";
 
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import TicketButton from "./TicketButton";
 import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
-import {generateReferralCode} from "@/app/lib/utils";
+import { generateReferralCode } from "@/app/lib/utils";
 import Image from "next/image";
 
 type TicketSectionProps = {
@@ -18,21 +18,21 @@ type TicketSectionProps = {
 };
 
 export default function TicketSection({
-                                        eventId,
-                                        initialHasTicket,
-                                        initialTicketId,
-                                        initialTicketType,
-                                        userEmail,
-                                        eventRoute,
-                                        eventStartTime,
-                                      }: TicketSectionProps) {
+  eventId,
+  initialHasTicket,
+  initialTicketId,
+  initialTicketType,
+  userEmail,
+  eventRoute,
+  eventStartTime,
+}: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [ticketType, setTicketType] = useState<string | null>(
     initialTicketType,
   );
   const [isIOS] = useState(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === "undefined") return false;
     const userAgent = window.navigator.userAgent.toLowerCase();
     return /iphone|ipad|ipod/.test(userAgent);
   });
@@ -103,14 +103,19 @@ export default function TicketSection({
               />
             </div>
           )}
-          {isIOS && (
+          {isIOS && ticketId && (
             <div className="order-1 flex justify-center lg:justify-start">
               <a
-                href={`/api/tickets/apple-wallet?event_id=${eventId}`}
+                href={`/api/tickets/apple-wallet?ticket_id=${ticketId}`}
                 className="inline-block"
               >
-                <Image src="/images/add-to-apple-wallet.svg" alt="Add to Apple Wallet" width={157} height={48}
-                       className="h-12 w-auto"/>
+                <Image
+                  src="/images/add-to-apple-wallet.svg"
+                  alt="Add to Apple Wallet"
+                  width={157}
+                  height={48}
+                  className="h-12 w-auto"
+                />
               </a>
             </div>
           )}

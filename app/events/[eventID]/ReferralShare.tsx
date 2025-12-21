@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {REFERRAL_MESSAGE} from "@/app/lib/constants";
+import { REFERRAL_MESSAGE } from "@/app/lib/constants";
 
 type ReferralShareProps = {
   referralCode: string;

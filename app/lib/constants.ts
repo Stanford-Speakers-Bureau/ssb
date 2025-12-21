@@ -28,4 +28,5 @@ export const BANNER_MESSAGES = {
 
 export const PACIFIC_TIMEZONE = "America/Los_Angeles";
 
-export const REFERRAL_MESSAGE = "The person with the most referrals will get a front row seat!";
+export const REFERRAL_MESSAGE =
+  "The person with the most referrals will get a front row seat!";

@@ -1,7 +1,7 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import QRCode from "qrcode";
 import type { QRCodeToBufferOptions } from "qrcode";
-import {PACIFIC_TIMEZONE, REFERRAL_MESSAGE} from "./constants";
+import { PACIFIC_TIMEZONE, REFERRAL_MESSAGE } from "./constants";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // Initialize SES client
@@ -473,14 +473,25 @@ async function generateTicketEmailHTML(
           ${
             googleCalendarUrl
               ? `
-          <!-- Add to Google Calendar Button -->
+          <!-- Calendar Buttons -->
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
-              <td align="center" class="button-wrapper" style="padding: 0;">
-                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #175dcd; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  <img src="${baseUrl}/g.png" alt="Google" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
-                  Add to Google Calendar
-                </a>
+              <td align="center" class="calendar-buttons" style="padding: 0;">
+                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td align="center" style="padding: 0 5px;">
+                      <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background-color: #175dcd; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                        <img src="${baseUrl}/g.png" alt="Google" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
+                        Add to Google Calendar
+                      </a>
+                    </td>
+                    <td align="center" style="padding: 0 5px;">
+                      <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer" class="button" style="display: inline-block;">
+                        <img src="${baseUrl}/images/add-to-apple-wallet.svg" alt="Add to Apple Wallet" style="height: 48px; width: auto;" />
+                      </a>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>
@@ -574,7 +585,9 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     return;
   }
 
-  const subject = data.eventName ? `Your Ticket for ${data.eventName} is enclosed!` : "Your Ticket is enclosed!";
+  const subject = data.eventName
+    ? `Your Ticket for ${data.eventName} is enclosed!`
+    : "Your Ticket is enclosed!";
   const textContent = generateTicketEmailText(data);
 
   // Generate QR and prepare cid
