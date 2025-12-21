@@ -32,7 +32,7 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
     Buffer.from(await logoTextRes.arrayBuffer()),
     Buffer.from(await logoRes.arrayBuffer())
   ]);
-  const resize = (buffer, width) =>
+  const resize = (buffer: Buffer<ArrayBuffer> | sharp.SharpOptions | undefined, width: number) =>
     sharp(buffer).resize({ width }).toBuffer();
 
   const buffers = {
