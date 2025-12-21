@@ -1,6 +1,4 @@
 import {PKPass} from "passkit-generator";
-import * as fs from "node:fs";
-import path from "node:path";
 import {PACIFIC_TIMEZONE} from "@/app/lib/constants";
 
 type TicketWalletData = {
@@ -42,11 +40,11 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
   const buffers = {
     "logo.png": logoTextBuffer1x,
-    "logo.png@x2": logoTextBuffer2x,
-    "logo.png@x3": logoTextBuffer3x,
+    "logo.png@2x": logoTextBuffer2x,
+    "logo.png@3x": logoTextBuffer3x,
     "icon.png": logoBuffer1x,
-    "icon.png@x2": logoBuffer2x,
-    "icon.png@x3": logoBuffer3x,
+    "icon.png@2x": logoBuffer2x,
+    "icon.png@3x": logoBuffer3x,
     "strip.png": image_buffer
   };
 
