@@ -22,11 +22,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseURL),
   title: "Stanford Speakers Bureau",
   description:
-    "SSB is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
+    "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
   openGraph: {
     title: "Stanford Speakers Bureau (SSB)",
     description:
-      "SSB is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
+      "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
     images: [
       {
         url: `/speakers/jojo-siwa.jpg`,
