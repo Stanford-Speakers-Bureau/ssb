@@ -40,11 +40,11 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
 
   const buffers = {
     "logo.png": logoTextBuffer1x,
-    "logo.png@2x": logoTextBuffer2x,
-    "logo.png@3x": logoTextBuffer3x,
+    "logo@2x.png": logoTextBuffer2x,
+    "logo@3x.png": logoTextBuffer3x,
     "icon.png": logoBuffer1x,
-    "icon.png@2x": logoBuffer2x,
-    "icon.png@3x": logoBuffer3x,
+    "icon@2x.png": logoBuffer2x,
+    "icon@3x.png": logoBuffer3x,
     "strip.png": image_buffer
   };
 
