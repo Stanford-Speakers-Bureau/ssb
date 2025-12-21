@@ -6,9 +6,12 @@ type TicketWalletData = {
   eventName: string;
   ticketType: string;
   eventDoorTime: string;
-  eventStartTime: string;
   ticketId: string;
   eventVenue: string;
+  eventVenueLink: string;
+  eventLink: string;
+  eventLat: number;
+  eventLng: number;
 };
 
 export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletData) {
@@ -76,14 +79,14 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
         minute: "2-digit",
         hour12: true,
         timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.eventStartTime)),
+      }).format(new Date(ticket.eventDoorTime)),
       value:
         new Intl.DateTimeFormat("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
           timeZone: PACIFIC_TIMEZONE,
-        }).format(new Date(ticket.eventStartTime)),
+        }).format(new Date(ticket.eventDoorTime)),
       textAlignment: "PKTextAlignmentLeft"
     }
   )
@@ -117,6 +120,78 @@ export async function getWalletPass(image_buffer: Buffer, ticket: TicketWalletDa
       altText: ticket.email
     }
   );
+  pass.backFields.push(
+    {
+      key: "back-event",
+      label: "Event",
+      value: ticket.eventName,
+    },
+    {
+      key: "back-time",
+      label: "Time",
+      value: new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.eventDoorTime)),
+    },
+    {
+      key: "back-date",
+      label: "Date",
+      value: new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.eventDoorTime)),
+    },
+    {
+      key: "back-type",
+      label: "Ticket Type",
+      value: ticket.ticketType,
+    },
+    {
+      key: "back-id",
+      label: "Ticket ID",
+      value: ticket.ticketId,
+    },
+    {
+      key: "back-email",
+      label: "Email",
+      value: ticket.email,
+    },
+    {
+      key: "back-loc",
+      label: "Location",
+      value: ticket.eventVenue,
+    },
+    {
+      key: "back-loc-link",
+      label: "Directions",
+      value: ticket.eventVenueLink,
+    },
+    {
+      key: "back-event-link",
+        label: "Event Details",
+      value: ticket.eventLink,
+    }
+  )
+  pass.setExpirationDate(
+    new Date(Date.parse(ticket.eventDoorTime) + 86_400_000)
+  );
+  pass.setLocations(
+    {
+      latitude: ticket.eventLat,
+      longitude: ticket.eventLng,
+    },
+  )
+  pass.setRelevantDates([
+    { date: new Date(ticket.eventDoorTime) },
+  ])
+  pass.setRelevantDate(
+    new Date(ticket.eventDoorTime)
+  )
 
   return pass.getAsBuffer();
 }

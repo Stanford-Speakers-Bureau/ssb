@@ -7,9 +7,12 @@ type TicketWalletData = {
   eventName: string;
   ticketType: string;
   eventDoorTime: string;
-  eventStartTime: string;
   ticketId: string;
   eventVenue: string;
+  eventVenueLink: string;
+  eventLink: string;
+  eventLat: number;
+  eventLng: number;
 };
 
 export async function GET(req: NextRequest) {
@@ -40,7 +43,7 @@ export async function GET(req: NextRequest) {
     const adminClient = getSupabaseClient();
     const { data: event } = await adminClient
       .from("events")
-      .select("name, start_time_date, doors_open, venue, img")
+      .select("name, doors_open, venue, img, venue_link, route, latitude, longitude")
       .eq("id", event_id)
       .single();
 
@@ -98,9 +101,12 @@ export async function GET(req: NextRequest) {
       eventName: event.name,
       ticketType: ticket.type,
       eventDoorTime: event.doors_open,
-      eventStartTime: event.start_time_date,
       ticketId: ticket.id,
       eventVenue: event.venue,
+      eventVenueLink: event.venue_link,
+      eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
+      eventLat: event.latitude,
+      eventLng: event.longitude,
     }
 
     const passBuf = await getWalletPass(imgBuffer, ticketData);
