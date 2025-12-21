@@ -181,11 +181,11 @@ export default async function UpcomingSpeakers() {
                         ? `Doors open at ${formatTime(event.doors_open)}`
                         : ""
                     }
-                    eventTimeText={
-                      event.start_time_date
-                        ? `Event starts at ${formatTime(event.start_time_date)}`
-                        : ""
-                    }
+                    // eventTimeText={
+                    //   event.start_time_date
+                    //     ? `Event starts at ${formatTime(event.start_time_date)}`
+                    //     : ""
+                    // }
                     locationName={event.isMystery ? "" : event.venue || ""}
                     locationUrl={event.isMystery ? "" : event.venue_link || ""}
                     backgroundImageUrl={

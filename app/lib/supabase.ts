@@ -152,8 +152,8 @@ export async function getClosestUpcomingEvent(): Promise<Event | null> {
   const { data, error } = await supabase
     .from("events")
     .select("*")
-    .gte("start_time_date", new Date().toISOString())
-    .order("start_time_date", { ascending: true })
+    .gte("doors_open", new Date().toISOString())
+    .order("doors_open", { ascending: true })
     .limit(1)
     .single();
 

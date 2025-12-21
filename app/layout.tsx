@@ -64,7 +64,7 @@ export default async function RootLayout({
     : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
   const countdownTarget = isMystery
     ? closestEvent?.release_date
-    : closestEvent?.start_time_date;
+    : closestEvent?.doors_open;
   const prefaceLabel = isMystery
     ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
     : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
