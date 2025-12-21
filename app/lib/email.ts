@@ -304,7 +304,7 @@ async function generateTicketEmailHTML(
       .header-title { font-size: 20px !important; }
       .header-subtitle { font-size: 24px !important; }
       .details-card { padding: 20px 16px !important; }
-      .qr-code-img { width: 280px !important; height: 280px !important; }
+      .qr-code-img { width: 280px !important; height: auto !important; }
       .button { display: inline-block !important; margin: 0 auto !important; }
     }
   </style>
