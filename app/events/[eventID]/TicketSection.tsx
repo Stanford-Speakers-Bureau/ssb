@@ -36,6 +36,32 @@ export default function TicketSection({
     const userAgent = window.navigator.userAgent.toLowerCase();
     return /iphone|ipad|ipod/.test(userAgent);
   });
+  const [isAndroidOrWeb] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isAndroid = /android/.test(userAgent);
+    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+    return isAndroid || !isIOSDevice;
+  });
+
+  const onAddToGoogleWallet = async () => {
+    if (!ticketId) return;
+    try {
+      const res = await fetch("/api/tickets/google-wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      });
+      const data = await res.json();
+
+      if (data.url) {
+        // This redirects the user to the Google Wallet save screen
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Failed to load pass", err);
+    }
+  };
 
   useEffect(() => {
     const handleTicketChange = async (event: Event) => {
@@ -93,16 +119,30 @@ export default function TicketSection({
       />
       {hasTicket && (
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
-          {ticketId && (
-            <div className="order-0 flex justify-center lg:order-0 lg:justify-self-start">
+          <div className="flex flex-col items-center gap-3 lg:items-center">
+            {ticketId && (
               <TicketQRCode
                 ticketId={ticketId}
                 size={190}
                 compact
                 ticketType={ticketType}
               />
-            </div>
-          )}
+            )}
+            {isAndroidOrWeb && ticketId && (
+              <button
+                onClick={onAddToGoogleWallet}
+                className="inline-block border-none bg-transparent cursor-pointer p-0"
+              >
+                <Image
+                  src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
+                  alt="Add to Google Wallet"
+                  width={157}
+                  height={48}
+                  className="h-12 w-auto"
+                />
+              </button>
+            )}
+          </div>
           {isIOS && ticketId && (
             <div className="order-1 flex justify-center lg:justify-start">
               <a

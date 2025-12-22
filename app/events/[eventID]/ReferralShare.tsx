@@ -96,7 +96,7 @@ export default function ReferralShare({
         </div>
         <button
           onClick={handleCopy}
-          className="px-4 py-2 bg-[#A80D0C] hover:bg-[#C11211] text-white text-sm sm:text-base font-semibold rounded transition-colors whitespace-nowrap"
+          className="px-4 py-2 bg-[#A80D0C] hover:bg-[#C11211] text-white text-sm sm:text-base font-semibold rounded transition-colors cursor-pointer whitespace-nowrap"
         >
           {copied ? "Copied!" : "Copy Link"}
         </button>
