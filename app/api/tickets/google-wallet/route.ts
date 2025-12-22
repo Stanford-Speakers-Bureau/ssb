@@ -30,9 +30,13 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
-      redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/api/tickets/google-wallet?"+new URL(req.url).searchParams.toString())}`);
-    }
+      const redirectUrl = new URL("/api/auth/google", req.url);
+      console.log(redirectUrl);
 
+      redirectUrl.searchParams.set("redirect_to", "/api/tickets/google-wallet?" + new URL(req.url).searchParams.toString());
+
+      return NextResponse.redirect(redirectUrl);
+    }
     const body = await req.json();
     const ticket_id = body.ticket_id;
 
