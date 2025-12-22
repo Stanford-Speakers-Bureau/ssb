@@ -4,7 +4,7 @@ import {
   getSignedImageUrl,
   getSupabaseClient,
 } from "@/app/lib/supabase";
-import {getAppleWalletPass, getGoogleWalletPass} from "@/app/lib/wallet";
+import { getAppleWalletPass, getGoogleWalletPass } from "@/app/lib/wallet";
 
 type TicketWalletData = {
   email: string;
@@ -108,7 +108,6 @@ export async function POST(req: NextRequest) {
       eventAddress: event.address,
     };
 
-
     const passBuf = await getGoogleWalletPass(imgUrl, ticketData);
     if (!passBuf) {
       return NextResponse.json(
@@ -118,7 +117,6 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ url: passBuf }, { status: 200 });
-
   } catch (error) {
     console.error("Error generating Google Wallet pass:", error);
     return NextResponse.json(

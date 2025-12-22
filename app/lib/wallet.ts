@@ -1,8 +1,7 @@
 import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
-import jwt from 'jsonwebtoken';
-import { fromZonedTime } from 'date-fns-tz';
-
+import jwt from "jsonwebtoken";
+import { fromZonedTime } from "date-fns-tz";
 
 type TicketWalletData = {
   email: string;
@@ -223,15 +222,17 @@ export async function getGoogleWalletPass(
     throw new Error("Missing required Google Wallet environment variables");
   }
 
-  const privateKey = process.env.GOOGLE_WALLET_KEY.replace(/\\n/g, '\n');
+  const privateKey = process.env.GOOGLE_WALLET_KEY.replace(/\\n/g, "\n");
   const serviceEmail = process.env.GOOGLE_WALLET_EMAIL;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") || "https://baconrista.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ||
+    "https://baconrista.com";
   // const heroImageUrl = `${baseUrl}/api/passes/image/${ticket.ticketId}`;
 
   const issuerId = "3388000000023060627";
 
-  const classId = `${issuerId}.Event_${ticket.eventName.replace(/[^\w]/g, '')}`;
+  const classId = `${issuerId}.Event_${ticket.eventName.replace(/[^\w]/g, "")}`;
   const objectId = `${issuerId}.${ticket.ticketId}`;
 
   const claims = {
@@ -241,66 +242,83 @@ export async function getGoogleWalletPass(
     typ: "savetowallet",
     iat: Math.floor(Date.now() / 1000),
     payload: {
-      eventTicketClasses: [{
-        id: classId,
-        reviewStatus: "UNDER_REVIEW",
-        eventName: {
-          defaultValue: { language: "en-US", value: ticket.eventName }
-        },
-        dateTime: {
-          start: fromZonedTime(ticket.eventDoorTime, PACIFIC_TIMEZONE).toISOString(),
-        },
-        issuerName: "Stanford Speakers Bureau",
-        hexBackgroundColor: "#A80D0C",
-        heroImage: {
-          sourceUri: {
-            uri: image_signed
-          }
-        },
-        venue: {
-          name: { defaultValue: { language: "en-US", value: ticket.eventVenue } },
-          address: { defaultValue: { language: "en-US", value: ticket.eventAddress } }
-        },
-        logo: {
-          sourceUri: {
-            // uri: `${baseUrl}/logo.png`
-            uri: `https://stanfordspeakersbureau.com/logo.png`
+      eventTicketClasses: [
+        {
+          id: classId,
+          reviewStatus: "UNDER_REVIEW",
+          eventName: {
+            defaultValue: { language: "en-US", value: ticket.eventName },
           },
-          contentDescription: {
-            defaultValue: { language: "en-US", value: "Logo" }
-          }
-        }
-      }],
-      eventTicketObjects: [{
-        id: objectId,
-        classId: classId,
-        state: "ACTIVE",
-        barcode: {
-          type: "QR_CODE",
-          value: ticket.ticketId,
-          alternateText: ticket.email
-        },
-        locations: [{
-          kind: "requestingTenant",
-          latitude: ticket.eventLat,
-          longitude: ticket.eventLng
-        }],
-        seatInfo: {
-          section: {
-            defaultValue: { language: "en-US", value: ticket.ticketType }
+          dateTime: {
+            start: fromZonedTime(
+              ticket.eventDoorTime,
+              PACIFIC_TIMEZONE,
+            ).toISOString(),
+          },
+          issuerName: "Stanford Speakers Bureau",
+          hexBackgroundColor: "#A80D0C",
+          heroImage: {
+            sourceUri: {
+              uri: image_signed,
+            },
+          },
+          venue: {
+            name: {
+              defaultValue: { language: "en-US", value: ticket.eventVenue },
+            },
+            address: {
+              defaultValue: { language: "en-US", value: ticket.eventAddress },
+            },
+          },
+          logo: {
+            sourceUri: {
+              // uri: `${baseUrl}/logo.png`
+              uri: `https://stanfordspeakersbureau.com/logo.png`,
+            },
+            contentDescription: {
+              defaultValue: { language: "en-US", value: "Logo" },
+            },
           },
         },
-        textModulesData: [
-          { header: "Ticket ID", body: ticket.ticketId },
-          { header: "Email", body: ticket.email }
-        ],
-        linksModuleData: {
-          uris: [
-            { kind: "website", uri: ticket.eventLink, description: "Event Details" }
-          ]
-        }
-      }],
-    }
+      ],
+      eventTicketObjects: [
+        {
+          id: objectId,
+          classId: classId,
+          state: "ACTIVE",
+          barcode: {
+            type: "QR_CODE",
+            value: ticket.ticketId,
+            alternateText: ticket.email,
+          },
+          locations: [
+            {
+              kind: "requestingTenant",
+              latitude: ticket.eventLat,
+              longitude: ticket.eventLng,
+            },
+          ],
+          seatInfo: {
+            section: {
+              defaultValue: { language: "en-US", value: ticket.ticketType },
+            },
+          },
+          textModulesData: [
+            { header: "Ticket ID", body: ticket.ticketId },
+            { header: "Email", body: ticket.email },
+          ],
+          linksModuleData: {
+            uris: [
+              {
+                kind: "website",
+                uri: ticket.eventLink,
+                description: "Event Details",
+              },
+            ],
+          },
+        },
+      ],
+    },
   };
 
   // 5. Sign the JWT
