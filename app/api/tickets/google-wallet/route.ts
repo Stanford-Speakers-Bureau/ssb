@@ -5,6 +5,7 @@ import {
   getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getAppleWalletPass, getGoogleWalletPass } from "@/app/lib/wallet";
+import {redirect} from "next/navigation";
 
 type TicketWalletData = {
   email: string;
@@ -29,10 +30,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user?.email) {
-      return NextResponse.json(
-        { error: "Not authenticated. Please sign in." },
-        { status: 401 },
-      );
+      redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/api/tickets/google-wallet?"+new URL(req.url).searchParams.toString())}`);
     }
 
     const body = await req.json();

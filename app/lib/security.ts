@@ -1,4 +1,6 @@
 export const ALLOWED_REDIRECTS = [
+  "/api/tickets/apple-wallet",
+  "/api/tickets/google-wallet",
   "/upcoming-speakers",
   "/events", // Also covers /events/[eventid] paths (e.g., /events/mark-rober)
   "/suggest",

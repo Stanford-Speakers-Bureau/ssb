@@ -193,6 +193,8 @@ export default function ScanClient() {
       return;
     }
 
+    setEmailSUNET("");
+
     lastScannedRef.current = id;
     scanCooldownRef.current = now;
 
