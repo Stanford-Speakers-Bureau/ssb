@@ -28,6 +28,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "html5-qrcode": "^2.3.8",
+    "jsonwebtoken": "^9.0.3",
     "motion": "^12.23.25",
     "next": "16.0.10",
     "passkit-generator": "^3.5.6",

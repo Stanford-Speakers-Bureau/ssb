@@ -4,7 +4,7 @@ import {
   getSignedImageUrl,
   getSupabaseClient,
 } from "@/app/lib/supabase";
-import { getAppleWalletPass } from "@/app/lib/wallet";
+import {getAppleWalletPass, getGoogleWalletPass} from "@/app/lib/wallet";
 
 type TicketWalletData = {
   email: string;
@@ -20,7 +20,7 @@ type TicketWalletData = {
   eventAddress: number;
 };
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
     const {
@@ -35,12 +35,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(req.url);
-    const ticket_id = searchParams.get("ticket_id");
+    const body = await req.json();
+    const ticket_id = body.ticket_id;
 
     if (!ticket_id) {
       return NextResponse.json(
-        { error: "Missing required query parameter: ticket_id" },
+        { error: "Missing required field: ticket_id" },
         { status: 400 },
       );
     }
@@ -87,16 +87,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    const imgUrl = await getSignedImageUrl(event.img, 3600);
+    const imgUrl = await getSignedImageUrl(event.img, 31_556_952);
     if (!imgUrl) {
       return NextResponse.json(
         { error: "Failed to get event image" },
         { status: 500 },
       );
     }
-    const imgResponse = await fetch(imgUrl);
-    const imgBuffer = Buffer.from(await imgResponse.arrayBuffer());
-
     const ticketData: TicketWalletData = {
       email: ticket.email,
       eventName: event.name,
@@ -111,8 +108,8 @@ export async function GET(req: NextRequest) {
       eventAddress: event.address,
     };
 
-    const passBuf = await getAppleWalletPass(imgBuffer, ticketData);
 
+    const passBuf = await getGoogleWalletPass(imgUrl, ticketData);
     if (!passBuf) {
       return NextResponse.json(
         { error: "Pass data not available" },
@@ -120,18 +117,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Create response with the pass data
-    return new NextResponse(passBuf as BodyInit, {
-      status: 200,
-      headers: {
-        // This tells the browser/phone "This is an Apple Wallet Pass"
-        "Content-Type": "application/vnd.apple.pkpass",
-        // This gives the file a name when downloaded
-        "Content-Disposition": "attachment; filename=event-ticket.pkpass",
-      },
-    });
+    return NextResponse.json({ url: passBuf }, { status: 200 });
+
   } catch (error) {
-    console.error("Error generating Apple Wallet pass:", error);
+    console.error("Error generating Google Wallet pass:", error);
     return NextResponse.json(
       { error: "Failed to generate pass" },
       { status: 500 },
