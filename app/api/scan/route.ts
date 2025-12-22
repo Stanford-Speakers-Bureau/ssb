@@ -3,6 +3,7 @@ import {
   verifyAdminOrScannerRequest,
   createServerSupabaseClient,
 } from "@/app/lib/supabase";
+import {isValidEmail} from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -12,11 +13,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { ticket_id, email, event_id } = body;
+    const { ticket_id, emailSUNET, event_id } = body;
 
-    if (!ticket_id && !email && !event_id) {
+    if (!ticket_id && !emailSUNET && !event_id) {
       return NextResponse.json(
-        { error: "Missing required field: ticket_id and email and event_id" },
+        { error: "Missing required field: ticket_id and emailSUNET and event_id" },
         { status: 400 },
       );
     }
@@ -68,7 +69,9 @@ export async function POST(req: Request) {
         .single();
       ticket = res.data;
       fetchError = res.error;
-    } else if (email) {
+    } else if (emailSUNET) {
+      const email = !isValidEmail(emailSUNET) ? `${emailSUNET}@stanford.edu` : emailSUNET;
+
       const res = await adminClient
         .from("tickets")
         .select(selectFields)

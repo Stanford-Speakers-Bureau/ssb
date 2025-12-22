@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
-import { isValidEmail } from "@/app/lib/validation";
 
 type TicketStatus = "scanned" | "already_scanned" | "invalid" | null;
 
@@ -38,7 +37,7 @@ export default function ScanClient() {
   >("prompt");
   const [cameraStarted, setCameraStarted] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
-  const [email, setEmail] = useState<string>("");
+  const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
@@ -106,19 +105,19 @@ export default function ScanClient() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  const fetchLiveEvent = async () => {
+    try {
+      const response = await fetch("/api/events/live");
+      const data = await response.json();
+      setLiveEvent(data.liveEvent || null);
+    } catch (error) {
+      console.error("Error fetching live event:", error);
+      setLiveEvent(null);
+    }
+  };
+
   // Fetch live event on mount
   useEffect(() => {
-    const fetchLiveEvent = async () => {
-      try {
-        const response = await fetch("/api/events/live");
-        const data = await response.json();
-        setLiveEvent(data.liveEvent || null);
-      } catch (error) {
-        console.error("Error fetching live event:", error);
-        setLiveEvent(null);
-      }
-    };
-
     fetchLiveEvent();
     // Refresh live event every 30 seconds
     const interval = setInterval(fetchLiveEvent, 30000);
@@ -188,11 +187,13 @@ export default function ScanClient() {
   const handleScan = useCallback(async (id: string) => {
     if (!id.trim()) return;
 
-    // Prevent duplicate scans within 2 seconds
+    // Prevent duplicate scans within 3 seconds
     const now = Date.now();
-    if (lastScannedRef.current === id && now - scanCooldownRef.current < 5000) {
+    if (lastScannedRef.current === id && now - scanCooldownRef.current < 3000) {
       return;
     }
+
+    setEmailSUNET("");
 
     lastScannedRef.current = id;
     scanCooldownRef.current = now;
@@ -235,16 +236,18 @@ export default function ScanClient() {
         }
       }
 
+      await fetchLiveEvent();
       // Clear status after 5 seconds
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
         statusTimeoutRef.current = null;
-      }, 5000);
+      }, 10000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
+      await fetchLiveEvent();
 
       // Clear status after 3 seconds even on error
       statusTimeoutRef.current = setTimeout(() => {
@@ -259,7 +262,7 @@ export default function ScanClient() {
   }, []);
 
   const handleEmailSubmit = useCallback(async () => {
-    if (!email.trim() || !isValidEmail(email)) return;
+    if (!emailSUNET.trim()) return;
 
     setIsLoading(true);
     setSpinTime(0.5);
@@ -269,7 +272,7 @@ export default function ScanClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticket_id: null,
-          email: email.trim(),
+          emailSUNET: emailSUNET.toLowerCase().trim(),
           event_id: liveEvent?.id,
         }),
       });
@@ -291,17 +294,21 @@ export default function ScanClient() {
         }
       }
 
-      // Clear status after 5 seconds
+      setEmailSUNET("");
+      await fetchLiveEvent();
+      // Clear status after 10 seconds
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
         statusTimeoutRef.current = null;
-      }, 5000);
+      }, 10000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
 
+      setEmailSUNET("");
+      await fetchLiveEvent();
       // Clear status after 3 seconds even on error
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
@@ -312,7 +319,7 @@ export default function ScanClient() {
       setIsLoading(false);
       setSpinTime(2.0);
     }
-  }, [email, liveEvent?.id]);
+  }, [emailSUNET, liveEvent?.id]);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -840,12 +847,12 @@ export default function ScanClient() {
                 <input
                   id="referral-code-input"
                   type="text"
-                  value={email}
+                  value={emailSUNET}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setEmailSUNET(e.target.value);
                   }}
-                  placeholder="Enter their email"
-                  className={`w-full min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm focus:outline-none  placeholder:text-zinc-400`}
+                  placeholder="Enter email or SUNET"
+                  className={`w-full min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm focus:outline-none  placeholder:text-zinc-200`}
                 />
                 <motion.button
                   whileHover={isLoading ? {} : { scale: 1.05 }}
