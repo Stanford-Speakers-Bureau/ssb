@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
-import { isValidEmail } from "@/app/lib/validation";
 
 type TicketStatus = "scanned" | "already_scanned" | "invalid" | null;
 
@@ -38,7 +37,7 @@ export default function ScanClient() {
   >("prompt");
   const [cameraStarted, setCameraStarted] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
-  const [email, setEmail] = useState<string>("");
+  const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
@@ -259,7 +258,7 @@ export default function ScanClient() {
   }, []);
 
   const handleEmailSubmit = useCallback(async () => {
-    if (!email.trim() || !isValidEmail(email)) return;
+    if (!emailSUNET.trim()) return;
 
     setIsLoading(true);
     setSpinTime(0.5);
@@ -269,7 +268,7 @@ export default function ScanClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticket_id: null,
-          email: email.trim(),
+          emailSUNET: emailSUNET.toLowerCase().trim(),
           event_id: liveEvent?.id,
         }),
       });
@@ -312,7 +311,7 @@ export default function ScanClient() {
       setIsLoading(false);
       setSpinTime(2.0);
     }
-  }, [email, liveEvent?.id]);
+  }, [emailSUNET, liveEvent?.id]);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -840,11 +839,11 @@ export default function ScanClient() {
                 <input
                   id="referral-code-input"
                   type="text"
-                  value={email}
+                  value={emailSUNET}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setEmailSUNET(e.target.value);
                   }}
-                  placeholder="Enter their email"
+                  placeholder="Enter email or SUNET"
                   className={`w-full min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm focus:outline-none  placeholder:text-zinc-400`}
                 />
                 <motion.button
