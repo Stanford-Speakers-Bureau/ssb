@@ -119,16 +119,30 @@ export default function TicketSection({
       />
       {hasTicket && (
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
-          {ticketId && (
-            <div className="order-0 flex justify-center lg:order-0 lg:justify-self-start">
+          <div className="flex flex-col items-center gap-3 lg:items-center">
+            {ticketId && (
               <TicketQRCode
                 ticketId={ticketId}
                 size={190}
                 compact
                 ticketType={ticketType}
               />
-            </div>
-          )}
+            )}
+            {isAndroidOrWeb && ticketId && (
+              <button
+                onClick={onAddToGoogleWallet}
+                className="inline-block border-none bg-transparent cursor-pointer p-0"
+              >
+                <Image
+                  src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
+                  alt="Add to Google Wallet"
+                  width={157}
+                  height={48}
+                  className="h-12 w-auto"
+                />
+              </button>
+            )}
+          </div>
           {isIOS && ticketId && (
             <div className="order-1 flex justify-center lg:justify-start">
               <a
@@ -143,22 +157,6 @@ export default function TicketSection({
                   className="h-12 w-auto"
                 />
               </a>
-            </div>
-          )}
-          {isAndroidOrWeb && ticketId && (
-            <div className="order-1 flex justify-center lg:justify-start">
-              <button
-                onClick={onAddToGoogleWallet}
-                className="inline-block border-none bg-transparent cursor-pointer p-0"
-              >
-                <Image
-                  src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
-                  alt="Add to Google Wallet"
-                  width={157}
-                  height={48}
-                  className="h-12 w-auto"
-                />
-              </button>
             </div>
           )}
           {referralCode && (
