@@ -500,24 +500,24 @@ async function generateTicketEmailHTML(
             ${gmailBlendEnd}
 
             <div class="qr-code-wrapper" style="display: inline-block; border-radius: 12px; ${
-                isVIP ? "background-color: #A80D0C; padding: 4px;" : "padding: 0;"
-              }">
+              isVIP ? "background-color: #A80D0C; padding: 4px;" : "padding: 0;"
+            }">
               <div style="background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
                 <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
               </div>
             </div>
 
             ${
-                isVIP
-                  ? `
+              isVIP
+                ? `
             <div style="margin-top: 12px;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #A80D0C; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
                 VIP
               </span>
             </div>
             `
-                  : ""
-              }
+                : ""
+            }
             
             <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
               <tr>
