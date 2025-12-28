@@ -43,9 +43,12 @@ export default function TicketSection({
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
     return isAndroid || !isIOSDevice;
   });
+  const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
+  const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
 
   const onAddToGoogleWallet = async () => {
-    if (!ticketId) return;
+    if (!ticketId || isLoadingGoogleWallet) return;
+    setIsLoadingGoogleWallet(true);
     try {
       const res = await fetch("/api/tickets/google-wallet", {
         method: "POST",
@@ -60,6 +63,18 @@ export default function TicketSection({
       }
     } catch (err) {
       console.error("Failed to load pass", err);
+      setIsLoadingGoogleWallet(false);
+    }
+  };
+
+  const onAddToAppleWallet = async () => {
+    if (!ticketId || isLoadingAppleWallet) return;
+    setIsLoadingAppleWallet(true);
+    try {
+      window.location.href = `/api/tickets/apple-wallet?ticket_id=${ticketId}`;
+    } catch (err) {
+      console.error("Failed to load pass", err);
+      setIsLoadingAppleWallet(false);
     }
   };
 
@@ -131,32 +146,44 @@ export default function TicketSection({
             {isAndroidOrWeb && ticketId && (
               <button
                 onClick={onAddToGoogleWallet}
-                className="inline-block border-none bg-transparent cursor-pointer p-0"
+                disabled={isLoadingGoogleWallet}
+                className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Image
                   src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
                   alt="Add to Google Wallet"
                   width={157}
                   height={48}
-                  className="h-12 w-auto"
+                  className={`h-12 w-auto ${isLoadingGoogleWallet ? "opacity-50" : ""}`}
                 />
+                {isLoadingGoogleWallet && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shadow-lg" />
+                  </div>
+                )}
               </button>
             )}
           </div>
           {isIOS && ticketId && (
             <div className="order-1 flex justify-center lg:justify-start">
-              <a
-                href={`/api/tickets/apple-wallet?ticket_id=${ticketId}`}
-                className="inline-block"
+              <button
+                onClick={onAddToAppleWallet}
+                disabled={isLoadingAppleWallet}
+                className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Image
                   src="/images/add-to-apple-wallet.svg"
                   alt="Add to Apple Wallet"
                   width={157}
                   height={48}
-                  className="h-12 w-auto"
+                  className={`h-12 w-auto ${isLoadingAppleWallet ? "opacity-50" : ""}`}
                 />
-              </a>
+                {isLoadingAppleWallet && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shadow-lg" />
+                  </div>
+                )}
+              </button>
             </div>
           )}
           {referralCode && (

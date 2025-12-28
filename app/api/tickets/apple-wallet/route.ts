@@ -5,7 +5,7 @@ import {
   getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getAppleWalletPass } from "@/app/lib/wallet";
-import {redirect} from "next/navigation";
+import { redirect } from "next/navigation";
 
 type TicketWalletData = {
   email: string;
@@ -33,7 +33,10 @@ export async function GET(req: NextRequest) {
       const redirectUrl = new URL("/api/auth/google", req.url);
       console.log(redirectUrl);
 
-      redirectUrl.searchParams.set("redirect_to", "/api/tickets/apple-wallet?" + new URL(req.url).searchParams.toString());
+      redirectUrl.searchParams.set(
+        "redirect_to",
+        "/api/tickets/apple-wallet?" + new URL(req.url).searchParams.toString(),
+      );
 
       return NextResponse.redirect(redirectUrl);
     }
