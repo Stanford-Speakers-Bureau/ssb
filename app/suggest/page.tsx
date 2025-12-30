@@ -132,7 +132,6 @@ export default async function SuggestPage({
               <Leaderboard
                 suggestions={leaderboardData}
                 isLoggedIn={!!user}
-                userSuggestions={userSuggestions}
               />
             </div>
 
