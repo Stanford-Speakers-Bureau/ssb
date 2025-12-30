@@ -1,7 +1,7 @@
 import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import jwt from "jsonwebtoken";
-import { fromZonedTime } from "date-fns-tz";
+import {formatInTimeZone, fromZonedTime} from "date-fns-tz";
 
 type TicketWalletData = {
   email: string;
@@ -203,12 +203,16 @@ export async function getAppleWalletPass(
   pass.setExpirationDate(
     new Date(Date.parse(ticket.eventDoorTime) + 86_400_000),
   );
-  pass.setLocations({
-    latitude: ticket.eventLat,
-    longitude: ticket.eventLng,
-  });
-  pass.setRelevantDates([{ date: new Date(ticket.eventDoorTime) }]);
-  pass.setRelevantDate(new Date(ticket.eventDoorTime));
+  // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
+  // pass.setLocations({
+  //   latitude: ticket.eventLat,
+  //   longitude: ticket.eventLng,
+  // });
+  pass.setRelevantDates([
+    {
+      relevantDate: fromZonedTime(ticket.eventDoorTime, PACIFIC_TIMEZONE),
+    },
+  ]);
 
   return pass.getAsBuffer();
 }
@@ -225,14 +229,9 @@ export async function getGoogleWalletPass(
   const privateKey = process.env.GOOGLE_WALLET_KEY.replace(/\\n/g, "\n");
   const serviceEmail = process.env.GOOGLE_WALLET_EMAIL;
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ||
-    "https://baconrista.com";
-  // const heroImageUrl = `${baseUrl}/api/passes/image/${ticket.ticketId}`;
-
   const issuerId = "3388000000023060627";
 
-  const classId = `${issuerId}.Event_${ticket.eventName.replace(/[^\w]/g, "")}`;
+  const classId = `${issuerId}.Event_${ticket.eventName.replace(/\W/g, "")}`;
   const objectId = `${issuerId}.${ticket.ticketId}`;
 
   const claims = {
@@ -250,10 +249,11 @@ export async function getGoogleWalletPass(
             defaultValue: { language: "en-US", value: ticket.eventName },
           },
           dateTime: {
-            start: fromZonedTime(
+            start: formatInTimeZone(
               ticket.eventDoorTime,
               PACIFIC_TIMEZONE,
-            ).toISOString(),
+              "yyyy-MM-dd'T'HH:mmXXX"
+            ),
           },
           issuerName: "Stanford Speakers Bureau",
           hexBackgroundColor: "#A80D0C",
@@ -262,6 +262,12 @@ export async function getGoogleWalletPass(
               uri: image_signed,
             },
           },
+          locations: [
+            {
+              latitude: ticket.eventLat,
+              longitude: ticket.eventLng,
+            },
+          ],
           venue: {
             name: {
               defaultValue: { language: "en-US", value: ticket.eventVenue },
@@ -272,7 +278,6 @@ export async function getGoogleWalletPass(
           },
           logo: {
             sourceUri: {
-              // uri: `${baseUrl}/logo.png`
               uri: `https://stanfordspeakersbureau.com/logo.png`,
             },
             contentDescription: {
