@@ -21,9 +21,9 @@ export default function EventSponsorshipPage() {
 
               <p className="text-base text-zinc-700 dark:text-zinc-300 mb-4">
                 Since 2020, Stanford Speakers Bureau has prioritized
-                organizations on Stanford's campus who want to host events that
-                center the voices of traditionally marginalized communities.
-                This includes, but is not limited to:
+                organizations on Stanford&#39;s campus who want to host events
+                that center the voices of traditionally marginalized
+                communities. This includes, but is not limited to:
               </p>
 
               <div className="flex flex-wrap gap-2 justify-center">
@@ -63,8 +63,8 @@ export default function EventSponsorshipPage() {
                     Funding Information
                   </h3>
                   <p className="text-base text-zinc-700 dark:text-zinc-300 mb-6">
-                    For events looking for additional funding, we'll provide up
-                    to $1,500 in monetary support!
+                    For events looking for additional funding, we&#39;ll provide
+                    up to $1,500 in monetary support!
                   </p>
                 </div>
                 <div className="bg-white dark:bg-zinc-800 rounded p-6">
@@ -74,7 +74,7 @@ export default function EventSponsorshipPage() {
                   <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
                     <li className="flex items-center gap-2">
                       <span className="text-[#A80D0C]">•</span>
-                      <span>Speaker Fees (Honoraria)</span>
+                      <span>Speaker Fees (Honorarium)</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-[#A80D0C]">•</span>
@@ -123,7 +123,7 @@ export default function EventSponsorshipPage() {
               </h2>
 
               <p className="text-base text-zinc-700 dark:text-zinc-300 mb-6">
-                Need help bringing your event idea to life? We'll provide{" "}
+                Need help bringing your event idea to life? We&#39;ll provide{" "}
                 <strong>full support</strong> from funding to execution.
               </p>
 
@@ -141,7 +141,7 @@ export default function EventSponsorshipPage() {
                     className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded p-4"
                   >
                     <svg
-                      className="w-5 h-5 text-[#A80D0C] flex-shrink-0"
+                      className="w-5 h-5 text-[#A80D0C] shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -180,7 +180,7 @@ export default function EventSponsorshipPage() {
               {/* Step 1: Review */}
               <div className="bg-white dark:bg-zinc-900 rounded p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif shrink-0">
                     1
                   </div>
                   <h3 className="text-xl font-bold font-serif text-black dark:text-white">
@@ -216,7 +216,7 @@ export default function EventSponsorshipPage() {
               {/* Step 2: Submit */}
               <div className="bg-white dark:bg-zinc-900 rounded p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif shrink-0">
                     2
                   </div>
                   <h3 className="text-xl font-bold font-serif text-black dark:text-white">
@@ -252,7 +252,7 @@ export default function EventSponsorshipPage() {
               {/* Step 3: Present */}
               <div className="bg-white dark:bg-zinc-900 rounded p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif shrink-0">
                     3
                   </div>
                   <h3 className="text-xl font-bold font-serif text-black dark:text-white">
@@ -267,7 +267,7 @@ export default function EventSponsorshipPage() {
               {/* Step 4: Get Funded */}
               <div className="bg-white dark:bg-zinc-900 rounded p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-[#A80D0C] text-white flex items-center justify-center font-bold text-xl font-serif shrink-0">
                     4
                   </div>
                   <h3 className="text-xl font-bold font-serif text-black dark:text-white">

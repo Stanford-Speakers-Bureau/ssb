@@ -5,7 +5,6 @@ import {
   getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getAppleWalletPass } from "@/app/lib/wallet";
-import { redirect } from "next/navigation";
 
 type TicketWalletData = {
   email: string;

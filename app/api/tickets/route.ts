@@ -3,7 +3,6 @@ import {
   createServerSupabaseClient,
   getSupabaseClient,
   updateReferralRecords,
-  verifyAdminRequest,
 } from "@/app/lib/supabase";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";

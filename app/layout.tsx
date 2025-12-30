@@ -4,6 +4,7 @@ import "./globals.css";
 import HeaderBar from "./components/HeaderBar";
 import { getClosestUpcomingEvent } from "./lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
+import React from "react";
 
 const inter = Inter({
   variable: "--font-inter",

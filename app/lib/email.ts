@@ -1,6 +1,6 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
-import QRCode from "qrcode";
 import type { QRCodeToBufferOptions } from "qrcode";
+import QRCode from "qrcode";
 import { PACIFIC_TIMEZONE, REFERRAL_MESSAGE } from "./constants";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
@@ -124,7 +124,7 @@ function generateICalContent(data: TicketEmailData): string {
   const uid = `${formatForICalUTC(startDate)}-${data.ticketId}@stanfordspeakersbureau.org`;
 
   // Use Pacific Time with timezone identifier
-  const icsContent = [
+  return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Stanford Speakers Bureau//Event//EN",
@@ -163,8 +163,6 @@ function generateICalContent(data: TicketEmailData): string {
   ]
     .filter((line) => line !== "")
     .join("\r\n");
-
-  return icsContent;
 }
 
 /**
@@ -184,8 +182,7 @@ async function generateQRCodePngBuffer(
         light: "#FFFFFF",
       },
     };
-    const buffer = await QRCode.toBuffer(ticketId, options);
-    return buffer;
+    return await QRCode.toBuffer(ticketId, options);
   } catch (error) {
     console.error("Error generating QR code buffer:", error);
     return null;

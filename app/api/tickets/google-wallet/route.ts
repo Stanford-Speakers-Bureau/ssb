@@ -4,8 +4,7 @@ import {
   getSignedImageUrl,
   getSupabaseClient,
 } from "@/app/lib/supabase";
-import { getAppleWalletPass, getGoogleWalletPass } from "@/app/lib/wallet";
-import { redirect } from "next/navigation";
+import { getGoogleWalletPass } from "@/app/lib/wallet";
 
 type TicketWalletData = {
   email: string;

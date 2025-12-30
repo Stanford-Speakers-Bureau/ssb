@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 
 type TicketButtonProps = {
@@ -28,11 +28,9 @@ const TICKET_MESSAGES = {
 export default function TicketButton({
   eventId,
   initialHasTicket = false,
-  initialTicketId = null,
   eventStartTime = null,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
-  const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isLiveEvent, setIsLiveEvent] = useState(false);
@@ -124,12 +122,10 @@ export default function TicketButton({
         if (hasTicket) {
           // Cancelling ticket
           setHasTicket(false);
-          setTicketId(null);
           setMessage(TICKET_MESSAGES.DELETED);
         } else {
           // Creating ticket
           setHasTicket(true);
-          setTicketId(data.ticketId || null);
           setMessage(TICKET_MESSAGES.SUCCESS);
           // Confetti on successful ticket creation - full screen coverage with delays
           void import("canvas-confetti").then(({ default: confetti }) => {

@@ -2,17 +2,9 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
-  verifyAdminRequest,
 } from "@/app/lib/supabase";
 import { generateReferralCode } from "@/app/lib/utils";
 import { checkRateLimit, referralValidateRatelimit } from "@/app/lib/ratelimit";
-
-type EventData = {
-  id: string;
-  name: string | null;
-  route: string | null;
-  start_time_date: string | null;
-};
 
 /**
  * GET /api/referrals

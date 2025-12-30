@@ -50,12 +50,7 @@ export default function TicketQRCode({
             compact ? "p-3 sm:p-4" : "p-6 md:p-8"
           }`}
         >
-          <QRCodeSVG
-            value={ticketId}
-            size={size}
-            level="H"
-            includeMargin={true}
-          />
+          <QRCodeSVG value={ticketId} size={size} level="H" marginSize={2} />
         </div>
       </div>
       {isVIP && (

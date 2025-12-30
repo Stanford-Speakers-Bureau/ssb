@@ -50,35 +50,6 @@ type AuthorizedResult = {
 export type AdminVerificationResult = UnauthorizedResult | AuthorizedResult;
 
 /**
- * Verify that the current request is authenticated and belongs to an admin user.
- * Returns the admin client for privileged database access when authorized.
- */
-export async function verifyAdminRequest(): Promise<AdminVerificationResult> {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user?.email) {
-    return { authorized: false, error: "Not authenticated" };
-  }
-
-  const adminClient = getSupabaseClient();
-  const { data: adminRecord } = await adminClient
-    .from("roles")
-    .select("roles")
-    .eq("email", user.email)
-    .single();
-
-  if (!adminRecord || !adminRecord.roles?.split(",").includes("admin")) {
-    return { authorized: false, error: "Not authorized" };
-  }
-
-  return { authorized: true, email: user.email, adminClient };
-}
-
-/**
  * Verify that the current request is authenticated and belongs to either an admin or scanner user.
  * Returns the admin client for privileged database access when authorized.
  */
@@ -240,62 +211,6 @@ function getOrdinalSuffix(day: number): string {
     default:
       return "th";
   }
-}
-
-/**
- * Generate an iCal (.ics) data URL for an event
- */
-export function generateICalUrl(event: {
-  name: string | null;
-  desc?: string | null;
-  start_time_date: string | null;
-  doors_open?: string | null;
-  venue?: string | null;
-}): string {
-  if (!event.start_time_date) return "";
-
-  const startDate = new Date(event.start_time_date);
-  const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
-
-  const formatForICal = (date: Date) => {
-    return date
-      .toISOString()
-      .replace(/[-:]/g, "")
-      .replace(/\.\d{3}/, "");
-  };
-
-  const title = `Stanford Speakers Bureau: ${event.name || "Speaker Event"}`;
-  const description = event.desc || "Stanford Speakers Bureau event";
-  const location = event.venue || "";
-  const uid = `${formatForICal(startDate)}-ssb@stanfordspeakersbureau.org`;
-
-  const icsContent = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Stanford Speakers Bureau//Event//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${formatForICal(new Date())}`,
-    `DTSTART:${formatForICal(startDate)}`,
-    `DTEND:${formatForICal(endDate)}`,
-    `SUMMARY:${escapeICalText(title)}`,
-    `DESCRIPTION:${escapeICalText(description)}`,
-    `LOCATION:${escapeICalText(location)}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
-
-  return `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
-}
-
-function escapeICalText(text: string): string {
-  return text
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\n/g, "\\n");
 }
 
 /**

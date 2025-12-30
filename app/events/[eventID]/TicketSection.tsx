@@ -31,18 +31,7 @@ export default function TicketSection({
   const [ticketType, setTicketType] = useState<string | null>(
     initialTicketType,
   );
-  const [isIOS] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    return /iphone|ipad|ipod/.test(userAgent);
-  });
-  const [isAndroidOrWeb] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isAndroid = /android/.test(userAgent);
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-    return isAndroid || !isIOSDevice;
-  });
+
   const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
 
@@ -134,7 +123,6 @@ export default function TicketSection({
       <TicketButton
         eventId={eventId}
         initialHasTicket={hasTicket}
-        initialTicketId={ticketId}
         eventStartTime={eventStartTime}
       />
       {hasTicket && (

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import Link from "next/link";
 
 export default function SignOutButton() {
   const [isSigningOut, setIsSigningOut] = useState(false);

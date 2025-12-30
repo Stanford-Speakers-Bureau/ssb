@@ -26,7 +26,6 @@ type LeaderboardProps = {
 export default function Leaderboard({
   suggestions: initialSuggestions,
   isLoggedIn,
-  userSuggestions = [],
 }: LeaderboardProps) {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [, startTransition] = useTransition();

@@ -17,12 +17,10 @@ export default function TicketCount({
   reserved = 0,
 }: TicketCountProps) {
   const [ticketsSold, setTicketsSold] = useState(initialTicketsSold);
-  const [isLoading, setIsLoading] = useState(false);
 
   const maxTickets = Math.max(0, initialCapacity - (reserved || 0));
 
   const fetchTicketCount = () => {
-    setIsLoading(true);
     fetch(`/api/tickets?count=true&event_id=${eventId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -32,9 +30,6 @@ export default function TicketCount({
       })
       .catch((err) => {
         console.error("Failed to fetch ticket count:", err);
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
   };
 
