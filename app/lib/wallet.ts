@@ -1,7 +1,7 @@
 import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import jwt from "jsonwebtoken";
-import {formatInTimeZone, fromZonedTime} from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 type TicketWalletData = {
   email: string;
@@ -252,7 +252,7 @@ export async function getGoogleWalletPass(
             start: formatInTimeZone(
               ticket.eventDoorTime,
               PACIFIC_TIMEZONE,
-              "yyyy-MM-dd'T'HH:mmXXX"
+              "yyyy-MM-dd'T'HH:mmXXX",
             ),
           },
           issuerName: "Stanford Speakers Bureau",

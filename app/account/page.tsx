@@ -13,19 +13,22 @@ interface RawTicket {
   event_id: string;
   created_at: string;
   type: string | null;
-  events: {
-    id: string;
-    name: string | null;
-    route: string | null;
-    doors_open: string | null;
-    venue: string | null;
-  } | {
-    id: string;
-    name: string | null;
-    route: string | null;
-    doors_open: string | null;
-    venue: string | null;
-  }[] | null;
+  events:
+    | {
+        id: string;
+        name: string | null;
+        route: string | null;
+        doors_open: string | null;
+        venue: string | null;
+      }
+    | {
+        id: string;
+        name: string | null;
+        route: string | null;
+        doors_open: string | null;
+        venue: string | null;
+      }[]
+    | null;
 }
 
 interface Ticket {
