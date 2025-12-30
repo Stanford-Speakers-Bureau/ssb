@@ -7,7 +7,26 @@ import {
   formatTime,
 } from "@/app/lib/supabase";
 import SignOutButton from "./SignOutButton";
-import { motion } from "motion/react";
+
+interface RawTicket {
+  id: string;
+  event_id: string;
+  created_at: string;
+  type: string | null;
+  events: {
+    id: string;
+    name: string | null;
+    route: string | null;
+    doors_open: string | null;
+    venue: string | null;
+  } | {
+    id: string;
+    name: string | null;
+    route: string | null;
+    doors_open: string | null;
+    venue: string | null;
+  }[] | null;
+}
 
 interface Ticket {
   id: string;
@@ -18,7 +37,7 @@ interface Ticket {
     id: string;
     name: string | null;
     route: string | null;
-    start_time_date: string | null;
+    doors_open: string | null;
     venue: string | null;
   } | null;
 }
@@ -51,7 +70,7 @@ async function getUserTickets(): Promise<Ticket[]> {
         id,
         name,
         route,
-        start_time_date,
+        doors_open,
         venue
       )
     `,
@@ -65,7 +84,7 @@ async function getUserTickets(): Promise<Ticket[]> {
   }
 
   // Handle events relation - Supabase may return it as array or object
-  return (tickets || []).map((ticket: any) => {
+  return (tickets || []).map((ticket: RawTicket) => {
     let events = ticket.events;
     if (Array.isArray(events)) {
       events = events[0] || null;
@@ -110,7 +129,7 @@ export default async function AccountPage() {
             {tickets.length === 0 ? (
               <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-6 md:p-8 text-center">
                 <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                  You don't have any tickets yet.
+                  You don&#39;t have any tickets yet.
                 </p>
                 <Link
                   href="/upcoming-speakers"
@@ -125,11 +144,11 @@ export default async function AccountPage() {
                   const event = ticket.events;
                   if (!event) return null;
 
-                  const eventDate = event.start_time_date
-                    ? formatEventDate(event.start_time_date)
+                  const eventDate = event.doors_open
+                    ? formatEventDate(event.doors_open)
                     : null;
-                  const eventTime = event.start_time_date
-                    ? formatTime(event.start_time_date)
+                  const eventTime = event.doors_open
+                    ? formatTime(event.doors_open)
                     : null;
 
                   return (
