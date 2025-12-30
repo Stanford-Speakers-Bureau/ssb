@@ -140,13 +140,13 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   Contact
                 </Link>
               </motion.div>
-              {isAuthenticated !== null && (
+              {/*{isAuthenticated !== null && (*/}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="ml-auto"
                 >
-                  {isAuthenticated ? (
+                  {isAuthenticated == null || isAuthenticated ? (
                     <Link href="/account" className={linkClasses}>
                       Account
                     </Link>
@@ -159,7 +159,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     </Link>
                   )}
                 </motion.div>
-              )}
+              {/*)}*/}
             </div>
           </div>
           <div className="flex items-center gap-4">
