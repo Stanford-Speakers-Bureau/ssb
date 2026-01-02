@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import HeaderBar from "./components/HeaderBar";
+import Footer from "./components/Footer";
 import { getClosestUpcomingEvent } from "./lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
 import React from "react";
@@ -85,6 +86,7 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <Footer />
       </body>
     </html>
   );
