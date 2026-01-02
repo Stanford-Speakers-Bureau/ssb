@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Contact() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="relative flex flex-1 w-full justify-center pt-16">
+      <main className="relative flex flex-1 w-full justify-center pt-10">
         <Image
           className="object-cover blur-sm"
           src="/students.jpeg"

@@ -114,8 +114,8 @@ export default async function SuggestPage({
   ]);
 
   return (
-    <div className="flex h-[calc(100vh-2.5rem)] flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full flex-1 bg-white dark:bg-black pt-16 justify-center">
+    <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex w-full flex-1 bg-white dark:bg-black pt-10 justify-center">
         {authError && (
           <div
             className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded text-sm font-medium text-red-800 bg-red-50 dark:bg-red-900/20 dark:text-red-300 shadow-lg"
