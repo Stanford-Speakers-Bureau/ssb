@@ -129,10 +129,7 @@ export default async function SuggestPage({
           <section className="w-full max-w-5xl flex items-start justify-center lg:py-8 py-6 px-6 sm:px-12 md:px-16">
             {/* Leaderboard on the left */}
             <div className="flex-1 max-w-lg mx-0">
-              <Leaderboard
-                suggestions={leaderboardData}
-                isLoggedIn={!!user}
-              />
+              <Leaderboard suggestions={leaderboardData} isLoggedIn={!!user} />
             </div>
 
             {/* Right column: Suggest a Speaker + Your suggested speakers */}
