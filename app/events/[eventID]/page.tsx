@@ -111,7 +111,7 @@ export default async function EventPage({ params }: PageProps) {
           {/* Semi-transparent overlay for better text readability */}
           <div className="fixed inset-0 bg-black/70 z-10"></div>
 
-          <main className="relative z-20 flex w-full flex-1 justify-center pt-16">
+          <main className="relative z-20 flex w-full flex-1 justify-center pt-24">
             <section className="w-full max-w-5xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
               <div className="">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 font-serif">

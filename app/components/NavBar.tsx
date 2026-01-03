@@ -64,10 +64,10 @@ export default function NavBar({ banner }: { banner: boolean }) {
 
   return (
     <>
-      <nav className="sticky top-0 left-0 right-0 z-50 w-full">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
+      <nav className="sticky top-0 left-0 right-0 z-50 w-full h-0">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div
-            className={`flex items-center gap-8 flex-1 absolute left-4 right-4 sm:left-6 sm:right-6 md:left-auto md:right-auto md:max-w-4xl md:w-full top-4 h-[70px] backdrop-blur-[10px] bg-white/10 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)] opacity-90 px-4 sm:px-6 md:px-6 ${mobileMenuOpen ? "z-0" : "z-10"}`}
+            className={`flex items-center gap-8 flex-1 absolute left-4 right-4 sm:left-6 sm:right-6 md:left-auto md:right-auto md:max-w-4xl md:w-full top-4 h-[70px] backdrop-blur-[10px] bg-white/10 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)] opacity-90 px-4 sm:px-6 md:px-6 pb-1 ${mobileMenuOpen ? "z-0" : "z-10"}`}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
