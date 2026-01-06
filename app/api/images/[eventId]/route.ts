@@ -6,11 +6,42 @@ import {
 } from "@/app/lib/supabase";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
 
+// Cache headers for successful responses
+const CACHE_HEADERS = {
+  "Cache-Control": "public, max-age=31536000, immutable",
+  "CDN-Cache-Control": "public, max-age=31536000, immutable",
+  "X-Content-Type-Options": "nosniff",
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> },
 ) {
   const { eventId } = await params;
+
+  // Get version from query param for cache key
+  const url = new URL(request.url);
+  const requestedVersion = url.searchParams.get("v") || "1";
+
+  // Create a cache key based on the full URL (includes ?v= param)
+  const cacheKey = new Request(url.toString(), {
+    method: "GET",
+  });
+
+  // Try to get from Cloudflare edge cache first
+  // @ts-expect-error - caches.default is available in Cloudflare Workers runtime
+  const cache = caches.default;
+  if (cache) {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      // Clone and add header to indicate cache hit
+      const response = new Response(cachedResponse.body, cachedResponse);
+      response.headers.set("X-Cache", "HIT");
+      return response;
+    }
+  }
+
+  // Cache miss - proceed with rate limiting and fetch
 
   // Rate limiting by IP
   const ip =
@@ -31,11 +62,6 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  // Get version from query param for cache key
-  const url = new URL(request.url);
-  const requestedVersion = url.searchParams.get("v");
-  const currentVersion = event.img_version?.toString() || "1";
-
   // Generate signed URL (short expiry - we fetch immediately)
   const supabase = getSupabaseClient();
   const { data: signedData, error: signedError } = await supabase.storage
@@ -55,15 +81,22 @@ export async function GET(
   const imageBuffer = await imageResponse.arrayBuffer();
   const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
-  // Return with aggressive cache headers
-  return new NextResponse(imageBuffer, {
+  // Build response with cache headers
+  const response = new NextResponse(imageBuffer, {
     status: 200,
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "public, max-age=31536000, immutable",
-      "CDN-Cache-Control": "public, max-age=31536000, immutable",
-      ETag: `"${eventId}-v${requestedVersion || currentVersion}"`,
-      "X-Content-Type-Options": "nosniff",
+      ...CACHE_HEADERS,
+      ETag: `"${eventId}-v${requestedVersion}"`,
+      "X-Cache": "MISS",
     },
   });
+
+  // Store in Cloudflare edge cache for future requests
+  if (cache) {
+    // Clone the response before caching (response body can only be read once)
+    await cache.put(cacheKey, response.clone());
+  }
+
+  return response;
 }
