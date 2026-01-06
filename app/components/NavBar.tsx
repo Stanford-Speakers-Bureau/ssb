@@ -67,12 +67,12 @@ export default function NavBar({ banner }: { banner: boolean }) {
       <nav className="sticky top-0 left-0 right-0 z-50 w-full h-0">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div
-            className={`flex items-center gap-8 flex-1 absolute left-4 right-4 sm:left-6 sm:right-6 md:left-auto md:right-auto md:max-w-4xl md:w-full top-4 h-[70px] backdrop-blur-[10px] bg-white/10 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)] opacity-90 px-4 sm:px-6 md:px-6 pb-1 ${mobileMenuOpen ? "z-0" : "z-10"}`}
+            className={`flex items-center gap-8 flex-1 absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-auto lg:right-auto lg:max-w-4xl lg:w-full top-4 h-[70px] backdrop-blur-[10px] bg-white/10 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)] opacity-90 px-4 sm:px-6 lg:px-6 pb-1 ${mobileMenuOpen ? "z-0" : "z-10"}`}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="hidden md:block"
+              className="hidden lg:block"
             >
               <Link href="/" className={logoClasses} prefetch={false}>
                 <Image
@@ -83,7 +83,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 />
               </Link>
             </motion.div>
-            <div className="hidden items-center gap-6 md:flex flex-1 justify-center">
+            <div className="hidden items-center gap-6 lg:flex flex-1 justify-center">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -168,7 +168,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           </div>
 
           {/* Mobile Logo - positioned outside frosted div to stay above menu */}
-          <div className="md:hidden absolute left-8 sm:left-10 top-[31px] z-30">
+          <div className="lg:hidden absolute left-8 sm:left-10 top-[31px] z-30">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href="/"
@@ -189,7 +189,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           {/* Mobile Menu Button - positioned outside frosted div to stay above menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`md:hidden p-2 absolute right-6 sm:right-8 top-[27px] z-30 ${hamburgerClasses}`}
+            className={`lg:hidden p-2 absolute right-6 sm:right-8 top-[27px] z-30 ${hamburgerClasses}`}
             aria-label="Toggle menu"
           >
             <svg
@@ -218,7 +218,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className={`fixed inset-y-0 right-0 z-20 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl md:hidden`}
+              className={`fixed inset-y-0 right-0 z-20 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl lg:hidden`}
             >
               <div
                 className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}
