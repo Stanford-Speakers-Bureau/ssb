@@ -618,6 +618,11 @@ async function generateTicketEmailHTML(
                   ${REFERRAL_MESSAGE}
                 </p>
               ${gmailBlendEnd}
+              ${gmailBlendStart}
+                <p style="margin: 8px 0 0 0; color: #71717a; font-size: 12px; line-height: 1.4;">
+                  Note: all referrals must be checked in to earn your front row seat!
+                </p>
+              ${gmailBlendEnd}
             </div>
             `
                 : ""

@@ -93,6 +93,9 @@ export default function ReferralShare({
               </span>
             )}
           </p>
+          <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+            Note: all referrals must be checked in to earn your front row seat!
+          </p>
         </div>
         <button
           onClick={handleCopy}
