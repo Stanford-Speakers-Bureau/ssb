@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
-import HeaderBar from "./components/HeaderBar";
+import ClientHeaderBar from "./components/ClientHeaderBar";
 import Footer from "./components/Footer";
-import { getClosestUpcomingEvent } from "./lib/supabase";
-import { BANNER_MESSAGES } from "@/app/lib/constants";
-import React from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,51 +37,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const closestEvent = await getClosestUpcomingEvent();
-
-  // Determine if speaker is still a mystery (before release_date)
-  const now = new Date();
-  let isMystery: boolean;
-  if (!closestEvent?.release_date) {
-    isMystery = !closestEvent?.name;
-  } else {
-    const releaseDate = new Date(closestEvent.release_date);
-    isMystery = now < releaseDate;
-  }
-
-  // Show banner if there's an upcoming event
-  const showBanner = !!closestEvent;
-
-  // Banner text and countdown target based on mystery status
-  const bannerText = isMystery
-    ? BANNER_MESSAGES.NOTIFY_MESSAGE
-    : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
-  const countdownTarget = isMystery
-    ? closestEvent?.release_date
-    : closestEvent?.doors_open;
-  const prefaceLabel = isMystery
-    ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
-    : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
-
   return (
     <html lang="en">
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
       >
-        <HeaderBar
-          showBanner={showBanner}
-          bannerProps={{
-            text: bannerText,
-            href: "/upcoming-speakers",
-            prefaceLabel,
-            target: countdownTarget || undefined,
-          }}
-        />
+        <ClientHeaderBar />
         {children}
         <Footer />
       </body>
