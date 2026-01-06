@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./image-loader.ts",
   },
+  // Reduce bundle size by marking heavy packages as external
+  experimental: {
+    serverComponentsExternalPackages: ["@vercel/og"],
+  },
   async redirects() {
     return [
       {
@@ -64,6 +68,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  serverExternalPackages: ["@vercel/og"],
 };
 
 export default nextConfig;

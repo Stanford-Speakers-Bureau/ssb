@@ -1,6 +1,6 @@
 import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
-import jwt from "jsonwebtoken";
+import { SignJWT, importPKCS8 } from "jose";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 type TicketWalletData = {
@@ -239,7 +239,6 @@ export async function getGoogleWalletPass(
     aud: "google",
     origins: ["https://stanfordspeakersbureau.com/"],
     typ: "savetowallet",
-    iat: Math.floor(Date.now() / 1000),
     payload: {
       eventTicketClasses: [
         {
@@ -326,8 +325,12 @@ export async function getGoogleWalletPass(
     },
   };
 
-  // 5. Sign the JWT
-  const token = jwt.sign(claims, privateKey, { algorithm: "RS256" });
+  // 5. Sign the JWT using jose (edge-compatible)
+  const key = await importPKCS8(privateKey, "RS256");
+  const token = await new SignJWT(claims)
+    .setProtectedHeader({ alg: "RS256", typ: "JWT" })
+    .setIssuedAt()
+    .sign(key);
 
   return `https://pay.google.com/gp/v/save/${token}`;
 }

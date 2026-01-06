@@ -1,4 +1,3 @@
-import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
 import { PACIFIC_TIMEZONE, REFERRAL_MESSAGE } from "./constants";
@@ -7,16 +6,169 @@ import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 // emails are so stupid
 // on ios gmail to fix: https://www.hteumeuleu.com/2021/fixing-gmail-dark-mode-css-blend-modes/
 
-// Initialize SES client
-const sesClient = new SESv2Client({
-  region: process.env.AWS_REGION || "us-east-1",
-  credentials: process.env.AWS_ACCESS_KEY_ID
-    ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      }
-    : undefined,
-});
+// AWS SES configuration
+const AWS_REGION = process.env.AWS_REGION || "us-east-1";
+const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+
+/**
+ * AWS Signature Version 4 signing for SES API requests
+ * This replaces the heavy @aws-sdk/client-sesv2 package (~300KB) with ~5KB of code
+ */
+async function signAWSRequest(
+  method: string,
+  url: string,
+  body: string,
+  headers: Record<string, string>,
+): Promise<Record<string, string>> {
+  if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+    throw new Error("AWS credentials not configured");
+  }
+
+  const urlObj = new URL(url);
+  const host = urlObj.host;
+  const path = urlObj.pathname;
+  const service = "ses";
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+
+  // Create canonical request
+  const canonicalHeaders = Object.entries({
+    ...headers,
+    host,
+    "x-amz-date": amzDate,
+  })
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k.toLowerCase()}:${v.trim()}`)
+    .join("\n");
+
+  const signedHeaders = Object.keys({
+    ...headers,
+    host,
+    "x-amz-date": amzDate,
+  })
+    .map((k) => k.toLowerCase())
+    .sort()
+    .join(";");
+
+  const payloadHash = await sha256Hex(body);
+
+  const canonicalRequest = [
+    method,
+    path,
+    "", // query string (empty for POST)
+    canonicalHeaders + "\n",
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+
+  // Create string to sign
+  const algorithm = "AWS4-HMAC-SHA256";
+  const credentialScope = `${dateStamp}/${AWS_REGION}/${service}/aws4_request`;
+  const stringToSign = [
+    algorithm,
+    amzDate,
+    credentialScope,
+    await sha256Hex(canonicalRequest),
+  ].join("\n");
+
+  // Calculate signature
+  const signingKey = await getSignatureKey(
+    AWS_SECRET_ACCESS_KEY,
+    dateStamp,
+    AWS_REGION,
+    service,
+  );
+  const signature = await hmacHex(signingKey, stringToSign);
+
+  // Create authorization header
+  const authorization = `${algorithm} Credential=${AWS_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  return {
+    ...headers,
+    host,
+    "x-amz-date": amzDate,
+    "x-amz-content-sha256": payloadHash,
+    authorization,
+  };
+}
+
+async function sha256Hex(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function hmac(key: ArrayBuffer, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const encoder = new TextEncoder();
+  return crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
+}
+
+async function hmacHex(key: ArrayBuffer, message: string): Promise<string> {
+  const result = await hmac(key, message);
+  return Array.from(new Uint8Array(result))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function getSignatureKey(
+  secretKey: string,
+  dateStamp: string,
+  region: string,
+  service: string,
+): Promise<ArrayBuffer> {
+  const encoder = new TextEncoder();
+  const kDate = await hmac(
+    encoder.encode("AWS4" + secretKey).buffer as ArrayBuffer,
+    dateStamp,
+  );
+  const kRegion = await hmac(kDate, region);
+  const kService = await hmac(kRegion, service);
+  return hmac(kService, "aws4_request");
+}
+
+/**
+ * Send raw email via AWS SES REST API
+ */
+async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
+  const endpoint = `https://email.${AWS_REGION}.amazonaws.com/v2/email/outbound-emails`;
+
+  const body = JSON.stringify({
+    Content: {
+      Raw: {
+        Data: btoa(rawMessage),
+      },
+    },
+  });
+
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  };
+
+  const signedHeaders = await signAWSRequest("POST", endpoint, body, headers);
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: signedHeaders,
+    body,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`SES API error (${response.status}): ${errorText}`);
+  }
+}
 
 const FROM_EMAIL =
   process.env.SES_FROM_EMAIL || "hello@stanfordspeakersbureau.com";
@@ -751,18 +903,6 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
 
   const rawMessage = lines.join("\r\n");
 
-  const command = new SendEmailCommand({
-    FromEmailAddress: FROM_EMAIL,
-    Destination: {
-      ToAddresses: [data.email],
-    },
-    Content: {
-      Raw: {
-        Data: new Uint8Array(Buffer.from(rawMessage, "utf-8")),
-      },
-    },
-  });
-
-  await sesClient.send(command);
+  await sendRawEmailViaSES(rawMessage);
   console.log(`Ticket confirmation email sent to ${data.email}`);
 }
