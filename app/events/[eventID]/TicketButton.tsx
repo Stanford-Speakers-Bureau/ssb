@@ -8,6 +8,7 @@ type TicketButtonProps = {
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
   eventStartTime?: string | null;
+  isSoldOut?: boolean;
 };
 
 const TICKET_MESSAGES = {
@@ -29,6 +30,7 @@ export default function TicketButton({
   eventId,
   initialHasTicket = false,
   eventStartTime = null,
+  isSoldOut = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -433,6 +435,17 @@ export default function TicketButton({
     isCancelDisabled ||
     isSalesDisabled ||
     (!!referralWarning && !hasTicket);
+
+  // Hide the button if sold out and user doesn't have a ticket, but show a message
+  if (isSoldOut && !hasTicket) {
+    return (
+      <div className="mb-4 md:mb-6">
+        <p className="text-sm sm:text-base text-yellow-400">
+          This event is sold out. A waitlist will be available at the door.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4 md:mb-6">

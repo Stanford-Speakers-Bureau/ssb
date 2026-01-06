@@ -15,6 +15,7 @@ type TicketSectionProps = {
   userEmail: string | null;
   eventRoute: string;
   eventStartTime: string | null;
+  isSoldOut?: boolean;
 };
 
 export default function TicketSection({
@@ -25,6 +26,7 @@ export default function TicketSection({
   userEmail,
   eventRoute,
   eventStartTime,
+  isSoldOut = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -122,6 +124,7 @@ export default function TicketSection({
         eventId={eventId}
         initialHasTicket={hasTicket}
         eventStartTime={eventStartTime}
+        isSoldOut={isSoldOut}
       />
       {hasTicket && (
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">

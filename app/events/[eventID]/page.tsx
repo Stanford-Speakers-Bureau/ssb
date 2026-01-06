@@ -65,6 +65,14 @@ export default async function EventPage({ params }: PageProps) {
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
 
+  // Check if tickets are sold out (matches TicketCount logic)
+  const ticketsSold = event.tickets || 0;
+  const maxTickets = event.capacity
+    ? Math.max(0, event.capacity - (event.reserved || 0))
+    : 0;
+  const ticketsLeft = Math.max(0, maxTickets - ticketsSold);
+  const isSoldOut = event.capacity ? ticketsLeft <= 0 : false;
+
   // If no event found or event is still a mystery, redirect to upcoming events
   if (isEventMystery(event) && !hasTicket) {
     redirect("/upcoming-speakers");
@@ -306,6 +314,7 @@ export default async function EventPage({ params }: PageProps) {
                   userEmail={ticketStatus.userEmail}
                   eventRoute={event.route || eventID}
                   eventStartTime={event.start_time_date}
+                  isSoldOut={isSoldOut}
                 />
 
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
