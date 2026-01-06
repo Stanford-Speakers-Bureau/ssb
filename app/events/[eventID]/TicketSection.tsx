@@ -57,16 +57,14 @@ export default function TicketSection({
     }
   };
 
-  const onAddToAppleWallet = async () => {
+  const onAddToAppleWallet = () => {
     if (!ticketId || isLoadingAppleWallet) return;
     setIsLoadingAppleWallet(true);
-    try {
+    window.location.href = `/api/tickets/apple-wallet?ticket_id=${ticketId}`;
+    // Reset loading state after a short delay since the download doesn't navigate away
+    setTimeout(() => {
       setIsLoadingAppleWallet(false);
-      window.location.href = `/api/tickets/apple-wallet?ticket_id=${ticketId}`;
-    } catch (err) {
-      console.error("Failed to load pass", err);
-      setIsLoadingAppleWallet(false);
-    }
+    }, 2000);
   };
 
   useEffect(() => {
