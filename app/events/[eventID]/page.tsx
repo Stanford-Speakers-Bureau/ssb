@@ -76,7 +76,7 @@ export default async function EventPage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="relative isolate flex min-h-screen flex-col items-center font-sans">
+    <div className="relative isolate flex flex-col items-center font-sans">
       <WaitForImages
         urls={signedImageUrl ? [signedImageUrl] : []}
         maxToWait={1}
@@ -235,16 +235,16 @@ export default async function EventPage({ params }: PageProps) {
                     </div>
                   )}
 
-                  {event.capacity && (
-                    <TicketCount
-                      eventId={event.id}
-                      initialCapacity={event.capacity}
-                      initialTicketsSold={
-                        (event.tickets ?? event.reserved) || 0
-                      }
-                      reserved={event.reserved}
-                    />
-                  )}
+                  {/*{event.capacity && (*/}
+                  {/*  <TicketCount*/}
+                  {/*    eventId={event.id}*/}
+                  {/*    initialCapacity={event.capacity}*/}
+                  {/*    initialTicketsSold={*/}
+                  {/*      (event.tickets ?? event.reserved) || 0*/}
+                  {/*    }*/}
+                  {/*    reserved={event.reserved}*/}
+                  {/*  />*/}
+                  {/*)}*/}
 
                   {event.start_time_date && (
                     <div className="flex flex-wrap items-center gap-2 mt-2">
