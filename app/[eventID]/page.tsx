@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { getEventByRoute, isEventMystery } from "@/app/lib/supabase";
 
 // Force dynamic rendering to avoid static generation issues on Cloudflare Workers
@@ -13,9 +13,9 @@ export default async function EventRedirectPage({ params }: PageProps) {
 
   const event = await getEventByRoute(eventID);
 
-  // If no event found with this route, redirect to home
+  // If no event found or event is mystery, show 404
   if (!event || isEventMystery(event)) {
-    redirect("/");
+    notFound();
   }
 
   // Event is revealed and route matches - redirect to the event page
