@@ -4,7 +4,7 @@ import WaitForImages from "@/app/components/WaitForImages";
 import {
   getEventByRoute,
   isEventMystery,
-  getSignedImageUrl,
+  getImageProxyUrl,
   formatEventDate,
   formatTime,
   createServerSupabaseClient,
@@ -78,10 +78,10 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  // Get the signed image URL for the event and check if user has a ticket
-  const [signedImageUrl] = await Promise.all([
-    getSignedImageUrl(event.img, 3600),
-  ]);
+  // Get the proxy URL for the event image
+  const signedImageUrl = event.img
+    ? getImageProxyUrl(event.id, event.img_version)
+    : null;
 
   return (
     <div className="relative isolate flex flex-col items-center font-sans min-h-screen">

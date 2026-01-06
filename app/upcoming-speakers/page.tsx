@@ -6,7 +6,7 @@ import {
   createServerSupabaseClient,
   formatEventDate,
   formatTime,
-  getSignedImageUrl,
+  getImageProxyUrl,
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
@@ -75,6 +75,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
     reserved: number | null;
     speaker_id?: string | null;
     release_date: string | null;
+    img_version?: number | null;
   }>;
 
   return await Promise.all(
@@ -97,7 +98,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         route: isMystery ? null : event.route,
         signedImageUrl: isMystery
           ? null
-          : await getSignedImageUrl(event.img, 60),
+          : getImageProxyUrl(event.id, event.img_version),
         isMystery,
         capacity: isMystery ? null : (event.capacity ?? null),
         ticketsSold: isMystery ? null : ticketsSold,
