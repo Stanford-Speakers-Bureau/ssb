@@ -34,6 +34,7 @@ export type Event = {
   start_time_date: string | null;
   doors_open: string | null;
   route: string | null;
+  img_version?: number | null;
 };
 
 type UnauthorizedResult = {
@@ -253,6 +254,37 @@ export async function getEventByRoute(route: string): Promise<Event | null> {
   }
 
   return data;
+}
+
+/**
+ * Get an event by its ID
+ */
+export async function getEventById(id: string): Promise<Event | null> {
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Generate a proxy URL for an event image
+ * Uses img_version for cache-busting
+ */
+export function getImageProxyUrl(
+  eventId: string,
+  imgVersion?: number | null,
+): string {
+  const version = imgVersion || 1;
+  return `/api/images/${eventId}?v=${version}`;
 }
 
 /**

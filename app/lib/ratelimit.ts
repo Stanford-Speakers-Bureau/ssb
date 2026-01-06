@@ -72,6 +72,17 @@ export const bannerRatelimit = new Ratelimit({
 });
 
 /**
+ * Rate limiter for image proxy
+ * 100 requests per minute per IP
+ */
+export const imageRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(100, "60 s"),
+  prefix: "ratelimit:images",
+  analytics: true,
+});
+
+/**
  * Check rate limit and return error response if exceeded
  * Returns null if rate limit is OK, or a NextResponse if rate limited
  */

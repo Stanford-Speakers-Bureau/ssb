@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSignedImageUrl,
+  getImageProxyUrl,
   getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getGoogleWalletPass } from "@/app/lib/wallet";
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     const { data: event } = await adminClient
       .from("events")
       .select(
-        "name, doors_open, venue, img, venue_link, route, latitude, longitude, address",
+        "id, name, doors_open, venue, img, img_version, venue_link, route, latitude, longitude, address",
       )
       .eq("id", ticket.event_id)
       .single();
@@ -92,7 +92,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    const imgUrl = await getSignedImageUrl(event.img, 31_556_952);
+    const imgUrl = event.img
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}${getImageProxyUrl(event.id, event.img_version)}`
+      : null;
     if (!imgUrl) {
       return NextResponse.json(
         { error: "Failed to get event image" },
