@@ -179,7 +179,7 @@ export async function POST(req: Request) {
 
     if (referral) {
       const userReferralCode = generateReferralCode(user.email);
-      if (referral.trim() === userReferralCode) {
+      if (referral.trim().toLowerCase() === userReferralCode) {
         return NextResponse.json(
           { error: "You cannot use your own referral code" },
           { status: 400 },
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
         .from("referrals")
         .select("id")
         .eq("event_id", event_id)
-        .eq("referral_code", referral.trim())
+        .eq("referral_code", referral.trim().toLowerCase())
         .single();
 
       if (!referralRecord) {

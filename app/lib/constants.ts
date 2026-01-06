@@ -28,5 +28,4 @@ export const BANNER_MESSAGES = {
 
 export const PACIFIC_TIMEZONE = "America/Los_Angeles";
 
-export const REFERRAL_MESSAGE =
-  "Refer 10 people to earn a front row seat!";
+export const REFERRAL_MESSAGE = "Refer 10 people to earn a front row seat!";

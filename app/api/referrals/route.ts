@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
     const userReferralCode = generateReferralCode(user.email);
 
-    if (referral_code.trim() === userReferralCode) {
+    if (referral_code.trim().toLowerCase() === userReferralCode) {
       return NextResponse.json(
         {
           valid: false,
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
       .from("referrals")
       .select("id")
       .eq("event_id", event_id)
-      .eq("referral_code", referral_code.trim())
+      .eq("referral_code", referral_code.trim().toLowerCase())
       .single();
 
     if (error || !data) {

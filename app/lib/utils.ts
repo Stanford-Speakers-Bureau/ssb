@@ -9,7 +9,7 @@ export function generateReferralCode(
   email: string | null | undefined,
 ): string | null {
   if (!email) return null;
-  return email.split("@")[0] || null;
+  return email.split("@")[0]?.toLowerCase() || null;
 }
 
 /**
