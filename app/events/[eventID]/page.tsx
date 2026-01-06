@@ -76,7 +76,7 @@ export default async function EventPage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="relative isolate flex flex-col items-center font-sans">
+    <div className="relative isolate flex flex-col items-center font-sans min-h-screen">
       <WaitForImages
         urls={signedImageUrl ? [signedImageUrl] : []}
         maxToWait={1}

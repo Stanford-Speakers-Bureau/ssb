@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className=" bg-gray-100 dark:bg-zinc-900">
+    <footer className="relative z-30 bg-gray-100 dark:bg-zinc-900">
       <div className="mx-auto max-w-5xl px-8 py-8 sm:px-12 md:px-16">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           {/* Navigation Links - Left Side */}
