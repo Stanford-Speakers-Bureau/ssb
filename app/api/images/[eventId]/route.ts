@@ -5,6 +5,7 @@ import {
   isEventMystery,
 } from "@/app/lib/supabase";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Cache headers for successful responses
 const CACHE_HEADERS = {
@@ -23,21 +24,33 @@ export async function GET(
   const url = new URL(request.url);
   const requestedVersion = url.searchParams.get("v") || "1";
 
-  // Create a cache key based on the full URL (includes ?v= param)
-  const cacheKey = new Request(url.toString(), {
-    method: "GET",
-  });
+  // R2 cache key: images/{eventId}/v{version}
+  const r2Key = `images/${eventId}/v${requestedVersion}`;
 
-  // Try to get from Cloudflare edge cache first
-  // @ts-expect-error - caches.default is available in Cloudflare Workers runtime
-  const cache = caches.default;
-  if (cache) {
-    const cachedResponse = await cache.match(cacheKey);
-    if (cachedResponse) {
-      // Clone and add header to indicate cache hit
-      const response = new Response(cachedResponse.body, cachedResponse);
-      response.headers.set("X-Cache", "HIT");
-      return response;
+  // Get R2 bucket from Cloudflare context
+  const { env } = getCloudflareContext();
+  const bucket = env.ssb_cache;
+
+  // Try to get from R2 cache first
+  if (bucket) {
+    try {
+      const cached = await bucket.get(r2Key);
+      if (cached) {
+        const contentType = cached.httpMetadata?.contentType || "image/jpeg";
+        return new Response(cached.body, {
+          status: 200,
+          headers: {
+            "Content-Type": contentType,
+            ...CACHE_HEADERS,
+            ETag: `"${eventId}-v${requestedVersion}"`,
+            "X-Cache": "HIT",
+            "X-Cache-Source": "R2",
+          },
+        });
+      }
+    } catch (error) {
+      // Log but continue to fetch from origin on R2 errors
+      console.error("R2 cache read error:", error);
     }
   }
 
@@ -81,22 +94,29 @@ export async function GET(
   const imageBuffer = await imageResponse.arrayBuffer();
   const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
+  // Store in R2 cache for future requests (non-blocking)
+  if (bucket) {
+    try {
+      await bucket.put(r2Key, imageBuffer, {
+        httpMetadata: {
+          contentType,
+        },
+      });
+    } catch (error) {
+      // Log but don't fail the request on R2 write errors
+      console.error("R2 cache write error:", error);
+    }
+  }
+
   // Build response with cache headers
-  const response = new NextResponse(imageBuffer, {
+  return new NextResponse(imageBuffer, {
     status: 200,
     headers: {
       "Content-Type": contentType,
       ...CACHE_HEADERS,
       ETag: `"${eventId}-v${requestedVersion}"`,
       "X-Cache": "MISS",
+      "X-Cache-Source": "R2",
     },
   });
-
-  // Store in Cloudflare edge cache for future requests
-  if (cache) {
-    // Clone the response before caching (response body can only be read once)
-    await cache.put(cacheKey, response.clone());
-  }
-
-  return response;
 }

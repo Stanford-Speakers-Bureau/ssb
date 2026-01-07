@@ -17,7 +17,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/session");
-        const data = await response.json();
+        const data = (await response.json()) as { authenticated: boolean };
         setIsAuthenticated(data.authenticated);
       } catch (error) {
         console.error("Failed to check auth state:", error);

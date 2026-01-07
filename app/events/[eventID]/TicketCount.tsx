@@ -22,7 +22,7 @@ export default function TicketCount({
 
   const fetchTicketCount = () => {
     fetch(`/api/tickets?count=true&event_id=${eventId}`)
-      .then((res) => res.json())
+      .then((res) => res.json() as Promise<{ count?: number }>)
       .then((data) => {
         if (data.count !== undefined) {
           setTicketsSold(data.count);

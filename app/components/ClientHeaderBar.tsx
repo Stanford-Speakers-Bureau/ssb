@@ -30,7 +30,7 @@ export default function ClientHeaderBar() {
       try {
         const response = await fetch("/api/banner-data");
         if (response.ok) {
-          const data = await response.json();
+          const data = (await response.json()) as BannerData;
           setBannerData(data);
         }
       } catch (error) {

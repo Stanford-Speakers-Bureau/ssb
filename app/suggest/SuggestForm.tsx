@@ -72,7 +72,7 @@ export default function SuggestForm() {
         body: JSON.stringify({ speaker: allSuggestions.join(", ") }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
         throw new Error(data.error || SUGGEST_MESSAGES.ERROR_GENERIC);

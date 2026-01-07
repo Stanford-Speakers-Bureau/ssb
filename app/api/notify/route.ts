@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { speaker_id } = body;
+    const { speaker_id } = body as { speaker_id?: string };
 
     // Validate input type
     if (!speaker_id || typeof speaker_id !== "string") {

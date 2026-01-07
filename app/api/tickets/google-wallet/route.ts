@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.redirect(redirectUrl);
     }
-    const body = await req.json();
+    const body = (await req.json()) as { ticket_id?: string };
     const ticket_id = body.ticket_id;
 
     if (!ticket_id) {

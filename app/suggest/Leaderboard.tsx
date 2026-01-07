@@ -47,7 +47,11 @@ export default function Leaderboard({
         body: JSON.stringify({ speaker_id: speakerId }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        alreadyVoted?: boolean;
+        error?: string;
+        newVoteCount?: number;
+      };
 
       if (!response.ok) {
         if (data.alreadyVoted) {
@@ -69,7 +73,11 @@ export default function Leaderboard({
           prev
             .map((s) =>
               s.id === speakerId
-                ? { ...s, votes: data.newVoteCount, hasVoted: !hasVoted }
+                ? {
+                    ...s,
+                    votes: data.newVoteCount ?? s.votes,
+                    hasVoted: !hasVoted,
+                  }
                 : s,
             )
             .sort((a, b) => b.votes - a.votes),

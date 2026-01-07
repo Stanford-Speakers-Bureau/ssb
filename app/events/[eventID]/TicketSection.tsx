@@ -46,7 +46,7 @@ export default function TicketSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ticket_id: ticketId }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as { url?: string };
 
       if (data.url) {
         // This redirects the user to the Google Wallet save screen
@@ -85,7 +85,9 @@ export default function TicketSection({
           try {
             const response = await fetch(`/api/ticket/user`);
             if (response.ok) {
-              const data = await response.json();
+              const data = (await response.json()) as {
+                tickets?: { id: string; event_id: string; type?: string }[];
+              };
               const ticket = data.tickets?.find(
                 (t: { id: string; event_id: string }) =>
                   t.id === customEvent.detail.ticketId &&

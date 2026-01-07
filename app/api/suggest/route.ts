@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { speaker } = body;
+    const { speaker } = body as { speaker?: string };
 
     // Validate input type
     if (!speaker || typeof speaker !== "string") {

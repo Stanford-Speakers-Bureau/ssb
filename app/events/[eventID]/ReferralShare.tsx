@@ -37,7 +37,7 @@ export default function ReferralShare({
           `/api/referrals?event_id=${encodeURIComponent(eventId)}`,
         );
         if (response.ok) {
-          const data = await response.json();
+          const data = (await response.json()) as { count?: number };
           setReferralCount(data.count ?? 0);
         }
       } catch (error) {

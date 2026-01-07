@@ -60,7 +60,7 @@ export default function TicketButton({
   const checkLiveEvent = useCallback(async () => {
     try {
       const response = await fetch("/api/events/live");
-      const data = await response.json();
+      const data = (await response.json()) as { liveEvent?: { id: string }[] };
       setIsLiveEvent(data.liveEvent?.[0]?.id == eventId || false);
     } catch (error) {
       console.error("Error checking live event:", error);
@@ -118,7 +118,10 @@ export default function TicketButton({
         return;
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        ticketId?: string;
+        error?: string;
+      };
 
       if (response.ok) {
         if (hasTicket) {
@@ -306,7 +309,10 @@ export default function TicketButton({
           return;
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          valid?: boolean;
+          message?: string;
+        };
 
         if (data.valid) {
           setReferralWarning(null);

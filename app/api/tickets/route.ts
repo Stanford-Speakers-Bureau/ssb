@@ -136,7 +136,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral: referralFromBody } = body;
+    const { event_id, referral: referralFromBody } = body as {
+      event_id?: string;
+      referral?: string;
+    };
 
     if (!event_id || typeof event_id !== "string") {
       return NextResponse.json(

@@ -108,7 +108,7 @@ export default function ScanClient() {
   const fetchLiveEvent = async () => {
     try {
       const response = await fetch("/api/events/live");
-      const data = await response.json();
+      const data = (await response.json()) as { liveEvent?: LiveEvent };
       setLiveEvent(data.liveEvent || null);
     } catch (error) {
       console.error("Error fetching live event:", error);
@@ -219,17 +219,20 @@ export default function ScanClient() {
         }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        status?: TicketStatus;
+        ticket?: TicketInfo;
+      };
 
       if (response.ok) {
         // Update with new scan results
-        setStatus(data.status);
-        setTicketInfo(data.ticket);
+        setStatus(data.status ?? null);
+        setTicketInfo(data.ticket ?? null);
       } else {
         // Handle error responses that still have status info
         if (data.status) {
           setStatus(data.status);
-          setTicketInfo(data.ticket);
+          setTicketInfo(data.ticket ?? null);
         } else {
           setStatus("invalid");
           setTicketInfo(null);
@@ -277,17 +280,20 @@ export default function ScanClient() {
         }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        status?: TicketStatus;
+        ticket?: TicketInfo;
+      };
 
       if (response.ok) {
         // Update with new scan results
-        setStatus(data.status);
-        setTicketInfo(data.ticket);
+        setStatus(data.status ?? null);
+        setTicketInfo(data.ticket ?? null);
       } else {
         // Handle error responses that still have status info
         if (data.status) {
           setStatus(data.status);
-          setTicketInfo(data.ticket);
+          setTicketInfo(data.ticket ?? null);
         } else {
           setStatus("invalid");
           setTicketInfo(null);

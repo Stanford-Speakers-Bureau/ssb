@@ -13,7 +13,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { ticket_id, emailSUNET, event_id } = body;
+    const { ticket_id, emailSUNET, event_id } = body as {
+      ticket_id?: string;
+      emailSUNET?: string;
+      event_id?: string;
+    };
 
     if (!ticket_id && !emailSUNET && !event_id) {
       return NextResponse.json(
