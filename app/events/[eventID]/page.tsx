@@ -9,6 +9,7 @@ import {
   formatTime,
   createServerSupabaseClient,
   getSupabaseClient,
+  getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import TicketSection from "./TicketSection";
@@ -64,13 +65,10 @@ export default async function EventPage({ params }: PageProps) {
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
 
-  // Check if tickets are sold out (matches TicketCount logic)
-  const ticketsSold = event.tickets || 0;
-  const maxTickets = event.capacity
-    ? Math.max(0, event.capacity - (event.reserved || 0))
-    : 0;
-  const ticketsLeft = Math.max(0, maxTickets - ticketsSold);
-  const isSoldOut = event.capacity ? ticketsLeft <= 0 : false;
+  // Check if public tickets are sold out
+  // Uses unified helper that excludes VIP tickets
+  const ticketInfo = await getAvailablePublicTickets(event.id);
+  const isSoldOut = event.capacity ? ticketInfo.available <= 0 : false;
 
   // If no event found or event is still a mystery, redirect to upcoming events
   if (isEventMystery(event) && !hasTicket) {
@@ -187,27 +185,27 @@ export default async function EventPage({ params }: PageProps) {
                   )}
 
                   {event.start_time_date && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <p className="text-sm sm:text-base text-white font-medium">
-                            Event starts: {formatTime(event.start_time_date)}
-                          </p>
-                        </div>
-                      </>
-                    )}
+                    <>
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p className="text-sm sm:text-base text-white font-medium">
+                          Event starts: {formatTime(event.start_time_date)}
+                        </p>
+                      </div>
+                    </>
+                  )}
 
                   {event.venue && (
                     <div className="flex items-center gap-2">

@@ -5,27 +5,31 @@ import { motion, AnimatePresence } from "motion/react";
 
 type TicketCountProps = {
   eventId: string;
-  initialCapacity: number;
-  initialTicketsSold: number;
-  reserved?: number | null;
+  initialPublicSold: number; // Public tickets sold (excludes VIPs)
+  initialMaxPublic: number; // Max public capacity (with overflow handling)
 };
 
 export default function TicketCount({
   eventId,
-  initialCapacity,
-  initialTicketsSold,
-  reserved = 0,
+  initialPublicSold,
+  initialMaxPublic,
 }: TicketCountProps) {
-  const [ticketsSold, setTicketsSold] = useState(initialTicketsSold);
-
-  const maxTickets = Math.max(0, initialCapacity - (reserved || 0));
+  const [publicSold, setPublicSold] = useState(initialPublicSold);
+  const maxPublic = initialMaxPublic; // Already calculated server-side
 
   const fetchTicketCount = () => {
     fetch(`/api/tickets?count=true&event_id=${eventId}`)
-      .then((res) => res.json() as Promise<{ count?: number }>)
+      .then(
+        (res) =>
+          res.json() as Promise<{
+            count?: number;
+            available?: number;
+            maxPublic?: number;
+          }>,
+      )
       .then((data) => {
         if (data.count !== undefined) {
-          setTicketsSold(data.count);
+          setPublicSold(data.count); // Update with public count only
         }
       })
       .catch((err) => {
@@ -49,7 +53,7 @@ export default function TicketCount({
     };
   }, [eventId]);
 
-  const ticketsLeft = Math.max(0, maxTickets - ticketsSold);
+  const ticketsLeft = Math.max(0, maxPublic - publicSold);
 
   return (
     <div className="flex items-center gap-2">
@@ -83,7 +87,7 @@ export default function TicketCount({
           </AnimatePresence>
           <span className="invisible">{ticketsLeft}</span>
         </span>{" "}
-        / {maxTickets}
+        / {maxPublic}
       </p>
     </div>
   );

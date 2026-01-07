@@ -3,6 +3,7 @@ import {
   createServerSupabaseClient,
   getSupabaseClient,
   updateReferralRecords,
+  getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
@@ -32,21 +33,27 @@ export async function GET(req: Request) {
 
     // 1. Handle Public Ticket Count
     if (count === "true" && eventId) {
-      const adminClient = getSupabaseClient();
-      const { count: ticketCount, error } = await adminClient
-        .from("tickets")
-        .select("*", { count: "exact", head: true })
-        .eq("event_id", eventId);
+      try {
+        // Use unified helper function to get accurate public ticket count
+        // This excludes VIP tickets and handles overflow logic
+        const ticketInfo = await getAvailablePublicTickets(eventId);
 
-      if (error) {
+        return NextResponse.json(
+          {
+            count: ticketInfo.publicSold, // Public tickets sold (for display)
+            available: ticketInfo.available, // Tickets still available for public
+            maxPublic: ticketInfo.maxPublic, // Total public capacity
+            vipCount: ticketInfo.vipCount, // VIP tickets (for debugging/admin)
+          },
+          { status: 200 },
+        );
+      } catch (error) {
         console.error("Ticket count error:", error);
         return NextResponse.json(
           { error: "Failed to fetch ticket count" },
           { status: 500 },
         );
       }
-
-      return NextResponse.json({ count: ticketCount ?? 0 }, { status: 200 });
     }
 
     // 3. Handle User Request (Get My Tickets)

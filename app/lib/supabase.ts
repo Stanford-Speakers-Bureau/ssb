@@ -337,3 +337,137 @@ export async function updateReferralRecords(
     // Don't throw - this is a non-critical operation
   }
 }
+
+/**
+ * TICKET COUNTING BUSINESS LOGIC
+ * ==============================
+ *
+ * Events have a capacity and reserved slots:
+ * - capacity: Total venue capacity (fire code limit)
+ * - reserved: Pre-allocated slots for VIP tickets
+ *
+ * VIP Tickets:
+ * - Created by admins via direct database INSERT
+ * - Don't count towards public capacity (if <= reserved)
+ * - If VIPs exceed reserved, they reduce public capacity (overflow)
+ *
+ * Public Tickets:
+ * - Created via create_ticket RPC (user-facing)
+ * - Type = 'STANDARD' or null
+ * - Limited to: capacity - max(reserved, vip_count)
+ *
+ * Example:
+ * - capacity: 100, reserved: 10
+ * - 5 VIPs created → public can buy 90 tickets
+ * - 15 VIPs created → public can buy 85 tickets (overflow)
+ * - Total tickets never exceeds capacity
+ */
+
+/**
+ * Gets detailed ticket counts for an event
+ * Separates VIP and public tickets for proper capacity management
+ *
+ * @param eventId - The event UUID
+ * @returns Object with vipCount, publicCount, and totalCount
+ */
+export async function getTicketCounts(eventId: string): Promise<{
+  vipCount: number;
+  publicCount: number;
+  totalCount: number;
+}> {
+  const adminClient = getSupabaseClient();
+
+  // Count VIP tickets (admin-created only)
+  const { count: vipCount } = await adminClient
+    .from("tickets")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId)
+    .eq("type", "VIP");
+
+  // Count public tickets (STANDARD or null)
+  const { count: publicCount } = await adminClient
+    .from("tickets")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId)
+    .or("type.eq.STANDARD,type.is.null");
+
+  return {
+    vipCount: vipCount ?? 0,
+    publicCount: publicCount ?? 0,
+    totalCount: (vipCount ?? 0) + (publicCount ?? 0),
+  };
+}
+
+/**
+ * Calculates available public ticket capacity with unified logic
+ *
+ * Business Rules:
+ * - Reserved slots are pre-allocated for VIP tickets
+ * - VIP tickets don't count towards public capacity UNLESS they exceed reserved
+ * - If VIPs <= reserved: public capacity = capacity - reserved
+ * - If VIPs > reserved: public capacity = capacity - vipCount (overflow protection)
+ * - Total tickets (VIP + public) can never exceed capacity
+ *
+ * @param eventId - The event UUID
+ * @returns Detailed capacity information for displaying to users
+ */
+export async function getAvailablePublicTickets(eventId: string): Promise<{
+  available: number; // How many public tickets can still be sold
+  publicSold: number; // How many public tickets have been sold
+  maxPublic: number; // Maximum public ticket capacity (accounting for VIP overflow)
+  vipCount: number; // How many VIP tickets exist
+  totalCapacity: number; // Total event capacity
+  reserved: number; // Reserved slots for VIPs
+}> {
+  const adminClient = getSupabaseClient();
+
+  // Get event capacity info
+  const { data: event } = await adminClient
+    .from("events")
+    .select("capacity, reserved")
+    .eq("id", eventId)
+    .single();
+
+  if (!event || !event.capacity) {
+    return {
+      available: 0,
+      publicSold: 0,
+      maxPublic: 0,
+      vipCount: 0,
+      totalCapacity: 0,
+      reserved: 0,
+    };
+  }
+
+  const capacity = event.capacity;
+  const reserved = event.reserved ?? 0;
+
+  // Get actual ticket counts from database
+  const { vipCount, publicCount } = await getTicketCounts(eventId);
+
+  // Calculate public capacity with VIP overflow protection
+  // If VIPs exceed reserved, they start taking from public capacity
+  let maxPublic: number;
+  if (vipCount <= reserved) {
+    // Normal case: VIPs fit within reserved allocation
+    maxPublic = capacity - reserved;
+  } else {
+    // Overflow case: VIPs exceed reserved, reduce public capacity
+    maxPublic = capacity - vipCount;
+  }
+
+  // Ensure maxPublic is non-negative
+  maxPublic = Math.max(0, maxPublic);
+
+  // Calculate available public tickets
+  const available = Math.max(0, maxPublic - publicCount);
+
+  return {
+    available,
+    publicSold: publicCount,
+    maxPublic,
+    vipCount,
+    totalCapacity: capacity,
+    reserved,
+  };
+}
