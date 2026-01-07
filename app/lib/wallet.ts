@@ -15,6 +15,7 @@ type TicketWalletData = {
   eventLat: number;
   eventLng: number;
   eventAddress: number;
+  start_time_date: string;
 };
 
 export async function getAppleWalletPass(
@@ -150,8 +151,18 @@ export async function getAppleWalletPass(
       value: ticket.eventName,
     },
     {
-      key: "back-time",
-      label: "Time",
+      key: "back-start-time",
+      label: "Start Time",
+      value: new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(ticket.start_time_date)),
+    },
+    {
+      key: "back-door-time",
+      label: "Doors Open",
       value: new Intl.DateTimeFormat("en-US", {
         hour: "numeric",
         minute: "2-digit",
@@ -248,8 +259,13 @@ export async function getGoogleWalletPass(
             defaultValue: { language: "en-US", value: ticket.eventName },
           },
           dateTime: {
-            start: formatInTimeZone(
+            doorsOpen: formatInTimeZone(
               ticket.eventDoorTime,
+              PACIFIC_TIMEZONE,
+              "yyyy-MM-dd'T'HH:mmXXX",
+            ),
+            start: formatInTimeZone(
+              ticket.start_time_date,
               PACIFIC_TIMEZONE,
               "yyyy-MM-dd'T'HH:mmXXX",
             ),

@@ -11,6 +11,7 @@ type TicketWalletData = {
   eventName: string;
   ticketType: string;
   eventDoorTime: string;
+  start_time_date: string;
   ticketId: string;
   eventVenue: string;
   eventVenueLink: string;
@@ -60,36 +61,30 @@ export async function GET(req: NextRequest) {
           type,
           event_id,
           events (
-            id,
             name,
-            route,
+            doors_open,
             start_time_date,
             venue,
+            img,
             venue_link,
-            desc
+            route,
+            latitude,
+            longitude,
+            address
           )
         `,
       )
       .eq("id", ticket_id)
       .eq("email", user.email) // ensure the user actually owns the ticket
-      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
-    if (!ticket) {
+    const event = Array.isArray(ticket?.events)
+      ? ticket.events[0]
+      : ticket?.events;
+
+    if (!ticket || !event) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
-    }
-
-    const { data: event } = await adminClient
-      .from("events")
-      .select(
-        "name, doors_open, venue, img, venue_link, route, latitude, longitude, address",
-      )
-      .eq("id", ticket.event_id)
-      .single();
-
-    if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     const imgUrl = await getSignedImageUrl(event.img, 3600);
@@ -114,6 +109,7 @@ export async function GET(req: NextRequest) {
       eventLat: event.latitude,
       eventLng: event.longitude,
       eventAddress: event.address,
+      start_time_date: event.start_time_date,
     };
 
     const passBuf = await getAppleWalletPass(imgBuffer, ticketData);
