@@ -471,6 +471,14 @@ async function generateTicketEmailHTML(
     }
     u + .body a { color: #A80D0C !important; }
 
+    /* VIP Gold accent borders */
+    u + .body .vip-border { 
+      border-color: #D4AF37 !important; 
+    }
+    u + .body .vip-shadow { 
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important;
+    }
+
     /* Standard dark mode support (for non-Gmail clients) */
     @media (prefers-color-scheme: dark) {
       body, table, td, div, p, span, h1, h2, h3 {
@@ -481,6 +489,8 @@ async function generateTicketEmailHTML(
       .details-card { background-color: #18181b !important; }
       .qr-section { background-color: #18181b !important; }
       .footer { background-color: #18181b !important; border-top: 1px solid #3f3f46 !important; }
+      .vip-border { border-color: #D4AF37 !important; }
+      .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }
     }
 
     /* Mobile responsive */
@@ -499,17 +509,17 @@ async function generateTicketEmailHTML(
 </head>
 <body class="body" style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #18181b; color: #f4f4f5;">
 
-  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #27272a;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #27272a;${isVIP ? " border: 3px solid #D4AF37;" : ""}">
     
     <!-- Header -->
     <tr>
-      <td align="center" class="email-header" style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 30px; text-align: center;">
+      <td align="center" class="email-header" style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 30px; text-align: center;${isVIP ? " border: 3px solid #D4AF37; border-bottom: none;" : ""}">
         <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="Stanford Speakers Bureau Logo" class="logo" style="width: 60px; height: 60px; margin: 0 auto; display: block;" />
         </div>
         ${gmailBlendStart}
           <h2 class="header-subtitle" style="margin: 0 0 12px 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</h2>
-          <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">Your seat is reserved!</h1>
+          <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">${isVIP ? "Your VIP ticket is reserved!" : "Your seat is reserved!"}</h1>
         ${gmailBlendEnd}
       </td>
     </tr>
@@ -520,13 +530,22 @@ async function generateTicketEmailHTML(
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           
           ${gmailBlendStart}
+            ${
+              isVIP
+                ? `
+            <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
+              We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance. We can't wait to see you!
+            </p>
+            `
+                : ""
+            }
             <p style="margin: 0 0 24px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
               Your ticket is enclosed below. We can't wait to see you!
             </p>
           ${gmailBlendEnd}
           
           <!-- Event Details Card -->
-          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;">
+          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : ""}">
             
             ${gmailBlendStart}
               <h2 class="details-title" style="margin: 0 0 20px 0; color: #ffffff; font-size: 22px; font-weight: 600;">Event Details</h2>
@@ -634,7 +653,7 @@ async function generateTicketEmailHTML(
             <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
               <tr>
                 <td align="center" class="button-wrapper" style="padding: 0;">
-                  <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">View Event Details</a>
+                  <a href="${eventUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;${isVIP ? " border: 2px solid #D4AF37;" : ""}">View Event Details</a>
                 </td>
               </tr>
             </table>
@@ -647,7 +666,7 @@ async function generateTicketEmailHTML(
             qrImageSrc
               ? `
           <!-- QR Code Section -->
-          <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;">
+          <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : ""}">
             
             ${gmailBlendStart}
               <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
@@ -776,11 +795,11 @@ function generateTicketEmailText(data: TicketEmailData): string {
       : null;
 
   return `
-Ticket Confirmed!
+${ticketType?.toUpperCase() === "VIP" ? "VIP Ticket Confirmed!" : "Ticket Confirmed!"}
 
 Thank you for your ticket purchase. Your ticket has been confirmed!
 
-Event Details:
+${ticketType?.toUpperCase() === "VIP" ? "We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.\n\n" : ""}Event Details:
 - Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
