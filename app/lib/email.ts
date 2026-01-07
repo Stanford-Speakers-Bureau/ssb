@@ -534,7 +534,7 @@ async function generateTicketEmailHTML(
               isVIP
                 ? `
             <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
-              We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance. We can't wait to see you!
+              We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.
             </p>
             `
                 : ""
