@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Hedvig_Letters_Serif } from "next/font/google";
 import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
-import Footer from "./components/Footer";
+import ClientFooter from "./components/ClientFooter";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -49,7 +49,7 @@ export default function RootLayout({
       >
         <ClientHeaderBar />
         {children}
-        <Footer />
+        <ClientFooter />
       </body>
     </html>
   );

@@ -52,9 +52,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
+  // Add pathname to headers for layout access
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", pathname);
+
   // Skip validation for non-mutating methods on API routes
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
-    return NextResponse.next();
+    return response;
   }
 
   // CSRF Protection: Validate origin for state-changing requests
@@ -100,7 +104,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
