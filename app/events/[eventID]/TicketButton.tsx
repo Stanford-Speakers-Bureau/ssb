@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 type TicketButtonProps = {
   eventId: string;
@@ -42,11 +42,29 @@ export default function TicketButton({
   const autoTicketProcessed = useRef(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Waitlist states
+  const [isOnWaitlist, setIsOnWaitlist] = useState(false);
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
+  const [totalWaitlist, setTotalWaitlist] = useState<number | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
+
+  // Ticket cancellation states
+  const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
+
   // Check if event has started
   // Note: eventStartTime is a UTC ISO string from the database, and Date objects
   // compare UTC timestamps internally, so this comparison is timezone-safe
   const hasEventStarted = eventStartTime
     ? new Date() >= new Date(eventStartTime)
+    : false;
+
+  // Check if within 2-hour cutoff for waitlist
+  const twoHoursBeforeEvent = eventStartTime
+    ? new Date(eventStartTime).getTime() - 2 * 60 * 60 * 1000
+    : null;
+  const isWithinWaitlistCutoff = twoHoursBeforeEvent
+    ? new Date().getTime() >= twoHoursBeforeEvent
     : false;
 
   useEffect(() => {
@@ -56,6 +74,134 @@ export default function TicketButton({
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  // Check waitlist status when event is sold out
+  const checkWaitlistStatus = useCallback(async () => {
+    if (!isSoldOut) return;
+
+    try {
+      const response = await fetch(`/api/waitlist?eventId=${eventId}`);
+      if (response.ok) {
+        const data = (await response.json()) as {
+          isOnWaitlist: boolean;
+          position: number | null;
+          total: number;
+        };
+        setIsOnWaitlist(data.isOnWaitlist);
+        setWaitlistPosition(data.position);
+        setTotalWaitlist(data.total);
+      }
+    } catch (error) {
+      console.error("Error checking waitlist status:", error);
+    }
+  }, [eventId, isSoldOut]);
+
+  // Check waitlist status on mount if sold out
+  useEffect(() => {
+    if (isSoldOut && !hasTicket) {
+      checkWaitlistStatus();
+    }
+  }, [isSoldOut, hasTicket, checkWaitlistStatus]);
+
+  // Handle joining waitlist
+  const handleJoinWaitlist = useCallback(async () => {
+    setIsWaitlistLoading(true);
+    setMessage(null);
+
+    try {
+      // If there's a referral warning, don't proceed
+      if (referralWarning) {
+        setIsWaitlistLoading(false);
+        return;
+      }
+
+      // Get referral from input or session storage
+      let referral: string | null = null;
+      const referralKey = `referral`;
+      if (referralCode.trim()) {
+        referral = referralCode.trim();
+        sessionStorage.setItem(referralKey, referral);
+      } else {
+        referral = sessionStorage.getItem(referralKey);
+      }
+
+      const requestBody: { event_id: string; referral?: string | null } = {
+        event_id: eventId,
+      };
+      if (referral) {
+        requestBody.referral = referral;
+      }
+
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated, redirect to Google sign-in
+        const currentPath = window.location.pathname;
+        const redirectUrl = `${currentPath}?waitlist=true`;
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        return;
+      }
+
+      const data = (await response.json()) as {
+        position?: number;
+        total?: number;
+        error?: string;
+      };
+
+      if (response.ok) {
+        setIsOnWaitlist(true);
+        setWaitlistPosition(data.position || null);
+        setTotalWaitlist(data.total || null);
+        setMessage("Successfully joined the waitlist!");
+        // Clear referral from session storage
+        sessionStorage.removeItem(referralKey);
+      } else {
+        const errorMessage = data.error || "Failed to join waitlist";
+        setMessage(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error joining waitlist:", error);
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsWaitlistLoading(false);
+    }
+  }, [eventId, referralCode, referralWarning]);
+
+  // Handle leaving waitlist
+  const handleLeaveWaitlist = useCallback(async () => {
+    setIsWaitlistLoading(true);
+    setMessage(null);
+    setShowCancelModal(false);
+
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId }),
+      });
+
+      const data = (await response.json()) as { error?: string };
+
+      if (response.ok) {
+        setIsOnWaitlist(false);
+        setWaitlistPosition(null);
+        setTotalWaitlist(null);
+        setMessage("Successfully left the waitlist");
+      } else {
+        const errorMessage = data.error || "Failed to leave waitlist";
+        setMessage(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error leaving waitlist:", error);
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsWaitlistLoading(false);
+    }
+  }, [eventId]);
 
   const checkLiveEvent = useCallback(async () => {
     try {
@@ -67,6 +213,45 @@ export default function TicketButton({
       setIsLiveEvent(false);
     }
   }, [eventId]);
+
+  // Handle cancelling a ticket
+  const handleCancelTicket = useCallback(async () => {
+    setIsLoading(true);
+    setMessage(null);
+    setShowCancelTicketModal(false);
+
+    try {
+      await checkLiveEvent();
+
+      const response = await fetch("/api/tickets", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId }),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+      };
+
+      if (response.ok) {
+        setHasTicket(false);
+        setMessage(TICKET_MESSAGES.DELETED);
+
+        // Dispatch event to update ticket status
+        window.dispatchEvent(
+          new CustomEvent("ticketChanged", {
+            detail: { hasTicket: false, ticketId: null },
+          }),
+        );
+      } else {
+        setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
+      }
+    } catch (error) {
+      setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [eventId, checkLiveEvent]);
 
   const handleTicketClick = useCallback(async () => {
     setIsLoading(true);
@@ -442,13 +627,178 @@ export default function TicketButton({
     isSalesDisabled ||
     (!!referralWarning && !hasTicket);
 
-  // Hide the button if sold out and user doesn't have a ticket, but show a message
+  // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
+    // Within 2-hour cutoff - show in-person message
+    if (isWithinWaitlistCutoff) {
+      return (
+        <div className="mb-4 md:mb-6">
+          <p className="text-sm sm:text-base text-yellow-400">
+            This event is sold out. Please come to the venue in person for the
+            in-person waitlist.
+          </p>
+        </div>
+      );
+    }
+
+    // User is NOT on waitlist - show join button
+    if (!isOnWaitlist) {
+      return (
+        <div className="mb-4 md:mb-6">
+          <p className="text-sm sm:text-base text-yellow-400 mb-3">
+            This event is sold out, but you can join the waitlist!
+          </p>
+
+          {/* Referral Code Input */}
+          <div className="mb-3">
+            <label
+              htmlFor="waitlist-referral-input"
+              className="block text-sm sm:text-base text-white font-medium mb-2"
+            >
+              Referral Code (Optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="waitlist-referral-input"
+                type="text"
+                value={referralCode}
+                onChange={handleReferralCodeChange}
+                placeholder="Enter referral code"
+                className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
+                  referralWarning
+                    ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
+                    : "border-white/20 focus:ring-2 focus:ring-red-500"
+                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+              />
+              {isValidatingReferral && (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
+              )}
+            </div>
+            {referralWarning && (
+              <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+                {referralWarning}
+              </p>
+            )}
+          </div>
+
+          {/* Join Waitlist Button */}
+          <motion.button
+            whileHover={
+              isWaitlistLoading || !!referralWarning ? {} : { scale: 1.05 }
+            }
+            whileTap={
+              isWaitlistLoading || !!referralWarning ? {} : { scale: 0.95 }
+            }
+            onClick={handleJoinWaitlist}
+            disabled={isWaitlistLoading || !!referralWarning}
+            className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          >
+            {isWaitlistLoading ? "Joining..." : "Join Waitlist"}
+          </motion.button>
+
+          {message && (
+            <p
+              className={`mt-2 text-xs sm:text-sm ${
+                message.includes("Successfully") ||
+                message.includes("successfully")
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
+              {message}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // User IS on waitlist - show position and leave button
     return (
       <div className="mb-4 md:mb-6">
-        <p className="text-sm sm:text-base text-yellow-400">
-          This event is sold out. A waitlist will be available at the door.
-        </p>
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
+          <p className="text-sm sm:text-base text-white font-semibold mb-1">
+            You're on the waitlist!
+          </p>
+          <p className="text-lg sm:text-xl text-white font-bold">
+            Position #{waitlistPosition} of {totalWaitlist}
+          </p>
+          <p className="text-xs sm:text-sm text-zinc-300 mt-2">
+            The online waitlist closes 2 hours before the event. After that,
+            please come to the venue for the in-person waitlist.
+          </p>
+        </div>
+
+        {/* Leave Waitlist Button */}
+        <motion.button
+          whileHover={isWaitlistLoading ? {} : { scale: 1.05 }}
+          whileTap={isWaitlistLoading ? {} : { scale: 0.95 }}
+          onClick={() => setShowCancelModal(true)}
+          disabled={isWaitlistLoading}
+          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+        >
+          {isWaitlistLoading ? "Processing..." : "Leave Waitlist"}
+        </motion.button>
+
+        {message && (
+          <p
+            className={`mt-2 text-xs sm:text-sm ${
+              message.includes("Successfully") ||
+              message.includes("successfully")
+                ? "text-green-400"
+                : "text-red-400"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+
+        {/* Cancellation Warning Modal */}
+        <AnimatePresence>
+          {showCancelModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              onClick={() => setShowCancelModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Leave Waitlist?
+                </h3>
+                <p className="text-zinc-300 mb-6 text-sm sm:text-base">
+                  Are you sure you want to leave the waitlist? You can rejoin
+                  immediately, but your position will be at the end of the
+                  waitlist.
+                </p>
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLeaveWaitlist}
+                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
+                  >
+                    Leave Waitlist
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -498,6 +848,17 @@ export default function TicketButton({
           {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
         </motion.button>
       )}
+      {hasTicket && !isCancelDisabled && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCancelTicketModal(true)}
+          disabled={isLoading}
+          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+        >
+          {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
+        </motion.button>
+      )}
       {isCancelDisabled && (
         <p className="mt-2 text-xs sm:text-sm text-yellow-400">
           {TICKET_MESSAGES.ERROR_LIVE_EVENT}
@@ -517,6 +878,53 @@ export default function TicketButton({
           {message}
         </p>
       )}
+
+      {/* Cancel Ticket Modal */}
+      <AnimatePresence>
+        {showCancelTicketModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCancelTicketModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-white mb-4">
+                Cancel Ticket?
+              </h3>
+              <p className="text-zinc-300 mb-6 text-sm sm:text-base">
+                Are you sure you want to cancel your ticket? You may not be
+                able to get your ticket back if you cancel.
+              </p>
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowCancelTicketModal(false)}
+                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                >
+                  Keep Ticket
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCancelTicket}
+                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
+                >
+                  Cancel Ticket
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

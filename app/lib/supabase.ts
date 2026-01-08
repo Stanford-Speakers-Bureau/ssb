@@ -471,3 +471,84 @@ export async function getAvailablePublicTickets(eventId: string): Promise<{
     reserved,
   };
 }
+
+/**
+ * WAITLIST FUNCTIONALITY
+ * ======================
+ *
+ * Waitlist system for sold-out events:
+ * - Users can join waitlist when event is sold out
+ * - Position is stored as integer (first-come-first-serve based on created_at)
+ * - Hard delete when user leaves (recalculate positions)
+ * - Waitlist closes 2 hours before event (in-person waitlist only)
+ * - Admin can view and manually convert waitlist entries to tickets
+ */
+
+/**
+ * Get user's waitlist status for an event
+ *
+ * @param eventId - The event UUID
+ * @param userEmail - User's email address
+ * @returns Object with isOnWaitlist, position, and total count
+ */
+export async function getUserWaitlistStatus(
+  eventId: string,
+  userEmail: string,
+): Promise<{
+  isOnWaitlist: boolean;
+  position: number | null;
+  totalWaitlist: number;
+}> {
+  const adminClient = getSupabaseClient();
+
+  // Get user's waitlist entry
+  const { data: entry } = await adminClient
+    .from("waitlist")
+    .select("position")
+    .eq("event_id", eventId)
+    .eq("email", userEmail)
+    .single();
+
+  // Get total waitlist count
+  const { count: totalCount } = await adminClient
+    .from("waitlist")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId);
+
+  return {
+    isOnWaitlist: !!entry,
+    position: entry?.position || null,
+    totalWaitlist: totalCount || 0,
+  };
+}
+
+/**
+ * Get total waitlist count for an event
+ *
+ * @param eventId - The event UUID
+ * @returns Total number of users on the waitlist
+ */
+export async function getWaitlistCount(eventId: string): Promise<number> {
+  const adminClient = getSupabaseClient();
+
+  const { count } = await adminClient
+    .from("waitlist")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId);
+
+  return count || 0;
+}
+
+/**
+ * Check if waitlist is closed (within 2 hours of event start)
+ *
+ * @param eventStartTime - ISO timestamp of event start
+ * @returns True if waitlist should be closed
+ */
+export function isWaitlistClosed(eventStartTime: string | null): boolean {
+  if (!eventStartTime) return false;
+
+  const twoHoursBeforeEvent =
+    new Date(eventStartTime).getTime() - 2 * 60 * 60 * 1000;
+  return Date.now() >= twoHoursBeforeEvent;
+}

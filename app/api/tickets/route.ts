@@ -330,3 +330,103 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user?.email) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
+        { status: 401 },
+      );
+    }
+
+    // Rate limit by user email
+    const rateLimitResponse = await checkRateLimit(
+      ticketRatelimit,
+      `ticket:${user.email}`,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const { event_id } = body as { event_id?: string };
+
+    if (!event_id || typeof event_id !== "string") {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_MISSING_EVENT_ID },
+        { status: 400 },
+      );
+    }
+
+    // Check if event is currently live
+    const adminClient = getSupabaseClient();
+    const { data: liveEvent } = await adminClient
+      .from("events")
+      .select("id")
+      .eq("id", event_id)
+      .eq("is_live", true)
+      .single();
+
+    if (liveEvent) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
+        { status: 400 },
+      );
+    }
+
+    // Check if user has a ticket for this event
+    const { data: existingTicket } = await adminClient
+      .from("tickets")
+      .select("id")
+      .eq("event_id", event_id)
+      .eq("email", user.email)
+      .single();
+
+    if (!existingTicket) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NO_TICKET },
+        { status: 400 },
+      );
+    }
+
+    // Delete the ticket
+    const { error: deleteError } = await adminClient
+      .from("tickets")
+      .delete()
+      .eq("event_id", event_id)
+      .eq("email", user.email);
+
+    if (deleteError) {
+      console.error("Ticket deletion error:", deleteError);
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_GENERIC },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: TICKET_MESSAGES.DELETED,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Ticket deletion error:", error);
+    return NextResponse.json(
+      { error: TICKET_MESSAGES.ERROR_GENERIC },
+      { status: 500 },
+    );
+  }
+}

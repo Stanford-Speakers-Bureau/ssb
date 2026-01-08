@@ -932,3 +932,330 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   await sendRawEmailViaSES(rawMessage);
   console.log(`Ticket confirmation email sent to ${data.email}`);
 }
+
+type WaitlistEmailData = {
+  email: string;
+  eventName: string;
+  position: number;
+  totalWaitlist: number;
+  eventStartTime: string | null;
+  eventVenue?: string | null;
+  eventVenueLink?: string | null;
+  eventDescription?: string | null;
+};
+
+/**
+ * Generate HTML email content for waitlist confirmation
+ */
+async function generateWaitlistEmailHTML(
+  data: WaitlistEmailData,
+): Promise<string> {
+  const {
+    eventName,
+    position,
+    totalWaitlist,
+    eventStartTime,
+    eventVenue,
+    eventVenueLink,
+  } = data;
+
+  const formattedDate = eventStartTime
+    ? new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(eventStartTime))
+    : "TBA";
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  const logoUrl = `${baseUrl}/logo.png`;
+
+  // Gmail-specific wrapper for enforcing white text in dark mode
+  const gmailBlendStart = `<span class="gmail-blend-screen"><span class="gmail-blend-difference">`;
+  const gmailBlendEnd = `</span></span>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>Waitlist Confirmation</title>
+  <style type="text/css">
+    :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
+
+    /* Gmail Dark Mode Fix */
+    u + .body .gmail-blend-screen { 
+      background: #000; 
+      mix-blend-mode: screen; 
+      display: block;
+      width: 100%;
+    }
+    
+    u + .body .gmail-blend-difference { 
+      background: #000; 
+      mix-blend-mode: difference; 
+      display: block;
+      color: #f4f4f5;
+      width: 100%;
+      padding: 0;
+    }
+
+    u + .body .email-container { 
+      background-color: #27272a !important; 
+      background-image: linear-gradient(#27272a, #27272b) !important;
+    }
+    u + .body .details-card { 
+      background-color: #18181b !important; 
+      background-image: linear-gradient(#18181b, #18181c) !important;
+    }
+    u + .body .footer { 
+      background-color: #18181b !important; 
+      background-image: linear-gradient(#18181b, #18181c) !important;
+    }
+    u + .body .position-badge { 
+      background-color: #A80D0C !important; 
+      background-image: linear-gradient(#A80D0C, #A80D0D) !important;
+      color: #ffffff !important; 
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body, table, td, div, p, span, h1, h2, h3 {
+        color: #f4f4f5 !important;
+      }
+      .email-container { background-color: #27272a !important; }
+      .email-header { background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%) !important; }
+      .details-card { background-color: #18181b !important; }
+      .footer { background-color: #18181b !important; border-top: 1px solid #3f3f46 !important; }
+    }
+
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; padding: 20px 15px !important; }
+      .email-header { padding: 30px 20px !important; }
+      .logo { width: 50px !important; height: 50px !important; }
+      .header-title { font-size: 20px !important; }
+      .header-subtitle { font-size: 24px !important; }
+      .details-card { padding: 20px 16px !important; }
+    }
+  </style>
+</head>
+<body class="body" style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #18181b; color: #f4f4f5;">
+
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #27272a;">
+    
+    <!-- Header -->
+    <tr>
+      <td align="center" class="email-header" style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 30px; text-align: center;">
+        <div style="margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="Stanford Speakers Bureau Logo" class="logo" style="width: 60px; height: 60px; margin: 0 auto; display: block;" />
+        </div>
+        ${gmailBlendStart}
+          <h2 class="header-subtitle" style="margin: 0 0 12px 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</h2>
+          <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">You're on the waitlist!</h1>
+        ${gmailBlendEnd}
+      </td>
+    </tr>
+    
+    <!-- Content -->
+    <tr>
+      <td align="center" class="email-container" style="background-color: #27272a; padding: 40px 20px; max-width: 900px; width: 100%;">
+        <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
+          
+          ${gmailBlendStart}
+            <p style="margin: 0 0 24px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
+              Thank you for joining the waitlist for ${eventName}. We'll notify you if a spot becomes available.
+            </p>
+          ${gmailBlendEnd}
+          
+          <!-- Waitlist Position -->
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="display: inline-block; padding: 20px 40px; background-color: #A80D0C; border-radius: 12px;">
+              ${gmailBlendStart}
+                <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Position</p>
+                <p style="margin: 0; color: #ffffff; font-size: 48px; font-weight: 700;">#${position}</p>
+                <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px;">of ${totalWaitlist} on the waitlist</p>
+              ${gmailBlendEnd}
+            </div>
+          </div>
+          
+          <!-- Event Details Card -->
+          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; border-radius: 8px;">
+            
+            ${gmailBlendStart}
+              <h2 class="details-title" style="margin: 0 0 20px 0; color: #ffffff; font-size: 22px; font-weight: 600;">Event Details</h2>
+            ${gmailBlendEnd}
+            
+            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; width: 120px; vertical-align: top;">
+                  ${gmailBlendStart}Event:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${gmailBlendStart}${eventName}${gmailBlendEnd}
+                </td>
+              </tr>
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
+                  ${gmailBlendStart}Date & Time:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${gmailBlendStart}${formattedDate}${gmailBlendEnd}
+                </td>
+              </tr>
+              ${
+                eventVenue
+                  ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
+                  ${gmailBlendStart}Location:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${
+                    eventVenueLink
+                      ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>`
+                      : `${gmailBlendStart}${eventVenue}${gmailBlendEnd}`
+                  }
+                </td>
+              </tr>
+              `
+                  : ""
+              }
+            </table>
+          </div>
+
+          ${gmailBlendStart}
+            <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6; font-weight: 600;">
+              Important: The online waitlist closes 2 hours before the event.
+            </p>
+            <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
+              After that, please come to the venue for the in-person waitlist. We'll do our best to accommodate everyone!
+            </p>
+          ${gmailBlendEnd}
+        </div>
+      </td>
+    </tr>
+    
+    <!-- Footer -->
+    <tr>
+      <td align="center" class="footer" style="padding: 30px; background-color: #18181b; border-top: 1px solid #3f3f46; text-align: center;">
+        ${gmailBlendStart}
+          <p style="margin: 0 0 8px 0; color: #71717a; font-size: 12px;">
+            Stanford Speakers Bureau
+          </p>
+          <p style="margin: 0; color: #71717a; font-size: 12px;">
+            If you have any questions, please contact us at <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
+          </p>
+        ${gmailBlendEnd}
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Generate plain text email content for waitlist confirmation
+ */
+function generateWaitlistEmailText(data: WaitlistEmailData): string {
+  const { eventName, position, totalWaitlist, eventStartTime, eventVenue } =
+    data;
+
+  const formattedDate = eventStartTime
+    ? new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      }).format(new Date(eventStartTime))
+    : "TBA";
+
+  return `
+You're on the waitlist!
+
+Thank you for joining the waitlist for ${eventName}. We'll notify you if a spot becomes available.
+
+Your Position: #${position} of ${totalWaitlist}
+
+Event Details:
+- Event: ${eventName}
+- Date & Time: ${formattedDate}
+${eventVenue ? `- Location: ${eventVenue}` : ""}
+
+Important: The online waitlist closes 2 hours before the event. After that, please come to the venue for the in-person waitlist.
+
+We look forward to seeing you there!
+
+Stanford Speakers Bureau
+If you have any questions, please contact us at ${FROM_EMAIL}
+  `.trim();
+}
+
+/**
+ * Send waitlist confirmation email via AWS SES
+ * Throws an error if email sending fails
+ */
+export async function sendWaitlistEmail(
+  data: WaitlistEmailData,
+): Promise<void> {
+  // Check if email sending is disabled
+  if (process.env.DISABLE_EMAIL?.toLowerCase().trim() == "true") {
+    console.log(
+      `Email sending is disabled (DISABLE_EMAIL=true). Skipping waitlist email to ${data.email}`,
+    );
+    return;
+  }
+
+  const subject = `You're on the waitlist for ${data.eventName}`;
+  const textContent = generateWaitlistEmailText(data);
+  const htmlContent = await generateWaitlistEmailHTML(data);
+
+  // Build MIME message
+  const boundary = `mix_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const lines: string[] = [];
+  lines.push(
+    `From: ${FROM_EMAIL}`,
+    `To: ${data.email}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    `Content-Type: text/plain; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    textContent,
+    "",
+    `--${boundary}`,
+    `Content-Type: text/html; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    htmlContent,
+    "",
+    `--${boundary}--`,
+    "",
+  );
+
+  const rawMessage = lines.join("\r\n");
+
+  await sendRawEmailViaSES(rawMessage);
+  console.log(`Waitlist confirmation email sent to ${data.email}`);
+}

@@ -182,18 +182,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Increment the event's scanned count
-    const { error: eventUpdateError } = await adminClient.rpc(
-      "increment_event_scanned",
-      {
-        event_id: liveEvent.id,
-      },
-    );
-
-    if (eventUpdateError) {
-      console.error("Failed to update event scanned count:", eventUpdateError);
-      // Don't fail the scan if count update fails, but log it
-    }
+    // Note: Event scanned count is automatically incremented by database trigger
+    // when ticket.scanned is set to true (auto_increment_event_scanned)
 
     // Get user information for the response
     let userNameResponse: string | null = null;
