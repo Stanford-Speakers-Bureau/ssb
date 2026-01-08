@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       referral?: string;
     };
 
-    if (!event_id || typeof event_id !== "string") {
+    if (!event_id) {
       return NextResponse.json(
         { error: "Missing required field: event_id" },
         { status: 400 },

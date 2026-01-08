@@ -723,8 +723,7 @@ export default function TicketButton({
             Position #{waitlistPosition} of {totalWaitlist}
           </p>
           <p className="text-xs sm:text-sm text-zinc-300 mt-2">
-            The online waitlist closes 2 hours before the event. After that,
-            please come to the venue for the in-person waitlist.
+            You will be emailed if we are able to find you a ticket. The online waitlist closes 2 hours before the event. After that, please come to the venue for an in-person waitlist that is first come first serve.
           </p>
         </div>
 
