@@ -44,3 +44,4 @@ next-env.d.ts
 .dev.vars
 .wrangler
 stanford-speakers-bureau-f406ae28c128.json
+supabase

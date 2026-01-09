@@ -628,7 +628,7 @@ export default function TicketButton({
     (!!referralWarning && !hasTicket);
 
   // WAITLIST UI: If sold out and user doesn't have a ticket
-  if (isSoldOut && !hasTicket) {
+  if (!hasTicket) {
     // Within 2-hour cutoff - show in-person message
     if (isWithinWaitlistCutoff) {
       return (
