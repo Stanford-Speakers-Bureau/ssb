@@ -360,15 +360,15 @@ async function generateTicketEmailHTML(
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(eventStartTime))
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
     : "TBA";
 
   const baseUrl =
@@ -530,17 +530,16 @@ async function generateTicketEmailHTML(
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           
           ${gmailBlendStart}
-            ${
-              isVIP
-                ? `
+            ${isVIP
+      ? `
             <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
               When you arrive at the event, please use the VIP entrance.
               <br>
               We've reserved a seat for you in the front few rows.
             </p>
             `
-                : ""
-            }
+      : ""
+    }
             <p style="margin: 0 0 24px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
               Your ticket is enclosed below. We can't wait to see you!
             </p>
@@ -570,24 +569,22 @@ async function generateTicketEmailHTML(
                   ${gmailBlendStart}${formattedDate}${gmailBlendEnd}
                 </td>
               </tr>
-              ${
-                eventVenue
-                  ? `
+              ${eventVenue
+      ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
                   ${gmailBlendStart}Location:${gmailBlendEnd}
                 </td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
-                  ${
-                    eventVenueLink
-                      ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>`
-                      : `${gmailBlendStart}${eventVenue}${gmailBlendEnd}`
-                  }
+                  ${eventVenueLink
+        ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>`
+        : `${gmailBlendStart}${eventVenue}${gmailBlendEnd}`
+      }
                 </td>
               </tr>
               `
-                  : ""
-              }
+      : ""
+    }
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
                   ${gmailBlendStart}Ticket Type:${gmailBlendEnd}
@@ -606,9 +603,8 @@ async function generateTicketEmailHTML(
                   ${gmailBlendStart}${ticketId}${gmailBlendEnd}
                 </td>
               </tr>
-              ${
-                referralCode && !(ticketType.toUpperCase() == "VIP")
-                  ? `
+              ${referralCode && !(ticketType.toUpperCase() == "VIP")
+      ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
                   ${gmailBlendStart}Referral Code:${gmailBlendEnd}
@@ -626,13 +622,12 @@ async function generateTicketEmailHTML(
                 </td>
               </tr>
               `
-                  : ""
-              }
+      : ""
+    }
             </table>
             
-            ${
-              referralCode && !(ticketType.toUpperCase() == "VIP")
-                ? `
+            ${referralCode && !(ticketType.toUpperCase() == "VIP")
+      ? `
             <div style="margin-top: 20px; padding: 16px 0; text-align: center; border-top: 1px solid #3f3f46;">
               ${gmailBlendStart}
                 <p style="margin: 0; color: #ffffff; font-size: 15px; font-weight: 700; line-height: 1.6;">
@@ -646,12 +641,11 @@ async function generateTicketEmailHTML(
               ${gmailBlendEnd}
             </div>
             `
-                : ""
-            }
+      : ""
+    }
             
-            ${
-              eventUrl
-                ? `
+            ${eventUrl
+      ? `
             <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
               <tr>
                 <td align="center" class="button-wrapper" style="padding: 0;">
@@ -660,13 +654,12 @@ async function generateTicketEmailHTML(
               </tr>
             </table>
             `
-                : ""
-            }
+      : ""
+    }
           </div>
           
-          ${
-            qrImageSrc
-              ? `
+          ${qrImageSrc
+      ? `
           <!-- QR Code Section -->
           <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : ""}">
             
@@ -674,25 +667,23 @@ async function generateTicketEmailHTML(
               <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             ${gmailBlendEnd}
 
-            <div class="qr-code-wrapper" style="display: inline-block; border-radius: 12px; ${
-              isVIP ? "background-color: #A80D0C; padding: 4px;" : "padding: 0;"
-            }">
+            <div class="qr-code-wrapper" style="display: inline-block; border-radius: 12px; ${isVIP ? "background-color: #A80D0C; padding: 4px;" : "padding: 0;"
+      }">
               <div style="background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
                 <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
               </div>
             </div>
 
-            ${
-              isVIP
-                ? `
+            ${isVIP
+        ? `
             <div style="margin-top: 12px;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #A80D0C; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
                 VIP
               </span>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
             
             <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
               <tr>
@@ -717,8 +708,8 @@ async function generateTicketEmailHTML(
 
           </div>
           `
-              : ""
-          }
+      : ""
+    }
 
           ${gmailBlendStart}
             <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
@@ -726,9 +717,8 @@ async function generateTicketEmailHTML(
             </p>
           ${gmailBlendEnd}
           
-          ${
-            googleCalendarUrl
-              ? `
+          ${googleCalendarUrl
+      ? `
           <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
               <td align="center" class="button-wrapper" style="padding: 0;">
@@ -740,8 +730,8 @@ async function generateTicketEmailHTML(
             </tr>
           </table>
           `
-              : ""
-          }
+      : ""
+    }
         </div>
       </td>
     </tr>
@@ -774,15 +764,15 @@ function generateTicketEmailText(data: TicketEmailData): string {
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(eventStartTime))
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
     : "TBA";
 
   const eventUrl = eventRoute
@@ -937,7 +927,6 @@ type WaitlistEmailData = {
   email: string;
   eventName: string;
   position: number;
-  totalWaitlist: number;
   eventStartTime: string | null;
   eventVenue?: string | null;
   eventVenueLink?: string | null;
@@ -953,7 +942,6 @@ async function generateWaitlistEmailHTML(
   const {
     eventName,
     position,
-    totalWaitlist,
     eventStartTime,
     eventVenue,
     eventVenueLink,
@@ -961,15 +949,15 @@ async function generateWaitlistEmailHTML(
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(eventStartTime))
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
     : "TBA";
 
   const baseUrl =
@@ -1085,7 +1073,6 @@ async function generateWaitlistEmailHTML(
               ${gmailBlendStart}
                 <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Position</p>
                 <p style="margin: 0; color: #ffffff; font-size: 48px; font-weight: 700;">#${position}</p>
-                <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px;">of ${totalWaitlist} on the waitlist</p>
               ${gmailBlendEnd}
             </div>
           </div>
@@ -1114,24 +1101,22 @@ async function generateWaitlistEmailHTML(
                   ${gmailBlendStart}${formattedDate}${gmailBlendEnd}
                 </td>
               </tr>
-              ${
-                eventVenue
-                  ? `
+              ${eventVenue
+      ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
                   ${gmailBlendStart}Location:${gmailBlendEnd}
                 </td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
-                  ${
-                    eventVenueLink
-                      ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>`
-                      : `${gmailBlendStart}${eventVenue}${gmailBlendEnd}`
-                  }
+                  ${eventVenueLink
+        ? `<a href="${eventVenueLink}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${eventVenue}</a>`
+        : `${gmailBlendStart}${eventVenue}${gmailBlendEnd}`
+      }
                 </td>
               </tr>
               `
-                  : ""
-              }
+      : ""
+    }
             </table>
           </div>
 
@@ -1171,20 +1156,20 @@ async function generateWaitlistEmailHTML(
  * Generate plain text email content for waitlist confirmation
  */
 function generateWaitlistEmailText(data: WaitlistEmailData): string {
-  const { eventName, position, totalWaitlist, eventStartTime, eventVenue } =
+  const { eventName, position, eventStartTime, eventVenue } =
     data;
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(eventStartTime))
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
     : "TBA";
 
   return `
@@ -1192,7 +1177,7 @@ You're on the waitlist!
 
 Thank you for joining the waitlist for ${eventName}. We'll notify you if a spot becomes available.
 
-Your Position: #${position} of ${totalWaitlist}
+Your Position: #${position}
 
 Event Details:
 - Event: ${eventName}
