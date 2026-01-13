@@ -415,6 +415,85 @@ export async function DELETE(req: Request) {
       );
     }
 
+    // Pull the top person off the waitlist (if any)
+    const { data: topWaitlistEntry } = await adminClient
+      .from("waitlist")
+      .select("email, referral, event_id")
+      .eq("event_id", event_id)
+      .order("position", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (topWaitlistEntry) {
+      // Create ticket for the waitlist person
+      const { data: newTicket } = await adminClient
+        .from("tickets")
+        .insert({
+          event_id: topWaitlistEntry.event_id,
+          email: topWaitlistEntry.email,
+          type: "STANDARD",
+        })
+        .select(
+          `
+          id,
+          email,
+          type,
+          event_id,
+          events (
+            id,
+            name,
+            route,
+            start_time_date,
+            venue,
+            venue_link,
+            desc
+          )
+        `,
+        )
+        .single();
+
+      // Remove them from the waitlist
+      await adminClient
+        .from("waitlist")
+        .delete()
+        .eq("email", topWaitlistEntry.email)
+        .eq("event_id", event_id);
+
+      // Update referral records if they had a referral code
+      if (topWaitlistEntry.referral) {
+        await updateReferralRecords(event_id, topWaitlistEntry.email);
+      }
+
+      // Send ticket email to the waitlist person
+      if (newTicket) {
+        try {
+          const event = Array.isArray(newTicket.events)
+            ? newTicket.events[0]
+            : newTicket.events;
+          await sendTicketEmail({
+            email: newTicket.email,
+            eventName: event?.name || "Event",
+            ticketType: newTicket.type || "STANDARD",
+            eventStartTime: event?.start_time_date || null,
+            eventRoute: event?.route || null,
+            ticketId: newTicket.id,
+            eventVenue: event?.venue || null,
+            eventVenueLink: event?.venue_link || null,
+            eventDescription: event?.desc || null,
+          });
+          console.log(
+            `Ticket created for waitlist user ${topWaitlistEntry.email}`,
+          );
+        } catch (emailError) {
+          console.error(
+            "Error sending ticket email to waitlist user:",
+            emailError,
+          );
+          // Don't fail the cancellation if email fails
+        }
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,

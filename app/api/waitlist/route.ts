@@ -295,10 +295,29 @@ export async function GET(req: Request) {
         .eq("email", user.email)
         .single();
 
+      const { count: totalCount } = await adminClient
+        .from("waitlist")
+        .select("*", { count: "exact", head: true })
+        .eq("event_id", eventId);
+
+      // Calculate actual position by counting how many people are ahead (have lower position numbers)
+      let actualPosition: number | null = null;
+      if (entry) {
+        const { count: aheadCount } = await adminClient
+          .from("waitlist")
+          .select("*", { count: "exact", head: true })
+          .eq("event_id", eventId)
+          .lt("position", entry.position);
+
+        // User's actual position is count of people ahead + 1 (1-indexed)
+        actualPosition = (aheadCount || 0) + 1;
+      }
+
       return NextResponse.json(
         {
           isOnWaitlist: !!entry,
-          position: entry?.position || null,
+          position: actualPosition,
+          total: totalCount || 0,
         },
         { status: 200 },
       );
