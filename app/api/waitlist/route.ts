@@ -157,7 +157,6 @@ export async function POST(req: Request) {
         email: user.email,
         eventName: event.name || "Event",
         position: nextPosition,
-        totalWaitlist: totalCount || 0,
         eventStartTime: event.start_time_date,
         eventVenue: event.venue,
         eventVenueLink: event.venue_link,
@@ -173,7 +172,6 @@ export async function POST(req: Request) {
         success: true,
         message: WAITLIST_MESSAGES.SUCCESS,
         position: nextPosition,
-        total: totalCount || 0,
       },
       { status: 200 },
     );

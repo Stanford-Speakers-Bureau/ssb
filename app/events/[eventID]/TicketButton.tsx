@@ -45,7 +45,6 @@ export default function TicketButton({
   // Waitlist states
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
-  const [totalWaitlist, setTotalWaitlist] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
 
@@ -85,11 +84,9 @@ export default function TicketButton({
         const data = (await response.json()) as {
           isOnWaitlist: boolean;
           position: number | null;
-          total: number;
         };
         setIsOnWaitlist(data.isOnWaitlist);
         setWaitlistPosition(data.position);
-        setTotalWaitlist(data.total);
       }
     } catch (error) {
       console.error("Error checking waitlist status:", error);
@@ -148,14 +145,12 @@ export default function TicketButton({
 
       const data = (await response.json()) as {
         position?: number;
-        total?: number;
         error?: string;
       };
 
       if (response.ok) {
         setIsOnWaitlist(true);
         setWaitlistPosition(data.position || null);
-        setTotalWaitlist(data.total || null);
         setMessage("Successfully joined the waitlist!");
         // Clear referral from session storage
         sessionStorage.removeItem(referralKey);
@@ -189,7 +184,6 @@ export default function TicketButton({
       if (response.ok) {
         setIsOnWaitlist(false);
         setWaitlistPosition(null);
-        setTotalWaitlist(null);
         setMessage("Successfully left the waitlist");
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
@@ -664,11 +658,10 @@ export default function TicketButton({
                 value={referralCode}
                 onChange={handleReferralCodeChange}
                 placeholder="Enter referral code"
-                className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
-                  referralWarning
+                className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
                     ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
                     : "border-white/20 focus:ring-2 focus:ring-red-500"
-                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                  } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
               />
               {isValidatingReferral && (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -698,12 +691,11 @@ export default function TicketButton({
 
           {message && (
             <p
-              className={`mt-2 text-xs sm:text-sm ${
-                message.includes("Successfully") ||
-                message.includes("successfully")
+              className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
+                  message.includes("successfully")
                   ? "text-green-400"
                   : "text-red-400"
-              }`}
+                }`}
             >
               {message}
             </p>
@@ -720,7 +712,7 @@ export default function TicketButton({
             You're on the waitlist!
           </p>
           <p className="text-lg sm:text-xl text-white font-bold">
-            Position #{waitlistPosition} of {totalWaitlist}
+            Position #{waitlistPosition}
           </p>
           <p className="text-xs sm:text-sm text-zinc-300 mt-2">
             You will be emailed if we are able to find you a ticket. The online waitlist closes 2 hours before the event. After that, please come to the venue for an in-person waitlist that is first come first serve.
@@ -740,12 +732,11 @@ export default function TicketButton({
 
         {message && (
           <p
-            className={`mt-2 text-xs sm:text-sm ${
-              message.includes("Successfully") ||
-              message.includes("successfully")
+            className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
+                message.includes("successfully")
                 ? "text-green-400"
                 : "text-red-400"
-            }`}
+              }`}
           >
             {message}
           </p>
@@ -819,11 +810,10 @@ export default function TicketButton({
               value={referralCode}
               onChange={handleReferralCodeChange}
               placeholder="Enter referral code"
-              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
-                referralWarning
+              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
                   ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
                   : "border-white/20 focus:ring-2 focus:ring-red-500"
-              } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
             />
             {isValidatingReferral && (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -870,9 +860,8 @@ export default function TicketButton({
       )}
       {message && !isCancelDisabled && !isSalesDisabled && (
         <p
-          className={`mt-2 text-xs sm:text-sm ${
-            message.includes("successfully") ? "text-green-400" : "text-red-400"
-          }`}
+          className={`mt-2 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
+            }`}
         >
           {message}
         </p>
