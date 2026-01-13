@@ -9,7 +9,7 @@ import {
   formatTime,
   createServerSupabaseClient,
   getSupabaseClient,
-  getAvailablePublicTickets,
+  isEventUnderCapacity,
 } from "@/app/lib/supabase";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import TicketSection from "./TicketSection";
@@ -66,9 +66,7 @@ export default async function EventPage({ params }: PageProps) {
   const ticketType = ticketStatus.ticketType;
 
   // Check if public tickets are sold out
-  // Uses unified helper that excludes VIP tickets
-  const ticketInfo = await getAvailablePublicTickets(event.id);
-  const isSoldOut = event.capacity ? ticketInfo.available <= 0 : false;
+  const isSoldOut = !(await isEventUnderCapacity(event.id));
 
   // If no event found or event is still a mystery, redirect to upcoming events
   if (isEventMystery(event) && !hasTicket) {

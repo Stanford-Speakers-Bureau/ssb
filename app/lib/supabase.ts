@@ -473,6 +473,31 @@ export async function getAvailablePublicTickets(eventId: string): Promise<{
 }
 
 /**
+ * Check if an event is under capacity (has available public tickets)
+ *
+ * @param eventId - The event UUID
+ * @returns True if there are available tickets or no capacity is set, false if sold out
+ */
+export async function isEventUnderCapacity(eventId: string): Promise<boolean> {
+  const adminClient = getSupabaseClient();
+
+  // Get event capacity info
+  const { data: event } = await adminClient
+    .from("events")
+    .select("capacity")
+    .eq("id", eventId)
+    .single();
+
+  // If no capacity is set, event is never "sold out"
+  if (!event?.capacity) {
+    return true;
+  }
+
+  const ticketInfo = await getAvailablePublicTickets(eventId);
+  return ticketInfo.available > 0;
+}
+
+/**
  * WAITLIST FUNCTIONALITY
  * ======================
  *

@@ -4,6 +4,7 @@ import {
   getSupabaseClient,
   updateReferralRecords,
   getAvailablePublicTickets,
+  isEventUnderCapacity,
 } from "@/app/lib/supabase";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
@@ -415,7 +416,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Pull the top person off the waitlist (if any)
+    // Pull the top person off the waitlist (if any) only if under capacity
     const { data: topWaitlistEntry } = await adminClient
       .from("waitlist")
       .select("email, referral, event_id")
@@ -424,7 +425,7 @@ export async function DELETE(req: Request) {
       .limit(1)
       .single();
 
-    if (topWaitlistEntry) {
+    if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
       // Create ticket for the waitlist person
       const { data: newTicket } = await adminClient
         .from("tickets")
