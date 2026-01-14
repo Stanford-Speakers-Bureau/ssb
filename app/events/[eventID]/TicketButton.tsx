@@ -47,10 +47,8 @@ export default function TicketButton({
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
-  const [isWaitlistStatusLoading, setIsWaitlistStatusLoading] =
-    useState(false);
-  const [isWaitlistPositionReady, setIsWaitlistPositionReady] =
-    useState(false);
+  const [isWaitlistStatusLoading, setIsWaitlistStatusLoading] = useState(false);
+  const [isWaitlistPositionReady, setIsWaitlistPositionReady] = useState(false);
 
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);

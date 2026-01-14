@@ -146,7 +146,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { position: nextPosition, total: totalCount } = rpcData as {
+    const { position: nextPosition } = rpcData as {
       position: number;
       total: number;
     };
@@ -216,12 +216,9 @@ export async function DELETE(req: Request) {
     }
 
     // Use RPC to atomically leave waitlist (prevents race conditions during recalculation)
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "leave_waitlist",
-      {
-        p_event_id: event_id,
-      },
-    );
+    const { error: rpcError } = await supabase.rpc("leave_waitlist", {
+      p_event_id: event_id,
+    });
 
     if (rpcError) {
       if (rpcError.code === "42883") {
