@@ -317,6 +317,18 @@ export default async function EventPage({ params }: PageProps) {
                   isSoldOut={isSoldOut}
                 />
 
+                <div className="mt-6 text-zinc-300 text-sm">
+                  <p>
+                    For ADA accommodations, please email{" "}
+                    <a
+                      href="mailto:tickets@stanfordspeakersbureau.com"
+                      className="text-white underline underline-offset-2 hover:text-zinc-100"
+                    >
+                      tickets@stanfordspeakersbureau.com
+                    </a>
+                  </p>
+                </div>
+
                 {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
                 {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}
                 {/*    <span className="font-semibold">*/}
