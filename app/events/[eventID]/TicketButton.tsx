@@ -47,6 +47,10 @@ export default function TicketButton({
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
+  const [isWaitlistStatusLoading, setIsWaitlistStatusLoading] =
+    useState(false);
+  const [isWaitlistPositionReady, setIsWaitlistPositionReady] =
+    useState(false);
 
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
@@ -79,6 +83,7 @@ export default function TicketButton({
     if (!isSoldOut) return;
 
     try {
+      setIsWaitlistStatusLoading(true);
       const response = await fetch(`/api/waitlist?eventId=${eventId}`);
       if (response.ok) {
         const data = (await response.json()) as {
@@ -87,9 +92,12 @@ export default function TicketButton({
         };
         setIsOnWaitlist(data.isOnWaitlist);
         setWaitlistPosition(data.position);
+        setIsWaitlistPositionReady(true);
       }
     } catch (error) {
       console.error("Error checking waitlist status:", error);
+    } finally {
+      setIsWaitlistStatusLoading(false);
     }
   }, [eventId, isSoldOut]);
 
@@ -150,7 +158,9 @@ export default function TicketButton({
 
       if (response.ok) {
         setIsOnWaitlist(true);
-        setWaitlistPosition(data.position || null);
+        setWaitlistPosition(null);
+        setIsWaitlistPositionReady(false);
+        await checkWaitlistStatus();
         setMessage("Successfully joined the waitlist!");
         // Clear referral from session storage
         sessionStorage.removeItem(referralKey);
@@ -164,7 +174,7 @@ export default function TicketButton({
     } finally {
       setIsWaitlistLoading(false);
     }
-  }, [eventId, referralCode, referralWarning]);
+  }, [checkWaitlistStatus, eventId, referralCode, referralWarning]);
 
   // Handle leaving waitlist
   const handleLeaveWaitlist = useCallback(async () => {
@@ -184,6 +194,7 @@ export default function TicketButton({
       if (response.ok) {
         setIsOnWaitlist(false);
         setWaitlistPosition(null);
+        setIsWaitlistPositionReady(false);
         setMessage("Successfully left the waitlist");
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
@@ -639,56 +650,70 @@ export default function TicketButton({
     if (!isOnWaitlist) {
       return (
         <div className="mb-4 md:mb-6">
-          <p className="text-sm sm:text-base text-yellow-400 mb-3">
-            This event is sold out, but you can join the waitlist!
-          </p>
-
-          {/* Referral Code Input */}
-          <div className="mb-3">
-            <label
-              htmlFor="waitlist-referral-input"
-              className="block text-sm sm:text-base text-white font-medium mb-2"
-            >
-              Referral Code (Optional)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="waitlist-referral-input"
-                type="text"
-                value={referralCode}
-                onChange={handleReferralCodeChange}
-                placeholder="Enter referral code"
-                className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
-                  referralWarning
-                    ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                    : "border-white/20 focus:ring-2 focus:ring-red-500"
-                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
-              />
-              {isValidatingReferral && (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
-              )}
+          {isWaitlistStatusLoading ? (
+            <div className="mb-3">
+              <div className="h-5 w-72 max-w-full rounded bg-white/10 animate-pulse mb-4" />
+              <div className="h-4 w-40 rounded bg-white/10 animate-pulse mb-2" />
+              <div className="h-11 w-full sm:w-64 rounded bg-white/10 animate-pulse" />
             </div>
-            {referralWarning && (
-              <p className="mt-2 text-xs sm:text-sm text-yellow-400">
-                {referralWarning}
+          ) : (
+            <>
+              <p className="text-sm sm:text-base text-yellow-400 mb-3">
+                This event is sold out, but you can join the waitlist!
               </p>
-            )}
-          </div>
+
+              {/* Referral Code Input */}
+              <div className="mb-3">
+                <label
+                  htmlFor="waitlist-referral-input"
+                  className="block text-sm sm:text-base text-white font-medium mb-2"
+                >
+                  Referral Code (Optional)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="waitlist-referral-input"
+                    type="text"
+                    value={referralCode}
+                    onChange={handleReferralCodeChange}
+                    placeholder="Enter referral code"
+                    className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
+                      referralWarning
+                        ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
+                        : "border-white/20 focus:ring-2 focus:ring-red-500"
+                    } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                  />
+                  {isValidatingReferral && (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
+                  )}
+                </div>
+                {referralWarning && (
+                  <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+                    {referralWarning}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Join Waitlist Button */}
-          <motion.button
-            whileHover={
-              isWaitlistLoading || !!referralWarning ? {} : { scale: 1.05 }
-            }
-            whileTap={
-              isWaitlistLoading || !!referralWarning ? {} : { scale: 0.95 }
-            }
-            onClick={handleJoinWaitlist}
-            disabled={isWaitlistLoading || !!referralWarning}
-            className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {isWaitlistLoading ? "Joining..." : "Join Waitlist"}
-          </motion.button>
+          {isWaitlistStatusLoading ? (
+            <div className="h-11 w-full sm:w-40 rounded bg-white/10 animate-pulse" />
+          ) : (
+            <motion.button
+              whileHover={
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 1.05 }
+              }
+              whileTap={
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 0.95 }
+              }
+              onClick={handleJoinWaitlist}
+              disabled={isWaitlistLoading || !!referralWarning}
+              className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              {isWaitlistLoading ? "Joining..." : "Join Waitlist"}
+            </motion.button>
+          )}
 
           {message && (
             <p
@@ -709,19 +734,29 @@ export default function TicketButton({
     // User IS on waitlist - show position and leave button
     return (
       <div className="mb-4 md:mb-6">
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
-          <p className="text-sm sm:text-base text-white font-semibold mb-1">
-            You're on the waitlist!
-          </p>
-          <p className="text-lg sm:text-xl text-white font-bold">
-            Position #{waitlistPosition}
-          </p>
-          <p className="text-xs sm:text-sm text-zinc-300 mt-2">
-            You will be emailed if we are able to find you a ticket. The online
-            waitlist closes 2 hours before the event. After that, please come to
-            the venue for an in-person waitlist that is first come first serve.
-          </p>
-        </div>
+        {isWaitlistPositionReady && waitlistPosition !== null ? (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
+            <p className="text-sm sm:text-base text-white font-semibold mb-1">
+              You're on the waitlist!
+            </p>
+            <p className="text-lg sm:text-xl text-white font-bold">
+              Position #{waitlistPosition}
+            </p>
+            <p className="text-xs sm:text-sm text-zinc-300 mt-2">
+              You will be emailed if we are able to find you a ticket. The
+              online waitlist closes 2 hours before the event. After that,
+              please come to the venue for an in-person waitlist that is first
+              come first serve.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
+            <div className="h-5 w-48 rounded bg-white/10 animate-pulse mb-2" />
+            <div className="h-7 w-36 rounded bg-white/10 animate-pulse mb-3" />
+            <div className="h-3 w-full rounded bg-white/10 animate-pulse mb-2" />
+            <div className="h-3 w-11/12 rounded bg-white/10 animate-pulse" />
+          </div>
+        )}
 
         {/* Leave Waitlist Button */}
         <motion.button
