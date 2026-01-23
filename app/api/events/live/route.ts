@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getSupabaseClient,
   verifyAdminOrScannerRequest,
+  getTicketCounts,
 } from "@/app/lib/supabase";
 
 /**
@@ -26,8 +27,6 @@ export async function GET() {
       );
     }
 
-    // Calculate total tickets sold (use tickets field, fallback to reserved)
-    const totalSold = liveEvent.tickets ?? liveEvent.reserved ?? 0;
 
     const auth = await verifyAdminOrScannerRequest();
     if (!auth.authorized) {
@@ -41,6 +40,11 @@ export async function GET() {
         { status: 200 },
       );
     } else {
+      // Calculate total tickets sold by counting directly from tickets table
+      // This is more accurate than using the cached events.tickets field
+      const ticketCounts = await getTicketCounts(liveEvent.id);
+      const totalSold = ticketCounts.totalCount;
+
       return NextResponse.json(
         {
           liveEvent: {
