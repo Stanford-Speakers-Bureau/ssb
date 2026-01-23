@@ -1250,3 +1250,225 @@ export async function sendWaitlistEmail(
   await sendRawEmailViaSES(rawMessage);
   console.log(`Waitlist confirmation email sent to ${data.email}`);
 }
+
+type VIPScanNotificationData = {
+  attendeeEmail: string;
+  attendeeName: string | null;
+  eventName: string;
+  ticketId: string;
+  scanTime: string;
+  scannerName: string | null;
+  scannerEmail: string | null;
+};
+
+/**
+ * Generate HTML email content for VIP scan notification
+ */
+function generateVIPScanNotificationHTML(
+  data: VIPScanNotificationData,
+): string {
+  const {
+    attendeeEmail,
+    attendeeName,
+    eventName,
+    ticketId,
+    scanTime,
+    scannerName,
+    scannerEmail,
+  } = data;
+
+  const formattedScanTime = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(new Date(scanTime));
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP Ticket Scanned</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #A80D0C;
+      color: white;
+      padding: 20px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+    }
+    .content {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+    .info-row {
+      margin: 10px 0;
+    }
+    .label {
+      font-weight: 600;
+      color: #666;
+    }
+    .value {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2 style="margin: 0;">VIP Ticket Scanned</h2>
+  </div>
+  <div class="content">
+    <p>A VIP ticket has been scanned for the following event:</p>
+    
+    <div class="info-row">
+      <span class="label">Event:</span>
+      <span class="value">${eventName}</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="label">Attendee Email:</span>
+      <span class="value">${attendeeEmail}</span>
+    </div>
+    
+    ${attendeeName ? `
+    <div class="info-row">
+      <span class="label">Attendee Name:</span>
+      <span class="value">${attendeeName}</span>
+    </div>
+    ` : ""}
+    
+    <div class="info-row">
+      <span class="label">Ticket ID:</span>
+      <span class="value">${ticketId}</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="label">Scan Time:</span>
+      <span class="value">${formattedScanTime}</span>
+    </div>
+    
+    ${scannerName ? `
+    <div class="info-row">
+      <span class="label">Scanned By:</span>
+      <span class="value">${scannerName}${scannerEmail ? ` (${scannerEmail})` : ""}</span>
+    </div>
+    ` : scannerEmail ? `
+    <div class="info-row">
+      <span class="label">Scanned By:</span>
+      <span class="value">${scannerEmail}</span>
+    </div>
+    ` : ""}
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Generate plain text email content for VIP scan notification
+ */
+function generateVIPScanNotificationText(data: VIPScanNotificationData): string {
+  const {
+    attendeeEmail,
+    attendeeName,
+    eventName,
+    ticketId,
+    scanTime,
+    scannerName,
+    scannerEmail,
+  } = data;
+
+  const formattedScanTime = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(new Date(scanTime));
+
+  return `
+VIP Ticket Scanned
+
+A VIP ticket has been scanned for the following event:
+
+Event: ${eventName}
+Attendee Email: ${attendeeEmail}
+${attendeeName ? `Attendee Name: ${attendeeName}\n` : ""}Ticket ID: ${ticketId}
+Scan Time: ${formattedScanTime}
+${scannerName ? `Scanned By: ${scannerName}${scannerEmail ? ` (${scannerEmail})` : ""}\n` : scannerEmail ? `Scanned By: ${scannerEmail}\n` : ""}
+  `.trim();
+}
+
+/**
+ * Send VIP scan notification email via AWS SES
+ * Throws an error if email sending fails
+ */
+export async function sendVIPScanNotification(
+  data: VIPScanNotificationData,
+): Promise<void> {
+  // Check if email sending is disabled
+  if (process.env.DISABLE_EMAIL?.toLowerCase().trim() == "true") {
+    console.log(
+      `Email sending is disabled (DISABLE_EMAIL=true). Skipping VIP scan notification email`,
+    );
+    return;
+  }
+
+  const subject = `VIP Ticket Scanned: ${data.eventName}`;
+  const textContent = generateVIPScanNotificationText(data);
+  const htmlContent = generateVIPScanNotificationHTML(data);
+
+  // Build MIME message
+  const boundary = `mix_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const lines: string[] = [];
+  lines.push(
+    `From: ${FROM_EMAIL}`,
+    `To: anish.anne@stanford.edu`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    `Content-Type: text/plain; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    textContent,
+    "",
+    `--${boundary}`,
+    `Content-Type: text/html; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    "",
+    htmlContent,
+    "",
+    `--${boundary}--`,
+    "",
+  );
+
+  const rawMessage = lines.join("\r\n");
+
+  await sendRawEmailViaSES(rawMessage);
+  console.log(`VIP scan notification email sent to anish.anne@stanford.edu`);
+}

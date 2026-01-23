@@ -4,6 +4,7 @@ import {
   createServerSupabaseClient,
 } from "@/app/lib/supabase";
 import { isValidEmail } from "@/app/lib/validation";
+import { sendVIPScanNotification } from "@/app/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -208,6 +209,24 @@ export async function POST(req: Request) {
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
+      }
+    }
+
+    // Send VIP scan notification email if ticket is VIP
+    if (updatedTicket.type?.toUpperCase() === "VIP") {
+      try {
+        await sendVIPScanNotification({
+          attendeeEmail: updatedTicket.email || "",
+          attendeeName: userNameResponse,
+          eventName: liveEvent.name,
+          ticketId: updatedTicket.id,
+          scanTime: scanTime,
+          scannerName: scannerName,
+          scannerEmail: scannerEmail,
+        });
+      } catch (emailError) {
+        // Log error but don't fail the scan request
+        console.error("Error sending VIP scan notification email:", emailError);
       }
     }
 
