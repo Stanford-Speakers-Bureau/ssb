@@ -151,12 +151,23 @@ export async function POST(req: Request) {
       total: number;
     };
 
+    // Calculate actual position (same logic as GET handler)
+    // This ensures the email shows the same position as the UI
+    const { count: aheadCount } = await adminClient
+      .from("waitlist")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", event_id)
+      .lt("position", nextPosition);
+
+    // User's actual position is count of people ahead + 1 (1-indexed)
+    const actualPosition = (aheadCount || 0) + 1;
+
     // Send email immediately
     try {
       await sendWaitlistEmail({
         email: user.email,
         eventName: event.name || "Event",
-        position: nextPosition,
+        position: actualPosition,
         eventStartTime: event.start_time_date,
         eventVenue: event.venue,
         eventVenueLink: event.venue_link,
@@ -171,7 +182,7 @@ export async function POST(req: Request) {
       {
         success: true,
         message: WAITLIST_MESSAGES.SUCCESS,
-        position: nextPosition,
+        position: actualPosition,
       },
       { status: 200 },
     );
