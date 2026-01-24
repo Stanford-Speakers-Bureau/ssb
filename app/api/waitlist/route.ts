@@ -78,8 +78,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if waitlist is closed (2 hours before event)
-    if (isWaitlistClosed(event.start_time_date)) {
+    // Check if waitlist is closed (2 hours before doors open)
+    if (isWaitlistClosed(event.doors_open)) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
         { status: 400 },

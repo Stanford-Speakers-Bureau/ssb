@@ -565,15 +565,15 @@ export async function getWaitlistCount(eventId: string): Promise<number> {
 }
 
 /**
- * Check if waitlist is closed (within 2 hours of event start)
+ * Check if waitlist is closed (within 2 hours of doors open)
  *
- * @param eventStartTime - ISO timestamp of event start
+ * @param doorsOpen - ISO timestamp of when doors open
  * @returns True if waitlist should be closed
  */
-export function isWaitlistClosed(eventStartTime: string | null): boolean {
-  if (!eventStartTime) return false;
+export function isWaitlistClosed(doorsOpen: string | null): boolean {
+  if (!doorsOpen) return false;
 
-  const twoHoursBeforeEvent =
-    new Date(eventStartTime).getTime() - 2 * 60 * 60 * 1000;
-  return Date.now() >= twoHoursBeforeEvent;
+  const twoHoursBeforeDoorsOpen =
+    new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000;
+  return Date.now() >= twoHoursBeforeDoorsOpen;
 }

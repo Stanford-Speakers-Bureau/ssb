@@ -314,6 +314,7 @@ export default async function EventPage({ params }: PageProps) {
                   userEmail={ticketStatus.userEmail}
                   eventRoute={event.route || eventID}
                   eventStartTime={event.start_time_date}
+                  doorsOpen={event.doors_open}
                   isSoldOut={isSoldOut}
                 />
 

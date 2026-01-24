@@ -15,6 +15,7 @@ type TicketSectionProps = {
   userEmail: string | null;
   eventRoute: string;
   eventStartTime: string | null;
+  doorsOpen: string | null;
   isSoldOut?: boolean;
 };
 
@@ -26,6 +27,7 @@ export default function TicketSection({
   userEmail,
   eventRoute,
   eventStartTime,
+  doorsOpen,
   isSoldOut = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -126,6 +128,7 @@ export default function TicketSection({
         eventId={eventId}
         initialHasTicket={hasTicket}
         eventStartTime={eventStartTime}
+        doorsOpen={doorsOpen}
         isSoldOut={isSoldOut}
       />
       {hasTicket && (

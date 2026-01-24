@@ -8,6 +8,7 @@ type TicketButtonProps = {
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
   eventStartTime?: string | null;
+  doorsOpen?: string | null;
   isSoldOut?: boolean;
 };
 
@@ -30,6 +31,7 @@ export default function TicketButton({
   eventId,
   initialHasTicket = false,
   eventStartTime = null,
+  doorsOpen = null,
   isSoldOut = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -60,12 +62,12 @@ export default function TicketButton({
     ? new Date() >= new Date(eventStartTime)
     : false;
 
-  // Check if within 2-hour cutoff for waitlist
-  const twoHoursBeforeEvent = eventStartTime
-    ? new Date(eventStartTime).getTime() - 2 * 60 * 60 * 1000
+  // Check if within 2-hour cutoff for waitlist (based on doors open time)
+  const twoHoursBeforeDoorsOpen = doorsOpen
+    ? new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000
     : null;
-  const isWithinWaitlistCutoff = twoHoursBeforeEvent
-    ? new Date().getTime() >= twoHoursBeforeEvent
+  const isWithinWaitlistCutoff = twoHoursBeforeDoorsOpen
+    ? new Date().getTime() >= twoHoursBeforeDoorsOpen
     : false;
 
   useEffect(() => {
