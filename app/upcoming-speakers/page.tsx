@@ -51,9 +51,14 @@ async function getTicketCount(eventId: string): Promise<number> {
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const supabase = getSupabaseClient();
 
+  // Add 1-day buffer so events stay visible until the day after
+  const bufferDate = new Date();
+  bufferDate.setDate(bufferDate.getDate() - 1);
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
+    .gte("start_time_date", bufferDate.toISOString())
     .order("start_time_date", { ascending: true });
 
   if (error) {
