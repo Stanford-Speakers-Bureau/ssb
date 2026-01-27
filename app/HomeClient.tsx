@@ -259,7 +259,7 @@ export default function HomeClient() {
                   their work and insights.
                 </p>
                 <MotionLink
-                  href="mailto:amock@stanford.edu,ajoshi17@stanford.edu,anishan@stanford.edu"
+                  href="mailto:amock@stanford.edu"
                   prefetch={false}
                   className="text-[#A80D0C] text-sm sm:text-base font-semibold hover:underline inline-block"
                   whileHover={{ scale: 1.05 }}
