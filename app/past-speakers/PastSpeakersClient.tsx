@@ -7,6 +7,7 @@ export default function PastSpeakersClient() {
   const [expandedYears, setExpandedYears] = useState<{
     [key: string]: boolean;
   }>({
+    "2026": true,
     "2025": true,
     "2024": true,
     "2023": true,
@@ -28,6 +29,48 @@ export default function PastSpeakersClient() {
           <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
             Past Speakers
           </h1>
+
+          {/* 2026 */}
+          <div className="mb-12">
+            <h2
+              className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 cursor-pointer flex items-center gap-2 sm:gap-3 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+              onClick={() => toggleYear("2026")}
+            >
+              <motion.span
+                className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
+                initial={{ rotate: expandedYears["2026"] ? 0 : -90 }}
+                animate={{ rotate: expandedYears["2026"] ? 0 : -90 }}
+                transition={{ duration: 0.3 }}
+              >
+                ▼
+              </motion.span>
+              2026
+            </h2>
+
+            <AnimatePresence initial={false}>
+              {expandedYears["2026"] && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div className="mb-8">
+                    <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
+                      Hasan Minhaj
+                    </h3>
+                    <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
+                      Comedian, Writer, and Former Host of &quot;The Patriot Act&quot;
+                    </p>
+                    <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      Hasan Minhaj is a two-time Peabody Award-Winning comedian best known for his breakout Netflix special Homecoming King and his critically acclaimed, political satire show Patriot Act With Hasan Minhaj for Netflix which won a Peabody, an Emmy, and a Television Academy Honor. His second one-hour comedy special The King's Jester premiered on Netflix in 2022. In October 2024, Hasan released his third comedy special on Netflix, titled Off With His Head. On Hasan's ongoing digital series and podcast, Hasan Minhaj Doesn't Know, he sits down with the biggest names in politics, culture, and tech with questions that are as thought provoking as they are absurd. In the debut episode, Hasan spoke with Senator Elizabeth Warren, and he’s also welcomed John M. Chu, JJ Redick, Bernie Sanders, and Stacey Abrams, among many others
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* 2025 */}
           <div className="mb-12">

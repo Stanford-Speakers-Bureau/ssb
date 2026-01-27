@@ -116,6 +116,30 @@ export default function HomeClient() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+            {/* Hasan Minhaj */}
+            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
+              <Image
+                src="/speakers/hasan-minhaj.JPG"
+                alt="Hasan Minhaj speaking at Stanford University from Stanford Speakers Bureau (SSB)"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              <div className="relative z-10">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
+                  Hasan Minhaj
+                </h3>
+                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
+                  Comedian & Former "Patriot Act" Host
+                </p>
+                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
+                  Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and as creator and host of "Patriot Act with Hasan Minhaj."
+                </p>
+              </div>
+            </div>
+
             {/* Mark Rober */}
             <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
@@ -160,30 +184,6 @@ export default function HomeClient() {
                 <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
                   Media icon, dancer, and singer who rose to fame through the
                   reality show Dance Moms and her vibrant online presence.
-                </p>
-              </div>
-            </div>
-
-            {/* Mikey Day */}
-            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
-              <Image
-                src="/speakers/mikey-day.JPG"
-                alt="Mikey Day speaking at Stanford University from Stanford Speakers Bureau (SSB)"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-              <div className="relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
-                  Mikey Day
-                </h3>
-                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
-                  SNL Cast Member
-                </p>
-                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Saturday Night Live cast member and writer known for versatile
-                  impressions and memorable original characters.
                 </p>
               </div>
             </div>
