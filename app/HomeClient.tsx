@@ -120,7 +120,7 @@ export default function HomeClient() {
             {/* Hasan Minhaj */}
             <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
               <Image
-                src="/speakers/hasan-minhaj.JPG"
+                src="/speakers/hasan-minhaj.jpg"
                 alt="Hasan Minhaj speaking at Stanford University from Stanford Speakers Bureau (SSB)"
                 fill
                 className="object-cover"
