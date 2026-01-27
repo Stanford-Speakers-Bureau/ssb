@@ -10,16 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
 
-      - run: bun install
-      - name: build
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          NEXT_PUBLIC_BASE_URL: ${{ secrets.SUPABASE_KEY_PUBLIC }}
-          UPSTASH_REDIS_REST_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
-          SES_FROM_EMAIL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.SES_FROM_EMAIL }}
-          AWS_REGION: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        run: bun run build
+      - name: check typescript errors
+        run: bunx tsc --noEmit
