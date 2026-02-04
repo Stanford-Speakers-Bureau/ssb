@@ -316,6 +316,7 @@ export default async function EventPage({ params }: PageProps) {
                   eventStartTime={event.start_time_date}
                   doorsOpen={event.doors_open}
                   isSoldOut={isSoldOut}
+                  ticketingDate={event.ticketing_date ?? event.release_date}
                 />
 
                 <div className="mt-6 text-zinc-300 text-sm">

@@ -30,6 +30,7 @@ export type Event = {
   reserved: number | null;
   venue_link: string | null;
   release_date: string | null;
+  ticketing_date?: string | null;
   banner: boolean | null;
   start_time_date: string | null;
   doors_open: string | null;

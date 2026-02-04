@@ -10,6 +10,7 @@ type TicketButtonProps = {
   eventStartTime?: string | null;
   doorsOpen?: string | null;
   isSoldOut?: boolean;
+  isTicketingOpen?: boolean;
 };
 
 const TICKET_MESSAGES = {
@@ -33,6 +34,7 @@ export default function TicketButton({
   eventStartTime = null,
   doorsOpen = null,
   isSoldOut = false,
+  isTicketingOpen = true,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +71,11 @@ export default function TicketButton({
   const isWithinWaitlistCutoff = twoHoursBeforeDoorsOpen
     ? new Date().getTime() >= twoHoursBeforeDoorsOpen
     : false;
+
+  // If ticketing isn't open yet, hide ticket/waitlist actions (TicketSection renders the message)
+  if (!hasTicket && !isTicketingOpen) {
+    return null;
+  }
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -577,6 +584,11 @@ export default function TicketButton({
       sessionStorage.removeItem(autoTicketKey);
       return;
     }
+    // Don't auto-create ticket if ticketing isn't open yet
+    if (!isTicketingOpen) {
+      sessionStorage.removeItem(autoTicketKey);
+      return;
+    }
     // Don't auto-create ticket if event has started
     if (hasEventStarted) {
       sessionStorage.removeItem(autoTicketKey);
@@ -587,7 +599,7 @@ export default function TicketButton({
     autoTicketProcessed.current = true;
     sessionStorage.removeItem(autoTicketKey);
     void handleTicketClick();
-  }, [eventId, handleTicketClick, hasTicket, hasEventStarted]);
+  }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isTicketingOpen]);
 
   // Cleanup validation timeout on unmount
   useEffect(() => {

@@ -16,6 +16,7 @@ type TicketSectionProps = {
   eventRoute: string;
   eventStartTime: string | null;
   doorsOpen: string | null;
+  ticketingDate?: string | null;
   isSoldOut?: boolean;
 };
 
@@ -28,6 +29,7 @@ export default function TicketSection({
   eventRoute,
   eventStartTime,
   doorsOpen,
+  ticketingDate = null,
   isSoldOut = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -122,14 +124,52 @@ export default function TicketSection({
   // Check if user has VIP ticket
   const isVIP = ticketType?.toLowerCase().trim() === "vip";
 
+  const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
+  const isTicketingOpen =
+    !ticketingOpensAt || Number.isNaN(ticketingOpensAt.getTime())
+      ? true
+      : new Date() >= ticketingOpensAt;
+
+  const formatTicketingOpensAt = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  };
+
   return (
     <div className="event-ticket-section">
+      {!hasTicket && !isTicketingOpen && ticketingOpensAt && (
+        <div className="mb-4 md:mb-6 rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+          <p className="text-sm sm:text-base text-yellow-200">
+            Ticketing isn’t open yet. It opens{" "}
+            <span className="font-semibold">
+              {formatTicketingOpensAt(ticketingOpensAt)}
+            </span>
+            .
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <a
+              href={`/upcoming-speakers?notify=${encodeURIComponent(eventId)}`}
+              className="inline-flex items-center justify-center rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors"
+            >
+              Notify me when it opens
+            </a>
+          </div>
+        </div>
+      )}
       <TicketButton
         eventId={eventId}
         initialHasTicket={hasTicket}
         eventStartTime={eventStartTime}
         doorsOpen={doorsOpen}
         isSoldOut={isSoldOut}
+        isTicketingOpen={isTicketingOpen}
       />
       {hasTicket && (
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">

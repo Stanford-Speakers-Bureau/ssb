@@ -24,6 +24,8 @@ const TICKET_MESSAGES = {
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   ERROR_EVENT_STARTED:
     "Ticket sales have ended. This event has already started.",
+  ERROR_TICKETING_NOT_OPEN:
+    "Ticketing is not open yet for this event. Please check back later.",
 } as const;
 
 export async function GET(req: Request) {
@@ -166,7 +168,7 @@ export async function POST(req: Request) {
     const adminClient = getSupabaseClient();
     const { data: event } = await adminClient
       .from("events")
-      .select("start_time_date")
+      .select("start_time_date, release_date, ticketing_date")
       .eq("id", event_id)
       .single();
 
@@ -175,6 +177,25 @@ export async function POST(req: Request) {
         { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
       );
+    }
+
+    // Enforce ticketing open date:
+    // - Prefer ticketing_date
+    // - Fall back to release_date when ticketing_date is null (keeps current behavior)
+    const effectiveTicketingDate =
+      (event as { ticketing_date?: string | null }).ticketing_date ??
+      (event as { release_date?: string | null }).release_date ??
+      null;
+
+    if (effectiveTicketingDate) {
+      const openAt = new Date(effectiveTicketingDate);
+      const now = new Date();
+      if (!Number.isNaN(openAt.getTime()) && now < openAt) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_TICKETING_NOT_OPEN },
+          { status: 400 },
+        );
+      }
     }
 
     if (event.start_time_date) {
