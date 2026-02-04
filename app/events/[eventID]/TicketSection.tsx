@@ -6,6 +6,7 @@ import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
 import { generateReferralCode } from "@/app/lib/utils";
 import Image from "next/image";
+import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 
 type TicketSectionProps = {
   eventId: string;
@@ -18,6 +19,7 @@ type TicketSectionProps = {
   doorsOpen: string | null;
   ticketingDate?: string | null;
   isSoldOut?: boolean;
+  initialIsNotified?: boolean;
 };
 
 export default function TicketSection({
@@ -31,6 +33,7 @@ export default function TicketSection({
   doorsOpen,
   ticketingDate = null,
   isSoldOut = false,
+  initialIsNotified = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -40,6 +43,9 @@ export default function TicketSection({
 
   const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
+  const [isNotified, setIsNotified] = useState(initialIsNotified);
+  const [isLoadingNotify, setIsLoadingNotify] = useState(false);
+  const [notifyMessage, setNotifyMessage] = useState<string | null>(null);
 
   const onAddToGoogleWallet = async () => {
     if (!ticketId || isLoadingGoogleWallet) return;
@@ -142,6 +148,46 @@ export default function TicketSection({
     }).format(date);
   };
 
+  const handleNotifyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (isLoadingNotify || isNotified) return;
+
+    setIsLoadingNotify(true);
+    setNotifyMessage(null);
+
+    try {
+      const response = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speaker_id: eventId }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated, redirect to Google sign-in
+        setIsLoadingNotify(false);
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+
+      const data = (await response.json()) as { error?: string };
+
+      if (response.ok) {
+        setIsNotified(true);
+        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
+      } else if (response.status === 409) {
+        setIsNotified(true);
+        setNotifyMessage(NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+      } else {
+        setNotifyMessage(data.error || NOTIFY_MESSAGES.ERROR_GENERIC);
+      }
+    } catch (error) {
+      console.error("Error signing up for notifications:", error);
+      setNotifyMessage(NOTIFY_MESSAGES.ERROR_GENERIC);
+    } finally {
+      setIsLoadingNotify(false);
+    }
+  };
+
   return (
     <div className="event-ticket-section">
       {!hasTicket && !isTicketingOpen && ticketingOpensAt && (
@@ -153,13 +199,46 @@ export default function TicketSection({
             </span>
             .
           </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            <a
-              href={`/upcoming-speakers?notify=${encodeURIComponent(eventId)}`}
-              className="inline-flex items-center justify-center rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors"
+          <div className="mt-3 flex flex-wrap gap-3 items-center">
+            <button
+              onClick={handleNotifyClick}
+              disabled={isLoadingNotify || isNotified}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10"
             >
-              Notify me when it opens
-            </a>
+              {isLoadingNotify ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Signing up...</span>
+                </>
+              ) : isNotified ? (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>You'll be notified</span>
+                </>
+              ) : (
+                <span>Notify me when it opens</span>
+              )}
+            </button>
+            {notifyMessage && (
+              <p className="text-sm text-green-300">{notifyMessage}</p>
+            )}
+            {isNotified && !notifyMessage && (
+              <p className="text-sm text-green-300">
+                {NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+              </p>
+            )}
           </div>
         </div>
       )}

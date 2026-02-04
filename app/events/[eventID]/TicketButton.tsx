@@ -57,6 +57,10 @@ export default function TicketButton({
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
 
+  // No bags policy modal states
+  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
+  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
+
   // Check if event has started
   // Note: eventStartTime is a UTC ISO string from the database, and Date objects
   // compare UTC timestamps internally, so this comparison is timezone-safe
@@ -265,7 +269,8 @@ export default function TicketButton({
     }
   }, [eventId, checkLiveEvent]);
 
-  const handleTicketClick = useCallback(async () => {
+  // Actual ticket creation/cancellation logic
+  const processTicketRequest = useCallback(async () => {
     setIsLoading(true);
     setMessage(null);
 
@@ -480,6 +485,27 @@ export default function TicketButton({
       setIsLoading(false);
     }
   }, [checkLiveEvent, eventId, hasTicket, referralCode, referralWarning]);
+
+  // Handle ticket click - show no bags modal first if creating ticket
+  const handleTicketClick = useCallback(() => {
+    if (!hasTicket) {
+      // Show no bags policy modal before creating ticket
+      setShowNoBagsModal(true);
+      setNoBagsConfirmation("");
+    } else {
+      // For cancelling, proceed directly
+      void processTicketRequest();
+    }
+  }, [hasTicket, processTicketRequest]);
+
+  // Handle confirming no bags policy
+  const handleConfirmNoBags = useCallback(() => {
+    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
+      setShowNoBagsModal(false);
+      setNoBagsConfirmation("");
+      void processTicketRequest();
+    }
+  }, [noBagsConfirmation, processTicketRequest]);
 
   // Validate referral code
   const validateReferralCode = useCallback(
@@ -956,6 +982,74 @@ export default function TicketButton({
                   className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
                 >
                   Cancel Ticket
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* No Bags Policy Modal */}
+      <AnimatePresence>
+        {showNoBagsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowNoBagsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-white mb-4">
+                Important: No Bags Policy
+              </h3>
+              <p className="text-zinc-300 mb-4 text-sm sm:text-base">
+                This event has a strict no bags policy. You will be turned away
+                at the entrance with any form of a bag, including a purse.
+              </p>
+              <p className="text-zinc-300 mb-6 text-sm sm:text-base font-semibold">
+                Please type "no bags" below to confirm you understand this
+                policy:
+              </p>
+              <input
+                type="text"
+                value={noBagsConfirmation}
+                onChange={(e) => setNoBagsConfirmation(e.target.value)}
+                placeholder="Type 'no bags' to confirm"
+                className="w-full rounded px-4 py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-red-500 focus:outline-none focus:border-transparent placeholder:text-zinc-400 mb-4"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
+                    handleConfirmNoBags();
+                  }
+                }}
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setShowNoBagsModal(false);
+                    setNoBagsConfirmation("");
+                  }}
+                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleConfirmNoBags}
+                  disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Proceed
                 </motion.button>
               </div>
             </motion.div>

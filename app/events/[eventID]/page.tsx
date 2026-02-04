@@ -50,6 +50,30 @@ async function getUserTicketStatus(eventId: string): Promise<{
   }
 }
 
+async function getUserNotificationStatus(eventId: string): Promise<boolean> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) return false;
+
+    const adminClient = getSupabaseClient();
+    const { data, error } = await adminClient
+      .from("notify")
+      .select("id")
+      .eq("email", user.email)
+      .eq("speaker_id", eventId)
+      .maybeSingle();
+
+    if (error) return false;
+    return !!data;
+  } catch {
+    return false;
+  }
+}
+
 export default async function EventPage({ params }: PageProps) {
   const { eventID } = await params;
 
@@ -59,7 +83,10 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  const [ticketStatus] = await Promise.all([getUserTicketStatus(event.id)]);
+  const [ticketStatus, isNotified] = await Promise.all([
+    getUserTicketStatus(event.id),
+    getUserNotificationStatus(event.id),
+  ]);
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
@@ -317,6 +344,7 @@ export default async function EventPage({ params }: PageProps) {
                   doorsOpen={event.doors_open}
                   isSoldOut={isSoldOut}
                   ticketingDate={event.ticketing_date ?? event.release_date}
+                  initialIsNotified={isNotified}
                 />
 
                 <div className="mt-6 text-zinc-300 text-sm">
