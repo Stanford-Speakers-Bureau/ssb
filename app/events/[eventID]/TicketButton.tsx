@@ -645,7 +645,7 @@ export default function TicketButton({
     (!!referralWarning && !hasTicket);
 
   // WAITLIST UI: If sold out and user doesn't have a ticket
-  if (!hasTicket) {
+  if (isSoldOut && !hasTicket) {
     // Within 2-hour cutoff - show in-person message
     if (isWithinWaitlistCutoff) {
       return (
@@ -689,11 +689,10 @@ export default function TicketButton({
                     value={referralCode}
                     onChange={handleReferralCodeChange}
                     placeholder="Enter referral code"
-                    className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
-                      referralWarning
+                    className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
                         ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
                         : "border-white/20 focus:ring-2 focus:ring-red-500"
-                    } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                      } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
                   />
                   {isValidatingReferral && (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -729,12 +728,11 @@ export default function TicketButton({
 
           {message && (
             <p
-              className={`mt-2 text-xs sm:text-sm ${
-                message.includes("Successfully") ||
-                message.includes("successfully")
+              className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
+                  message.includes("successfully")
                   ? "text-green-400"
                   : "text-red-400"
-              }`}
+                }`}
             >
               {message}
             </p>
@@ -783,12 +781,11 @@ export default function TicketButton({
 
         {message && (
           <p
-            className={`mt-2 text-xs sm:text-sm ${
-              message.includes("Successfully") ||
-              message.includes("successfully")
+            className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
+                message.includes("successfully")
                 ? "text-green-400"
                 : "text-red-400"
-            }`}
+              }`}
           >
             {message}
           </p>
@@ -862,11 +859,10 @@ export default function TicketButton({
               value={referralCode}
               onChange={handleReferralCodeChange}
               placeholder="Enter referral code"
-              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${
-                referralWarning
+              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
                   ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
                   : "border-white/20 focus:ring-2 focus:ring-red-500"
-              } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
             />
             {isValidatingReferral && (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -913,9 +909,8 @@ export default function TicketButton({
       )}
       {message && !isCancelDisabled && !isSalesDisabled && (
         <p
-          className={`mt-2 text-xs sm:text-sm ${
-            message.includes("successfully") ? "text-green-400" : "text-red-400"
-          }`}
+          className={`mt-2 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
+            }`}
         >
           {message}
         </p>
