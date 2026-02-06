@@ -6,7 +6,7 @@ import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
 import { generateReferralCode } from "@/app/lib/utils";
 import Image from "next/image";
-import { NOTIFY_MESSAGES } from "@/app/lib/constants";
+import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 
 type TicketSectionProps = {
   eventId: string;
@@ -173,16 +173,16 @@ export default function TicketSection({
 
       if (response.ok) {
         setIsNotified(true);
-        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
+        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.SUCCESS);
       } else if (response.status === 409) {
         setIsNotified(true);
-        setNotifyMessage(NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
       } else {
-        setNotifyMessage(data.error || NOTIFY_MESSAGES.ERROR_GENERIC);
+        setNotifyMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
       console.error("Error signing up for notifications:", error);
-      setNotifyMessage(NOTIFY_MESSAGES.ERROR_GENERIC);
+      setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
     } finally {
       setIsLoadingNotify(false);
     }
@@ -208,7 +208,7 @@ export default function TicketSection({
               {isLoadingNotify ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing up...</span>
+                  <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
                 </>
               ) : isNotified ? (
                 <>
@@ -236,7 +236,7 @@ export default function TicketSection({
             )}
             {isNotified && !notifyMessage && (
               <p className="text-sm text-green-300">
-                {NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+                {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
               </p>
             )}
           </div>

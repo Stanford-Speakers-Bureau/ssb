@@ -1,4 +1,4 @@
-// Notification Messages
+// Notification Messages (speaker announcement)
 export const NOTIFY_MESSAGES = {
   SUCCESS: "You'll be notified when the speaker is announced!",
   ALREADY_SIGNED_UP: "You'll be notified when the speaker is announced!",
@@ -7,6 +7,14 @@ export const NOTIFY_MESSAGES = {
   ERROR_MISSING_SPEAKER_ID: "Missing required field: speaker_id",
   ERROR_EVENT_NOT_FOUND: "Event not found",
   ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+} as const;
+
+// Ticketing notification messages (notify when ticketing opens)
+export const TICKETING_NOTIFY_MESSAGES = {
+  SUCCESS: "We'll notify you when ticketing opens.",
+  ALREADY_SIGNED_UP: "We'll notify you when ticketing opens.",
+  SIGNING_UP: "Signing up...",
+  ERROR_GENERIC: "Something went wrong. Please try again.",
 } as const;
 
 // Suggest Speaker Messages
