@@ -13,6 +13,7 @@ type TicketSectionProps = {
   initialHasTicket: boolean;
   initialTicketId: string | null;
   initialTicketType: string | null;
+  initialTicketName?: string | null;
   userEmail: string | null;
   eventRoute: string;
   eventStartTime: string | null;
@@ -27,6 +28,7 @@ export default function TicketSection({
   initialHasTicket,
   initialTicketId,
   initialTicketType,
+  initialTicketName = null,
   userEmail,
   eventRoute,
   eventStartTime,
@@ -39,6 +41,9 @@ export default function TicketSection({
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [ticketType, setTicketType] = useState<string | null>(
     initialTicketType,
+  );
+  const [ticketName, setTicketName] = useState<string | null>(
+    initialTicketName,
   );
 
   const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
@@ -251,6 +256,11 @@ export default function TicketSection({
         isTicketingOpen={isTicketingOpen}
       />
       {hasTicket && (<>
+        {ticketName && (
+          <p className="text-sm sm:text-base text-white font-medium mb-2">
+            Ticket for <span className="font-semibold">{ticketName}</span>
+          </p>
+        )}
         <div className="inline-block">
           <p className="text-sm text-white font-semibold bg-red-600/80 px-4 py-2 rounded shadow mb-2">
             This ticket is not transferable. A matching student ID is required

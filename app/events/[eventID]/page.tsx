@@ -22,6 +22,7 @@ async function getUserTicketStatus(eventId: string): Promise<{
   ticketId: string | null;
   userEmail: string | null;
   ticketType: string | null;
+  ticketName: string | null;
 }> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -30,12 +31,12 @@ async function getUserTicketStatus(eventId: string): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null, ticketType: null };
+      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null };
 
     const adminClient = getSupabaseClient();
     const { data } = await adminClient
       .from("tickets")
-      .select("id, type")
+      .select("id, type, name")
       .eq("event_id", eventId)
       .eq("email", user.email)
       .single();
@@ -44,9 +45,10 @@ async function getUserTicketStatus(eventId: string): Promise<{
       ticketId: data?.id ?? null,
       userEmail: user.email,
       ticketType: data?.type ?? null,
+      ticketName: data?.name ?? null,
     };
   } catch {
-    return { ticketId: null, userEmail: null, ticketType: null };
+    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null };
   }
 }
 
@@ -338,6 +340,7 @@ export default async function EventPage({ params }: PageProps) {
                   initialHasTicket={hasTicket}
                   initialTicketId={ticketId}
                   initialTicketType={ticketType}
+                  initialTicketName={ticketStatus.ticketName}
                   userEmail={ticketStatus.userEmail}
                   eventRoute={event.route || eventID}
                   eventStartTime={event.start_time_date}
