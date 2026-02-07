@@ -22,6 +22,8 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
+  ERROR_EVENT_STARTED_OR_ENDED:
+    "Cannot cancel tickets after the event has started.",
   ERROR_EVENT_STARTED:
     "Ticket sales have ended. This event has already started.",
   CREATING: "Creating ticket...",
@@ -662,7 +664,8 @@ export default function TicketButton({
     }
   };
 
-  const isCancelDisabled = hasTicket && isLiveEvent;
+  const isCancelDisabled =
+    hasTicket && (isLiveEvent || hasEventStarted);
   const isSalesDisabled = hasEventStarted && !hasTicket;
   const isButtonDisabled =
     isLoading ||
@@ -925,7 +928,9 @@ export default function TicketButton({
       )}
       {isCancelDisabled && (
         <p className="mt-2 text-xs sm:text-sm text-yellow-400">
-          {TICKET_MESSAGES.ERROR_LIVE_EVENT}
+          {hasEventStarted
+            ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
+            : TICKET_MESSAGES.ERROR_LIVE_EVENT}
         </p>
       )}
       {isSalesDisabled && (

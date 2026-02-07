@@ -22,6 +22,8 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
+  ERROR_EVENT_STARTED_OR_ENDED:
+    "Cannot cancel tickets after the event has started.",
   ERROR_EVENT_STARTED:
     "Ticket sales have ended. This event has already started.",
   ERROR_TICKETING_NOT_OPEN:
@@ -407,18 +409,25 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if event is currently live
     const adminClient = getSupabaseClient();
-    const { data: liveEvent } = await adminClient
+
+    // Check if event is currently live or has already started/ended
+    const { data: eventRow } = await adminClient
       .from("events")
-      .select("id")
+      .select("id, is_live, start_time_date")
       .eq("id", event_id)
-      .eq("is_live", true)
       .single();
 
-    if (liveEvent) {
+    if (eventRow?.is_live) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
+        { status: 400 },
+      );
+    }
+
+    if (eventRow?.start_time_date && new Date() >= new Date(eventRow.start_time_date)) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
       );
     }
