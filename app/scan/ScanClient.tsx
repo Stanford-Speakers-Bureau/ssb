@@ -38,6 +38,7 @@ export default function ScanClient() {
   const [cameraStarted, setCameraStarted] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
   const [emailSUNET, setEmailSUNET] = useState<string>("");
+  const [isUnscanning, setIsUnscanning] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
@@ -326,6 +327,38 @@ export default function ScanClient() {
       setSpinTime(2.0);
     }
   }, [emailSUNET, liveEvent?.id]);
+
+  const handleUnscan = useCallback(async () => {
+    if (!ticketInfo?.id) return;
+    if (!window.confirm("Are you sure you want to unscan this ticket? This will reverse the scan.")) return;
+
+    setIsUnscanning(true);
+    try {
+      const response = await fetch("/api/scan", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: ticketInfo.id }),
+      });
+
+      if (response.ok) {
+        // Clear the scan status overlay
+        setStatus(null);
+        setTicketInfo(null);
+        if (statusTimeoutRef.current) {
+          clearTimeout(statusTimeoutRef.current);
+          statusTimeoutRef.current = null;
+        }
+        await fetchLiveEvent();
+      } else {
+        const data = (await response.json()) as { error?: string };
+        console.error("Unscan error:", data.error);
+      }
+    } catch (error) {
+      console.error("Unscan error:", error);
+    } finally {
+      setIsUnscanning(false);
+    }
+  }, [ticketInfo?.id]);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -942,6 +975,17 @@ export default function ScanClient() {
                             </span>
                           </p>
                         )}
+                    </div>
+                  )}
+                  {ticketInfo && (status === "scanned" || status === "already_scanned") && (
+                    <div className="mt-3 sm:mt-4">
+                      <button
+                        onClick={handleUnscan}
+                        disabled={isUnscanning}
+                        className="px-4 py-2 text-sm font-semibold text-white bg-zinc-700 rounded-lg hover:bg-zinc-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isUnscanning ? "Unscanning..." : "Unscan"}
+                      </button>
                     </div>
                   )}
                 </div>

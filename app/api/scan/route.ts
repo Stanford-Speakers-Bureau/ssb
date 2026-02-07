@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     let fetchError: any = null;
 
     const selectFields =
-      "id, type, scanned, scan_time, email, event_id, scan_user, scan_email";
+      "id, type, scanned, scan_time, email, name, event_id, scan_user, scan_email";
 
     if (ticket_id) {
       const res = await adminClient
@@ -111,27 +111,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get user information from auth if email exists
-    let userName: string | null = null;
-    if (ticket.email) {
+    // Get user name from ticket record, fall back to auth metadata for pre-migration tickets
+    let userName: string | null = ticket.name || null;
+    if (!userName && ticket.email) {
       try {
-        // Use listUsers to find user by email
         const { data: usersList, error: authError } =
           await adminClient.auth.admin.listUsers();
         if (!authError && usersList?.users) {
           const user = usersList.users.find((u) => u.email === ticket.email);
           if (user?.user_metadata) {
-            if (user.user_metadata.full_name) {
-              userName = user.user_metadata.full_name;
-            } else if (user.user_metadata.name) {
-              userName = user.user_metadata.name;
-            } else if (user.user_metadata.display_name) {
-              userName = user.user_metadata.display_name;
-            }
+            userName =
+              user.user_metadata.full_name ||
+              user.user_metadata.name ||
+              user.user_metadata.display_name ||
+              null;
           }
         }
       } catch (err) {
-        // If we can't get user info, continue without it
         console.error("Error fetching user info:", err);
       }
     }
@@ -186,31 +182,8 @@ export async function POST(req: Request) {
     // Note: Event scanned count is automatically incremented by database trigger
     // when ticket.scanned is set to true (auto_increment_event_scanned)
 
-    // Get user information for the response
-    let userNameResponse: string | null = null;
-    if (updatedTicket.email) {
-      try {
-        // Use listUsers to find user by email
-        const { data: usersList, error: authError } =
-          await adminClient.auth.admin.listUsers();
-        if (!authError && usersList?.users) {
-          const user = usersList.users.find(
-            (u) => u.email === updatedTicket.email,
-          );
-          if (user?.user_metadata) {
-            if (user.user_metadata.full_name) {
-              userNameResponse = user.user_metadata.full_name;
-            } else if (user.user_metadata.name) {
-              userNameResponse = user.user_metadata.name;
-            } else if (user.user_metadata.display_name) {
-              userNameResponse = user.user_metadata.display_name;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-      }
-    }
+    // Get user name - reuse userName from above (same ticket)
+    const userNameResponse: string | null = userName;
 
     // Send VIP scan notification email if ticket is VIP
     if (updatedTicket.type?.toUpperCase() === "VIP") {
@@ -291,7 +264,7 @@ export async function GET(req: Request) {
     const { data: ticket, error: fetchError } = await adminClient
       .from("tickets")
       .select(
-        "id, type, scanned, scan_time, email, event_id, scan_user, scan_email",
+        "id, type, scanned, scan_time, email, name, event_id, scan_user, scan_email",
       )
       .eq("id", ticket_id)
       .single();
@@ -314,23 +287,20 @@ export async function GET(req: Request) {
       );
     }
 
-    // Get user information
-    let userName: string | null = null;
-    if (ticket.email) {
+    // Get user name from ticket record, fall back to auth metadata for pre-migration tickets
+    let userName: string | null = ticket.name || null;
+    if (!userName && ticket.email) {
       try {
-        // Use listUsers to find user by email
         const { data: usersList, error: authError } =
           await adminClient.auth.admin.listUsers();
         if (!authError && usersList?.users) {
           const user = usersList.users.find((u) => u.email === ticket.email);
           if (user?.user_metadata) {
-            if (user.user_metadata.full_name) {
-              userName = user.user_metadata.full_name;
-            } else if (user.user_metadata.name) {
-              userName = user.user_metadata.name;
-            } else if (user.user_metadata.display_name) {
-              userName = user.user_metadata.display_name;
-            }
+            userName =
+              user.user_metadata.full_name ||
+              user.user_metadata.name ||
+              user.user_metadata.display_name ||
+              null;
           }
         }
       } catch (err) {
@@ -374,6 +344,78 @@ export async function GET(req: Request) {
     );
   } catch (error) {
     console.error("Ticket status check error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const auth = await verifyAdminOrScannerRequest();
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { ticket_id } = body as { ticket_id?: string };
+
+    if (!ticket_id) {
+      return NextResponse.json(
+        { error: "Missing required field: ticket_id" },
+        { status: 400 },
+      );
+    }
+
+    const adminClient = auth.adminClient!;
+
+    // Unscan the ticket: set scanned to false and clear scan-related fields
+    const { data: updatedTicket, error: updateError } = await adminClient
+      .from("tickets")
+      .update({
+        scanned: false,
+        scan_time: null,
+        scan_user: null,
+        scan_email: null,
+      })
+      .eq("id", ticket_id)
+      .select("id, type, scanned, scan_time, email, name, event_id, scan_user, scan_email")
+      .single();
+
+    if (updateError || !updatedTicket) {
+      console.error("Ticket unscan error:", updateError);
+      return NextResponse.json(
+        { error: "Failed to unscan ticket" },
+        { status: 500 },
+      );
+    }
+
+    // Sync event scanned counts
+    const { error: rpcError } = (await adminClient.rpc(
+      "sync_event_scanned_counts",
+    )) as { error?: { code?: string } | null };
+    if (rpcError) {
+      console.error("Sync scanned RPC error:", rpcError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Ticket unscanned successfully",
+      status: "unscanned",
+      ticket: {
+        id: updatedTicket.id,
+        type: updatedTicket.type,
+        scanned: updatedTicket.scanned,
+        scan_time: updatedTicket.scan_time,
+        email: updatedTicket.email,
+        name: updatedTicket.name,
+        scan_user: updatedTicket.scan_user,
+        scan_email: updatedTicket.scan_email,
+      },
+    });
+  } catch (error) {
+    console.error("Ticket unscan error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -175,6 +175,7 @@ const FROM_EMAIL =
 
 type TicketEmailData = {
   email: string;
+  name?: string | null;
   eventName: string;
   ticketType: string;
   eventStartTime: string | null;
@@ -554,6 +555,16 @@ async function generateTicketEmailHTML(
             ${gmailBlendEnd}
             
             <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              ${data.name ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; width: 120px; vertical-align: top;">
+                  ${gmailBlendStart}Name:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${gmailBlendStart}${data.name}${gmailBlendEnd}
+                </td>
+              </tr>
+              ` : ""}
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; width: 120px; vertical-align: top;">
                   ${gmailBlendStart}Event:${gmailBlendEnd}
@@ -802,7 +813,7 @@ ${ticketType?.toUpperCase() === "VIP" ? "VIP Ticket Confirmed!" : "Ticket Confir
 Thank you for your ticket purchase. Your ticket has been confirmed!
 
 ${ticketType?.toUpperCase() === "VIP" ? "We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.\n\n" : ""}Event Details:
-- Event: ${eventName || "Event"}
+${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 - Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}

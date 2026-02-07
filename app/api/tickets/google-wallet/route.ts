@@ -8,6 +8,7 @@ import { getGoogleWalletPass } from "@/app/lib/wallet";
 
 type TicketWalletData = {
   email: string;
+  name?: string | null;
   eventName: string;
   ticketType: string;
   eventDoorTime: string;
@@ -54,6 +55,7 @@ export async function GET(req: NextRequest) {
         `
           id,
           email,
+          name,
           type,
           event_id,
           events (
@@ -97,6 +99,7 @@ export async function GET(req: NextRequest) {
 
     const ticketData: TicketWalletData = {
       email: ticket.email,
+      name: ticket.name,
       eventName: event.name,
       ticketType: ticket.type,
       eventDoorTime: event.doors_open,
@@ -166,6 +169,7 @@ export async function POST(req: NextRequest) {
         `
           id,
           email,
+          name,
           type,
           event_id,
           events (
@@ -208,6 +212,7 @@ export async function POST(req: NextRequest) {
     }
     const ticketData: TicketWalletData = {
       email: ticket.email,
+      name: ticket.name,
       eventName: event.name,
       ticketType: ticket.type,
       eventDoorTime: event.doors_open,

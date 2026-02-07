@@ -82,6 +82,7 @@ export async function GET(req: Request) {
         event_id,
         created_at,
         type,
+        name,
         events (
           id,
           name,
@@ -124,6 +125,12 @@ export async function POST(req: Request) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
+    // Extract name from Google OAuth metadata
+    const userName: string | null =
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      null;
+
     // --- USER CREATE TICKET ---
     if (userError || !user?.email) {
       return NextResponse.json(
@@ -305,6 +312,14 @@ export async function POST(req: Request) {
       .limit(1)
       .single();
 
+    // Update the ticket with the user's name from OAuth metadata
+    if (ticket && userName) {
+      await adminClient
+        .from("tickets")
+        .update({ name: userName })
+        .eq("id", ticket.id);
+    }
+
     await updateReferralRecords(event_id, user.email);
 
     if (ticket) {
@@ -313,6 +328,7 @@ export async function POST(req: Request) {
           ? ticket.events[0]
           : ticket.events;
         await sendTicketEmail({
+          name: userName,
           email: ticket.email,
           eventName: event?.name || "Event",
           ticketType: ticket.type || "STANDARD",
@@ -494,6 +510,7 @@ export async function DELETE(req: Request) {
             : newTicket.events;
           await sendTicketEmail({
             email: newTicket.email,
+            name: null,
             eventName: event?.name || "Event",
             ticketType: newTicket.type || "STANDARD",
             eventStartTime: event?.start_time_date || null,
