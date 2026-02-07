@@ -195,58 +195,75 @@ export default function TicketSection({
 
   return (
     <div className="event-ticket-section">
+      {/* Ticketing not open banner */}
       {!hasTicket && !isTicketingOpen && ticketingOpensAt && (
-        <div className="mb-4 md:mb-6 rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-          <p className="text-sm sm:text-base text-yellow-200">
-            Ticketing isn’t open yet. It opens{" "}
-            <span className="font-semibold">
+        <div className="mb-5 rounded-xl border border-yellow-500/20 bg-yellow-500/[0.06] p-4 sm:p-5">
+          <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
+            Ticketing opens{" "}
+            <span className="font-semibold text-yellow-100">
               {formatTicketingOpensAt(ticketingOpensAt)}
             </span>
-            .
           </p>
-          <div className="mt-3 flex flex-wrap gap-3 items-center">
+          <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
             <button
               onClick={handleNotifyClick}
               disabled={isLoadingNotify || isNotified}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10"
+              className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/[0.1] hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingNotify ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
                 </>
               ) : isNotified ? (
                 <>
                   <svg
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-green-400"
                     fill="none"
                     stroke="currentColor"
+                    strokeWidth={2}
                     viewBox="0 0 24 24"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>You'll be notified</span>
+                  <span>You&apos;ll be notified</span>
                 </>
               ) : (
-                <span>Notify me when it opens</span>
+                <>
+                  <svg
+                    className="w-4 h-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                    />
+                  </svg>
+                  <span>Notify me when it opens</span>
+                </>
               )}
             </button>
             {notifyMessage && (
-              <p className="text-sm text-green-300">{notifyMessage}</p>
+              <p className="text-sm text-green-400">{notifyMessage}</p>
             )}
             {isNotified && !notifyMessage && (
-              <p className="text-sm text-green-300">
+              <p className="text-sm text-green-400">
                 {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
               </p>
             )}
           </div>
         </div>
       )}
+
+      {/* Ticket button */}
       <TicketButton
         eventId={eventId}
         initialHasTicket={hasTicket}
@@ -255,20 +272,34 @@ export default function TicketSection({
         isSoldOut={isSoldOut}
         isTicketingOpen={isTicketingOpen}
       />
-      {hasTicket && (<>
-        {ticketName && (
-          <p className="text-sm sm:text-base text-white font-medium mb-2">
-            Ticket for <span className="font-semibold">{ticketName}</span>
-          </p>
-        )}
-        <div className="inline-block">
-          <p className="text-sm text-white font-semibold bg-red-600/80 px-4 py-2 rounded shadow mb-2">
-            This ticket is not transferable. A matching student ID is required
-            for entry.
-          </p>
-        </div>
-        <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
-          <div className="flex flex-col items-center gap-3 lg:items-center">
+
+      {/* Ticket details when user has a ticket */}
+      {hasTicket && (
+        <div className="mt-2 flex flex-col items-center lg:items-start">
+          {ticketName && (
+            <p className="text-sm sm:text-base text-zinc-200 font-medium mb-3">
+              Ticket for <span className="text-white font-semibold">{ticketName}</span>
+            </p>
+          )}
+          <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 border border-red-500/20 px-3.5 py-2 mb-4">
+            <svg
+              className="w-4 h-4 text-red-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
+            </svg>
+            <p className="text-xs sm:text-sm text-red-200 font-medium">
+              Not transferable. A matching student ID is required for entry.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-4">
             {ticketId && (
               <TicketQRCode
                 ticketId={ticketId}
@@ -278,59 +309,48 @@ export default function TicketSection({
               />
             )}
             {ticketId && (
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={onAddToAppleWallet}
                   disabled={isLoadingAppleWallet}
-                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.97]"
                 >
                   <Image
                     src="/images/add-to-apple-wallet.svg"
                     alt="Add to Apple Wallet"
-                    width={157}
-                    height={48}
-                    className={`h-12 w-auto ${isLoadingAppleWallet ? "opacity-50" : ""}`}
+                    width={140}
+                    height={44}
+                    className={`h-11 w-auto ${isLoadingAppleWallet ? "opacity-50" : ""}`}
                   />
                   {isLoadingAppleWallet && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shadow-lg" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     </div>
                   )}
                 </button>
                 <button
                   onClick={onAddToGoogleWallet}
                   disabled={isLoadingGoogleWallet}
-                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.97]"
                 >
                   <Image
                     src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
                     alt="Add to Google Wallet"
-                    width={157}
-                    height={48}
-                    className={`h-12 w-auto ${isLoadingGoogleWallet ? "opacity-50" : ""}`}
+                    width={140}
+                    height={44}
+                    className={`h-11 w-auto ${isLoadingGoogleWallet ? "opacity-50" : ""}`}
                   />
                   {isLoadingGoogleWallet && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shadow-lg" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     </div>
                   )}
                 </button>
               </div>
             )}
           </div>
-          {/* {referralCode && !isVIP && (
-            <div className="order-2 mt-2 md:mt-0 lg:order-2">
-              <ReferralShare
-                referralCode={referralCode}
-                route={eventRoute}
-                eventId={eventId}
-                className="m-0"
-                compact
-              />
-            </div>
-          )} */}
         </div>
-      </>)}
+      )}
     </div>
   );
 }

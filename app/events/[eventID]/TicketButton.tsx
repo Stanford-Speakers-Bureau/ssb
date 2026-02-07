@@ -673,16 +673,24 @@ export default function TicketButton({
     isSalesDisabled ||
     (!!referralWarning && !hasTicket);
 
+  // Helper for message styling
+  const messageClass = (msg: string) =>
+    msg.includes("Successfully") || msg.includes("successfully")
+      ? "text-green-400"
+      : "text-red-400";
+
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
     // Within 2-hour cutoff - show in-person message
     if (isWithinWaitlistCutoff) {
       return (
-        <div className="mb-4 md:mb-6">
-          <p className="text-sm sm:text-base text-yellow-400">
-            This event is sold out. Please come to the venue in person for the
-            in-person waitlist.
-          </p>
+        <div className="mb-5">
+          <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.06] px-4 py-3">
+            <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
+              This event is sold out. Please come to the venue in person for the
+              in-person waitlist.
+            </p>
+          </div>
         </div>
       );
     }
@@ -690,18 +698,20 @@ export default function TicketButton({
     // User is NOT on waitlist - show join button
     if (!isOnWaitlist) {
       return (
-        <div className="mb-4 md:mb-6">
+        <div className="mb-5">
           {isWaitlistStatusLoading ? (
             <div className="mb-3">
-              <div className="h-5 w-72 max-w-full rounded bg-white/10 animate-pulse mb-4" />
-              <div className="h-4 w-40 rounded bg-white/10 animate-pulse mb-2" />
-              <div className="h-11 w-full sm:w-64 rounded bg-white/10 animate-pulse" />
+              <div className="h-5 w-72 max-w-full rounded-lg bg-white/[0.06] animate-pulse mb-4" />
+              <div className="h-4 w-40 rounded-lg bg-white/[0.06] animate-pulse mb-2" />
+              <div className="h-12 w-full sm:w-64 rounded-lg bg-white/[0.06] animate-pulse" />
             </div>
           ) : (
             <>
-              <p className="text-sm sm:text-base text-yellow-400 mb-3">
-                This event is sold out, but you can join the waitlist!
-              </p>
+              <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.06] px-4 py-3 mb-4">
+                <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
+                  This event is sold out, but you can join the waitlist!
+                </p>
+              </div>
 
               {/* Referral Code Input */}
               {/* <div className="mb-3">
@@ -718,10 +728,10 @@ export default function TicketButton({
                     value={referralCode}
                     onChange={handleReferralCodeChange}
                     placeholder="Enter referral code"
-                    className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
+                    className={`w-full sm:w-auto min-w-[200px] rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border ${referralWarning
                         ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                        : "border-white/20 focus:ring-2 focus:ring-red-500"
-                      } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                        : "border-white/15 focus:ring-2 focus:ring-red-500"
+                      } focus:outline-none focus:border-transparent placeholder:text-zinc-500`}
                   />
                   {isValidatingReferral && (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -738,31 +748,25 @@ export default function TicketButton({
 
           {/* Join Waitlist Button */}
           {isWaitlistStatusLoading ? (
-            <div className="h-11 w-full sm:w-40 rounded bg-white/10 animate-pulse" />
+            <div className="h-12 w-full rounded-lg bg-white/[0.06] animate-pulse" />
           ) : (
             <motion.button
               whileHover={
-                isWaitlistLoading || !!referralWarning ? {} : { scale: 1.05 }
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 1.02 }
               }
               whileTap={
-                isWaitlistLoading || !!referralWarning ? {} : { scale: 0.95 }
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 0.98 }
               }
               onClick={handleJoinWaitlist}
               disabled={isWaitlistLoading || !!referralWarning}
-              className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
             >
               {isWaitlistLoading ? "Joining..." : "Join Waitlist"}
             </motion.button>
           )}
 
           {message && (
-            <p
-              className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-                message.includes("successfully")
-                ? "text-green-400"
-                : "text-red-400"
-                }`}
-            >
+            <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
               {message}
             </p>
           )}
@@ -772,16 +776,16 @@ export default function TicketButton({
 
     // User IS on waitlist - show position and leave button
     return (
-      <div className="mb-4 md:mb-6">
+      <div className="mb-5">
         {isWaitlistPositionReady && waitlistPosition !== null ? (
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
-            <p className="text-sm sm:text-base text-white font-semibold mb-1">
-              You're on the waitlist!
+          <div className="rounded-xl bg-white/[0.06] border border-white/[0.08] p-4 sm:p-5 mb-4">
+            <p className="text-sm sm:text-base text-zinc-300 font-medium mb-1">
+              You&apos;re on the waitlist
             </p>
-            <p className="text-lg sm:text-xl text-white font-bold">
+            <p className="text-2xl sm:text-3xl text-white font-bold tracking-tight">
               Position #{waitlistPosition}
             </p>
-            <p className="text-xs sm:text-sm text-zinc-300 mt-2">
+            <p className="text-xs sm:text-sm text-zinc-400 mt-3 leading-relaxed">
               You will be emailed if we are able to find you a ticket. The
               online waitlist closes 2 hours before the event. After that,
               please come to the venue for an in-person waitlist that is first
@@ -789,33 +793,27 @@ export default function TicketButton({
             </p>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
-            <div className="h-5 w-48 rounded bg-white/10 animate-pulse mb-2" />
-            <div className="h-7 w-36 rounded bg-white/10 animate-pulse mb-3" />
-            <div className="h-3 w-full rounded bg-white/10 animate-pulse mb-2" />
-            <div className="h-3 w-11/12 rounded bg-white/10 animate-pulse" />
+          <div className="rounded-xl bg-white/[0.06] border border-white/[0.08] p-4 sm:p-5 mb-4">
+            <div className="h-5 w-48 rounded bg-white/[0.06] animate-pulse mb-2" />
+            <div className="h-8 w-36 rounded bg-white/[0.06] animate-pulse mb-3" />
+            <div className="h-3 w-full rounded bg-white/[0.06] animate-pulse mb-2" />
+            <div className="h-3 w-11/12 rounded bg-white/[0.06] animate-pulse" />
           </div>
         )}
 
         {/* Leave Waitlist Button */}
         <motion.button
-          whileHover={isWaitlistLoading ? {} : { scale: 1.05 }}
-          whileTap={isWaitlistLoading ? {} : { scale: 0.95 }}
+          whileHover={isWaitlistLoading ? {} : { scale: 1.02 }}
+          whileTap={isWaitlistLoading ? {} : { scale: 0.98 }}
           onClick={() => setShowCancelModal(true)}
           disabled={isWaitlistLoading}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          className="rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
         >
           {isWaitlistLoading ? "Processing..." : "Leave Waitlist"}
         </motion.button>
 
         {message && (
-          <p
-            className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-              message.includes("successfully")
-              ? "text-green-400"
-              : "text-red-400"
-              }`}
-          >
+          <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
             {message}
           </p>
         )}
@@ -827,38 +825,39 @@ export default function TicketButton({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
               onClick={() => setShowCancelModal(false)}
             >
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="text-xl font-bold text-white mb-4">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
                   Leave Waitlist?
                 </h3>
-                <p className="text-zinc-300 mb-6 text-sm sm:text-base">
+                <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
                   Are you sure you want to leave the waitlist? You can rejoin
                   immediately, but your position will be at the end of the
                   waitlist.
                 </p>
                 <div className="flex gap-3">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setShowCancelModal(false)}
-                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                    className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
                   >
                     Cancel
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleLeaveWaitlist}
-                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
+                    className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
                   >
                     Leave Waitlist
                   </motion.button>
@@ -872,7 +871,7 @@ export default function TicketButton({
   }
 
   return (
-    <div className="mb-4 md:mb-6">
+    <div className="mb-5">
       {/* {!hasTicket && !isSalesDisabled && (
         <div className="mb-3">
           <label
@@ -888,10 +887,10 @@ export default function TicketButton({
               value={referralCode}
               onChange={handleReferralCodeChange}
               placeholder="Enter referral code"
-              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
+              className={`w-full sm:w-auto min-w-[200px] rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border ${referralWarning
                 ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                : "border-white/20 focus:ring-2 focus:ring-red-500"
-                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                : "border-white/15 focus:ring-2 focus:ring-red-500"
+                } focus:outline-none focus:border-transparent placeholder:text-zinc-500`}
             />
             {isValidatingReferral && (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -906,41 +905,41 @@ export default function TicketButton({
       )} */}
       {!hasTicket && (
         <motion.button
-          whileHover={isButtonDisabled ? {} : { scale: 1.05 }}
-          whileTap={isButtonDisabled ? {} : { scale: 0.95 }}
+          whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
+          whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
           onClick={handleTicketClick}
           disabled={isButtonDisabled}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
         >
           {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
         </motion.button>
       )}
       {hasTicket && !isCancelDisabled && (
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setShowCancelTicketModal(true)}
           disabled={isLoading}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          className="rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
         >
           {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
         </motion.button>
       )}
       {isCancelDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+        <p className="mt-2 text-xs sm:text-sm text-yellow-400/80">
           {hasEventStarted
             ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
             : TICKET_MESSAGES.ERROR_LIVE_EVENT}
         </p>
       )}
       {isSalesDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400">
+        <p className="mt-2 text-xs sm:text-sm text-yellow-400/80">
           {TICKET_MESSAGES.ERROR_EVENT_STARTED}
         </p>
       )}
       {message && !isCancelDisabled && !isSalesDisabled && (
         <p
-          className={`mt-2 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
+          className={`mt-3 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
             }`}
         >
           {message}
@@ -954,37 +953,38 @@ export default function TicketButton({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
             onClick={() => setShowCancelTicketModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+              className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-white mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
                 Cancel Ticket?
               </h3>
-              <p className="text-zinc-300 mb-6 text-sm sm:text-base">
+              <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
                 Are you sure you want to cancel your ticket? You may not be able
                 to get your ticket back if you cancel.
               </p>
               <div className="flex gap-3">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setShowCancelTicketModal(false)}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
                 >
                   Keep Ticket
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleCancelTicket}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
+                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
                 >
                   Cancel Ticket
                 </motion.button>
@@ -1001,33 +1001,33 @@ export default function TicketButton({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
             onClick={() => setShowNoBagsModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+              className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-white mb-4">
-                Important: No Bags Policy
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+                No Bags Policy
               </h3>
-              <p className="text-zinc-300 mb-4 text-sm sm:text-base">
+              <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
                 This event has a strict no bags policy. You will be turned away
                 at the entrance with any form of a bag, including a purse.
               </p>
-              <p className="text-zinc-300 mb-6 text-sm sm:text-base font-semibold">
-                Please type "no bags" below to confirm you understand this
-                policy:
+              <p className="text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+                Type &quot;no bags&quot; below to confirm you understand:
               </p>
               <input
                 type="text"
                 value={noBagsConfirmation}
                 onChange={(e) => setNoBagsConfirmation(e.target.value)}
                 placeholder="Type 'no bags' to confirm"
-                className="w-full rounded px-4 py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-red-500 focus:outline-none focus:border-transparent placeholder:text-zinc-400 mb-4"
+                className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-600 mb-5 transition-colors"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
                     handleConfirmNoBags();
@@ -1037,22 +1037,22 @@ export default function TicketButton({
               />
               <div className="flex gap-3">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setShowNoBagsModal(false);
                     setNoBagsConfirmation("");
                   }}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
                 >
                   Cancel
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleConfirmNoBags}
                   disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Proceed
                 </motion.button>
