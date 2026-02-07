@@ -250,7 +250,13 @@ export default function TicketSection({
         isSoldOut={isSoldOut}
         isTicketingOpen={isTicketingOpen}
       />
-      {hasTicket && (
+      {hasTicket && (<>
+        <div className="inline-block">
+          <p className="text-sm text-white font-semibold bg-red-600/80 px-4 py-2 rounded shadow mb-2">
+            This ticket is not transferable. A matching student ID is required
+            for entry.
+          </p>
+        </div>
         <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-start">
           <div className="flex flex-col items-center gap-3 lg:items-center">
             {ticketId && (
@@ -302,7 +308,7 @@ export default function TicketSection({
               </div>
             )}
           </div>
-          {referralCode && !isVIP && (
+          {/* {referralCode && !isVIP && (
             <div className="order-2 mt-2 md:mt-0 lg:order-2">
               <ReferralShare
                 referralCode={referralCode}
@@ -312,9 +318,9 @@ export default function TicketSection({
                 compact
               />
             </div>
-          )}
+          )} */}
         </div>
-      )}
+      </>)}
     </div>
   );
 }

@@ -701,7 +701,7 @@ export default function TicketButton({
               </p>
 
               {/* Referral Code Input */}
-              <div className="mb-3">
+              {/* <div className="mb-3">
                 <label
                   htmlFor="waitlist-referral-input"
                   className="block text-sm sm:text-base text-white font-medium mb-2"
@@ -729,7 +729,7 @@ export default function TicketButton({
                     {referralWarning}
                   </p>
                 )}
-              </div>
+              </div> */}
             </>
           )}
 
@@ -755,9 +755,9 @@ export default function TicketButton({
           {message && (
             <p
               className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-                  message.includes("successfully")
-                  ? "text-green-400"
-                  : "text-red-400"
+                message.includes("successfully")
+                ? "text-green-400"
+                : "text-red-400"
                 }`}
             >
               {message}
@@ -808,9 +808,9 @@ export default function TicketButton({
         {message && (
           <p
             className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-                message.includes("successfully")
-                ? "text-green-400"
-                : "text-red-400"
+              message.includes("successfully")
+              ? "text-green-400"
+              : "text-red-400"
               }`}
           >
             {message}
@@ -870,7 +870,7 @@ export default function TicketButton({
 
   return (
     <div className="mb-4 md:mb-6">
-      {!hasTicket && !isSalesDisabled && (
+      {/* {!hasTicket && !isSalesDisabled && (
         <div className="mb-3">
           <label
             htmlFor="referral-code-input"
@@ -886,8 +886,8 @@ export default function TicketButton({
               onChange={handleReferralCodeChange}
               placeholder="Enter referral code"
               className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
-                  ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                  : "border-white/20 focus:ring-2 focus:ring-red-500"
+                ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
+                : "border-white/20 focus:ring-2 focus:ring-red-500"
                 } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
             />
             {isValidatingReferral && (
@@ -900,7 +900,7 @@ export default function TicketButton({
             </p>
           )}
         </div>
-      )}
+      )} */}
       {!hasTicket && (
         <motion.button
           whileHover={isButtonDisabled ? {} : { scale: 1.05 }}
