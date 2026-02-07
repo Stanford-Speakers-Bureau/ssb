@@ -6,7 +6,7 @@ import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
 import { generateReferralCode } from "@/app/lib/utils";
 import Image from "next/image";
-import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
+import { TICKETING_NOTIFY_MESSAGES, PACIFIC_TIMEZONE } from "@/app/lib/constants";
 
 type TicketSectionProps = {
   eventId: string;
@@ -138,7 +138,7 @@ export default function TicketSection({
 
   const formatTicketingOpensAt = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Los_Angeles",
+      timeZone: PACIFIC_TIMEZONE,
       month: "short",
       day: "numeric",
       year: "numeric",
