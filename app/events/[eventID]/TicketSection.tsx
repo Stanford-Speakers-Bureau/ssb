@@ -193,141 +193,154 @@ export default function TicketSection({
     }
   };
 
+  const glassPanel =
+    "rounded-xl bg-zinc-900/50 border border-zinc-800/70 shadow-lg";
+
   return (
-    <div className="event-ticket-section">
+    <div className="event-ticket-section flex flex-col gap-5">
       {/* Ticketing not open banner */}
       {!hasTicket && !isTicketingOpen && ticketingOpensAt && (
-        <div className="mb-5 rounded-xl border border-yellow-500/20 bg-yellow-500/[0.06] p-4 sm:p-5">
-          <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
-            Ticketing opens{" "}
-            <span className="font-semibold text-yellow-100">
-              {formatTicketingOpensAt(ticketingOpensAt)}
-            </span>
-          </p>
-          <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
-            <button
-              onClick={handleNotifyClick}
-              disabled={isLoadingNotify || isNotified}
-              className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/[0.1] hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoadingNotify ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
-                </>
-              ) : isNotified ? (
-                <>
-                  <svg
-                    className="w-4 h-4 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>You&apos;ll be notified</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                    />
-                  </svg>
-                  <span>Notify me when it opens</span>
-                </>
+        <div
+          className="rounded-xl bg-zinc-900/50 border border-yellow-500/25 shadow-lg p-4 sm:p-5"
+        >
+          <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/[0.06] p-3.5 sm:p-4">
+            <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
+              Ticketing opens{" "}
+              <span className="font-semibold text-yellow-100">
+                {formatTicketingOpensAt(ticketingOpensAt)}
+              </span>
+            </p>
+            <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
+              <button
+                onClick={handleNotifyClick}
+                disabled={isLoadingNotify || isNotified}
+                className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/[0.1] hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingNotify ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
+                  </>
+                ) : isNotified ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span>You&apos;ll be notified</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                      />
+                    </svg>
+                    <span>Notify me when it opens</span>
+                  </>
+                )}
+              </button>
+              {notifyMessage && (
+                <p className="text-sm text-green-400">{notifyMessage}</p>
               )}
-            </button>
-            {notifyMessage && (
-              <p className="text-sm text-green-400">{notifyMessage}</p>
-            )}
-            {isNotified && !notifyMessage && (
-              <p className="text-sm text-green-400">
-                {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
-              </p>
-            )}
+              {isNotified && !notifyMessage && (
+                <p className="text-sm text-green-400">
+                  {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Ticket button */}
-      <TicketButton
-        eventId={eventId}
-        initialHasTicket={hasTicket}
-        eventStartTime={eventStartTime}
-        doorsOpen={doorsOpen}
-        isSoldOut={isSoldOut}
-        isTicketingOpen={isTicketingOpen}
-      />
+      <div className={glassPanel + " p-4 sm:p-5"}>
+        <TicketButton
+          eventId={eventId}
+          initialHasTicket={hasTicket}
+          eventStartTime={eventStartTime}
+          doorsOpen={doorsOpen}
+          isSoldOut={isSoldOut}
+          isTicketingOpen={isTicketingOpen}
+        />
+      </div>
 
       {/* Ticket details when user has a ticket */}
       {hasTicket && (
-        <div className="mt-2 flex flex-col items-center w-full">
-          {ticketName && (
-            <p className="text-sm sm:text-base text-zinc-200 font-medium mb-3 text-center">
-              Ticket for <span className="text-white font-semibold">{ticketName}</span>
-            </p>
-          )}
+        <>
           {ticketType?.toUpperCase() !== "VIP" && (
-            <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 border border-red-500/20 px-3.5 py-2 mb-4">
-              <svg
-                className="w-4 h-4 text-red-400 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                />
-              </svg>
-              <p className="text-xs sm:text-sm text-red-200 font-medium">
-                For security reasons, this ticket is not transferable. A photo ID is required for entry.
-              </p>
+            <div className={`${glassPanel} p-4 sm:p-5`}>
+              <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 border border-red-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+                <svg
+                  className="w-4 h-4 text-red-400 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+                <p className="text-xs sm:text-sm text-red-200 font-medium">
+                  For security reasons, this ticket is not transferable. A photo
+                  ID is required for entry.
+                </p>
+              </div>
             </div>
           )}
           {ticketType?.toUpperCase() === "VIP" && (
-            <div className="inline-flex items-center gap-2 rounded-lg bg-amber-500/15 border border-amber-400/25 px-3.5 py-2 mb-4">
-              <svg
-                className="w-4 h-4 text-amber-400 shrink-0"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
-              </svg>
-              <p className="text-xs sm:text-sm text-amber-100 font-medium">
-                We've reserved a seat for you in the front few rows. Please use the VIP entrance when you arrive at the venue.
-              </p>
+            <div className="rounded-xl bg-zinc-900/50 border border-amber-400/25 shadow-lg p-4 sm:p-5">
+              <div className="inline-flex items-center gap-2 rounded-lg bg-amber-500/15 border border-amber-400/25 px-3.5 py-2 w-full justify-center sm:justify-start">
+                <svg
+                  className="w-4 h-4 text-amber-400 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
+                </svg>
+                <p className="text-xs sm:text-sm text-amber-100 font-medium">
+                  We&apos;ve reserved a seat for you in the front few rows. Please
+                  use the VIP entrance when you arrive at the venue.
+                </p>
+              </div>
             </div>
           )}
-          <div className="flex flex-col items-center gap-4 w-full">
-            {ticketId && (
-              <div className="flex flex-col items-center">
-                <TicketQRCode
-                  ticketId={ticketId}
-                  size={190}
-                  compact
-                  ticketType={ticketType}
-                />
-              </div>
-            )}
-            {ticketId && (
-              <div className="flex items-center justify-center gap-3 flex-wrap">
+          {ticketId && (
+            <div className={`${glassPanel} p-5 sm:p-6 flex flex-col items-center`}>
+
+              {ticketName && (
+                <p className="text-sm sm:text-base text-zinc-200 font-medium text-center mb-4">
+                  Ticket for{" "}
+                  <span className="text-white font-semibold">{ticketName}</span>
+                </p>
+              )}
+              <TicketQRCode
+                ticketId={ticketId}
+                size={190}
+                compact
+                ticketType={ticketType}
+              />
+              <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
                 <button
                   onClick={onAddToAppleWallet}
                   disabled={isLoadingAppleWallet}
@@ -365,9 +378,9 @@ export default function TicketSection({
                   )}
                 </button>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

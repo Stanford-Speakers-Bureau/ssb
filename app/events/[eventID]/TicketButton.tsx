@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 
 type TicketButtonProps = {
@@ -819,59 +820,63 @@ export default function TicketButton({
         )}
 
         {/* Cancellation Warning Modal */}
-        <AnimatePresence>
-          {showCancelModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
-              onClick={() => setShowCancelModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-                className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
-                  Leave Waitlist?
-                </h3>
-                <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                  Are you sure you want to leave the waitlist? You can rejoin
-                  immediately, but your position will be at the end of the
-                  waitlist.
-                </p>
-                <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setShowCancelModal(false)}
-                    className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+        {typeof document !== "undefined" &&
+          createPortal(
+            <AnimatePresence>
+              {showCancelModal && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                  onClick={() => setShowCancelModal(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                    transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                    className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleLeaveWaitlist}
-                    className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
-                  >
-                    Leave Waitlist
-                  </motion.button>
-                </div>
-              </motion.div>
-            </motion.div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+                      Leave Waitlist?
+                    </h3>
+                    <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
+                      Are you sure you want to leave the waitlist? You can rejoin
+                      immediately, but your position will be at the end of the
+                      waitlist.
+                    </p>
+                    <div className="flex gap-3">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setShowCancelModal(false)}
+                        className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+                      >
+                        Cancel
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleLeaveWaitlist}
+                        className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
+                      >
+                        Leave Waitlist
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>,
+            document.body,
           )}
-        </AnimatePresence>
       </div>
     );
   }
 
   return (
-    <div className="mb-5">
+    <div>
       {/* {!hasTicket && !isSalesDisabled && (
         <div className="mb-3">
           <label
@@ -926,16 +931,20 @@ export default function TicketButton({
         </motion.button>
       )}
       {isCancelDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400/80">
-          {hasEventStarted
-            ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
-            : TICKET_MESSAGES.ERROR_LIVE_EVENT}
-        </p>
+        <div className="flex min-h-[3rem] items-center justify-center">
+          <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+            {hasEventStarted
+              ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
+              : TICKET_MESSAGES.ERROR_LIVE_EVENT}
+          </p>
+        </div>
       )}
       {isSalesDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400/80">
-          {TICKET_MESSAGES.ERROR_EVENT_STARTED}
-        </p>
+        <div className="flex min-h-[3rem] items-center justify-center">
+          <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+            {TICKET_MESSAGES.ERROR_EVENT_STARTED}
+          </p>
+        </div>
       )}
       {message && !isCancelDisabled && !isSalesDisabled && (
         <p
@@ -947,52 +956,56 @@ export default function TicketButton({
       )}
 
       {/* Cancel Ticket Modal */}
-      <AnimatePresence>
-        {showCancelTicketModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
-            onClick={() => setShowCancelTicketModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-              className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
-                Cancel Ticket?
-              </h3>
-              <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                Are you sure you want to cancel your ticket? You may not be able
-                to get your ticket back if you cancel.
-              </p>
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowCancelTicketModal(false)}
-                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {showCancelTicketModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                onClick={() => setShowCancelTicketModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                  transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                  className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Keep Ticket
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleCancelTicket}
-                  className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
-                >
-                  Cancel Ticket
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+                    Cancel Ticket?
+                  </h3>
+                  <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
+                    Are you sure you want to cancel your ticket? You may not be able
+                    to get your ticket back if you cancel.
+                  </p>
+                  <div className="flex gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowCancelTicketModal(false)}
+                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+                    >
+                      Keep Ticket
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleCancelTicket}
+                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
+                    >
+                      Cancel Ticket
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
 
       {/* No Bags Policy Modal */}
       <AnimatePresence>
