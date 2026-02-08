@@ -23,6 +23,7 @@ async function getUserTicketStatus(eventId: string): Promise<{
   userEmail: string | null;
   ticketType: string | null;
   ticketName: string | null;
+  isOnWaitlist: boolean;
 }> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -31,24 +32,36 @@ async function getUserTicketStatus(eventId: string): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null };
+      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
 
     const adminClient = getSupabaseClient();
-    const { data } = await adminClient
-      .from("tickets")
-      .select("id, type, name")
-      .eq("event_id", eventId)
-      .eq("email", user.email)
-      .single();
+    const [ticketResult, waitlistResult] = await Promise.all([
+      adminClient
+        .from("tickets")
+        .select("id, type, name")
+        .eq("event_id", eventId)
+        .eq("email", user.email)
+        .single(),
+      adminClient
+        .from("waitlist")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("email", user.email)
+        .maybeSingle(),
+    ]);
+
+    const data = ticketResult.data;
+    const isOnWaitlist = !!waitlistResult.data;
 
     return {
       ticketId: data?.id ?? null,
       userEmail: user.email,
       ticketType: data?.type ?? null,
       ticketName: data?.name ?? null,
+      isOnWaitlist,
     };
   } catch {
-    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null };
+    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
   }
 }
 
@@ -93,6 +106,7 @@ export default async function EventPage({ params }: PageProps) {
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
+  const showProhibitedItems = hasTicket || ticketStatus.isOnWaitlist;
 
   // Check if public tickets are sold out
   const isSoldOut = !(await isEventUnderCapacity(event.id));
@@ -240,7 +254,7 @@ export default async function EventPage({ params }: PageProps) {
               {/* Left column – event details */}
               <div className="flex flex-col gap-5">
                 {/* Prohibited items */}
-                {(hasTicket || (ticketStatus && ticketStatus.status === "WAITLISTED")) && (
+                {showProhibitedItems && (
                   <div className="rounded-xl bg-amber-950/30 border border-amber-500/20 p-4 sm:p-5">
                     <h3 className="text-sm font-semibold text-amber-200 mb-2.5 flex items-center gap-2">
                       <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
