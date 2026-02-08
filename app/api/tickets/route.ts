@@ -28,6 +28,8 @@ const TICKET_MESSAGES = {
     "Ticket sales have ended. This event has already started.",
   ERROR_TICKETING_NOT_OPEN:
     "Ticketing is not open yet for this event. Please check back later.",
+  ERROR_NAME_REQUIRED:
+    "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
 } as const;
 
 export async function GET(req: Request) {
@@ -127,7 +129,7 @@ export async function POST(req: Request) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-    // Extract name from Google OAuth metadata
+    // Extract name from Google OAuth metadata (required for create_ticket)
     const userName: string | null =
       user?.user_metadata?.full_name ||
       user?.user_metadata?.name ||
@@ -242,11 +244,20 @@ export async function POST(req: Request) {
       }
     }
 
+    const nameForTicket = userName?.trim();
+    if (!nameForTicket) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NAME_REQUIRED },
+        { status: 400 },
+      );
+    }
+
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "create_ticket",
       {
         p_event_id: event_id,
         p_referral: referral,
+        p_user_name: nameForTicket,
       },
     );
 
@@ -314,14 +325,6 @@ export async function POST(req: Request) {
       .limit(1)
       .single();
 
-    // Update the ticket with the user's name from OAuth metadata
-    if (ticket && userName) {
-      await adminClient
-        .from("tickets")
-        .update({ name: userName })
-        .eq("id", ticket.id);
-    }
-
     await updateReferralRecords(event_id, user.email);
 
     if (ticket) {
@@ -330,7 +333,7 @@ export async function POST(req: Request) {
           ? ticket.events[0]
           : ticket.events;
         await sendTicketEmail({
-          name: userName,
+          name: nameForTicket,
           email: ticket.email,
           eventName: event?.name || "Event",
           ticketType: ticket.type || "STANDARD",
