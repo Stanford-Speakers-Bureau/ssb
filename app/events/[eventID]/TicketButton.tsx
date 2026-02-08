@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 
 type TicketButtonProps = {
   eventId: string;
@@ -11,6 +13,8 @@ type TicketButtonProps = {
   doorsOpen?: string | null;
   isSoldOut?: boolean;
   isTicketingOpen?: boolean;
+  ticketingOpensAt?: string | null;
+  initialIsNotified?: boolean;
 };
 
 const TICKET_MESSAGES = {
@@ -37,6 +41,8 @@ export default function TicketButton({
   doorsOpen = null,
   isSoldOut = false,
   isTicketingOpen = true,
+  ticketingOpensAt: ticketingOpensAtProp = null,
+  initialIsNotified = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +69,59 @@ export default function TicketButton({
   const [showNoBagsModal, setShowNoBagsModal] = useState(false);
   const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
 
+  // Notify when ticketing opens
+  const [isNotified, setIsNotified] = useState(initialIsNotified);
+  const [isLoadingNotify, setIsLoadingNotify] = useState(false);
+  const [notifyMessage, setNotifyMessage] = useState<string | null>(null);
+
+  const ticketingOpensAt = ticketingOpensAtProp
+    ? new Date(ticketingOpensAtProp)
+    : null;
+  const formatTicketingOpensAt = (date: Date) =>
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+
+  const handleNotifyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (isLoadingNotify || isNotified) return;
+    setIsLoadingNotify(true);
+    setNotifyMessage(null);
+    try {
+      const response = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speaker_id: eventId }),
+      });
+      if (response.status === 401) {
+        setIsLoadingNotify(false);
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+      const data = (await response.json()) as { error?: string };
+      if (response.ok) {
+        setIsNotified(true);
+        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.SUCCESS);
+      } else if (response.status === 409) {
+        setIsNotified(true);
+        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+      } else {
+        setNotifyMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+      }
+    } catch (error) {
+      console.error("Error signing up for notifications:", error);
+      setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+    } finally {
+      setIsLoadingNotify(false);
+    }
+  };
+
   // Check if event has started
   // Note: eventStartTime is a UTC ISO string from the database, and Date objects
   // compare UTC timestamps internally, so this comparison is timezone-safe
@@ -77,11 +136,6 @@ export default function TicketButton({
   const isWithinWaitlistCutoff = twoHoursBeforeDoorsOpen
     ? new Date().getTime() >= twoHoursBeforeDoorsOpen
     : false;
-
-  // If ticketing isn't open yet, hide ticket/waitlist actions (TicketSection renders the message)
-  if (!hasTicket && !isTicketingOpen) {
-    return null;
-  }
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -258,7 +312,7 @@ export default function TicketButton({
         // Dispatch event to update ticket status
         window.dispatchEvent(
           new CustomEvent("ticketChanged", {
-            detail: { hasTicket: false, ticketId: null },
+            detail: { hasTicket: false, ticketId: null, ticketName: null },
           }),
         );
       } else {
@@ -324,6 +378,7 @@ export default function TicketButton({
 
       const data = (await response.json()) as {
         ticketId?: string;
+        ticketName?: string | null;
         error?: string;
       };
 
@@ -466,6 +521,7 @@ export default function TicketButton({
             detail: {
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
+              ticketName: !hasTicket ? data.ticketName ?? null : null,
             },
           }),
         );
@@ -673,16 +729,24 @@ export default function TicketButton({
     isSalesDisabled ||
     (!!referralWarning && !hasTicket);
 
+  // Helper for message styling
+  const messageClass = (msg: string) =>
+    msg.includes("Successfully") || msg.includes("successfully")
+      ? "text-green-400"
+      : "text-red-400";
+
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
     // Within 2-hour cutoff - show in-person message
     if (isWithinWaitlistCutoff) {
       return (
-        <div className="mb-4 md:mb-6">
-          <p className="text-sm sm:text-base text-yellow-400">
-            This event is sold out. Please come to the venue in person for the
-            in-person waitlist.
-          </p>
+        <div className="mb-5">
+          <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] px-4 py-3">
+            <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
+              This event is sold out. Please come to the venue in person for the
+              in-person waitlist.
+            </p>
+          </div>
         </div>
       );
     }
@@ -690,18 +754,20 @@ export default function TicketButton({
     // User is NOT on waitlist - show join button
     if (!isOnWaitlist) {
       return (
-        <div className="mb-4 md:mb-6">
+        <div className="mb-5">
           {isWaitlistStatusLoading ? (
             <div className="mb-3">
-              <div className="h-5 w-72 max-w-full rounded bg-white/10 animate-pulse mb-4" />
-              <div className="h-4 w-40 rounded bg-white/10 animate-pulse mb-2" />
-              <div className="h-11 w-full sm:w-64 rounded bg-white/10 animate-pulse" />
+              <div className="h-5 w-72 max-w-full rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-4" />
+              <div className="h-4 w-40 rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-2" />
+              <div className="h-12 w-full sm:w-64 rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse" />
             </div>
           ) : (
             <>
-              <p className="text-sm sm:text-base text-yellow-400 mb-3">
-                This event is sold out, but you can join the waitlist!
-              </p>
+              <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] px-4 py-3 mb-4">
+                <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
+                  This event is sold out, but you can join the waitlist!
+                </p>
+              </div>
 
               {/* Referral Code Input */}
               {/* <div className="mb-3">
@@ -718,10 +784,10 @@ export default function TicketButton({
                     value={referralCode}
                     onChange={handleReferralCodeChange}
                     placeholder="Enter referral code"
-                    className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
+                    className={`w-full sm:w-auto min-w-[200px] rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border ${referralWarning
                         ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                        : "border-white/20 focus:ring-2 focus:ring-red-500"
-                      } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                        : "border-white/15 focus:ring-2 focus:ring-red-500"
+                      } focus:outline-none focus:border-transparent placeholder:text-zinc-500`}
                   />
                   {isValidatingReferral && (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -738,31 +804,25 @@ export default function TicketButton({
 
           {/* Join Waitlist Button */}
           {isWaitlistStatusLoading ? (
-            <div className="h-11 w-full sm:w-40 rounded bg-white/10 animate-pulse" />
+            <div className="h-12 w-full rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse" />
           ) : (
             <motion.button
               whileHover={
-                isWaitlistLoading || !!referralWarning ? {} : { scale: 1.05 }
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 1.02 }
               }
               whileTap={
-                isWaitlistLoading || !!referralWarning ? {} : { scale: 0.95 }
+                isWaitlistLoading || !!referralWarning ? {} : { scale: 0.98 }
               }
               onClick={handleJoinWaitlist}
               disabled={isWaitlistLoading || !!referralWarning}
-              className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
             >
               {isWaitlistLoading ? "Joining..." : "Join Waitlist"}
             </motion.button>
           )}
 
           {message && (
-            <p
-              className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-                message.includes("successfully")
-                ? "text-green-400"
-                : "text-red-400"
-                }`}
-            >
+            <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
               {message}
             </p>
           )}
@@ -772,16 +832,16 @@ export default function TicketButton({
 
     // User IS on waitlist - show position and leave button
     return (
-      <div className="mb-4 md:mb-6">
+      <div className="mb-5">
         {isWaitlistPositionReady && waitlistPosition !== null ? (
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
-            <p className="text-sm sm:text-base text-white font-semibold mb-1">
-              You're on the waitlist!
+          <div className="rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] p-4 sm:p-5 mb-4">
+            <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 font-medium mb-1">
+              You&apos;re on the waitlist
             </p>
-            <p className="text-lg sm:text-xl text-white font-bold">
+            <p className="text-2xl sm:text-3xl text-zinc-900 dark:text-white font-bold tracking-tight">
               Position #{waitlistPosition}
             </p>
-            <p className="text-xs sm:text-sm text-zinc-300 mt-2">
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-3 leading-relaxed">
               You will be emailed if we are able to find you a ticket. The
               online waitlist closes 2 hours before the event. After that,
               please come to the venue for an in-person waitlist that is first
@@ -789,91 +849,165 @@ export default function TicketButton({
             </p>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-3 border border-white/20">
-            <div className="h-5 w-48 rounded bg-white/10 animate-pulse mb-2" />
-            <div className="h-7 w-36 rounded bg-white/10 animate-pulse mb-3" />
-            <div className="h-3 w-full rounded bg-white/10 animate-pulse mb-2" />
-            <div className="h-3 w-11/12 rounded bg-white/10 animate-pulse" />
+          <div className="rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] p-4 sm:p-5 mb-4">
+            <div className="h-5 w-48 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-2" />
+            <div className="h-8 w-36 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-3" />
+            <div className="h-3 w-full rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-2" />
+            <div className="h-3 w-11/12 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" />
           </div>
         )}
 
         {/* Leave Waitlist Button */}
         <motion.button
-          whileHover={isWaitlistLoading ? {} : { scale: 1.05 }}
-          whileTap={isWaitlistLoading ? {} : { scale: 0.95 }}
+          whileHover={isWaitlistLoading ? {} : { scale: 1.02 }}
+          whileTap={isWaitlistLoading ? {} : { scale: 0.98 }}
           onClick={() => setShowCancelModal(true)}
           disabled={isWaitlistLoading}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          className="rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
         >
           {isWaitlistLoading ? "Processing..." : "Leave Waitlist"}
         </motion.button>
 
         {message && (
-          <p
-            className={`mt-2 text-xs sm:text-sm ${message.includes("Successfully") ||
-              message.includes("successfully")
-              ? "text-green-400"
-              : "text-red-400"
-              }`}
-          >
+          <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
             {message}
           </p>
         )}
 
         {/* Cancellation Warning Modal */}
-        <AnimatePresence>
-          {showCancelModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              onClick={() => setShowCancelModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-xl font-bold text-white mb-4">
-                  Leave Waitlist?
-                </h3>
-                <p className="text-zinc-300 mb-6 text-sm sm:text-base">
-                  Are you sure you want to leave the waitlist? You can rejoin
-                  immediately, but your position will be at the end of the
-                  waitlist.
-                </p>
-                <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowCancelModal(false)}
-                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
+        {typeof document !== "undefined" &&
+          createPortal(
+            <AnimatePresence>
+              {showCancelModal && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                  onClick={() => setShowCancelModal(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                    transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                    className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleLeaveWaitlist}
-                    className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
-                  >
-                    Leave Waitlist
-                  </motion.button>
-                </div>
-              </motion.div>
-            </motion.div>
+                    <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">
+                      Leave Waitlist?
+                    </h3>
+                    <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
+                      Are you sure you want to leave the waitlist? You can rejoin
+                      immediately, but your position will be at the end of the
+                      waitlist.
+                    </p>
+                    <div className="flex gap-3">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setShowCancelModal(false)}
+                        className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] rounded-lg transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25"
+                      >
+                        Cancel
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleLeaveWaitlist}
+                        className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
+                      >
+                        Leave Waitlist
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>,
+            document.body,
           )}
-        </AnimatePresence>
       </div>
     );
   }
 
+  // Ticketing not open yet: show "ticketing opens" + notify UI, or nothing (conditional render to satisfy Rules of Hooks)
+  const showTicketingOpensOnly =
+    !hasTicket && !isTicketingOpen && !isSoldOut &&
+    ticketingOpensAt &&
+    !Number.isNaN(ticketingOpensAt.getTime());
+
   return (
-    <div className="mb-4 md:mb-6">
-      {/* {!hasTicket && !isSalesDisabled && (
+    <div>
+      {!hasTicket && !isTicketingOpen && !isSoldOut ? (
+        showTicketingOpensOnly ? (
+          <div className="rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] p-3.5 sm:p-4">
+            <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
+              Ticketing opens{" "}
+              <span className="font-semibold text-yellow-900 dark:text-yellow-100">
+                {formatTicketingOpensAt(ticketingOpensAt!)}
+              </span>
+            </p>
+            <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
+              <button
+                onClick={handleNotifyClick}
+                disabled={isLoadingNotify || isNotified}
+                className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-zinc-900 dark:text-white transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingNotify ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
+                  </>
+                ) : isNotified ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span>You&apos;ll be notified</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                      />
+                    </svg>
+                    <span>Notify me when it opens</span>
+                  </>
+                )}
+              </button>
+              {notifyMessage && (
+                <p className="text-sm text-green-400">{notifyMessage}</p>
+              )}
+              {isNotified && !notifyMessage && (
+                <p className="text-sm text-green-400">
+                  {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : null
+      ) : (
+        <>
+          {/* {!hasTicket && !isSalesDisabled && (
         <div className="mb-3">
           <label
             htmlFor="referral-code-input"
@@ -888,10 +1022,10 @@ export default function TicketButton({
               value={referralCode}
               onChange={handleReferralCodeChange}
               placeholder="Enter referral code"
-              className={`w-full sm:w-auto min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border ${referralWarning
+              className={`w-full sm:w-auto min-w-[200px] rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border ${referralWarning
                 ? "border-yellow-400 focus:ring-2 focus:ring-yellow-400"
-                : "border-white/20 focus:ring-2 focus:ring-red-500"
-                } focus:outline-none focus:border-transparent placeholder:text-zinc-400`}
+                : "border-white/15 focus:ring-2 focus:ring-red-500"
+                } focus:outline-none focus:border-transparent placeholder:text-zinc-500`}
             />
             {isValidatingReferral && (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
@@ -904,163 +1038,178 @@ export default function TicketButton({
           )}
         </div>
       )} */}
-      {!hasTicket && (
-        <motion.button
-          whileHover={isButtonDisabled ? {} : { scale: 1.05 }}
-          whileTap={isButtonDisabled ? {} : { scale: 0.95 }}
-          onClick={handleTicketClick}
-          disabled={isButtonDisabled}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-        >
-          {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
-        </motion.button>
-      )}
-      {hasTicket && !isCancelDisabled && (
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowCancelTicketModal(true)}
-          disabled={isLoading}
-          className="rounded px-5 py-2.5 sm:px-4 sm:py-2 text-base font-semibold text-white bg-zinc-700 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-        >
-          {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
-        </motion.button>
-      )}
-      {isCancelDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400">
-          {hasEventStarted
-            ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
-            : TICKET_MESSAGES.ERROR_LIVE_EVENT}
-        </p>
-      )}
-      {isSalesDisabled && (
-        <p className="mt-2 text-xs sm:text-sm text-yellow-400">
-          {TICKET_MESSAGES.ERROR_EVENT_STARTED}
-        </p>
-      )}
-      {message && !isCancelDisabled && !isSalesDisabled && (
-        <p
-          className={`mt-2 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
-            }`}
-        >
-          {message}
-        </p>
-      )}
-
-      {/* Cancel Ticket Modal */}
-      <AnimatePresence>
-        {showCancelTicketModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setShowCancelTicketModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
+          {!hasTicket && (
+            <motion.button
+              whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
+              whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
+              onClick={handleTicketClick}
+              disabled={isButtonDisabled}
+              className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
             >
-              <h3 className="text-xl font-bold text-white mb-4">
-                Cancel Ticket?
-              </h3>
-              <p className="text-zinc-300 mb-6 text-sm sm:text-base">
-                Are you sure you want to cancel your ticket? You may not be able
-                to get your ticket back if you cancel.
-              </p>
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowCancelTicketModal(false)}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
-                >
-                  Keep Ticket
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleCancelTicket}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211]"
-                >
-                  Cancel Ticket
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* No Bags Policy Modal */}
-      <AnimatePresence>
-        {showNoBagsModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setShowNoBagsModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
+              {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
+            </motion.button>
+          )}
+          {hasTicket && !isCancelDisabled && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowCancelTicketModal(true)}
+              disabled={isLoading}
+              className="rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
             >
-              <h3 className="text-xl font-bold text-white mb-4">
-                Important: No Bags Policy
-              </h3>
-              <p className="text-zinc-300 mb-4 text-sm sm:text-base">
-                This event has a strict no bags policy. You will be turned away
-                at the entrance with any form of a bag, including a purse.
+              {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
+            </motion.button>
+          )}
+          {isCancelDisabled && (
+            <div className="flex min-h-[3rem] items-center justify-center">
+              <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+                {hasEventStarted
+                  ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
+                  : TICKET_MESSAGES.ERROR_LIVE_EVENT}
               </p>
-              <p className="text-zinc-300 mb-6 text-sm sm:text-base font-semibold">
-                Please type "no bags" below to confirm you understand this
-                policy:
+            </div>
+          )}
+          {isSalesDisabled && (
+            <div className="flex min-h-[3rem] items-center justify-center">
+              <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+                {TICKET_MESSAGES.ERROR_EVENT_STARTED}
               </p>
-              <input
-                type="text"
-                value={noBagsConfirmation}
-                onChange={(e) => setNoBagsConfirmation(e.target.value)}
-                placeholder="Type 'no bags' to confirm"
-                className="w-full rounded px-4 py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-red-500 focus:outline-none focus:border-transparent placeholder:text-zinc-400 mb-4"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
-                    handleConfirmNoBags();
-                  }
-                }}
-                autoFocus
-              />
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setShowNoBagsModal(false);
-                    setNoBagsConfirmation("");
-                  }}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-zinc-700 rounded-lg transition-colors hover:bg-zinc-600"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleConfirmNoBags}
-                  disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
-                  className="flex-1 px-4 py-2 text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Proceed
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+          {message && !isCancelDisabled && !isSalesDisabled && (
+            <p
+              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
+                }`}
+            >
+              {message}
+            </p>
+          )}
+
+          {/* Cancel Ticket Modal */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <AnimatePresence>
+                {showCancelTicketModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowCancelTicketModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">
+                        Cancel Ticket?
+                      </h3>
+                      <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
+                        Are you sure you want to cancel your ticket? You may not be able
+                        to get your ticket back if you cancel.
+                      </p>
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setShowCancelTicketModal(false)}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] rounded-lg transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25"
+                        >
+                          Keep Ticket
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleCancelTicket}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
+                        >
+                          Cancel Ticket
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body,
+            )}
+
+          {/* No Bags Policy Modal – portaled to body so it appears above date/time/location */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <AnimatePresence>
+                {showNoBagsModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowNoBagsModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">
+                        No Bags Policy
+                      </h3>
+                      <p className="text-zinc-500 dark:text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
+                        This event has a strict no bags policy. You will be turned away
+                        at the entrance with any form of a bag, including a purse.
+                      </p>
+                      <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+                        Type &quot;no bags&quot; below to confirm you understand:
+                      </p>
+                      <input
+                        type="text"
+                        value={noBagsConfirmation}
+                        onChange={(e) => setNoBagsConfirmation(e.target.value)}
+                        placeholder="Type 'no bags' to confirm"
+                        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
+                            handleConfirmNoBags();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setShowNoBagsModal(false);
+                            setNoBagsConfirmation("");
+                          }}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] rounded-lg transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25"
+                        >
+                          Cancel
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleConfirmNoBags}
+                          disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Proceed
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body,
+            )}
+        </>
+      )}
     </div>
   );
 }

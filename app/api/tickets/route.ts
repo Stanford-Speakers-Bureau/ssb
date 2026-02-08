@@ -307,6 +307,7 @@ export async function POST(req: Request) {
           id,
           email,
           type,
+          name,
           event_id,
           events (
             id,
@@ -361,6 +362,7 @@ export async function POST(req: Request) {
         success: true,
         message: TICKET_MESSAGES.SUCCESS,
         ticketId: ticket?.id ?? null,
+        ticketName: ticket?.name ?? nameForTicket ?? null,
         data: rpcData ?? null,
       },
       { status: 200 },
@@ -468,19 +470,20 @@ export async function DELETE(req: Request) {
     // Pull the top person off the waitlist (if any) only if under capacity
     const { data: topWaitlistEntry } = await adminClient
       .from("waitlist")
-      .select("email, referral, event_id")
+      .select("email, referral, event_id, name")
       .eq("event_id", event_id)
       .order("position", { ascending: true })
       .limit(1)
       .single();
 
     if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
-      // Create ticket for the waitlist person
+      // Create ticket for the waitlist person (transfer name from waitlist)
       const { data: newTicket } = await adminClient
         .from("tickets")
         .insert({
           event_id: topWaitlistEntry.event_id,
           email: topWaitlistEntry.email,
+          name: topWaitlistEntry.name ?? null,
           type: "STANDARD",
         })
         .select(
@@ -522,7 +525,7 @@ export async function DELETE(req: Request) {
             : newTicket.events;
           await sendTicketEmail({
             email: newTicket.email,
-            name: null,
+            name: topWaitlistEntry.name ?? null,
             eventName: event?.name || "Event",
             ticketType: newTicket.type || "STANDARD",
             eventStartTime: event?.start_time_date || null,

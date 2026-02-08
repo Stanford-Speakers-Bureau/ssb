@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const isWhiteNavPage = pathname === "/" || pathname === "/contact";
+  const isWhiteNavPage = pathname === "/" || pathname === "/contact" || pathname.startsWith("/events/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
