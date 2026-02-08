@@ -22,6 +22,8 @@ async function getUserTicketStatus(eventId: string): Promise<{
   ticketId: string | null;
   userEmail: string | null;
   ticketType: string | null;
+  ticketName: string | null;
+  isOnWaitlist: boolean;
 }> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -30,23 +32,36 @@ async function getUserTicketStatus(eventId: string): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null, ticketType: null };
+      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
 
     const adminClient = getSupabaseClient();
-    const { data } = await adminClient
-      .from("tickets")
-      .select("id, type")
-      .eq("event_id", eventId)
-      .eq("email", user.email)
-      .single();
+    const [ticketResult, waitlistResult] = await Promise.all([
+      adminClient
+        .from("tickets")
+        .select("id, type, name")
+        .eq("event_id", eventId)
+        .eq("email", user.email)
+        .single(),
+      adminClient
+        .from("waitlist")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("email", user.email)
+        .maybeSingle(),
+    ]);
+
+    const data = ticketResult.data;
+    const isOnWaitlist = !!waitlistResult.data;
 
     return {
       ticketId: data?.id ?? null,
       userEmail: user.email,
       ticketType: data?.type ?? null,
+      ticketName: data?.name ?? null,
+      isOnWaitlist,
     };
   } catch {
-    return { ticketId: null, userEmail: null, ticketType: null };
+    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
   }
 }
 
@@ -91,6 +106,7 @@ export default async function EventPage({ params }: PageProps) {
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
+  const showProhibitedItems = hasTicket || ticketStatus.isOnWaitlist;
 
   // Check if public tickets are sold out
   const isSoldOut = !(await isEventUnderCapacity(event.id));
@@ -105,271 +121,229 @@ export default async function EventPage({ params }: PageProps) {
     ? getImageProxyUrl(event.id, event.img_version)
     : null;
 
+  // Pre-compute the calendar URL once
+  const calendarUrl = event.start_time_date
+    ? generateGoogleCalendarUrl({
+      name: event.name,
+      desc: event.desc || undefined,
+      start_time_date: event.start_time_date,
+      venue: event.venue || undefined,
+      venue_link: event.venue_link || undefined,
+      route: event.route || undefined,
+    })
+    : null;
+
   return (
-    <div className="relative isolate flex flex-col items-center font-sans min-h-screen">
+    <div className="relative flex flex-col font-sans min-h-screen bg-white dark:bg-zinc-950">
       <WaitForImages
         urls={signedImageUrl ? [signedImageUrl] : []}
         maxToWait={1}
         timeoutMs={12000}
         fallback={
-          <div className="fixed inset-0 z-20 flex items-center justify-center bg-black">
-            <div className="flex items-center gap-3 text-zinc-200">
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="fixed inset-0 z-20 flex items-center justify-center bg-white dark:bg-zinc-950">
+            <div className="flex items-center gap-3 text-zinc-600 dark:text-zinc-200">
+              <div className="w-5 h-5 border-2 border-zinc-300 border-t-zinc-600 dark:border-white/30 dark:border-t-white rounded-full animate-spin" />
               <span className="text-sm font-medium">Loading…</span>
             </div>
           </div>
         }
       >
         <>
-          {/* Background Image */}
-          {signedImageUrl && (
-            <div className="fixed inset-0 z-0">
-              <div className="relative w-full h-full">
+          {/* ─── Hero section with contained image ─── */}
+          <section className="relative w-full overflow-hidden">
+            {/* Speaker image – contained to hero only */}
+            {signedImageUrl && (
+              <div className="absolute inset-0">
                 <Image
                   src={signedImageUrl}
                   alt={event.name || "Event"}
                   fill
-                  className="object-cover object-right"
+                  className="object-cover"
                   priority
                   quality={90}
                   sizes="100vw"
                   unoptimized
                 />
               </div>
+            )}
+
+            {/* Top fade for nav contrast */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0.1) 25%, transparent 50%)",
+              }}
+            />
+
+            {/* Bottom fade into page background — light */}
+            <div
+              className="absolute inset-0 dark:hidden"
+              style={{
+                background:
+                  "linear-gradient(to top, rgb(255,255,255) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.25) 100%)",
+              }}
+            />
+            {/* Bottom fade into page background — dark */}
+            <div
+              className="absolute inset-0 hidden dark:block"
+              style={{
+                background:
+                  "linear-gradient(to top, rgb(9,9,11) 0%, rgba(9,9,11,0.85) 30%, rgba(9,9,11,0.35) 60%, rgba(9,9,11,0.25) 100%)",
+              }}
+            />
+
+            {/* Hero content – anchored bottom-left */}
+            <div className="relative z-10 flex flex-col justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-[1.1] dark:drop-shadow-lg">
+                {event.name}
+              </h1>
+              {event.tagline && (
+                <p className="mt-2.5 text-base sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-2xl">
+                  {event.tagline}
+                </p>
+              )}
+
+              {/* Quick-info pills */}
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                {event.start_time_date && (
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
+                    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg>
+                    {formatEventDate(event.start_time_date)}
+                  </span>
+                )}
+                {event.doors_open && (
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
+                    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M13 4h3a2 2 0 0 1 2 2v14" />
+                      <path d="M2 20h3" />
+                      <path d="M13 20h9" />
+                      <path d="M10 12v.01" />
+                      <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4.742-1.186A1 1 0 0 1 13 4.56z" />
+                    </svg>
+                    Doors open at {formatTime(event.doors_open)}
+                  </span>
+                )}
+                {event.start_time_date && (
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
+                    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Doors close at {formatTime(event.start_time_date)}
+                  </span>
+                )}
+                {event.venue && (
+                  event.venue_link ? (
+                    <a
+                      href={event.venue_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium transition-colors hover:bg-black/[0.1] dark:hover:bg-white/[0.14]"
+                    >
+                      <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                      </svg>
+                      {event.venue}
+                      <svg className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
+                      <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                      </svg>
+                      {event.venue}
+                    </span>
+                  )
+                )}
+              </div>
             </div>
-          )}
-          {/* Semi-transparent overlay for better text readability */}
-          <div className="fixed inset-0 bg-black/70 z-10"></div>
+          </section>
 
-          <main className="relative z-20 flex w-full flex-1 justify-center pt-24">
-            <section className="w-full max-w-5xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-              <div className="">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 font-serif">
-                  {event.name}
-                </h1>
-
-                {event.tagline && (
-                  <p className="text-sm sm:text-base md:text-lg text-zinc-200 mb-4 md:mb-6 italic">
-                    {event.tagline}
-                  </p>
+          {/* ─── Content section on solid background ─── */}
+          <main className="w-full max-w-6xl mx-auto px-5 sm:px-8 lg:px-12 pb-12 lg:pb-16">
+            <div className="lg:grid lg:grid-cols-2 lg:gap-8 flex flex-col-reverse gap-6">
+              {/* Left column – event details */}
+              <div className="flex flex-col gap-5">
+                {/* Prohibited items */}
+                {showProhibitedItems && (
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5">
+                    <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2.5 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </svg>
+                      Prohibited Items
+                    </h3>
+                    <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
+                      <li>No bags, including purses</li>
+                      <li>No water bottles</li>
+                    </ul>
+                  </div>
                 )}
 
+                {/* Description */}
                 {event.desc && (
-                  <div className="mb-4 md:mb-6">
-                    <p className="text-sm sm:text-base md:text-lg text-white leading-relaxed">
+                  <div className="rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 p-5 sm:p-6">
+                    <p className="text-sm sm:text-[15px] text-zinc-700 dark:text-zinc-300 leading-[1.75]">
                       {event.desc}
                     </p>
                   </div>
                 )}
 
-                <div className="space-y-2 md:space-y-3 mb-6">
-                  {event.start_time_date && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <p className="text-sm sm:text-base text-white font-medium">
-                          Date: {formatEventDate(event.start_time_date)}
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {event.doors_open && (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M13 4h3a2 2 0 0 1 2 2v14" />
-                        <path d="M2 20h3" />
-                        <path d="M13 20h9" />
-                        <path d="M10 12v.01" />
-                        <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4.742-1.186A1 1 0 0 1 13 4.56z" />
-                      </svg>
-                      <p className="text-sm sm:text-base text-white font-medium">
-                        Doors open: {formatTime(event.doors_open)}
-                      </p>
-                    </div>
-                  )}
-
-                  {event.start_time_date && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <p className="text-sm sm:text-base text-white font-medium">
-                          Event starts: {formatTime(event.start_time_date)}
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {event.venue && (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      {event.venue_link ? (
-                        <a
-                          href={event.venue_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm sm:text-base text-white font-medium underline decoration-zinc-300 decoration-1 underline-offset-2 transition-all hover:scale-105 active:scale-95 inline-block"
-                        >
-                          {event.venue}
-                        </a>
-                      ) : (
-                        <p className="text-sm sm:text-base text-white font-medium">
-                          {event.venue}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/*{event.capacity && (*/}
-                  {/*  <TicketCount*/}
-                  {/*    eventId={event.id}*/}
-                  {/*    initialCapacity={event.capacity}*/}
-                  {/*    initialTicketsSold={*/}
-                  {/*      (event.tickets ?? event.reserved) || 0*/}
-                  {/*    }*/}
-                  {/*    reserved={event.reserved}*/}
-                  {/*  />*/}
-                  {/*)}*/}
-
-                  {event.start_time_date && (
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      {generateGoogleCalendarUrl({
-                        name: event.name,
-                        desc: event.desc || undefined,
-                        start_time_date: event.start_time_date,
-                        venue: event.venue || undefined,
-                        venue_link: event.venue_link || undefined,
-                        route: event.route || undefined,
-                      }) && (
-                        <a
-                          href={generateGoogleCalendarUrl({
-                            name: event.name,
-                            desc: event.desc || undefined,
-                            start_time_date: event.start_time_date,
-                            venue: event.venue || undefined,
-                            venue_link: event.venue_link || undefined,
-                            route: event.route || undefined,
-                          })}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <path
-                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                              fill="#4285F4"
-                            />
-                            <path
-                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                              fill="#34A853"
-                            />
-                            <path
-                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                              fill="#FBBC05"
-                            />
-                            <path
-                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                              fill="#EA4335"
-                            />
-                          </svg>
-                          Add to Google Calendar
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <TicketSection
-                  eventId={event.id}
-                  initialHasTicket={hasTicket}
-                  initialTicketId={ticketId}
-                  initialTicketType={ticketType}
-                  userEmail={ticketStatus.userEmail}
-                  eventRoute={event.route || eventID}
-                  eventStartTime={event.start_time_date}
-                  doorsOpen={event.doors_open}
-                  isSoldOut={isSoldOut}
-                  ticketingDate={event.ticketing_date ?? event.release_date}
-                  initialIsNotified={isNotified}
-                />
-
-                <div className="mt-6 text-zinc-300 text-sm">
-                  <p>
-                    For ADA accommodations, please email{" "}
-                    <a
-                      href="mailto:tickets@stanfordspeakersbureau.com"
-                      className="text-white underline underline-offset-2 hover:text-zinc-100"
-                    >
-                      tickets@stanfordspeakersbureau.com
-                    </a>
-                  </p>
-                </div>
-
-                {/*<div className="bg-white/10 backdrop-blur-sm rounded px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">*/}
-                {/*  <p className="text-white text-sm sm:text-base leading-relaxed">*/}
-                {/*    <span className="font-semibold">*/}
-                {/*      Stanford Community Only.*/}
-                {/*    </span>{" "}*/}
-                {/*    This event is exclusively for Stanford faculty and students.*/}
-                {/*    Valid SUNET identification will be verified at entry.*/}
-                {/*  </p>*/}
-                {/*</div>*/}
+                {/* Add to Google Calendar */}
+                {calendarUrl && (
+                  <a
+                    href={calendarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition-all hover:bg-zinc-200 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 active:scale-[0.98]"
+                  >
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg>
+                    Add to Google Calendar
+                  </a>
+                )}
               </div>
-            </section>
+
+              {/* Right column – ticket section (sticky on desktop) */}
+              <div>
+                <div className="lg:sticky lg:top-24 flex flex-col gap-5">
+                  <TicketSection
+                    eventId={event.id}
+                    initialHasTicket={hasTicket}
+                    initialTicketId={ticketId}
+                    initialTicketType={ticketType}
+                    initialTicketName={ticketStatus.ticketName}
+                    userEmail={ticketStatus.userEmail}
+                    eventRoute={event.route || eventID}
+                    eventStartTime={event.start_time_date}
+                    doorsOpen={event.doors_open}
+                    isSoldOut={isSoldOut}
+                    ticketingDate={event.ticketing_date ?? event.release_date}
+                    initialIsNotified={isNotified}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ADA notice */}
+            <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
+              <p className="text-center text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                For ADA accommodations, please email{" "}
+                <a
+                  href="mailto:tickets@stanfordspeakersbureau.com"
+                  className="text-zinc-600 dark:text-zinc-400 underline underline-offset-2 decoration-zinc-300 dark:decoration-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+                >
+                  tickets@stanfordspeakersbureau.com
+                </a>
+              </p>
+            </div>
           </main>
         </>
       </WaitForImages>

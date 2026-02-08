@@ -5,6 +5,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 type TicketWalletData = {
   email: string;
+  name?: string | null;
   eventName: string;
   ticketType: string;
   eventDoorTime: string;
@@ -138,12 +139,27 @@ export async function getAppleWalletPass(
     value: ticket.ticketType,
     textAlignment: "PKTextAlignmentLeft",
   });
+  if (ticket.name) {
+    pass.auxiliaryFields.push({
+      key: "attendee",
+      label: "Attendee",
+      value: ticket.name,
+      textAlignment: "PKTextAlignmentRight",
+    });
+  }
   pass.setBarcodes({
     format: "PKBarcodeFormatQR",
     message: ticket.ticketId,
     messageEncoding: "iso-8859-1",
-    altText: ticket.email,
+    altText: ticket.name || ticket.email,
   });
+  if (ticket.name) {
+    pass.backFields.push({
+      key: "back-name",
+      label: "Name",
+      value: ticket.name,
+    });
+  }
   pass.backFields.push(
     {
       key: "back-event",
@@ -309,7 +325,7 @@ export async function getGoogleWalletPass(
           barcode: {
             type: "QR_CODE",
             value: ticket.ticketId,
-            alternateText: ticket.email,
+            alternateText: ticket.name || ticket.email,
           },
           locations: [
             {
@@ -324,6 +340,7 @@ export async function getGoogleWalletPass(
             },
           },
           textModulesData: [
+            ...(ticket.name ? [{ header: "Name", body: ticket.name }] : []),
             { header: "Ticket ID", body: ticket.ticketId },
             { header: "Email", body: ticket.email },
           ],

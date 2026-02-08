@@ -51,9 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral } = body as {
+    const { event_id, referral, name: nameFromBody } = body as {
       event_id?: string;
       referral?: string;
+      name?: string;
     };
 
     if (!event_id) {
@@ -150,6 +151,20 @@ export async function POST(req: Request) {
       position: number;
       total: number;
     };
+
+    // Store name on waitlist row (from body override or OAuth metadata, same as tickets)
+    const waitlistName =
+      nameFromBody?.trim() ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      null;
+    if (waitlistName) {
+      await adminClient
+        .from("waitlist")
+        .update({ name: waitlistName })
+        .eq("event_id", event_id)
+        .eq("email", user.email);
+    }
 
     // Calculate actual position (same logic as GET handler)
     // This ensures the email shows the same position as the UI
