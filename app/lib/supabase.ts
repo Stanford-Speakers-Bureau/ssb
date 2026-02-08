@@ -353,7 +353,7 @@ export async function updateReferralRecords(
  * - If VIPs exceed reserved, they reduce public capacity (overflow)
  *
  * Public Tickets:
- * - Created via create_ticket RPC (user-facing)
+ * - Created via create_ticket_with_name RPC (user-facing)
  * - Type = 'STANDARD' or null
  * - Limited to: capacity - max(reserved, vip_count)
  *

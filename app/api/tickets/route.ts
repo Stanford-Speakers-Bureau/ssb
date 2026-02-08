@@ -129,7 +129,7 @@ export async function POST(req: Request) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-    // Extract name from Google OAuth metadata (required for create_ticket)
+    // Extract name from Google OAuth metadata (required for create_ticket_with_name)
     const userName: string | null =
       user?.user_metadata?.full_name ||
       user?.user_metadata?.name ||
@@ -253,7 +253,7 @@ export async function POST(req: Request) {
     }
 
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "create_ticket",
+      "create_ticket_with_name",
       {
         p_event_id: event_id,
         p_referral: referral,
@@ -267,7 +267,7 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error:
-              "Ticket creation RPC is not installed in the database (create_ticket).",
+              "Ticket creation RPC is not installed in the database (create_ticket_with_name).",
           },
           { status: 500 },
         );
