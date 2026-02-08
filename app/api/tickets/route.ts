@@ -307,6 +307,7 @@ export async function POST(req: Request) {
           id,
           email,
           type,
+          name,
           event_id,
           events (
             id,
@@ -361,6 +362,7 @@ export async function POST(req: Request) {
         success: true,
         message: TICKET_MESSAGES.SUCCESS,
         ticketId: ticket?.id ?? null,
+        ticketName: ticket?.name ?? nameForTicket ?? null,
         data: rpcData ?? null,
       },
       { status: 200 },

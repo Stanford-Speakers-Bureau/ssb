@@ -385,7 +385,7 @@ export default function TicketButton({
         // Dispatch event to update ticket status
         window.dispatchEvent(
           new CustomEvent("ticketChanged", {
-            detail: { hasTicket: false, ticketId: null },
+            detail: { hasTicket: false, ticketId: null, ticketName: null },
           }),
         );
       } else {
@@ -451,6 +451,7 @@ export default function TicketButton({
 
       const data = (await response.json()) as {
         ticketId?: string;
+        ticketName?: string | null;
         error?: string;
       };
 
@@ -593,6 +594,7 @@ export default function TicketButton({
             detail: {
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
+              ticketName: !hasTicket ? data.ticketName ?? null : null,
             },
           }),
         );

@@ -250,7 +250,7 @@ export default async function EventPage({ params }: PageProps) {
 
           {/* ─── Content section on solid background ─── */}
           <main className="w-full max-w-6xl mx-auto px-5 sm:px-8 lg:px-12 pb-12 lg:pb-16">
-            <div className="lg:grid lg:grid-cols-2 lg:gap-8 flex flex-col gap-6">
+            <div className="lg:grid lg:grid-cols-2 lg:gap-8 flex flex-col-reverse gap-6">
               {/* Left column – event details */}
               <div className="flex flex-col gap-5">
                 {/* Prohibited items */}

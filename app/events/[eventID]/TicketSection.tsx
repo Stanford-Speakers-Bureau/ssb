@@ -85,18 +85,25 @@ export default function TicketSection({
       const customEvent = event as CustomEvent<{
         hasTicket: boolean;
         ticketId: string | null;
+        ticketName?: string | null;
       }>;
       if (customEvent.detail) {
         setHasTicket(customEvent.detail.hasTicket);
         setTicketId(customEvent.detail.ticketId);
+        setTicketName(customEvent.detail.ticketName ?? null);
 
-        // Fetch ticket type if we have a ticket ID
+        // Fetch ticket type (and name if not in event) if we have a ticket ID
         if (customEvent.detail.ticketId) {
           try {
-            const response = await fetch(`/api/ticket/user`);
+            const response = await fetch(`/api/tickets`);
             if (response.ok) {
               const data = (await response.json()) as {
-                tickets?: { id: string; event_id: string; type?: string }[];
+                tickets?: {
+                  id: string;
+                  event_id: string;
+                  type?: string;
+                  name?: string | null;
+                }[];
               };
               const ticket = data.tickets?.find(
                 (t: { id: string; event_id: string }) =>
@@ -105,6 +112,7 @@ export default function TicketSection({
               );
               if (ticket) {
                 setTicketType(ticket.type || null);
+                if (ticket.name != null) setTicketName(ticket.name);
               }
             }
           } catch (error) {
@@ -153,15 +161,15 @@ export default function TicketSection({
       {showTicketPanel && (
         <div className={glassPanel + " p-4 sm:p-5"}>
           <TicketButton
-          eventId={eventId}
-          initialHasTicket={hasTicket}
-          eventStartTime={eventStartTime}
-          doorsOpen={doorsOpen}
-          isSoldOut={isSoldOut}
-          isTicketingOpen={isTicketingOpen}
-          ticketingOpensAt={ticketingDate}
-          initialIsNotified={initialIsNotified}
-        />
+            eventId={eventId}
+            initialHasTicket={hasTicket}
+            eventStartTime={eventStartTime}
+            doorsOpen={doorsOpen}
+            isSoldOut={isSoldOut}
+            isTicketingOpen={isTicketingOpen}
+            ticketingOpensAt={ticketingDate}
+            initialIsNotified={initialIsNotified}
+          />
         </div>
       )}
 
