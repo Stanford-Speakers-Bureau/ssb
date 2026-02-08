@@ -6,6 +6,8 @@ import ReferralShare from "./ReferralShare";
 import TicketQRCode from "./TicketQRCode";
 import { generateReferralCode } from "@/app/lib/utils";
 import Image from "next/image";
+import { TICKETING_NOTIFY_MESSAGES, PACIFIC_TIMEZONE } from "@/app/lib/constants";
+
 type TicketSectionProps = {
   eventId: string;
   initialHasTicket: boolean;
@@ -146,6 +148,40 @@ export default function TicketSection({
 
   const glassPanel =
     "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 shadow-lg";
+  const formatTicketingOpensAt = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: PACIFIC_TIMEZONE,
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  };
+
+  const handleNotifyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (isLoadingNotify || isNotified) return;
+
+    setIsLoadingNotify(true);
+    setNotifyMessage(null);
+
+    try {
+      const response = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speaker_id: eventId }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated, redirect to Google sign-in
+        setIsLoadingNotify(false);
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+
+      const data = (await response.json()) as { error?: string };
 
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
