@@ -134,15 +134,15 @@ export default async function EventPage({ params }: PageProps) {
     : null;
 
   return (
-    <div className="relative flex flex-col font-sans min-h-screen bg-zinc-950">
+    <div className="relative flex flex-col font-sans min-h-screen bg-white dark:bg-zinc-950">
       <WaitForImages
         urls={signedImageUrl ? [signedImageUrl] : []}
         maxToWait={1}
         timeoutMs={12000}
         fallback={
-          <div className="fixed inset-0 z-20 flex items-center justify-center bg-zinc-950">
-            <div className="flex items-center gap-3 text-zinc-200">
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="fixed inset-0 z-20 flex items-center justify-center bg-white dark:bg-zinc-950">
+            <div className="flex items-center gap-3 text-zinc-600 dark:text-zinc-200">
+              <div className="w-5 h-5 border-2 border-zinc-300 border-t-zinc-600 dark:border-white/30 dark:border-t-white rounded-full animate-spin" />
               <span className="text-sm font-medium">Loading…</span>
             </div>
           </div>
@@ -176,9 +176,17 @@ export default async function EventPage({ params }: PageProps) {
               }}
             />
 
-            {/* Bottom fade into page background */}
+            {/* Bottom fade into page background — light */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 dark:hidden"
+              style={{
+                background:
+                  "linear-gradient(to top, rgb(255,255,255) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.25) 100%)",
+              }}
+            />
+            {/* Bottom fade into page background — dark */}
+            <div
+              className="absolute inset-0 hidden dark:block"
               style={{
                 background:
                   "linear-gradient(to top, rgb(9,9,11) 0%, rgba(9,9,11,0.85) 30%, rgba(9,9,11,0.35) 60%, rgba(9,9,11,0.25) 100%)",
@@ -187,11 +195,11 @@ export default async function EventPage({ params }: PageProps) {
 
             {/* Hero content – anchored bottom-left */}
             <div className="relative z-10 flex flex-col justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white font-serif tracking-tight leading-[1.1] drop-shadow-lg">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-[1.1] dark:drop-shadow-lg">
                 {event.name}
               </h1>
               {event.tagline && (
-                <p className="mt-2.5 text-base sm:text-lg lg:text-xl text-zinc-300 italic leading-relaxed max-w-2xl">
+                <p className="mt-2.5 text-base sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-2xl">
                   {event.tagline}
                 </p>
               )}
@@ -199,7 +207,7 @@ export default async function EventPage({ params }: PageProps) {
               {/* Quick-info pills */}
               <div className="mt-6 flex flex-wrap gap-2.5">
                 {event.start_time_date && (
-                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white/90 font-medium">
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
                     <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                     </svg>
@@ -207,7 +215,7 @@ export default async function EventPage({ params }: PageProps) {
                   </span>
                 )}
                 {event.doors_open && (
-                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white/90 font-medium">
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
                     <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M13 4h3a2 2 0 0 1 2 2v14" />
                       <path d="M2 20h3" />
@@ -219,7 +227,7 @@ export default async function EventPage({ params }: PageProps) {
                   </span>
                 )}
                 {event.start_time_date && (
-                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white/90 font-medium">
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
                     <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -232,19 +240,19 @@ export default async function EventPage({ params }: PageProps) {
                       href={event.venue_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white/90 font-medium transition-colors hover:bg-white/[0.14]"
+                      className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium transition-colors hover:bg-black/[0.1] dark:hover:bg-white/[0.14]"
                     >
                       <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                       </svg>
                       {event.venue}
-                      <svg className="w-3 h-3 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                       </svg>
                     </a>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white/90 font-medium">
+                    <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
                       <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
@@ -264,14 +272,14 @@ export default async function EventPage({ params }: PageProps) {
               <div className="flex flex-col gap-5">
                 {/* Prohibited items */}
                 {showProhibitedItems && (
-                  <div className="rounded-xl bg-amber-950/30 border border-amber-500/20 p-4 sm:p-5">
-                    <h3 className="text-sm font-semibold text-amber-200 mb-2.5 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5">
+                    <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2.5 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                       </svg>
                       Prohibited Items
                     </h3>
-                    <ul className="text-sm text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
+                    <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
                       <li>No bags, including purses</li>
                       <li>No water bottles</li>
                     </ul>
@@ -280,8 +288,8 @@ export default async function EventPage({ params }: PageProps) {
 
                 {/* Description */}
                 {event.desc && (
-                  <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/70 p-5 sm:p-6">
-                    <p className="text-sm sm:text-[15px] text-zinc-300 leading-[1.75]">
+                  <div className="rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 p-5 sm:p-6">
+                    <p className="text-sm sm:text-[15px] text-zinc-700 dark:text-zinc-300 leading-[1.75]">
                       {event.desc}
                     </p>
                   </div>
@@ -293,7 +301,7 @@ export default async function EventPage({ params }: PageProps) {
                     href={calendarUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-800/60 hover:text-white hover:border-zinc-700 active:scale-[0.98]"
+                    className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition-all hover:bg-zinc-200 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 active:scale-[0.98]"
                   >
                     <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -325,12 +333,12 @@ export default async function EventPage({ params }: PageProps) {
             </div>
 
             {/* ADA notice */}
-            <div className="mt-10 pt-6 border-t border-zinc-800/50">
+            <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
               <p className="text-center text-xs sm:text-sm text-zinc-500 leading-relaxed">
                 For ADA accommodations, please email{" "}
                 <a
                   href="mailto:tickets@stanfordspeakersbureau.com"
-                  className="text-zinc-400 underline underline-offset-2 decoration-zinc-600 hover:text-zinc-300 transition-colors"
+                  className="text-zinc-600 dark:text-zinc-400 underline underline-offset-2 decoration-zinc-300 dark:decoration-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
                 >
                   tickets@stanfordspeakersbureau.com
                 </a>
