@@ -162,15 +162,6 @@ export default async function EventPage({ params }: PageProps) {
               }}
             />
 
-            {/* Centered fade for text readability */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to right, transparent 0%, rgba(9,9,11,0.4) 25%, rgba(9,9,11,0.88) 50%, rgba(9,9,11,0.4) 75%, transparent 100%)",
-              }}
-            />
-
             {/* Hero content – anchored bottom-left */}
             <div className="relative z-10 flex flex-col justify-end min-h-[70vh] sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white font-serif tracking-tight leading-[1.1] drop-shadow-lg">
