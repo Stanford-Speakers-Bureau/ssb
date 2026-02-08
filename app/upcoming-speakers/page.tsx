@@ -157,7 +157,7 @@ export default async function UpcomingSpeakers() {
               No upcoming events at this time. Check back soon!
             </p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-12">
               {events.map((event) => (
                 <WaitForImages
                   key={event.id}
@@ -189,15 +189,15 @@ export default async function UpcomingSpeakers() {
                     }
                     eventTimeText={
                       event.start_time_date
-                        ? `Event starts at ${formatTime(event.start_time_date)}`
+                        ? `Starts at ${formatTime(event.start_time_date)}`
                         : ""
                     }
                     locationName={event.isMystery ? "" : event.venue || ""}
                     locationUrl={event.isMystery ? "" : event.venue_link || ""}
                     backgroundImageUrl={
                       event.isMystery
-                        ? "/speakers/mystery.jpg"
-                        : event.signedImageUrl || "/speakers/mystery.jpg"
+                        ? ""
+                        : event.signedImageUrl || ""
                     }
                     ctaHref={event.isMystery ? "" : `/events/${event.route}`}
                     ctaText={event.isMystery ? "" : "Get Tickets"}
