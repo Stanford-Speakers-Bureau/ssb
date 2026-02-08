@@ -141,10 +141,10 @@ export default async function UpcomingSpeakers() {
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-black font-sans">
-      <main className="flex w-full flex-1 justify-center bg-black pt-24">
+    <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-24">
         <section className="w-full max-w-5xl flex flex-col lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-8 font-serif">
+          <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
             Upcoming Speakers
           </h1>
 
@@ -153,7 +153,7 @@ export default async function UpcomingSpeakers() {
           </Suspense>
 
           {events.length === 0 ? (
-            <p className="text-zinc-400">
+            <p className="text-zinc-600 dark:text-zinc-400">
               No upcoming events at this time. Check back soon!
             </p>
           ) : (
@@ -213,7 +213,7 @@ export default async function UpcomingSpeakers() {
             </div>
           )}
 
-          <div className="mt-5 mb-10 flex flex-col gap-4 rounded bg-zinc-900 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-5 mb-10 flex flex-col gap-4 rounded bg-zinc-100/80 p-6 text-black dark:bg-zinc-900 dark:text-white sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-lg font-semibold">
                 Want to see someone on stage? Suggest a speaker!
@@ -222,7 +222,7 @@ export default async function UpcomingSpeakers() {
             <SuggestSpeakerButton />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white mb-6 mt-0 text-center drop-shadow-lg">
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 mt-0 text-center drop-shadow-lg">
             To Hear About Upcoming Events:
           </h2>
 
