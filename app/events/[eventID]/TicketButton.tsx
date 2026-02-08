@@ -137,79 +137,6 @@ export default function TicketButton({
     ? new Date().getTime() >= twoHoursBeforeDoorsOpen
     : false;
 
-  // Ticketing not open yet: show "ticketing opens" + notify UI inside the ticket panel, or nothing
-  if (!hasTicket && !isTicketingOpen && !isSoldOut) {
-    if (ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime())) {
-      return (
-      <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/[0.06] p-3.5 sm:p-4">
-        <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
-          Ticketing opens{" "}
-          <span className="font-semibold text-yellow-100">
-            {formatTicketingOpensAt(ticketingOpensAt)}
-          </span>
-        </p>
-        <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
-          <button
-            onClick={handleNotifyClick}
-            disabled={isLoadingNotify || isNotified}
-            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/[0.1] hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoadingNotify ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
-              </>
-            ) : isNotified ? (
-              <>
-                <svg
-                  className="w-4 h-4 text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>You&apos;ll be notified</span>
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-4 h-4 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                  />
-                </svg>
-                <span>Notify me when it opens</span>
-              </>
-            )}
-          </button>
-          {notifyMessage && (
-            <p className="text-sm text-green-400">{notifyMessage}</p>
-          )}
-          {isNotified && !notifyMessage && (
-            <p className="text-sm text-green-400">
-              {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-    }
-    return null;
-  }
-
   useEffect(() => {
     // Clear message after 3 seconds
     if (message) {
@@ -1003,9 +930,84 @@ export default function TicketButton({
     );
   }
 
+  // Ticketing not open yet: show "ticketing opens" + notify UI, or nothing (conditional render to satisfy Rules of Hooks)
+  const showTicketingOpensOnly =
+    !hasTicket && !isTicketingOpen && !isSoldOut &&
+    ticketingOpensAt &&
+    !Number.isNaN(ticketingOpensAt.getTime());
+
   return (
     <div>
-      {/* {!hasTicket && !isSalesDisabled && (
+      {!hasTicket && !isTicketingOpen && !isSoldOut ? (
+        showTicketingOpensOnly ? (
+          <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/[0.06] p-3.5 sm:p-4">
+            <p className="text-sm sm:text-base text-yellow-200/90 leading-relaxed">
+              Ticketing opens{" "}
+              <span className="font-semibold text-yellow-100">
+                {formatTicketingOpensAt(ticketingOpensAt!)}
+              </span>
+            </p>
+            <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
+              <button
+                onClick={handleNotifyClick}
+                disabled={isLoadingNotify || isNotified}
+                className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/[0.1] hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingNotify ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
+                  </>
+                ) : isNotified ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span>You&apos;ll be notified</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                      />
+                    </svg>
+                    <span>Notify me when it opens</span>
+                  </>
+                )}
+              </button>
+              {notifyMessage && (
+                <p className="text-sm text-green-400">{notifyMessage}</p>
+              )}
+              {isNotified && !notifyMessage && (
+                <p className="text-sm text-green-400">
+                  {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : null
+      ) : (
+        <>
+          {/* {!hasTicket && !isSalesDisabled && (
         <div className="mb-3">
           <label
             htmlFor="referral-code-input"
@@ -1036,176 +1038,178 @@ export default function TicketButton({
           )}
         </div>
       )} */}
-      {!hasTicket && (
-        <motion.button
-          whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
-          whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
-          onClick={handleTicketClick}
-          disabled={isButtonDisabled}
-          className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
-        >
-          {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
-        </motion.button>
-      )}
-      {hasTicket && !isCancelDisabled && (
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setShowCancelTicketModal(true)}
-          disabled={isLoading}
-          className="rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
-        >
-          {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
-        </motion.button>
-      )}
-      {isCancelDisabled && (
-        <div className="flex min-h-[3rem] items-center justify-center">
-          <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
-            {hasEventStarted
-              ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
-              : TICKET_MESSAGES.ERROR_LIVE_EVENT}
-          </p>
-        </div>
-      )}
-      {isSalesDisabled && (
-        <div className="flex min-h-[3rem] items-center justify-center">
-          <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
-            {TICKET_MESSAGES.ERROR_EVENT_STARTED}
-          </p>
-        </div>
-      )}
-      {message && !isCancelDisabled && !isSalesDisabled && (
-        <p
-          className={`mt-3 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
-            }`}
-        >
-          {message}
-        </p>
-      )}
+          {!hasTicket && (
+            <motion.button
+              whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
+              whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
+              onClick={handleTicketClick}
+              disabled={isButtonDisabled}
+              className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
+            >
+              {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
+            </motion.button>
+          )}
+          {hasTicket && !isCancelDisabled && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowCancelTicketModal(true)}
+              disabled={isLoading}
+              className="rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+            >
+              {isLoading ? TICKET_MESSAGES.CANCELLING : "Cancel Ticket"}
+            </motion.button>
+          )}
+          {isCancelDisabled && (
+            <div className="flex min-h-[3rem] items-center justify-center">
+              <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+                {hasEventStarted
+                  ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
+                  : TICKET_MESSAGES.ERROR_LIVE_EVENT}
+              </p>
+            </div>
+          )}
+          {isSalesDisabled && (
+            <div className="flex min-h-[3rem] items-center justify-center">
+              <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+                {TICKET_MESSAGES.ERROR_EVENT_STARTED}
+              </p>
+            </div>
+          )}
+          {message && !isCancelDisabled && !isSalesDisabled && (
+            <p
+              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
+                }`}
+            >
+              {message}
+            </p>
+          )}
 
-      {/* Cancel Ticket Modal */}
-      {typeof document !== "undefined" &&
-        createPortal(
-          <AnimatePresence>
-            {showCancelTicketModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
-                onClick={() => setShowCancelTicketModal(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                  transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-                  className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
-                    Cancel Ticket?
-                  </h3>
-                  <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                    Are you sure you want to cancel your ticket? You may not be able
-                    to get your ticket back if you cancel.
-                  </p>
-                  <div className="flex gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowCancelTicketModal(false)}
-                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+          {/* Cancel Ticket Modal */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <AnimatePresence>
+                {showCancelTicketModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowCancelTicketModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Keep Ticket
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleCancelTicket}
-                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
-                    >
-                      Cancel Ticket
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </motion.div>
+                      <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+                        Cancel Ticket?
+                      </h3>
+                      <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
+                        Are you sure you want to cancel your ticket? You may not be able
+                        to get your ticket back if you cancel.
+                      </p>
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setShowCancelTicketModal(false)}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+                        >
+                          Keep Ticket
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleCancelTicket}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
+                        >
+                          Cancel Ticket
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body,
             )}
-          </AnimatePresence>,
-          document.body,
-        )}
 
-      {/* No Bags Policy Modal – portaled to body so it appears above date/time/location */}
-      {typeof document !== "undefined" &&
-        createPortal(
-          <AnimatePresence>
-            {showNoBagsModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
-                onClick={() => setShowNoBagsModal(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                  transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-                  className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
-                    No Bags Policy
-                  </h3>
-                  <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
-                    This event has a strict no bags policy. You will be turned away
-                    at the entrance with any form of a bag, including a purse.
-                  </p>
-                  <p className="text-zinc-300 mb-5 text-sm sm:text-base font-medium">
-                    Type &quot;no bags&quot; below to confirm you understand:
-                  </p>
-                  <input
-                    type="text"
-                    value={noBagsConfirmation}
-                    onChange={(e) => setNoBagsConfirmation(e.target.value)}
-                    placeholder="Type 'no bags' to confirm"
-                    className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-600 mb-5 transition-colors"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
-                        handleConfirmNoBags();
-                      }
-                    }}
-                    autoFocus
-                  />
-                  <div className="flex gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setShowNoBagsModal(false);
-                        setNoBagsConfirmation("");
-                      }}
-                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+          {/* No Bags Policy Modal – portaled to body so it appears above date/time/location */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <AnimatePresence>
+                {showNoBagsModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowNoBagsModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Cancel
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleConfirmNoBags}
-                      disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
-                      className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Proceed
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </motion.div>
+                      <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+                        No Bags Policy
+                      </h3>
+                      <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
+                        This event has a strict no bags policy. You will be turned away
+                        at the entrance with any form of a bag, including a purse.
+                      </p>
+                      <p className="text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+                        Type &quot;no bags&quot; below to confirm you understand:
+                      </p>
+                      <input
+                        type="text"
+                        value={noBagsConfirmation}
+                        onChange={(e) => setNoBagsConfirmation(e.target.value)}
+                        placeholder="Type 'no bags' to confirm"
+                        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-600 mb-5 transition-colors"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
+                            handleConfirmNoBags();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setShowNoBagsModal(false);
+                            setNoBagsConfirmation("");
+                          }}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-200 border border-white/15 bg-white/[0.06] rounded-lg transition-all hover:bg-white/[0.1] hover:border-white/25"
+                        >
+                          Cancel
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleConfirmNoBags}
+                          disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Proceed
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body,
             )}
-          </AnimatePresence>,
-          document.body,
-        )}
+        </>
+      )}
     </div>
   );
 }
