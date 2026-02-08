@@ -275,9 +275,9 @@ export default function TicketSection({
 
       {/* Ticket details when user has a ticket */}
       {hasTicket && (
-        <div className="mt-2 flex flex-col items-center lg:items-start">
+        <div className="mt-2 flex flex-col items-center w-full">
           {ticketName && (
-            <p className="text-sm sm:text-base text-zinc-200 font-medium mb-3">
+            <p className="text-sm sm:text-base text-zinc-200 font-medium mb-3 text-center">
               Ticket for <span className="text-white font-semibold">{ticketName}</span>
             </p>
           )}
@@ -296,20 +296,22 @@ export default function TicketSection({
               />
             </svg>
             <p className="text-xs sm:text-sm text-red-200 font-medium">
-              Not transferable. A matching student ID is required for entry.
+              For security reasons, this ticket is not transferable. A photo ID is required for entry.
             </p>
           </div>
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4 w-full">
             {ticketId && (
-              <TicketQRCode
-                ticketId={ticketId}
-                size={190}
-                compact
-                ticketType={ticketType}
-              />
+              <div className="flex flex-col items-center">
+                <TicketQRCode
+                  ticketId={ticketId}
+                  size={190}
+                  compact
+                  ticketType={ticketType}
+                />
+              </div>
             )}
             {ticketId && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
                 <button
                   onClick={onAddToAppleWallet}
                   disabled={isLoadingAppleWallet}

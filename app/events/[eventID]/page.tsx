@@ -110,13 +110,13 @@ export default async function EventPage({ params }: PageProps) {
   // Pre-compute the calendar URL once
   const calendarUrl = event.start_time_date
     ? generateGoogleCalendarUrl({
-        name: event.name,
-        desc: event.desc || undefined,
-        start_time_date: event.start_time_date,
-        venue: event.venue || undefined,
-        venue_link: event.venue_link || undefined,
-        route: event.route || undefined,
-      })
+      name: event.name,
+      desc: event.desc || undefined,
+      start_time_date: event.start_time_date,
+      venue: event.venue || undefined,
+      venue_link: event.venue_link || undefined,
+      route: event.route || undefined,
+    })
     : null;
 
   return (
@@ -323,6 +323,17 @@ export default async function EventPage({ params }: PageProps) {
                         </a>
                       </div>
                     )}
+
+                    {/* Entry requirements */}
+                    <div className="mt-5 lg:mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                      <h3 className="text-sm font-medium text-amber-200 mb-2">
+                        Prohibited Items
+                      </h3>
+                      <ul className="text-sm text-amber-100/90 space-y-1 list-disc list-inside">
+                        <li>No bags, including purses</li>
+                        <li>No water bottles</li>
+                      </ul>
+                    </div>
                   </div>
 
                   {/* ── Right column: ticket section ── */}
