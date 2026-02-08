@@ -281,24 +281,40 @@ export default function TicketSection({
               Ticket for <span className="text-white font-semibold">{ticketName}</span>
             </p>
           )}
-          <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 border border-red-500/20 px-3.5 py-2 mb-4">
-            <svg
-              className="w-4 h-4 text-red-400 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-              />
-            </svg>
-            <p className="text-xs sm:text-sm text-red-200 font-medium">
-              For security reasons, this ticket is not transferable. A photo ID is required for entry.
-            </p>
-          </div>
+          {ticketType?.toUpperCase() !== "VIP" && (
+            <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 border border-red-500/20 px-3.5 py-2 mb-4">
+              <svg
+                className="w-4 h-4 text-red-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+              <p className="text-xs sm:text-sm text-red-200 font-medium">
+                For security reasons, this ticket is not transferable. A photo ID is required for entry.
+              </p>
+            </div>
+          )}
+          {ticketType?.toUpperCase() === "VIP" && (
+            <div className="inline-flex items-center gap-2 rounded-lg bg-amber-500/15 border border-amber-400/25 px-3.5 py-2 mb-4">
+              <svg
+                className="w-4 h-4 text-amber-400 shrink-0"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
+              </svg>
+              <p className="text-xs sm:text-sm text-amber-100 font-medium">
+                We've reserved a seat for you in the front few rows. Please use the VIP entrance when you arrive at the venue.
+              </p>
+            </div>
+          )}
           <div className="flex flex-col items-center gap-4 w-full">
             {ticketId && (
               <div className="flex flex-col items-center">
