@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Sign in with Google | Stanford Speakers Bureau",
   description:
@@ -165,7 +167,7 @@ export default function GoogleOAuthPage() {
               ← Back to home
             </Link>
             <Link
-              href="/privacy"
+              href="https://www.stanfordspeakersbureau.com/privacy"
               className="text-[#A80D0C] hover:underline font-medium text-sm"
             >
               Privacy Policy
