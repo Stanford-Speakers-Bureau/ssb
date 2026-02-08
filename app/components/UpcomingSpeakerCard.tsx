@@ -288,9 +288,9 @@ function RevealedCard({
 }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
-      {/* Speaker Image — full-width hero */}
-      {backgroundImageUrl && (
-        <div className="relative w-full aspect-[2/1]">
+      {/* Hero: image with title + pills overlapping the bottom */}
+      <div className="relative w-full aspect-[2/1] overflow-hidden">
+        {backgroundImageUrl && (
           <Image
             src={backgroundImageUrl}
             alt={name || "Speaker"}
@@ -300,87 +300,92 @@ function RevealedCard({
             priority
             unoptimized
           />
+        )}
+
+        {/* Bottom gradient fade */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgb(24,24,27) 0%, rgba(24,24,27,0.8) 20%, rgba(24,24,27,0.2) 45%, transparent 65%)",
+          }}
+        />
+
+        {/* Title + pills anchored to bottom of image */}
+        <div className="absolute inset-0 z-10 flex flex-col justify-end px-6 sm:px-8 md:px-10 pb-5 sm:pb-6">
+          {showName && (
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif text-white tracking-tight leading-[1.1] drop-shadow-lg">
+              {name}
+            </h2>
+          )}
+          {showHeader && (
+            <p className="mt-2 text-sm sm:text-base md:text-lg text-zinc-300 italic leading-relaxed">
+              {header}
+            </p>
+          )}
+
+          {showMeta && (
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              {showDate && (
+                <span className={PILL_CLASS}>
+                  <CalendarIcon />
+                  {dateText}
+                </span>
+              )}
+              {showDoorsOpen && (
+                <span className={PILL_CLASS}>
+                  <DoorIcon />
+                  {doorsOpenText}
+                </span>
+              )}
+              {showEventTime && (
+                <span className={PILL_CLASS}>
+                  <ClockIcon />
+                  {eventTimeText}
+                </span>
+              )}
+              {showLocation &&
+                (showLocationName && showLocationUrl ? (
+                  <a
+                    href={locationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
+                  >
+                    <LocationIcon />
+                    {locationName}
+                    <ExternalLinkIcon />
+                  </a>
+                ) : showLocationName ? (
+                  <span className={PILL_CLASS}>
+                    <LocationIcon />
+                    {locationName}
+                  </span>
+                ) : null)}
+              {showSponsor && (
+                <span className={PILL_CLASS}>
+                  {showSponsorPrefix && sponsorPrefix}
+                  {showSponsorPrefix && showSponsorName && " "}
+                  {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Full-width CTA button */}
+      {showCta && (
+        <div className="px-5 sm:px-6 pb-4 sm:pb-5">
+          <Link
+            href={ctaHref}
+            prefetch={false}
+            className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 active:scale-[0.98]"
+          >
+            {ctaText}
+          </Link>
         </div>
       )}
-
-      {/* Content */}
-      <div className="p-8 sm:p-10 md:p-12">
-        {showName && (
-          <h2 className="text-3xl sm:text-4xl font-bold font-serif text-white mb-2">
-            {name}
-          </h2>
-        )}
-        {showHeader && (
-          <p className="text-base sm:text-lg text-zinc-300 mb-8 italic">
-            {header}
-          </p>
-        )}
-
-        {showMeta && (
-          <div className="flex flex-wrap gap-2.5 mb-8">
-            {showDate && (
-              <span className={PILL_CLASS}>
-                <CalendarIcon />
-                {dateText}
-              </span>
-            )}
-            {showDoorsOpen && (
-              <span className={PILL_CLASS}>
-                <DoorIcon />
-                {doorsOpenText}
-              </span>
-            )}
-            {showEventTime && (
-              <span className={PILL_CLASS}>
-                <ClockIcon />
-                {eventTimeText}
-              </span>
-            )}
-            {showLocation && (
-              showLocationName && showLocationUrl ? (
-                <a
-                  href={locationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
-                >
-                  <LocationIcon />
-                  {locationName}
-                  <ExternalLinkIcon />
-                </a>
-              ) : showLocationName ? (
-                <span className={PILL_CLASS}>
-                  <LocationIcon />
-                  {locationName}
-                </span>
-              ) : null
-            )}
-            {showSponsor && (
-              <span className={PILL_CLASS}>
-                {showSponsorPrefix && sponsorPrefix}
-                {showSponsorPrefix && showSponsorName && " "}
-                {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
-              </span>
-            )}
-          </div>
-        )}
-
-        {showCta && (
-          <div>
-            <Link
-              href={ctaHref}
-              prefetch={false}
-              className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-              </svg>
-              {ctaText}
-            </Link>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -417,7 +422,21 @@ function MysteryCard({
   handleNotifyClick: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-10 sm:p-12 text-center">
+    <div className="relative rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden text-center">
+      {/* Blurred mystery background */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/speakers/mystery.jpg"
+          alt=""
+          fill
+          className="object-cover blur-xl scale-110"
+          sizes="(max-width: 768px) 100vw, 960px"
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
+
+      <div className="relative z-10 p-10 sm:p-12">
       {/* Large question mark */}
       <div className="text-8xl sm:text-9xl font-serif font-bold text-red-500/80 mb-4 select-none">
         ?
@@ -498,6 +517,7 @@ function MysteryCard({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
