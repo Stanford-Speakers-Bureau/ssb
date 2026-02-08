@@ -161,12 +161,13 @@ export default async function EventPage({ params }: PageProps) {
                   "linear-gradient(to top, rgb(9,9,11) 0%, rgba(9,9,11,0.85) 30%, rgba(9,9,11,0.35) 60%, rgba(9,9,11,0.25) 100%)",
               }}
             />
-            {/* Left fade for text readability */}
+
+            {/* Centered fade for text readability */}
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(to right, rgba(9,9,11,0.92) 0%, rgba(9,9,11,0.55) 45%, transparent 75%)",
+                  "linear-gradient(to right, transparent 0%, rgba(9,9,11,0.4) 25%, rgba(9,9,11,0.88) 50%, rgba(9,9,11,0.4) 75%, transparent 100%)",
               }}
             />
 
