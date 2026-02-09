@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
+import CancelTicketButton from "./CancelTicketButton";
 import Image from "next/image";
 
 type TicketSectionProps = {
@@ -143,10 +144,10 @@ export default function TicketSection({
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
   const showTicketPanel =
-    hasTicket ||
-    isTicketingOpen ||
-    isSoldOut ||
-    (!isTicketingOpen && hasValidTicketingOpensAt);
+    !hasTicket &&
+    (isTicketingOpen ||
+      isSoldOut ||
+      (!isTicketingOpen && hasValidTicketingOpensAt));
 
   return (
     <div className="event-ticket-section flex flex-col gap-5">
@@ -264,6 +265,10 @@ export default function TicketSection({
               </div>
             </div>
           )}
+          <CancelTicketButton
+            eventId={eventId}
+            eventStartTime={eventStartTime}
+          />
         </>
       )}
     </div>
