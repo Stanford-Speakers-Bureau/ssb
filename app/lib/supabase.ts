@@ -30,6 +30,7 @@ export type Event = {
   reserved: number | null;
   venue_link: string | null;
   release_date: string | null;
+  ticketing_date?: string | null;
   banner: boolean | null;
   start_time_date: string | null;
   doors_open: string | null;
@@ -352,7 +353,7 @@ export async function updateReferralRecords(
  * - If VIPs exceed reserved, they reduce public capacity (overflow)
  *
  * Public Tickets:
- * - Created via create_ticket RPC (user-facing)
+ * - Created via create_ticket_with_name RPC (user-facing)
  * - Type = 'STANDARD' or null
  * - Limited to: capacity - max(reserved, vip_count)
  *

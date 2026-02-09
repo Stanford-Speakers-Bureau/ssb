@@ -22,8 +22,14 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
+  ERROR_EVENT_STARTED_OR_ENDED:
+    "Cannot cancel tickets after the event has started.",
   ERROR_EVENT_STARTED:
     "Ticket sales have ended. This event has already started.",
+  ERROR_TICKETING_NOT_OPEN:
+    "Ticketing is not open yet for this event. Please check back later.",
+  ERROR_NAME_REQUIRED:
+    "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
 } as const;
 
 export async function GET(req: Request) {
@@ -80,6 +86,7 @@ export async function GET(req: Request) {
         event_id,
         created_at,
         type,
+        name,
         events (
           id,
           name,
@@ -122,6 +129,12 @@ export async function POST(req: Request) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
+    // Extract name from Google OAuth metadata (required for create_ticket_with_name)
+    const userName: string | null =
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      null;
+
     // --- USER CREATE TICKET ---
     if (userError || !user?.email) {
       return NextResponse.json(
@@ -166,7 +179,7 @@ export async function POST(req: Request) {
     const adminClient = getSupabaseClient();
     const { data: event } = await adminClient
       .from("events")
-      .select("start_time_date")
+      .select("start_time_date, release_date, ticketing_date")
       .eq("id", event_id)
       .single();
 
@@ -175,6 +188,25 @@ export async function POST(req: Request) {
         { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
       );
+    }
+
+    // Enforce ticketing open date:
+    // - Prefer ticketing_date
+    // - Fall back to release_date when ticketing_date is null (keeps current behavior)
+    const effectiveTicketingDate =
+      (event as { ticketing_date?: string | null }).ticketing_date ??
+      (event as { release_date?: string | null }).release_date ??
+      null;
+
+    if (effectiveTicketingDate) {
+      const openAt = new Date(effectiveTicketingDate);
+      const now = new Date();
+      if (!Number.isNaN(openAt.getTime()) && now < openAt) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_TICKETING_NOT_OPEN },
+          { status: 400 },
+        );
+      }
     }
 
     if (event.start_time_date) {
@@ -212,11 +244,20 @@ export async function POST(req: Request) {
       }
     }
 
+    const nameForTicket = userName?.trim();
+    if (!nameForTicket) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NAME_REQUIRED },
+        { status: 400 },
+      );
+    }
+
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "create_ticket",
+      "create_ticket_with_name",
       {
         p_event_id: event_id,
         p_referral: referral,
+        p_user_name: nameForTicket,
       },
     );
 
@@ -226,7 +267,7 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error:
-              "Ticket creation RPC is not installed in the database (create_ticket).",
+              "Ticket creation RPC is not installed in the database (create_ticket_with_name).",
           },
           { status: 500 },
         );
@@ -266,6 +307,7 @@ export async function POST(req: Request) {
           id,
           email,
           type,
+          name,
           event_id,
           events (
             id,
@@ -292,6 +334,7 @@ export async function POST(req: Request) {
           ? ticket.events[0]
           : ticket.events;
         await sendTicketEmail({
+          name: nameForTicket,
           email: ticket.email,
           eventName: event?.name || "Event",
           ticketType: ticket.type || "STANDARD",
@@ -319,6 +362,7 @@ export async function POST(req: Request) {
         success: true,
         message: TICKET_MESSAGES.SUCCESS,
         ticketId: ticket?.id ?? null,
+        ticketName: ticket?.name ?? nameForTicket ?? null,
         data: rpcData ?? null,
       },
       { status: 200 },
@@ -370,18 +414,25 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if event is currently live
     const adminClient = getSupabaseClient();
-    const { data: liveEvent } = await adminClient
+
+    // Check if event is currently live or has already started/ended
+    const { data: eventRow } = await adminClient
       .from("events")
-      .select("id")
+      .select("id, is_live, start_time_date")
       .eq("id", event_id)
-      .eq("is_live", true)
       .single();
 
-    if (liveEvent) {
+    if (eventRow?.is_live) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
+        { status: 400 },
+      );
+    }
+
+    if (eventRow?.start_time_date && new Date() >= new Date(eventRow.start_time_date)) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
       );
     }
@@ -419,19 +470,20 @@ export async function DELETE(req: Request) {
     // Pull the top person off the waitlist (if any) only if under capacity
     const { data: topWaitlistEntry } = await adminClient
       .from("waitlist")
-      .select("email, referral, event_id")
+      .select("email, referral, event_id, name")
       .eq("event_id", event_id)
       .order("position", { ascending: true })
       .limit(1)
       .single();
 
     if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
-      // Create ticket for the waitlist person
+      // Create ticket for the waitlist person (transfer name from waitlist)
       const { data: newTicket } = await adminClient
         .from("tickets")
         .insert({
           event_id: topWaitlistEntry.event_id,
           email: topWaitlistEntry.email,
+          name: topWaitlistEntry.name ?? null,
           type: "STANDARD",
         })
         .select(
@@ -473,6 +525,7 @@ export async function DELETE(req: Request) {
             : newTicket.events;
           await sendTicketEmail({
             email: newTicket.email,
+            name: topWaitlistEntry.name ?? null,
             eventName: event?.name || "Event",
             ticketType: newTicket.type || "STANDARD",
             eventStartTime: event?.start_time_date || null,
