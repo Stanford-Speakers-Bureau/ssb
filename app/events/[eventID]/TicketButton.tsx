@@ -659,6 +659,27 @@ export default function TicketButton({
     }
   }, [eventId]);
 
+  // Handle cancel_ticket query parameter from email links
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const cancelTicketParam = url.searchParams.get("cancel_ticket");
+
+    if (cancelTicketParam) {
+      // Clean up the URL immediately
+      url.searchParams.delete("cancel_ticket");
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+
+      // If the user has a ticket, show the cancel confirmation modal
+      if (hasTicket) {
+        setShowCancelTicketModal(true);
+      }
+    }
+  }, [hasTicket]);
+
   useEffect(() => {
     const autoTicketKey = `auto_ticket_pending:${eventId}`;
     const pending = sessionStorage.getItem(autoTicketKey) === "1";
