@@ -111,12 +111,27 @@ export async function POST(req: Request) {
       );
     }
 
+    // Derive name from body override or OAuth metadata
+    const waitlistName =
+      nameFromBody?.trim() ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      null;
+
+    if (!waitlistName) {
+      return NextResponse.json(
+        { error: "Name is required to join the waitlist" },
+        { status: 400 },
+      );
+    }
+
     // Use RPC to atomically join waitlist (prevents position collisions)
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "join_waitlist",
+      "join_waitlist_with_name",
       {
         p_event_id: event_id,
         p_referral: referral || null,
+        p_name: waitlistName,
       },
     );
 
@@ -126,7 +141,7 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error:
-              "Waitlist RPC is not installed in the database (join_waitlist).",
+              "Waitlist RPC is not installed in the database (join_waitlist_with_name).",
           },
           { status: 500 },
         );
@@ -151,20 +166,6 @@ export async function POST(req: Request) {
       position: number;
       total: number;
     };
-
-    // Store name on waitlist row (from body override or OAuth metadata, same as tickets)
-    const waitlistName =
-      nameFromBody?.trim() ||
-      user?.user_metadata?.full_name ||
-      user?.user_metadata?.name ||
-      null;
-    if (waitlistName) {
-      await adminClient
-        .from("waitlist")
-        .update({ name: waitlistName })
-        .eq("event_id", event_id)
-        .eq("email", user.email);
-    }
 
     // Calculate actual position (same logic as GET handler)
     // This ensures the email shows the same position as the UI
