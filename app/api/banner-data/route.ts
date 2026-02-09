@@ -17,9 +17,12 @@ export async function GET(req: Request) {
     const closestEvent = await getClosestUpcomingEvent();
 
     // Determine phase: mystery (before release) | before ticketing | event countdown
+    // LOCAL_EVENTS_ENABLED=true means all events are treated as released (never mystery)
     const now = new Date();
     let isMystery: boolean;
-    if (!closestEvent?.release_date) {
+    if (process.env.LOCAL_EVENTS_ENABLED === "true") {
+      isMystery = false;
+    } else if (!closestEvent?.release_date) {
       isMystery = !closestEvent?.name;
     } else {
       const releaseDate = new Date(closestEvent.release_date);
@@ -30,6 +33,7 @@ export async function GET(req: Request) {
       ? new Date(closestEvent.ticketing_date)
       : null;
     const isBeforeTicketing =
+      process.env.LOCAL_TICKETING_ENABLED !== "true" &&
       !isMystery &&
       ticketingDate &&
       !Number.isNaN(ticketingDate.getTime()) &&
