@@ -30,7 +30,8 @@ export const SUGGEST_MESSAGES = {
 export const BANNER_MESSAGES = {
   NOTIFY_MESSAGE: "GET EARLY ACCESS TO OUR NEXT SPEAKER!!",
   EVENT_MESSAGE: " is coming to Stanford!",
-  COUNTDOWN_REVEAL_MESSAGE: "Speaker Name & Ticket Reveal in",
+  COUNTDOWN_REVEAL_MESSAGE: "Speaker Reveal in",
+  COUNTDOWN_TICKETS_MESSAGE: "FREE Tickets Go Live in",
   COUNTDOWN_EVENT_MESSAGE: "Event starts in",
 };
 

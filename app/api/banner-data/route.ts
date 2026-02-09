@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     const closestEvent = await getClosestUpcomingEvent();
 
-    // Determine if speaker is still a mystery (before release_date)
+    // Determine phase: mystery (before release) | before ticketing | event countdown
     const now = new Date();
     let isMystery: boolean;
     if (!closestEvent?.release_date) {
@@ -26,19 +26,32 @@ export async function GET(req: Request) {
       isMystery = now < releaseDate;
     }
 
+    const ticketingDate = closestEvent?.ticketing_date
+      ? new Date(closestEvent.ticketing_date)
+      : null;
+    const isBeforeTicketing =
+      !isMystery &&
+      ticketingDate &&
+      !Number.isNaN(ticketingDate.getTime()) &&
+      now < ticketingDate;
+
     // Show banner if there's an upcoming event
     const showBanner = !!closestEvent;
 
-    // Banner text and countdown target based on mystery status
+    // Banner text and countdown target: reveal → tickets release → event
     const bannerText = isMystery
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
       : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
     const countdownTarget = isMystery
       ? closestEvent?.release_date
-      : closestEvent?.doors_open;
+      : isBeforeTicketing
+        ? closestEvent?.ticketing_date ?? undefined
+        : closestEvent?.doors_open;
     const prefaceLabel = isMystery
       ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
-      : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
+      : isBeforeTicketing
+        ? BANNER_MESSAGES.COUNTDOWN_TICKETS_MESSAGE
+        : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
     return NextResponse.json({
       showBanner,
