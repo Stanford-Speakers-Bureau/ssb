@@ -21,6 +21,7 @@ declare namespace Cloudflare {
     APPLE_WALLET_PASSPHRASE: string;
     DISABLE_EMAIL: string;
     LOCAL_EVENTS_ENABLED: string;
+    LOCAL_TICKETING_ENABLED: string;
     NEXT_INC_CACHE_R2_BUCKET: R2Bucket;
     ssb_cache: R2Bucket;
     WORKER_SELF_REFERENCE: Fetcher /* ssb */;
@@ -56,6 +57,7 @@ declare namespace NodeJS {
       | "APPLE_WALLET_PASSPHRASE"
       | "DISABLE_EMAIL"
       | "LOCAL_EVENTS_ENABLED"
+      | "LOCAL_TICKETING_ENABLED"
     >
   > {}
 }

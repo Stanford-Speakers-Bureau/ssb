@@ -325,7 +325,7 @@ export default async function EventPage({ params }: PageProps) {
                     eventStartTime={event.start_time_date}
                     doorsOpen={event.doors_open}
                     isSoldOut={isSoldOut}
-                    ticketingDate={event.ticketing_date ?? event.release_date}
+                    ticketingDate={process.env.LOCAL_TICKETING_ENABLED === "true" ? null : (event.ticketing_date ?? event.release_date)}
                     initialIsNotified={isNotified}
                   />
                 </div>
