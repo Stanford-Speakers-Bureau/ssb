@@ -335,7 +335,7 @@ export default async function EventPage({ params }: PageProps) {
             {/* ADA notice */}
             <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
               <p className="text-center text-xs sm:text-sm text-zinc-500 leading-relaxed">
-                For ADA accommodations, please email{" "}
+                For ADA accommodations or other questions, please email{" "}
                 <a
                   href="mailto:tickets@stanfordspeakersbureau.com"
                   className="text-zinc-600 dark:text-zinc-400 underline underline-offset-2 decoration-zinc-300 dark:decoration-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"

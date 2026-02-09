@@ -41,7 +41,8 @@ export async function GET(req: Request) {
     // Banner text and countdown target: reveal → tickets release → event
     const bannerText = isMystery
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
-      : closestEvent?.name + BANNER_MESSAGES.EVENT_MESSAGE;
+      : closestEvent?.name + (closestEvent?.name?.includes("and") ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL : BANNER_MESSAGES.EVENT_MESSAGE);
+
     const countdownTarget = isMystery
       ? closestEvent?.release_date
       : isBeforeTicketing
