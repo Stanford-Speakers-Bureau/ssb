@@ -91,7 +91,7 @@ export default function BannerBar({
   }, [targetTime]);
 
   return (
-    <div className="relative z-50 h-10 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C]">
+    <div className="relative z-50 md:h-10 px-4 py-2 md:py-0 justify-center flex items-center gap-3 text-sm font-semibold text-white bg-[#A80D0C] text-center">
       {/* Mobile version - simplified */}
       {hasText &&
         (hasHref ? (
