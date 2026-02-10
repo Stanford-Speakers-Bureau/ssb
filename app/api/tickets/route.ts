@@ -193,19 +193,22 @@ export async function POST(req: Request) {
     // Enforce ticketing open date:
     // - Prefer ticketing_date
     // - Fall back to release_date when ticketing_date is null (keeps current behavior)
-    const effectiveTicketingDate =
-      (event as { ticketing_date?: string | null }).ticketing_date ??
-      (event as { release_date?: string | null }).release_date ??
-      null;
+    // - Skip entirely when LOCAL_TICKETING_ENABLED is set (local development)
+    if (process.env.LOCAL_TICKETING_ENABLED !== "true") {
+      const effectiveTicketingDate =
+        (event as { ticketing_date?: string | null }).ticketing_date ??
+        (event as { release_date?: string | null }).release_date ??
+        null;
 
-    if (effectiveTicketingDate) {
-      const openAt = new Date(effectiveTicketingDate);
-      const now = new Date();
-      if (!Number.isNaN(openAt.getTime()) && now < openAt) {
-        return NextResponse.json(
-          { error: TICKET_MESSAGES.ERROR_TICKETING_NOT_OPEN },
-          { status: 400 },
-        );
+      if (effectiveTicketingDate) {
+        const openAt = new Date(effectiveTicketingDate);
+        const now = new Date();
+        if (!Number.isNaN(openAt.getTime()) && now < openAt) {
+          return NextResponse.json(
+            { error: TICKET_MESSAGES.ERROR_TICKETING_NOT_OPEN },
+            { status: 400 },
+          );
+        }
       }
     }
 
