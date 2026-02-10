@@ -95,6 +95,7 @@ export default function TicketButton({
     if (isLoadingNotify || isNotified) return;
     setIsLoadingNotify(true);
     setNotifyMessage(null);
+    let redirecting = false;
     try {
       const response = await fetch("/api/notify", {
         method: "POST",
@@ -102,6 +103,7 @@ export default function TicketButton({
         body: JSON.stringify({ speaker_id: eventId }),
       });
       if (response.status === 401) {
+        redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?notify=true`;
         window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
@@ -121,7 +123,7 @@ export default function TicketButton({
       console.error("Error signing up for notifications:", error);
       setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
     } finally {
-      setIsLoadingNotify(false);
+      if (!redirecting) setIsLoadingNotify(false);
     }
   };
 
@@ -182,6 +184,7 @@ export default function TicketButton({
   const handleJoinWaitlist = useCallback(async () => {
     setIsWaitlistLoading(true);
     setMessage(null);
+    let redirecting = false;
 
     try {
       // If there's a referral warning, don't proceed
@@ -215,6 +218,7 @@ export default function TicketButton({
 
       if (response.status === 401) {
         // Not authenticated, redirect to Google sign-in
+        redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?waitlist=true`;
         window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
@@ -242,7 +246,7 @@ export default function TicketButton({
       console.error("Error joining waitlist:", error);
       setMessage("Something went wrong. Please try again.");
     } finally {
-      setIsWaitlistLoading(false);
+      if (!redirecting) setIsWaitlistLoading(false);
     }
   }, [checkWaitlistStatus, eventId, referralCode, referralWarning]);
 
@@ -332,6 +336,7 @@ export default function TicketButton({
   const processTicketRequest = useCallback(async () => {
     setIsLoading(true);
     setMessage(null);
+    let redirecting = false;
 
     try {
       await checkLiveEvent();
@@ -373,6 +378,7 @@ export default function TicketButton({
 
       if (response.status === 401) {
         // Not authenticated, redirect to Google sign-in with auto_ticket flag
+        redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?ticket=true`;
         window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
@@ -543,7 +549,7 @@ export default function TicketButton({
     } catch {
       setMessage(TICKET_MESSAGES.ERROR_GENERIC);
     } finally {
-      setIsLoading(false);
+      if (!redirecting) setIsLoading(false);
     }
   }, [checkLiveEvent, eventId, hasTicket, referralCode, referralWarning]);
 
