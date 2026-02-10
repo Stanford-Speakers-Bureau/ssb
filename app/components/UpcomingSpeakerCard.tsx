@@ -286,9 +286,60 @@ function RevealedCard({
   ctaHref: string;
   ctaText: string;
 }) {
+  // Shared pill elements rendered once, displayed in different containers per breakpoint
+  const metaPills = showMeta ? (
+    <>
+      {showDate && (
+        <span className={PILL_CLASS}>
+          <CalendarIcon />
+          {dateText}
+        </span>
+      )}
+      {showDoorsOpen && (
+        <span className={PILL_CLASS}>
+          <DoorIcon />
+          {doorsOpenText}
+        </span>
+      )}
+      {showEventTime && (
+        <span className="hidden md:contents">
+          <span className={PILL_CLASS}>
+            <ClockIcon />
+            {eventTimeText}
+          </span>
+        </span>
+      )}
+      {showLocation &&
+        (showLocationName && showLocationUrl ? (
+          <a
+            href={locationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
+          >
+            <LocationIcon />
+            {locationName}
+            <ExternalLinkIcon />
+          </a>
+        ) : showLocationName ? (
+          <span className={PILL_CLASS}>
+            <LocationIcon />
+            {locationName}
+          </span>
+        ) : null)}
+      {showSponsor && (
+        <span className={PILL_CLASS}>
+          {showSponsorPrefix && sponsorPrefix}
+          {showSponsorPrefix && showSponsorName && " "}
+          {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
+        </span>
+      )}
+    </>
+  ) : null;
+
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
-      {/* Hero: image with title + pills overlapping the bottom */}
+      {/* Image */}
       <div className="relative w-full aspect-[2/1] overflow-hidden">
         {backgroundImageUrl && (
           <Image
@@ -302,76 +353,50 @@ function RevealedCard({
           />
         )}
 
-        {/* Bottom gradient fade */}
+        {/* Gradient + overlay content — lg and above only */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 hidden lg:block"
           style={{
             background:
               "linear-gradient(to top, rgb(24,24,27) 0%, rgba(24,24,27,0.8) 20%, rgba(24,24,27,0.2) 45%, transparent 65%)",
           }}
         />
-
-        {/* Title + pills anchored to bottom of image */}
-        <div className="absolute inset-0 z-10 flex flex-col justify-end px-6 sm:px-8 md:px-10 pb-5 sm:pb-6">
+        <div className="absolute inset-0 z-10 hidden lg:flex flex-col justify-end px-10 pb-6">
           {showName && (
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif text-white tracking-tight leading-[1.1] drop-shadow-lg">
+            <h2 className="text-5xl font-bold font-serif text-white tracking-tight leading-[1.1] drop-shadow-lg">
               {name}
             </h2>
           )}
           {showHeader && (
-            <p className="mt-2 text-sm sm:text-base md:text-lg text-zinc-300 italic leading-relaxed">
+            <p className="mt-2 text-lg text-zinc-300 italic leading-relaxed">
               {header}
             </p>
           )}
-
-          {showMeta && (
+          {metaPills && (
             <div className="mt-5 flex flex-wrap gap-2.5">
-              {showDate && (
-                <span className={PILL_CLASS}>
-                  <CalendarIcon />
-                  {dateText}
-                </span>
-              )}
-              {showDoorsOpen && (
-                <span className={PILL_CLASS}>
-                  <DoorIcon />
-                  {doorsOpenText}
-                </span>
-              )}
-              {showEventTime && (
-                <span className={PILL_CLASS}>
-                  <ClockIcon />
-                  {eventTimeText}
-                </span>
-              )}
-              {showLocation &&
-                (showLocationName && showLocationUrl ? (
-                  <a
-                    href={locationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
-                  >
-                    <LocationIcon />
-                    {locationName}
-                    <ExternalLinkIcon />
-                  </a>
-                ) : showLocationName ? (
-                  <span className={PILL_CLASS}>
-                    <LocationIcon />
-                    {locationName}
-                  </span>
-                ) : null)}
-              {showSponsor && (
-                <span className={PILL_CLASS}>
-                  {showSponsorPrefix && sponsorPrefix}
-                  {showSponsorPrefix && showSponsorName && " "}
-                  {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
-                </span>
-              )}
+              {metaPills}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Below-image content — below lg */}
+      <div className="lg:hidden px-5 sm:px-6 pt-4 pb-2">
+        {showName && (
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-tight leading-tight">
+            {name}
+          </h2>
+        )}
+        {showHeader && (
+          <p className="mt-1.5 text-sm sm:text-base text-zinc-400 italic leading-relaxed">
+            {header}
+          </p>
+        )}
+        {metaPills && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {metaPills}
+          </div>
+        )}
       </div>
 
       {/* Full-width CTA button */}
@@ -437,86 +462,86 @@ function MysteryCard({
       </div>
 
       <div className="relative z-10 p-10 sm:p-12">
-      {/* Large question mark */}
-      <div className="text-8xl sm:text-9xl font-serif font-bold text-red-500/80 mb-4 select-none">
-        ?
-      </div>
+        {/* Large question mark */}
+        <div className="text-8xl sm:text-9xl font-serif font-bold text-red-500/80 mb-4 select-none">
+          ?
+        </div>
 
-      <h2 className="text-xl sm:text-2xl font-semibold text-zinc-300 mb-8">
-        Speaker — To Be Announced
-      </h2>
+        <h2 className="text-xl sm:text-2xl font-semibold text-zinc-300 mb-8">
+          Speaker — To Be Announced
+        </h2>
 
-      {/* Compact metadata pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
-        {showDate && (
-          <span className={PILL_CLASS}>
-            <CalendarIcon />
-            {dateText}
-          </span>
-        )}
-        {showEventTime && (
-          <span className={PILL_CLASS}>
-            <ClockIcon />
-            {eventTimeText}
-          </span>
-        )}
-        {showLocation && (
-          showLocationName && showLocationUrl ? (
-            <a
-              href={locationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
-            >
-              <LocationIcon />
-              {locationName}
-              <ExternalLinkIcon />
-            </a>
-          ) : showLocationName ? (
+        {/* Compact metadata pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+          {showDate && (
             <span className={PILL_CLASS}>
-              <LocationIcon />
-              {locationName}
+              <CalendarIcon />
+              {dateText}
             </span>
-          ) : null
-        )}
-      </div>
-
-      {/* Notify button */}
-      {showNotifyButton && (
-        <div>
-          {notifyStatus === "success" ? (
-            <p className="text-sm text-green-400 font-medium">
-              {notifyMessage}
-            </p>
-          ) : notifyStatus === "error" ? (
-            <div className="flex items-center justify-center gap-3">
-              <p className="text-sm text-red-400">{notifyMessage}</p>
-              <button
-                onClick={handleNotifyClick}
-                className="text-sm text-white underline hover:text-zinc-300"
+          )}
+          {showEventTime && (
+            <span className={PILL_CLASS}>
+              <ClockIcon />
+              {eventTimeText}
+            </span>
+          )}
+          {showLocation && (
+            showLocationName && showLocationUrl ? (
+              <a
+                href={locationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${PILL_CLASS} transition-colors hover:bg-white/[0.14]`}
               >
-                Try again
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleNotifyClick}
-              disabled={notifyStatus === "loading"}
-              className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {notifyStatus === "loading" ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-              )}
-              {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}
-            </button>
+                <LocationIcon />
+                {locationName}
+                <ExternalLinkIcon />
+              </a>
+            ) : showLocationName ? (
+              <span className={PILL_CLASS}>
+                <LocationIcon />
+                {locationName}
+              </span>
+            ) : null
           )}
         </div>
-      )}
+
+        {/* Notify button */}
+        {showNotifyButton && (
+          <div>
+            {notifyStatus === "success" ? (
+              <p className="text-sm text-green-400 font-medium">
+                {notifyMessage}
+              </p>
+            ) : notifyStatus === "error" ? (
+              <div className="flex items-center justify-center gap-3">
+                <p className="text-sm text-red-400">{notifyMessage}</p>
+                <button
+                  onClick={handleNotifyClick}
+                  className="text-sm text-white underline hover:text-zinc-300"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleNotifyClick}
+                disabled={notifyStatus === "loading"}
+                className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {notifyStatus === "loading" ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                )}
+                {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -153,7 +153,7 @@ export default async function EventPage({ params }: PageProps) {
           <section className="relative w-full overflow-hidden">
             {/* Speaker image – contained to hero only */}
             {signedImageUrl && (
-              <div className="absolute inset-0">
+              <div className="relative aspect-[3/2] sm:absolute sm:inset-0 sm:aspect-auto">
                 <Image
                   src={signedImageUrl}
                   alt={event.name || "Event"}
@@ -164,21 +164,20 @@ export default async function EventPage({ params }: PageProps) {
                   sizes="100vw"
                   unoptimized
                 />
+                {/* Top fade for nav contrast */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0.1) 25%, transparent 50%)",
+                  }}
+                />
               </div>
             )}
 
-            {/* Top fade for nav contrast */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0.1) 25%, transparent 50%)",
-              }}
-            />
-
             {/* Bottom fade into page background — light */}
             <div
-              className="absolute inset-0 dark:hidden"
+              className="absolute inset-0 hidden sm:block dark:hidden"
               style={{
                 background:
                   "linear-gradient(to top, rgb(255,255,255) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.25) 100%)",
@@ -186,7 +185,7 @@ export default async function EventPage({ params }: PageProps) {
             />
             {/* Bottom fade into page background — dark */}
             <div
-              className="absolute inset-0 hidden dark:block"
+              className="absolute inset-0 hidden sm:dark:block"
               style={{
                 background:
                   "linear-gradient(to top, rgb(9,9,11) 0%, rgba(9,9,11,0.85) 30%, rgba(9,9,11,0.35) 60%, rgba(9,9,11,0.25) 100%)",
@@ -194,18 +193,18 @@ export default async function EventPage({ params }: PageProps) {
             />
 
             {/* Hero content – anchored bottom-left */}
-            <div className="relative z-10 flex flex-col justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-[1.1] dark:drop-shadow-lg">
+            <div className="relative z-10 flex flex-col sm:justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-5 sm:pt-28 pb-6 sm:pb-14">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-tight sm:leading-[1.1] dark:drop-shadow-lg">
                 {event.name}
               </h1>
               {event.tagline && (
-                <p className="mt-2.5 text-base sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-2xl">
+                <p className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-2xl">
                   {event.tagline}
                 </p>
               )}
 
               {/* Quick-info pills */}
-              <div className="mt-6 flex flex-wrap gap-2.5">
+              <div className="mt-3 sm:mt-6 flex flex-wrap gap-2 sm:gap-2.5">
                 {event.start_time_date && (
                   <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium">
                     <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
