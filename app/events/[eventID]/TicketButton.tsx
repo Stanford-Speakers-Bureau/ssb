@@ -90,8 +90,7 @@ export default function TicketButton({
       hour12: true,
     }).format(date);
 
-  const handleNotifyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
     setIsLoadingNotify(true);
     setNotifyMessage(null);
@@ -125,6 +124,11 @@ export default function TicketButton({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
+  }, [eventId, isLoadingNotify, isNotified]);
+
+  const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    void handleNotify();
   };
 
   // Check if event has started
@@ -728,7 +732,7 @@ export default function TicketButton({
     void handleTicketClick();
   }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isTicketingOpen]);
 
-  // Auto-notify after redirect from authentication
+  // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
   useEffect(() => {
     const autoNotifyKey = `auto_notify_pending:${eventId}`;
     const pending = sessionStorage.getItem(autoNotifyKey) === "1";
@@ -741,34 +745,8 @@ export default function TicketButton({
 
     autoNotifyProcessed.current = true;
     sessionStorage.removeItem(autoNotifyKey);
-
-    // Directly call the notify API (handleNotifyClick requires a mouse event)
-    (async () => {
-      setIsLoadingNotify(true);
-      try {
-        const response = await fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ speaker_id: eventId }),
-        });
-        if (response.ok || response.status === 409) {
-          setIsNotified(true);
-          setNotifyMessage(
-            response.status === 409
-              ? TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP
-              : TICKETING_NOTIFY_MESSAGES.SUCCESS,
-          );
-        } else {
-          const data = (await response.json()) as { error?: string };
-          setNotifyMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
-        }
-      } catch {
-        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
-      } finally {
-        setIsLoadingNotify(false);
-      }
-    })();
-  }, [eventId, isNotified]);
+    void handleNotify();
+  }, [eventId, isNotified, handleNotify]);
 
   // Auto-join waitlist after redirect from authentication
   useEffect(() => {
