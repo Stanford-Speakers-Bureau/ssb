@@ -52,6 +52,8 @@ export default function TicketButton({
   const [referralWarning, setReferralWarning] = useState<string | null>(null);
   const [isValidatingReferral, setIsValidatingReferral] = useState(false);
   const autoTicketProcessed = useRef(false);
+  const autoNotifyProcessed = useRef(false);
+  const autoWaitlistProcessed = useRef(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Waitlist states
@@ -100,8 +102,9 @@ export default function TicketButton({
         body: JSON.stringify({ speaker_id: eventId }),
       });
       if (response.status === 401) {
-        setIsLoadingNotify(false);
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(window.location.pathname)}`;
+        const currentPath = window.location.pathname;
+        const redirectUrl = `${currentPath}?notify=true`;
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
       const data = (await response.json()) as { error?: string };
@@ -640,17 +643,30 @@ export default function TicketButton({
     }
   }, [eventId, validateReferralCode]);
 
-  // Auto-create ticket after redirect from authentication.
+  // Auto-action after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
-  // before removing `ticket=true` from the URL.
+  // before removing query params from the URL.
   useEffect(() => {
-    const autoTicketKey = `auto_ticket_pending:${eventId}`;
     const url = new URL(window.location.href);
-    const autoTicketParam = url.searchParams.get("ticket");
+    let changed = false;
 
-    if (autoTicketParam === "true") {
-      sessionStorage.setItem(autoTicketKey, "1");
+    if (url.searchParams.get("ticket") === "true") {
+      sessionStorage.setItem(`auto_ticket_pending:${eventId}`, "1");
       url.searchParams.delete("ticket");
+      changed = true;
+    }
+    if (url.searchParams.get("notify") === "true") {
+      sessionStorage.setItem(`auto_notify_pending:${eventId}`, "1");
+      url.searchParams.delete("notify");
+      changed = true;
+    }
+    if (url.searchParams.get("waitlist") === "true") {
+      sessionStorage.setItem(`auto_waitlist_pending:${eventId}`, "1");
+      url.searchParams.delete("waitlist");
+      changed = true;
+    }
+
+    if (changed) {
       window.history.replaceState(
         {},
         "",
@@ -705,6 +721,64 @@ export default function TicketButton({
     sessionStorage.removeItem(autoTicketKey);
     void handleTicketClick();
   }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isTicketingOpen]);
+
+  // Auto-notify after redirect from authentication
+  useEffect(() => {
+    const autoNotifyKey = `auto_notify_pending:${eventId}`;
+    const pending = sessionStorage.getItem(autoNotifyKey) === "1";
+    if (!pending) return;
+    if (autoNotifyProcessed.current) return;
+    if (isNotified) {
+      sessionStorage.removeItem(autoNotifyKey);
+      return;
+    }
+
+    autoNotifyProcessed.current = true;
+    sessionStorage.removeItem(autoNotifyKey);
+
+    // Directly call the notify API (handleNotifyClick requires a mouse event)
+    (async () => {
+      setIsLoadingNotify(true);
+      try {
+        const response = await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ speaker_id: eventId }),
+        });
+        if (response.ok || response.status === 409) {
+          setIsNotified(true);
+          setNotifyMessage(
+            response.status === 409
+              ? TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP
+              : TICKETING_NOTIFY_MESSAGES.SUCCESS,
+          );
+        } else {
+          const data = (await response.json()) as { error?: string };
+          setNotifyMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+        }
+      } catch {
+        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+      } finally {
+        setIsLoadingNotify(false);
+      }
+    })();
+  }, [eventId, isNotified]);
+
+  // Auto-join waitlist after redirect from authentication
+  useEffect(() => {
+    const autoWaitlistKey = `auto_waitlist_pending:${eventId}`;
+    const pending = sessionStorage.getItem(autoWaitlistKey) === "1";
+    if (!pending) return;
+    if (autoWaitlistProcessed.current) return;
+    if (isOnWaitlist || hasTicket) {
+      sessionStorage.removeItem(autoWaitlistKey);
+      return;
+    }
+
+    autoWaitlistProcessed.current = true;
+    sessionStorage.removeItem(autoWaitlistKey);
+    void handleJoinWaitlist();
+  }, [eventId, handleJoinWaitlist, isOnWaitlist, hasTicket]);
 
   // Cleanup validation timeout on unmount
   useEffect(() => {
