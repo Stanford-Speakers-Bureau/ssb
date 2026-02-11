@@ -18,7 +18,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-10">
-            Last updated: February 7, 2025
+            Last updated: February 10, 2026
           </p>
 
           <div className="prose prose-zinc dark:prose-invert max-w-none space-y-8">
@@ -63,7 +63,7 @@ export default function TermsPage() {
                 these terms and applicable laws.
               </p>
               <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed">
-                You must be at least 13 years old (or the applicable age in
+                You must be at least 18 years old (or the applicable age in
                 your jurisdiction) to use our services. By using our services,
                 you represent that you meet any such age requirements.
               </p>
@@ -135,39 +135,6 @@ export default function TermsPage() {
                 merchantability, fitness for a particular purpose, and
                 non-infringement. We do not warrant that our services will be
                 uninterrupted, error-free, or free of harmful components.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold text-black dark:text-white font-serif mb-3">
-                Limitation of liability
-              </h2>
-              <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed">
-                To the maximum extent permitted by law, Stanford Speakers
-                Bureau and its officers, members, and affiliates shall not be
-                liable for any indirect, incidental, special, consequential, or
-                punitive damages, or for any loss of profits, data, or use,
-                arising out of or in connection with your use of our services.
-                Our total liability for any claims arising from these terms or
-                your use of our services shall not exceed the amount you paid
-                us, if any, in the twelve months preceding the claim, or one
-                hundred dollars (USD), whichever is greater. Some jurisdictions
-                do not allow certain limitations; in such cases, our liability
-                will be limited to the fullest extent permitted by law.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold text-black dark:text-white font-serif mb-3">
-                Indemnification
-              </h2>
-              <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed">
-                You agree to indemnify, defend, and hold harmless Stanford
-                Speakers Bureau and its officers, members, and affiliates from
-                and against any claims, damages, losses, liabilities, and
-                expenses (including reasonable attorneys&apos; fees) arising
-                out of or related to your use of our services, your violation
-                of these terms, or your violation of any third-party rights.
               </p>
             </section>
 

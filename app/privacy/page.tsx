@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-10">
-            Last updated: February 7, 2025
+            Last updated: February 7, 2026
           </p>
 
           <div className="prose prose-zinc dark:prose-invert max-w-none space-y-8">
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
               <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed">
                 Our services are directed at the Stanford community and general
                 audiences. We do not knowingly collect personal information from
-                children under 13. If you believe we have collected such
+                children under 18. If you believe we have collected such
                 information, please contact us so we can delete it.
               </p>
             </section>
