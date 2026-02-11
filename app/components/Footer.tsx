@@ -43,18 +43,6 @@ export default function Footer() {
             >
               Contact
             </Link>
-            <Link
-              href="/privacy"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
-            >
-              Terms
-            </Link>
           </nav>
 
           {/* Social Links - Right Side */}
