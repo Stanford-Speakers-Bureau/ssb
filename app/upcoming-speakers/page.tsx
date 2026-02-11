@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import UpcomingSpeakerCard from "@/app/components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
@@ -10,7 +11,13 @@ import {
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
-import WaitForImages from "@/app/components/WaitForImages";
+
+
+export const metadata: Metadata = {
+  title: "Upcoming Speakers",
+  description:
+    "See who's speaking next at Stanford. Browse upcoming events hosted by Stanford Speakers Bureau and get your tickets.",
+};
 
 type SanitizedEvent = {
   id: string;
@@ -159,56 +166,41 @@ export default async function UpcomingSpeakers() {
           ) : (
             <div className="space-y-12">
               {events.map((event) => (
-                <WaitForImages
+                <UpcomingSpeakerCard
                   key={event.id}
-                  urls={event.signedImageUrl ? [event.signedImageUrl] : []}
-                  maxToWait={1}
-                  timeoutMs={12000}
-                  fallback={
-                    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black">
-                      <div className="flex items-center gap-3 text-zinc-200">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span className="text-sm font-medium">Loading…</span>
-                      </div>
-                    </div>
+                  name={event.isMystery ? "???" : event.name || "???"}
+                  header={
+                    event.isMystery
+                      ? "Speaker — To Be Announced"
+                      : event.tagline || ""
                   }
-                >
-                  <UpcomingSpeakerCard
-                    key={event.id}
-                    name={event.isMystery ? "???" : event.name || "???"}
-                    header={
-                      event.isMystery
-                        ? "Speaker — To Be Announced"
-                        : event.tagline || ""
-                    }
-                    dateText={formatEventDate(event.start_time_date)}
-                    doorsOpenText={
-                      event.doors_open
-                        ? `Doors open ${formatTime(event.doors_open)}`
-                        : ""
-                    }
-                    eventTimeText={
-                      event.start_time_date
-                        ? `Starts at ${formatTime(event.start_time_date)}`
-                        : ""
-                    }
-                    locationName={event.isMystery ? "" : event.venue || ""}
-                    locationUrl={event.isMystery ? "" : event.venue_link || ""}
-                    backgroundImageUrl={
-                      event.isMystery
-                        ? ""
-                        : event.signedImageUrl || ""
-                    }
-                    ctaHref={event.isMystery ? "" : `/events/${event.route}`}
-                    ctaText={event.isMystery ? "" : "Get Tickets"}
-                    mystery={event.isMystery}
-                    eventId={event.id}
-                    isAlreadyNotified={userNotifications.has(event.id)}
-                    capacity={event.capacity}
-                    ticketsSold={event.ticketsSold}
-                    reserved={event.reserved}
-                  />
-                </WaitForImages>
+                  dateText={formatEventDate(event.start_time_date)}
+                  doorsOpenText={
+                    event.doors_open
+                      ? `Doors open ${formatTime(event.doors_open)}`
+                      : ""
+                  }
+                  eventTimeText={
+                    event.start_time_date
+                      ? `Starts at ${formatTime(event.start_time_date)}`
+                      : ""
+                  }
+                  locationName={event.isMystery ? "" : event.venue || ""}
+                  locationUrl={event.isMystery ? "" : event.venue_link || ""}
+                  backgroundImageUrl={
+                    event.isMystery
+                      ? ""
+                      : event.signedImageUrl || ""
+                  }
+                  ctaHref={event.isMystery ? "" : `/events/${event.route}`}
+                  ctaText={event.isMystery ? "" : "Get Tickets"}
+                  mystery={event.isMystery}
+                  eventId={event.id}
+                  isAlreadyNotified={userNotifications.has(event.id)}
+                  capacity={event.capacity}
+                  ticketsSold={event.ticketsSold}
+                  reserved={event.reserved}
+                />
               ))}
             </div>
           )}

@@ -19,10 +19,14 @@ const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseURL),
-  title: "Stanford Speakers Bureau",
+  title: {
+    template: "%s | Stanford Speakers Bureau",
+    default: "Stanford Speakers Bureau",
+  },
   description:
     "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
   openGraph: {
+    siteName: "Stanford Speakers Bureau",
     title: "Stanford Speakers Bureau (SSB)",
     description:
       "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
@@ -34,6 +38,13 @@ export const metadata: Metadata = {
       },
     ],
     url: `${baseURL}`,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

@@ -340,7 +340,7 @@ function RevealedCard({
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
       {/* Image */}
-      <div className="relative w-full aspect-[2/1] overflow-hidden">
+      <div className="relative w-full aspect-[2/1] overflow-hidden bg-zinc-800">
         {backgroundImageUrl && (
           <Image
             src={backgroundImageUrl}

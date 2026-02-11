@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Event Sponsorship",
+  description:
+    "Learn about Stanford Speakers Bureau sponsorship programs including the Community Uplift Fund, co-sponsorships, and full-service partnerships.",
+};
+
 export default function EventSponsorshipPage() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
