@@ -21,10 +21,11 @@ export default function GoogleOAuthPage() {
             Stanford Speakers Bureau uses Google sign-in to securely identify
             you. This page explains who we are, what our app does, and why we
             request your data. You can view our{" "}
-            <a href="https://stanfordspeakersbureau.com/privacy" className="text-[#A80D0C] hover:underline font-medium">
-              Privacy Policy
+            Privacy Policy at <a href="https://stanfordspeakersbureau.com/privacy" className="text-[#A80D0C] hover:underline font-medium">
+              https://stanfordspeakersbureau.com/privacy
             </a>{" "}
             for full details.
+            Also accessible at https://stanfordspeakersbureau.com/privacy.
           </p>
 
           <div className="prose prose-zinc dark:prose-invert max-w-none space-y-8">
