@@ -4,7 +4,7 @@ import Link from "next/link";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Stanford Speakers Bureau",
+  title: "Terms of Service",
   description:
     "Terms of service for using the Stanford Speakers Bureau website and event services.",
 };

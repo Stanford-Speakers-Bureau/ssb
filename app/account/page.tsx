@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -7,6 +8,11 @@ import {
   formatTime,
 } from "@/app/lib/supabase";
 import SignOutButton from "./SignOutButton";
+
+export const metadata: Metadata = {
+  title: "My Account",
+  robots: { index: false, follow: false },
+};
 
 interface RawTicket {
   id: string;

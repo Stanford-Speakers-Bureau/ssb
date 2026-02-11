@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   createServerSupabaseClient,
   getSupabaseClient,
@@ -6,6 +7,12 @@ import Image from "next/image";
 import Link from "next/link";
 import SuggestForm from "./SuggestForm";
 import Leaderboard from "./Leaderboard";
+
+export const metadata: Metadata = {
+  title: "Suggest a Speaker",
+  description:
+    "Suggest a speaker you'd love to see at Stanford. Vote on community suggestions and help shape future events.",
+};
 
 type Suggestion = {
   id: string;

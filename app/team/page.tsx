@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "Our Team",
+  description:
+    "Meet the leadership and directors behind Stanford Speakers Bureau.",
+};
 
 const leadership = [
   {

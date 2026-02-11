@@ -4,7 +4,7 @@ import Link from "next/link";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "Sign in with Google | Stanford Speakers Bureau",
+  title: "Sign in with Google",
   description:
     "Learn how Stanford Speakers Bureau uses Google sign-in, what data we request, and how we use it. Visible without logging in.",
 };

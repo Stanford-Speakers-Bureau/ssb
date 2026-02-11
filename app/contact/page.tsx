@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with Stanford Speakers Bureau. Share event ideas, speaker suggestions, or ask about co-sponsorship opportunities.",
+};
 
 export default function Contact() {
   return (

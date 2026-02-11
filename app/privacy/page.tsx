@@ -4,7 +4,7 @@ import Link from "next/link";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Stanford Speakers Bureau",
+  title: "Privacy Policy",
   description:
     "Privacy policy for Stanford Speakers Bureau: how we collect, use, and protect your information when you use our website and services.",
 };
