@@ -97,9 +97,9 @@ export async function getAppleWalletPass(
     organizationName: "Stanford Speakers Bureau",
 
     description: ticket.ticketType,
-    backgroundColor: isVIP ? "rgb(212, 175, 55)" : "rgb(168, 13, 12)",
-    foregroundColor: isVIP ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)",
-    labelColor: isVIP ? "rgb(80, 65, 20)" : "rgb(255, 215, 0)",
+    backgroundColor: isVIP ? "rgb(122, 92, 0)" : "rgb(168, 13, 12)",
+    foregroundColor: isVIP ? "rgb(255, 255, 255)" : "rgb(255, 255, 255)",
+    labelColor: isVIP ? "rgb(255, 235, 180)" : "rgb(255, 215, 0)",
   };
 
   const pass = new PKPass(buffers, certificates, props);
@@ -288,7 +288,8 @@ export async function getGoogleWalletPass(
             ),
           },
           issuerName: "Stanford Speakers Bureau",
-          hexBackgroundColor: "#A80D0C",
+          hexBackgroundColor:
+            ticket.ticketType?.toUpperCase().trim() === "VIP" ? "#7A5C00" : "#A80D0C",
           heroImage: {
             sourceUri: {
               uri: image_signed,
