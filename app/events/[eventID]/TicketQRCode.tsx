@@ -65,7 +65,7 @@ export default function TicketQRCode({
       <p className="mt-2 text-xs sm:text-sm text-zinc-300 text-center">
         {attendeeName && eventStartTime ? (
           <>
-            Valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>.
+            Ticket valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> on <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { month: "long", day: "numeric" })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>. We recommend arriving early to avoid long lines!
           </>
         ) : (
           "Show this QR code at the event entrance"
