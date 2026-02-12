@@ -50,7 +50,7 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
         <li>No bags larger than a clutch purse</li>
         <li>No food or drink, including water bottles</li>
         <li>No signs, flags, banners, or flyers</li>
-        <li>No chairs</li>
+        <li>No weapons, including those with concealed carry permits</li>
         <li>No re-entry will be permitted.</li>
         <li>No photography or recording.</li>
         <li>This is a private event and capacity is limited.</li>
