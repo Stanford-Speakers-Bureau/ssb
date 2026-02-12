@@ -171,43 +171,43 @@ export default async function EventPage({ params }: PageProps) {
   // Build JSON-LD structured data for the event
   const jsonLd = !isEventMystery(event)
     ? {
-        "@context": "https://schema.org",
-        "@type": "Event",
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: event.name,
+      ...(event.desc && { description: event.desc }),
+      ...(event.start_time_date && { startDate: event.start_time_date }),
+      ...(event.doors_open && { doorTime: event.doors_open }),
+      ...(event.venue && {
+        location: {
+          "@type": "Place",
+          name: event.venue,
+          ...(event.venue_link && { url: event.venue_link }),
+        },
+      }),
+      ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
+      url: `${baseURL}/events/${event.route || eventID}`,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      isAccessibleForFree: true,
+      performer: {
+        "@type": "Person",
         name: event.name,
-        ...(event.desc && { description: event.desc }),
-        ...(event.start_time_date && { startDate: event.start_time_date }),
-        ...(event.doors_open && { doorTime: event.doors_open }),
-        ...(event.venue && {
-          location: {
-            "@type": "Place",
-            name: event.venue,
-            ...(event.venue_link && { url: event.venue_link }),
-          },
-        }),
-        ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
+      },
+      organizer: {
+        "@type": "Organization",
+        name: "Stanford Speakers Bureau",
+        url: baseURL,
+      },
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        availability: isSoldOut
+          ? "https://schema.org/SoldOut"
+          : "https://schema.org/InStock",
         url: `${baseURL}/events/${event.route || eventID}`,
-        eventStatus: "https://schema.org/EventScheduled",
-        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-        isAccessibleForFree: true,
-        performer: {
-          "@type": "Person",
-          name: event.name,
-        },
-        organizer: {
-          "@type": "Organization",
-          name: "Stanford Speakers Bureau",
-          url: baseURL,
-        },
-        offers: {
-          "@type": "Offer",
-          price: "0",
-          priceCurrency: "USD",
-          availability: isSoldOut
-            ? "https://schema.org/SoldOut"
-            : "https://schema.org/InStock",
-          url: `${baseURL}/events/${event.route || eventID}`,
-        },
-      }
+      },
+    }
     : null;
 
   return (
@@ -268,7 +268,7 @@ export default async function EventPage({ params }: PageProps) {
             {event.name}
           </h1>
           {event.tagline && (
-            <p className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-2xl">
+            <p className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed max-w-6xl">
               {event.tagline}
             </p>
           )}
