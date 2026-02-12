@@ -89,6 +89,7 @@ export async function getAppleWalletPass(
     ),
   };
 
+  const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const props = {
     passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
     teamIdentifier: "SNC2X5N2CY",
@@ -96,9 +97,9 @@ export async function getAppleWalletPass(
     organizationName: "Stanford Speakers Bureau",
 
     description: ticket.ticketType,
-    backgroundColor: "rgb(168, 13, 12)",
-    foregroundColor: "rgb(255, 255, 255)",
-    labelColor: "rgb(255, 215, 0)",
+    backgroundColor: isVIP ? "rgb(212, 175, 55)" : "rgb(168, 13, 12)",
+    foregroundColor: isVIP ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)",
+    labelColor: isVIP ? "rgb(80, 65, 20)" : "rgb(255, 215, 0)",
   };
 
   const pass = new PKPass(buffers, certificates, props);

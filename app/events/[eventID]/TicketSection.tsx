@@ -200,6 +200,8 @@ export default function TicketSection({
                 size={190}
                 compact
                 ticketType={ticketType}
+                attendeeName={ticketName}
+                eventStartTime={eventStartTime ?? doorsOpen}
               />
               <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
                 <button

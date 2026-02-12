@@ -2,12 +2,15 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { motion } from "motion/react";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 
 type TicketQRCodeProps = {
   ticketId: string;
   size?: number;
   compact?: boolean;
   ticketType?: string | null;
+  attendeeName?: string | null;
+  eventStartTime?: string | null;
 };
 
 export default function TicketQRCode({
@@ -15,6 +18,8 @@ export default function TicketQRCode({
   size = 220,
   compact = true,
   ticketType = null,
+  attendeeName = null,
+  eventStartTime = null,
 }: TicketQRCodeProps) {
   const isVIP = ticketType?.toLowerCase().trim() === "vip";
 
@@ -46,9 +51,8 @@ export default function TicketQRCode({
           />
         )}
         <div
-          className={`bg-white rounded-lg shadow-2xl border-4 border-white relative z-0 ${
-            compact ? "p-3 sm:p-4" : "p-6 md:p-8"
-          }`}
+          className={`bg-white rounded-lg shadow-2xl border-4 border-white relative z-0 ${compact ? "p-3 sm:p-4" : "p-6 md:p-8"
+            }`}
         >
           <QRCodeSVG value={ticketId} size={size} level="H" marginSize={2} />
         </div>
@@ -58,8 +62,14 @@ export default function TicketQRCode({
           <p className="text-xs sm:text-sm font-bold text-white">VIP</p>
         </div>
       )}
-      <p className="mt-2 text-xs sm:text-sm text-zinc-300 text-center max-w-xs">
-        Show this QR code at the event entrance
+      <p className="mt-2 text-xs sm:text-sm text-zinc-300 text-center">
+        {attendeeName && eventStartTime ? (
+          <>
+            Valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>.
+          </>
+        ) : (
+          "Show this QR code at the event entrance"
+        )}
       </p>
     </div>
   );

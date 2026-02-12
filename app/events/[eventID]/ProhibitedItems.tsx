@@ -49,8 +49,8 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
       <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
         <li>No bags larger than a clutch purse</li>
         <li>No food or drink, including water bottles</li>
-        <li>No signs, no flags</li>
-        <li>No chairs</li>
+        <li>No signs, no flags, no chairs</li>
+        <li>For ADA accommodations, <a href="mailto:tickets@stanfordspeakersbureau.com" className="text-amber-500 dark:text-amber-200 underline underline-offset-2 decoration-amber-300 dark:decoration-amber-600 hover:text-amber-900 dark:hover:text-amber-300 transition-colors">contact us</a></li>
       </ul>
     </div>
   );
