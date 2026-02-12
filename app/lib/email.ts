@@ -1,6 +1,10 @@
 import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
-import { PACIFIC_TIMEZONE, REFERRAL_MESSAGE } from "./constants";
+import {
+  IMPORTANT_NOTICE_ITEMS,
+  PACIFIC_TIMEZONE,
+  REFERRAL_MESSAGE,
+} from "./constants";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // emails are so stupid
@@ -147,7 +151,8 @@ async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
   const body = JSON.stringify({
     Content: {
       Raw: {
-        Data: btoa(rawMessage),
+        // Use Buffer for proper UTF-8 to base64 encoding (btoa fails with Unicode chars like emojis)
+        Data: Buffer.from(rawMessage, "utf-8").toString("base64"),
       },
     },
   });
@@ -170,8 +175,59 @@ async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
   }
 }
 
+// Toggle to enable/disable referral info in ticket emails
+const REFERRAL_ENABLED = false;
+
 const FROM_EMAIL =
   process.env.SES_FROM_EMAIL || "hello@stanfordspeakersbureau.com";
+
+/**
+ * Generates the HTML for the "Important" notice block used in email templates.
+ * Accepts optional extra HTML strings to append after the base items.
+ */
+function getImportantNoticeHTML(
+  gmailBlendStart: string,
+  gmailBlendEnd: string,
+  extraItems?: string[],
+): string {
+  const allItems = [
+    ...IMPORTANT_NOTICE_ITEMS.map(
+      (item) =>
+        `<b>
+                    <span style="display: inline-block; vertical-align: middle; margin-right: 8px;">${item.emoji}</span>
+                    ${item.text}
+                  </b>`,
+    ),
+    ...(extraItems || []),
+  ];
+
+  const itemsHTML = allItems
+    .map((content, i) => {
+      const marginStyle =
+        i < allItems.length - 1 ? ' style="margin-bottom: 8px;"' : "";
+      return `<div${marginStyle}>
+                  ${content}
+                </div>`;
+    })
+    .join("\n                ");
+
+  return `<!-- Important Notice -->
+          <div style="background-color: #A80D0C; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
+            ${gmailBlendStart}
+              <h2 style="margin: 0 0 12px 0; color: #ffffff; font-size: 18px; font-weight: 700; text-transform: uppercase;"><b>Important</b></h2>
+              <div style="color: #ffffff; font-size: 15px; line-height: 1.8;">
+                ${itemsHTML}
+              </div>
+            ${gmailBlendEnd}
+          </div>`;
+}
+
+/**
+ * Generates the plain text version of the "Important" notice for email templates.
+ */
+function getImportantNoticeText(): string {
+  return `IMPORTANT:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
+}
 
 type TicketEmailData = {
   email: string;
@@ -184,6 +240,7 @@ type TicketEmailData = {
   eventVenue?: string | null;
   eventVenueLink?: string | null;
   eventDescription?: string | null;
+  doorsOpenTime?: string | null;
 };
 
 // Wrap base64 (or any long) strings to 76-character lines for MIME compatibility
@@ -357,6 +414,7 @@ async function generateTicketEmailHTML(
     ticketId,
     eventVenue,
     eventVenueLink,
+    doorsOpenTime,
   } = data;
 
   const formattedDate = eventStartTime
@@ -372,9 +430,21 @@ async function generateTicketEmailHTML(
     }).format(new Date(eventStartTime))
     : "TBA";
 
+  const formattedDoorsOpen = doorsOpenTime
+    ? new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(doorsOpenTime))
+    : null;
+
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
+  const cancelTicketUrl = eventRoute
+    ? `${baseUrl}/events/${eventRoute}?cancel_ticket=${ticketId}`
+    : null;
   const logoUrl = `${baseUrl}/logo.png`;
   const googleCalendarUrl = generateGoogleCalendarUrl({
     eventName: data.eventName,
@@ -398,8 +468,6 @@ async function generateTicketEmailHTML(
   // Gmail-specific wrapper for enforcing white text in dark mode
   const gmailBlendStart = `<span class="gmail-blend-screen"><span class="gmail-blend-difference">`;
   const gmailBlendEnd = `</span></span>`;
-
-  const referralEnabled = false;
 
   return `
 <!DOCTYPE html>
@@ -536,6 +604,8 @@ async function generateTicketEmailHTML(
       <td align="center" class="email-container" style="background-color: #27272a; padding: 40px 20px; max-width: 900px; width: 100%;">
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           
+          ${getImportantNoticeHTML(gmailBlendStart, gmailBlendEnd)}
+          
           ${gmailBlendStart}
             ${isVIP
       ? `
@@ -551,6 +621,25 @@ async function generateTicketEmailHTML(
               Your ticket is enclosed below. We can't wait to see you!
             </p>
           ${gmailBlendEnd}
+          
+          ${gmailBlendStart}
+            <p style="margin: 0 0 20px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6;">
+              Life happens, and we understand plans can change. If you find yourself unable to attend, please take a moment to cancel your ticket using the link below. Your thoughtfulness helps us extend the opportunity to others who are excited to attend.
+            </p>
+          ${gmailBlendEnd}
+          
+          ${cancelTicketUrl
+      ? `
+          <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+            <tr>
+              <td align="center" class="button-wrapper" style="padding: 0;">
+                <a href="${cancelTicketUrl}" class="button button-cancel" style="display: inline-block; padding: 14px 28px; background-color: #A80D0C; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Cancel Ticket</a>
+              </td>
+            </tr>
+          </table>
+          `
+      : ""
+    }
           
           <!-- Event Details Card -->
           <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : ""}">
@@ -586,6 +675,19 @@ async function generateTicketEmailHTML(
                   ${gmailBlendStart}${formattedDate}${gmailBlendEnd}
                 </td>
               </tr>
+              ${formattedDoorsOpen
+      ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
+                  ${gmailBlendStart}Doors Open:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${gmailBlendStart}${formattedDoorsOpen}${gmailBlendEnd}
+                </td>
+              </tr>
+              `
+      : ""
+    }
               ${eventVenue
       ? `
               <tr>
@@ -620,7 +722,7 @@ async function generateTicketEmailHTML(
                   ${gmailBlendStart}${ticketId}${gmailBlendEnd}
                 </td>
               </tr>
-              ${referralEnabled && referralCode && !(ticketType.toUpperCase() == "VIP")
+              ${REFERRAL_ENABLED && referralCode && !(ticketType.toUpperCase() == "VIP")
       ? `
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
@@ -643,7 +745,7 @@ async function generateTicketEmailHTML(
     }
             </table>
             
-            ${referralEnabled && referralCode && !(ticketType.toUpperCase() == "VIP")
+            ${REFERRAL_ENABLED && referralCode && !(ticketType.toUpperCase() == "VIP")
       ? `
             <div style="margin-top: 20px; padding: 16px 0; text-align: center; border-top: 1px solid #3f3f46;">
               ${gmailBlendStart}
@@ -732,6 +834,9 @@ async function generateTicketEmailHTML(
             <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
             </p>
+            <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
+              If you have friends without tickets, they should come and wait on the in-person waitlist.
+            </p>
           ${gmailBlendEnd}
           
           ${googleCalendarUrl
@@ -761,7 +866,7 @@ async function generateTicketEmailHTML(
             Stanford Speakers Bureau
           </p>
           <p style="margin: 0; color: #71717a; font-size: 12px;">
-            If you have any questions, please contact us at <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
+            For ADA accommodations or other questions, please email <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
           </p>
         ${gmailBlendEnd}
       </td>
@@ -777,7 +882,7 @@ async function generateTicketEmailHTML(
  * Generate plain text email content for ticket confirmation
  */
 function generateTicketEmailText(data: TicketEmailData): string {
-  const { eventName, ticketType, eventStartTime, eventRoute, ticketId } = data;
+  const { eventName, ticketType, eventStartTime, eventRoute, ticketId, doorsOpenTime } = data;
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
@@ -792,8 +897,22 @@ function generateTicketEmailText(data: TicketEmailData): string {
     }).format(new Date(eventStartTime))
     : "TBA";
 
+  const formattedDoorsOpen = doorsOpenTime
+    ? new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(doorsOpenTime))
+    : null;
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = eventRoute
-    ? `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/events/${eventRoute}`
+    ? `${baseUrl}/events/${eventRoute}`
+    : null;
+  const cancelTicketUrl = eventRoute
+    ? `${baseUrl}/events/${eventRoute}?cancel_ticket=${ticketId}`
     : null;
 
   // Generate referral code from email
@@ -811,18 +930,24 @@ Thank you for your ticket purchase. Your ticket has been confirmed!
 ${ticketType?.toUpperCase() === "VIP" ? "We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
-- Ticket Type: ${ticketType || "STANDARD"}
+${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
-${referralCode && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Code: ${referralCode}` : ""}
-${referralUrl && !(ticketType.toUpperCase() == "VIP") ? `- Your Referral Link: ${referralUrl}` : ""}
-${REFERRAL_MESSAGE}
+${getImportantNoticeText()}
 
-Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
+Life happens, and we understand plans can change. If you find yourself unable to attend, please take a moment to cancel your ticket using the link below. Your thoughtfulness helps us extend the opportunity to others who are excited to attend.
+
+${cancelTicketUrl ? `Cancel Ticket: ${cancelTicketUrl}` : ""}
+${REFERRAL_ENABLED && referralCode && !(ticketType.toUpperCase() == "VIP") ? `
+- Your Referral Code: ${referralCode}
+${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
+${REFERRAL_MESSAGE}
+` : ""}
+Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there! If you have friends without tickets, they should come and wait on the in-person waitlist.
 
 Stanford Speakers Bureau
-If you have any questions, please contact us at ${FROM_EMAIL}
+For ADA accommodations or other questions, please email ${FROM_EMAIL}
   `.trim();
 }
 
@@ -1152,7 +1277,7 @@ async function generateWaitlistEmailHTML(
             Stanford Speakers Bureau
           </p>
           <p style="margin: 0; color: #71717a; font-size: 12px;">
-            If you have any questions, please contact us at <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
+            For ADA accommodations or other questions, please email <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
           </p>
         ${gmailBlendEnd}
       </td>
@@ -1200,7 +1325,7 @@ Important: The online waitlist closes 2 hours before the event. After that, plea
 We look forward to seeing you there!
 
 Stanford Speakers Bureau
-If you have any questions, please contact us at ${FROM_EMAIL}
+For ADA accommodations or other questions, please email ${FROM_EMAIL}
   `.trim();
 }
 

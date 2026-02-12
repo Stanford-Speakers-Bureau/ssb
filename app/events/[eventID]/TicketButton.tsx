@@ -26,10 +26,10 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
-  ERROR_EVENT_STARTED_OR_ENDED:
-    "Cannot cancel tickets after the event has started.",
-  ERROR_EVENT_STARTED:
-    "Ticket sales have ended. This event has already started.",
+  EVENT_OVER_WITH_TICKET:
+    "This event is over. Thank you for attending!",
+  EVENT_PASSED:
+    "This event has passed.",
   CREATING: "Creating ticket...",
   CANCELLING: "Cancelling ticket...",
 } as const;
@@ -546,7 +546,7 @@ export default function TicketButton({
           setIsLiveEvent(true);
         }
         // If event has started, update state
-        if (errorMessage === TICKET_MESSAGES.ERROR_EVENT_STARTED) {
+        if (errorMessage === TICKET_MESSAGES.EVENT_PASSED) {
           // State will be updated by hasEventStarted check
         }
       }
@@ -723,7 +723,7 @@ export default function TicketButton({
     // Don't auto-create ticket if event has started
     if (hasEventStarted) {
       sessionStorage.removeItem(autoTicketKey);
-      setMessage(TICKET_MESSAGES.ERROR_EVENT_STARTED);
+      setMessage(TICKET_MESSAGES.EVENT_PASSED);
       return;
     }
 
@@ -1143,7 +1143,7 @@ export default function TicketButton({
             <div className="flex min-h-[3rem] items-center justify-center">
               <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
                 {hasEventStarted
-                  ? TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED
+                  ? TICKET_MESSAGES.EVENT_OVER_WITH_TICKET
                   : TICKET_MESSAGES.ERROR_LIVE_EVENT}
               </p>
             </div>
@@ -1151,7 +1151,7 @@ export default function TicketButton({
           {isSalesDisabled && (
             <div className="flex min-h-[3rem] items-center justify-center">
               <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
-                {TICKET_MESSAGES.ERROR_EVENT_STARTED}
+                {TICKET_MESSAGES.EVENT_PASSED}
               </p>
             </div>
           )}

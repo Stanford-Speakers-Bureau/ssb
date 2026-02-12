@@ -319,7 +319,8 @@ export async function POST(req: Request) {
             start_time_date,
             venue,
             venue_link,
-            desc
+            desc,
+            doors_open
           )
         `,
       )
@@ -347,6 +348,7 @@ export async function POST(req: Request) {
           eventVenue: event?.venue || null,
           eventVenueLink: event?.venue_link || null,
           eventDescription: event?.desc || null,
+          doorsOpenTime: event?.doors_open || null,
         });
       } catch (emailError) {
         console.error("Email sending error:", emailError);
@@ -502,7 +504,8 @@ export async function DELETE(req: Request) {
             start_time_date,
             venue,
             venue_link,
-            desc
+            desc,
+            doors_open
           )
         `,
         )
@@ -537,6 +540,7 @@ export async function DELETE(req: Request) {
             eventVenue: event?.venue || null,
             eventVenueLink: event?.venue_link || null,
             eventDescription: event?.desc || null,
+            doorsOpenTime: event?.doors_open || null,
           });
           console.log(
             `Ticket created for waitlist user ${topWaitlistEntry.email}`,
