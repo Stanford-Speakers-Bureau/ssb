@@ -47,8 +47,10 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
         Prohibited Items
       </h3>
       <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
-        <li>No bags, including purses</li>
-        <li>No water bottles</li>
+        <li>No bags larger than a clutch purse</li>
+        <li>No food or drink, including water bottles</li>
+        <li>No signs, no flags</li>
+        <li>No chairs</li>
       </ul>
     </div>
   );
