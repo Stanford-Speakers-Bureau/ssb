@@ -58,11 +58,17 @@ export async function GET(req: Request) {
         ? BANNER_MESSAGES.COUNTDOWN_TICKETS_MESSAGE
         : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
+    const bannerHref = isMystery
+      ? "/upcoming-speakers"
+      : closestEvent
+        ? `/events/${closestEvent.route}`
+        : "/upcoming-speakers";
+
     return NextResponse.json({
       showBanner,
       bannerProps: {
         text: bannerText,
-        href: "/upcoming-speakers",
+        href: bannerHref,
         prefaceLabel,
         target: countdownTarget || null,
       },
