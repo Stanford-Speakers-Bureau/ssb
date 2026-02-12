@@ -51,11 +51,11 @@ const directors = [
     position: "Director of Coffee Chats",
     image: "/team/andrea.jpg",
   },
-  {
-    name: "Cindy Toh",
-    position: "Director of Co-Sponsorship",
-    image: "/team/cindy.jpg",
-  },
+  // {
+  //   name: "Cindy Toh",
+  //   position: "Director of Co-Sponsorship",
+  //   image: "/team/cindy.jpg",
+  // },
 ];
 
 function TeamCard({
