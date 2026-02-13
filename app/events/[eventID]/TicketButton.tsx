@@ -1240,8 +1240,8 @@ export default function TicketButton({
                         No Bags Policy
                       </h3>
                       <p className="text-zinc-500 dark:text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
-                        This event has a strict no bags policy. You will be turned away
-                        at the entrance with any form of a bag, including a purse.
+                        This event has a strict no bags policy. <strong>You will be turned away
+                          at the entrance with any form of a bag larger than a small clutch purse.</strong> (4.5” x 6.5”)
                       </p>
                       <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
                         Type &quot;no bags&quot; below to confirm you understand:
