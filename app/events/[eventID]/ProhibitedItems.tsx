@@ -48,7 +48,7 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
       </h3>
       <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
         <li>This is a private event and capacity is limited.</li>
-        <li>No bags larger than a clutch purse.</li>
+        <li>No bags larger than a clutch purse. (4.5” x 6.5”)</li>
         <li>No food or drink, including water bottles.</li>
         <li>No signs, flags, banners, or flyers of any kind.</li>
         <li>No chairs of any kind (ADA seating will be provided on-site).</li>
