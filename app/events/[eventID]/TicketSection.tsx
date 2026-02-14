@@ -162,6 +162,7 @@ export default function TicketSection({
             isTicketingOpen={isTicketingOpen}
             ticketingOpensAt={ticketingDate}
             initialIsNotified={initialIsNotified}
+            isLoggedIn={userEmail != null}
           />
         </div>
       )}
@@ -269,6 +270,8 @@ export default function TicketSection({
           )}
         </>
       )}
+
+
     </div>
   );
 }
