@@ -15,6 +15,7 @@ type TicketButtonProps = {
   isTicketingOpen?: boolean;
   ticketingOpensAt?: string | null;
   initialIsNotified?: boolean;
+  isLoggedIn?: boolean;
 };
 
 const TICKET_MESSAGES = {
@@ -43,6 +44,7 @@ export default function TicketButton({
   isTicketingOpen = true,
   ticketingOpensAt: ticketingOpensAtProp = null,
   initialIsNotified = false,
+  isLoggedIn = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -1018,7 +1020,7 @@ export default function TicketButton({
   return (
     <div>
       {!hasTicket && !isTicketingOpen && !isSoldOut ? (
-        showTicketingOpensOnly ? (
+        showTicketingOpensOnly ? (<>
           <div className="rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] p-3.5 sm:p-4">
             <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
               Ticketing opens{" "}
@@ -1083,6 +1085,27 @@ export default function TicketButton({
               )}
             </div>
           </div>
+          {!isLoggedIn && (
+            <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+              <svg
+                className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                This event is only open to Stanford affiliates.
+              </p>
+            </div>
+          )}
+        </>
         ) : null
       ) : (
         <>
@@ -1119,24 +1142,26 @@ export default function TicketButton({
       )} */}
 
           {!hasTicket && (<>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
-              <svg
-                className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                />
-              </svg>
-              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                This event is only open to Stanford affiliates.
-              </p>
-            </div>
+            {!isLoggedIn && (
+              <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+                <svg
+                  className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                  This event is only open to Stanford affiliates.
+                </p>
+              </div>
+            )}
             <motion.button
               whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
               whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
