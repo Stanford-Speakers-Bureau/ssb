@@ -184,11 +184,13 @@ const FROM_EMAIL =
 /**
  * Generates the HTML for the "Important" notice block used in email templates.
  * Accepts optional extra HTML strings to append after the base items.
+ * When eventPageUrl is provided, adds "Additional Terms and Conditions" line below the notice.
  */
 function getImportantNoticeHTML(
   gmailBlendStart: string,
   gmailBlendEnd: string,
   extraItems?: string[],
+  eventPageUrl?: string | null,
 ): string {
   const allItems = [
     ...IMPORTANT_NOTICE_ITEMS.map(
@@ -211,6 +213,12 @@ function getImportantNoticeHTML(
     })
     .join("\n                ");
 
+  const termsLine =
+    eventPageUrl &&
+    `<div style="margin: -8px 0 24px 0; color: #f4f4f5; font-size: 14px; line-height: 1.6;">
+              Additional Terms and Conditions can be found <a href="${eventPageUrl}" style="color: #fbbf24; text-decoration: underline;">here</a>.
+            </div>`;
+
   return `<!-- Important Notice -->
           <div style="background-color: #A80D0C; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
             ${gmailBlendStart}
@@ -219,14 +227,19 @@ function getImportantNoticeHTML(
                 ${itemsHTML}
               </div>
             ${gmailBlendEnd}
-          </div>`;
+          </div>${termsLine || ""}`;
 }
 
 /**
  * Generates the plain text version of the "Important" notice for email templates.
+ * When eventPageUrl is provided, adds "Additional Terms and Conditions" line below the notice.
  */
-function getImportantNoticeText(): string {
-  return `IMPORTANT:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
+function getImportantNoticeText(eventPageUrl?: string | null): string {
+  const base = `IMPORTANT:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
+  if (eventPageUrl) {
+    return `${base}\n\nAdditional Terms and Conditions can be found here: ${eventPageUrl}`;
+  }
+  return base;
 }
 
 type TicketEmailData = {
@@ -604,7 +617,7 @@ async function generateTicketEmailHTML(
       <td align="center" class="email-container" style="background-color: #27272a; padding: 40px 20px; max-width: 900px; width: 100%;">
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           
-          ${getImportantNoticeHTML(gmailBlendStart, gmailBlendEnd)}
+          ${getImportantNoticeHTML(gmailBlendStart, gmailBlendEnd, undefined, eventUrl)}
           
           ${gmailBlendStart}
             ${isVIP
@@ -934,7 +947,7 @@ ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Typ
 - Ticket ID: ${ticketId}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
-${getImportantNoticeText()}
+${getImportantNoticeText(eventUrl)}
 
 Life happens, and we understand plans can change. If you find yourself unable to attend, please take a moment to cancel your ticket using the link below. Your thoughtfulness helps us extend the opportunity to others who are excited to attend.
 
