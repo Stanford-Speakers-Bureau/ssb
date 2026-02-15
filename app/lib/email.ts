@@ -477,6 +477,21 @@ async function generateTicketEmailHTML(
 
   const qrImageSrc = options?.qrCid ? `cid:${options.qrCid}` : "";
   const isVIP = ticketType?.toUpperCase() === "VIP";
+  const ticketValidTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : "";
+  const ticketValidDate = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+  const attendeeName = data.name?.trim() || "you";
 
   // Gmail-specific wrapper for enforcing white text in dark mode
   const gmailBlendStart = `<span class="gmail-blend-screen"><span class="gmail-blend-difference">`;
@@ -834,7 +849,7 @@ async function generateTicketEmailHTML(
                         
             ${gmailBlendStart}
               <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-                Show this QR code at the event entrance for quick check-in.
+                Ticket valid until <span style="font-weight: bold; color: #e4e4e7;">${ticketValidTime}</span> on <span style="font-weight: bold; color: #e4e4e7;">${ticketValidDate}</span> for <span style="font-weight: bold; color: #e4e4e7;">${attendeeName}</span>. We recommend arriving early to avoid long lines!
               </p>
             ${gmailBlendEnd}
 
@@ -846,9 +861,6 @@ async function generateTicketEmailHTML(
           ${gmailBlendStart}
             <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
               Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
-            </p>
-            <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-              If you have friends without tickets, they should come and wait on the in-person waitlist.
             </p>
           ${gmailBlendEnd}
           
@@ -957,7 +969,7 @@ ${REFERRAL_ENABLED && referralCode && !(ticketType.toUpperCase() == "VIP") ? `
 ${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
 ${REFERRAL_MESSAGE}
 ` : ""}
-Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there! If you have friends without tickets, they should come and wait on the in-person waitlist.
+Please bring a valid ID and this confirmation email to the event. We look forward to seeing you there!
 
 Stanford Speakers Bureau
 For ADA accommodations or other questions, please email ${FROM_EMAIL}
