@@ -37,6 +37,7 @@ export type Event = {
   route: string | null;
   img_version?: number | null;
   waitlist_chance?: string | null;
+  livestream?: boolean | null;
 };
 
 type UnauthorizedResult = {
