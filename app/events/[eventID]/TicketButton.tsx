@@ -63,7 +63,6 @@ export default function TicketButton({
   // Waitlist states
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
-  const [totalWaitlist, setTotalWaitlist] = useState<number>(0);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
   const [isWaitlistStatusLoading, setIsWaitlistStatusLoading] = useState(false);
@@ -170,11 +169,9 @@ export default function TicketButton({
         const data = (await response.json()) as {
           isOnWaitlist: boolean;
           position: number | null;
-          total: number;
         };
         setIsOnWaitlist(data.isOnWaitlist);
         setWaitlistPosition(data.position);
-        setTotalWaitlist(data.total || 0);
         setIsWaitlistPositionReady(true);
       }
     } catch (error) {
@@ -853,14 +850,16 @@ export default function TicketButton({
           ) : (
             <div className="relative rounded-2xl p-[1.5px]">
               {/* Animated gradient border - rotating conic gradient behind the card */}
-              <style>{`@keyframes waitlist-spin { from { --waitlist-angle: 0deg; } to { --waitlist-angle: 360deg; } } @property --waitlist-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }`}</style>
-              <div
-                className="absolute inset-0 rounded-2xl"
-                style={{
-                  background: "conic-gradient(from var(--waitlist-angle), #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
-                  animation: "waitlist-spin 3s linear infinite",
-                }}
-              />
+              <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <motion.div
+                  className="absolute inset-[-50%]"
+                  style={{
+                    background: "conic-gradient(from 0deg, #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
 
               <div className="relative rounded-[calc(1rem-1.5px)] bg-zinc-950 p-5 sm:p-6">
                 {/* Sold out label */}
