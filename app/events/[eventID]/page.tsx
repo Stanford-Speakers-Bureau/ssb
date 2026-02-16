@@ -177,13 +177,17 @@ export default async function EventPage({ params }: PageProps) {
       ...(event.desc && { description: event.desc }),
       ...(event.start_time_date && { startDate: event.start_time_date }),
       ...(event.doors_open && { doorTime: event.doors_open }),
-      ...(event.venue && {
-        location: {
-          "@type": "Place",
-          name: event.venue,
-          ...(event.venue_link && { url: event.venue_link }),
+      location: {
+        "@type": "Place",
+        name: event.venue || "Stanford University",
+        ...(event.venue_link && { url: event.venue_link }),
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Stanford",
+          addressRegion: "CA",
+          addressCountry: "US",
         },
-      }),
+      },
       ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
       url: `${baseURL}/events/${event.route || eventID}`,
       eventStatus: "https://schema.org/EventScheduled",
