@@ -838,6 +838,28 @@ export default function TicketButton({
     if (!isOnWaitlist) {
       return (
         <div className="mb-5">
+
+          {!isLoggedIn && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+              <svg
+                className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                This event is only open to Stanford affiliates.
+              </p>
+            </div>
+          )}
+
           {isWaitlistStatusLoading ? (
             <div className="mb-3">
               <div className="rounded-2xl bg-zinc-900 dark:bg-zinc-900 p-6">
@@ -864,7 +886,7 @@ export default function TicketButton({
               <div className="relative rounded-[calc(1rem-1.5px)] bg-zinc-950 p-5 sm:p-6">
                 {/* Sold out label */}
                 <p className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-4">
-                  Sold out
+                  This event is Sold out
                 </p>
 
                 {/* Hero copy */}
