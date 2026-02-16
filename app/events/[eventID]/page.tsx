@@ -177,13 +177,17 @@ export default async function EventPage({ params }: PageProps) {
       ...(event.desc && { description: event.desc }),
       ...(event.start_time_date && { startDate: event.start_time_date }),
       ...(event.doors_open && { doorTime: event.doors_open }),
-      ...(event.venue && {
-        location: {
-          "@type": "Place",
-          name: event.venue,
-          ...(event.venue_link && { url: event.venue_link }),
+      location: {
+        "@type": "Place",
+        name: event.venue || "Stanford University",
+        ...(event.venue_link && { url: event.venue_link }),
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Stanford",
+          addressRegion: "CA",
+          addressCountry: "US",
         },
-      }),
+      },
       ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
       url: `${baseURL}/events/${event.route || eventID}`,
       eventStatus: "https://schema.org/EventScheduled",
@@ -335,7 +339,7 @@ export default async function EventPage({ params }: PageProps) {
       </section>
 
       {/* ─── Content section on solid background ─── */}
-      <main className="w-full max-w-6xl mx-auto px-5 sm:px-8 lg:px-12 pb-12 lg:pb-16">
+      <main className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pb-12 lg:pb-16">
         <div className="lg:grid lg:grid-cols-2 lg:gap-8 flex flex-col-reverse gap-6">
           {/* Left column – event details */}
           <div className="flex flex-col gap-5">
@@ -383,6 +387,7 @@ export default async function EventPage({ params }: PageProps) {
                 isSoldOut={isSoldOut}
                 ticketingDate={process.env.LOCAL_TICKETING_ENABLED === "true" ? null : (event.ticketing_date ?? event.release_date)}
                 initialIsNotified={isNotified}
+                waitlistChance={event.waitlist_chance}
               />
             </div>
           </div>

@@ -36,6 +36,7 @@ export type Event = {
   doors_open: string | null;
   route: string | null;
   img_version?: number | null;
+  waitlist_chance?: string | null;
 };
 
 type UnauthorizedResult = {

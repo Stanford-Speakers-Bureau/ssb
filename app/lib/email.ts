@@ -479,17 +479,17 @@ async function generateTicketEmailHTML(
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const ticketValidTime = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      })
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: PACIFIC_TIMEZONE,
+    })
     : "";
   const ticketValidDate = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-        month: "long",
-        day: "numeric",
-      })
+      month: "long",
+      day: "numeric",
+    })
     : "";
   const attendeeName = data.name?.trim() || "you";
 
