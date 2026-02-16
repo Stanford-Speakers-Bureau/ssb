@@ -843,171 +843,53 @@ export default function TicketButton({
         <div className="mb-5">
           {isWaitlistStatusLoading ? (
             <div className="mb-3">
-              <div className="h-5 w-72 max-w-full rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-4" />
-              <div className="h-4 w-40 rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-2" />
-              <div className="h-12 w-full rounded-lg bg-zinc-100 dark:bg-white/[0.06] animate-pulse" />
+              <div className="rounded-2xl bg-zinc-900 dark:bg-zinc-900 p-6">
+                <div className="h-4 w-20 rounded bg-white/10 animate-pulse mb-5" />
+                <div className="h-7 w-48 rounded bg-white/10 animate-pulse mb-2" />
+                <div className="h-4 w-64 max-w-full rounded bg-white/10 animate-pulse mb-6" />
+                <div className="h-12 w-full rounded-xl bg-white/10 animate-pulse" />
+              </div>
             </div>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden">
-              {/* Animated gradient border */}
+            <div className="relative rounded-2xl p-[1.5px]">
+              {/* Animated gradient border - rotating conic gradient behind the card */}
+              <style>{`@keyframes waitlist-spin { from { --waitlist-angle: 0deg; } to { --waitlist-angle: 360deg; } } @property --waitlist-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }`}</style>
               <div
-                className="absolute -inset-[1px] rounded-2xl opacity-70"
+                className="absolute inset-0 rounded-2xl"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #A80D0C 0%, #ff4444 25%, #A80D0C 50%, #ff6b6b 75%, #A80D0C 100%)",
-                  backgroundSize: "300% 300%",
-                  animation: "waitlistGradient 4s ease infinite",
+                  background: "conic-gradient(from var(--waitlist-angle), #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
+                  animation: "waitlist-spin 3s linear infinite",
                 }}
               />
-              <style>{`@keyframes waitlistGradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
 
-              <div className="relative rounded-2xl bg-white dark:bg-zinc-950 p-5 sm:p-6">
-                {/* Header */}
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 dark:bg-red-500/15 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-[#A80D0C] dark:text-red-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"
-                      />
+              <div className="relative rounded-[calc(1rem-1.5px)] bg-zinc-950 p-5 sm:p-6">
+                {/* Sold out label */}
+                <p className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-4">
+                  Sold out
+                </p>
+
+                {/* Hero copy */}
+                <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight mb-1.5">
+                  Still want in?
+                </h3>
+                <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
+                  Spots open up when people cancel. Join the waitlist and we&apos;ll
+                  automatically grab you a ticket the moment one is available.
+                </p>
+
+                {/* Value props row */}
+                <div className="flex items-center gap-4 sm:gap-5 mb-6">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
+                    <span className="text-xs sm:text-sm text-zinc-300">Instant delivery</span>
                   </div>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white leading-tight">
-                      Tickets go fast &mdash; spots open up faster
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                      Join the waitlist and get a ticket automatically
-                    </p>
-                  </div>
-                </div>
-
-                {/* Confidence stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
-                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/15 px-2 py-2.5 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-0.5">
-                      <svg
-                        className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
-                        />
-                      </svg>
-                      <span className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300">
-                        {waitlistChance || "High"}
-                      </span>
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-emerald-600/80 dark:text-emerald-400/70 whitespace-nowrap">
-                      Chance of entry
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-blue-50 dark:bg-blue-500/[0.08] border border-blue-200/60 dark:border-blue-500/15 px-2 py-2.5 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-0.5">
-                      <svg
-                        className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-                        />
-                      </svg>
-                      <span className="text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300">
-                        Instant
-                      </span>
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-blue-600/80 dark:text-blue-400/70 whitespace-nowrap">
-                      Delivery
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-purple-50 dark:bg-purple-500/[0.08] border border-purple-200/60 dark:border-purple-500/15 px-2 py-2.5 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-0.5">
-                      <svg
-                        className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                      <span className="text-base sm:text-lg font-bold text-purple-700 dark:text-purple-300">
-                        Free
-                      </span>
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-purple-600/80 dark:text-purple-400/70 whitespace-nowrap">
-                      To join
-                    </p>
-                  </div>
-                </div>
-
-                {/* How it works */}
-                <div className="space-y-2 mb-5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex-shrink-0 w-5.5 h-5.5 rounded-full bg-zinc-100 dark:bg-white/[0.08] flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
-                        1
-                      </span>
-                    </div>
-                    <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
-                      Tap below to join the waitlist
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex-shrink-0 w-5.5 h-5.5 rounded-full bg-zinc-100 dark:bg-white/[0.08] flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
-                        2
-                      </span>
-                    </div>
-                    <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
-                      You move up automatically when spots open
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex-shrink-0 w-5.5 h-5.5 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-emerald-600 dark:text-emerald-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m4.5 12.75 6 6 9-13.5"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
-                      Your ticket is emailed to you instantly
-                    </p>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <span className="text-xs sm:text-sm text-zinc-300">{waitlistChance || "High"} chance of getting a ticket</span>
                   </div>
                 </div>
 
@@ -1016,46 +898,34 @@ export default function TicketButton({
                   whileHover={
                     isWaitlistLoading || !!referralWarning
                       ? {}
-                      : { scale: 1.015 }
+                      : { scale: 1.02 }
                   }
                   whileTap={
                     isWaitlistLoading || !!referralWarning
                       ? {}
-                      : { scale: 0.985 }
+                      : { scale: 0.98 }
                   }
                   onClick={handleJoinWaitlist}
                   disabled={isWaitlistLoading || !!referralWarning}
-                  className="relative w-full rounded-xl px-6 py-3.5 text-base font-bold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/25 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
+                  className="relative w-full rounded-xl px-6 py-3.5 sm:py-4 text-base font-bold text-zinc-950 bg-white transition-all hover:bg-zinc-100 hover:shadow-lg hover:shadow-white/10 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isWaitlistLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
                         Joining...
                       </>
                     ) : (
-                      <>
-                        <svg
-                          className="w-5 h-5 transition-transform group-hover:scale-110"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                          />
-                        </svg>
-                        Join Waitlist &mdash; Get Notified
-                      </>
+                      "Join Waitlist"
                     )}
                   </span>
                   {/* Shimmer effect */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-zinc-200/40 to-transparent" />
                 </motion.button>
 
+                <p className="text-center text-[11px] text-zinc-500 mt-2.5">
+                  Based on historical cancelation data, you have a <strong>{waitlistChance?.toLowerCase() || "high"} chance</strong> of getting a ticket.
+                </p>
               </div>
             </div>
           )}
@@ -1073,126 +943,101 @@ export default function TicketButton({
     return (
       <div className="mb-5">
         {isWaitlistPositionReady && waitlistPosition !== null ? (
-          <div className="relative rounded-2xl overflow-hidden mb-4">
-            {/* Subtle green glow border for confirmation feel */}
-            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-emerald-400/40 via-emerald-500/20 to-teal-400/40 dark:from-emerald-400/30 dark:via-emerald-500/15 dark:to-teal-400/30" />
-
-            <div className="relative rounded-2xl bg-white dark:bg-zinc-950 p-5 sm:p-6">
-              {/* Status badge */}
-              <div className="flex items-center gap-2 mb-4">
+          <div className="rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] overflow-hidden mb-4">
+            {/* Top section */}
+            <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4">
+              <div className="flex items-center justify-between mb-4">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                   </span>
                   <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                    Active on waitlist
+                    Waitlisted
                   </span>
                 </span>
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={isWaitlistLoading}
+                  className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors disabled:opacity-50"
+                >
+                  Leave
+                </button>
               </div>
 
-              {/* Position display */}
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-4xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums">
-                  #{waitlistPosition}
-                </span>
-                <span className="text-sm sm:text-base font-medium text-zinc-400 dark:text-zinc-500">
-                  in line
-                </span>
+              {/* Position hero */}
+              <div className="mb-3">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="text-5xl sm:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums leading-none">
+                    #{waitlistPosition}
+                  </span>
+                  <span className="text-sm font-medium text-zinc-400 dark:text-zinc-500">
+                    in line
+                  </span>
+                </div>
               </div>
 
-              {/* Progress context */}
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+              <p className="text-[13px] sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 {waitlistPosition === 1
-                  ? "You\u2019re next! The first spot that opens is yours."
+                  ? "You\u2019re next \u2014 the first spot that opens is yours."
                   : waitlistPosition <= 3
-                    ? `Only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
-                    : "You\u2019re on the list. We\u2019ll email you as soon as a spot opens."}
+                    ? `Almost there \u2014 only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
+                    : "Sit tight \u2014 we\u2019ll email your ticket the moment a spot opens."}
               </p>
+            </div>
 
-              {/* What happens next */}
-              <div className="rounded-xl bg-zinc-50 dark:bg-white/[0.03] border border-zinc-100 dark:border-white/[0.06] p-3.5 mb-1">
-                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2.5">
-                  What happens next
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <svg
-                      className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mt-0.5 flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 12.75 6 6 9-13.5"
-                      />
-                    </svg>
-                    <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300">
-                      When a spot opens, you&apos;ll be auto-assigned a ticket
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <svg
-                      className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mt-0.5 flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 12.75 6 6 9-13.5"
-                      />
-                    </svg>
-                    <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300">
-                      A confirmation email is sent instantly
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <svg
-                      className="w-4 h-4 text-zinc-300 dark:text-zinc-600 mt-0.5 flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                      />
-                    </svg>
-                    <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
-                      Online waitlist closes 2 hours before doors open
-                    </p>
-                  </div>
+            {/* Dashed divider with notches */}
+            <div className="relative h-0 mx-0">
+              <div className="absolute left-0 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-900" />
+              <div className="absolute right-0 translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-900" />
+              <div className="mx-5 border-t border-dashed border-zinc-200 dark:border-white/[0.08]" />
+            </div>
+
+            {/* Bottom section - chance + info */}
+            <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-4 space-y-3">
+              {/* Chance of getting a ticket */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                    {waitlistChance || "High"} chance of getting a ticket
+                  </p>
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                    Based on historical cancellation data
+                  </p>
+                </div>
+              </div>
+
+              {/* Compact info row */}
+              <div className="flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                  </svg>
+                  <span>Auto-assigned</span>
+                </div>
+                <span className="text-zinc-200 dark:text-zinc-700">&middot;</span>
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                  </svg>
+                  <span>Emailed instantly</span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] p-5 sm:p-6 mb-4">
-            <div className="h-6 w-32 rounded-full bg-zinc-200 dark:bg-white/[0.06] animate-pulse mb-4" />
-            <div className="h-12 w-24 rounded bg-zinc-200 dark:bg-white/[0.06] animate-pulse mb-3" />
-            <div className="h-3 w-full rounded bg-zinc-200 dark:bg-white/[0.06] animate-pulse mb-2" />
-            <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-white/[0.06] animate-pulse" />
+          <div className="rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] p-5 sm:p-6 mb-4">
+            <div className="h-5 w-24 rounded-full bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-5" />
+            <div className="h-14 w-20 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-3" />
+            <div className="h-3.5 w-full rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse mb-2" />
+            <div className="h-3.5 w-3/4 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" />
           </div>
         )}
-
-        {/* Leave Waitlist Button */}
-        <motion.button
-          whileHover={isWaitlistLoading ? {} : { scale: 1.01 }}
-          whileTap={isWaitlistLoading ? {} : { scale: 0.99 }}
-          onClick={() => setShowCancelModal(true)}
-          disabled={isWaitlistLoading}
-          className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.04] px-6 py-2.5 text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-all hover:bg-zinc-100 dark:hover:bg-white/[0.08] hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed w-full"
-        >
-          {isWaitlistLoading ? "Processing..." : "Leave Waitlist"}
-        </motion.button>
 
         {message && (
           <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
@@ -1224,9 +1069,8 @@ export default function TicketButton({
                       Leave Waitlist?
                     </h3>
                     <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                      Are you sure you want to leave the waitlist? You can rejoin
-                      immediately, but your position will be at the end of the
-                      waitlist.
+                      You&apos;ll lose your spot. You can rejoin, but you&apos;ll be
+                      placed at the end of the line.
                     </p>
                     <div className="flex gap-3">
                       <motion.button
@@ -1235,7 +1079,7 @@ export default function TicketButton({
                         onClick={() => setShowCancelModal(false)}
                         className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] rounded-lg transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25"
                       >
-                        Cancel
+                        Keep My Spot
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -1243,7 +1087,7 @@ export default function TicketButton({
                         onClick={handleLeaveWaitlist}
                         className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20"
                       >
-                        Leave Waitlist
+                        Leave
                       </motion.button>
                     </div>
                   </motion.div>
