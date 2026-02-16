@@ -18,6 +18,7 @@ type TicketSectionProps = {
   ticketingDate?: string | null;
   isSoldOut?: boolean;
   initialIsNotified?: boolean;
+  waitlistChance?: string | null;
 };
 
 export default function TicketSection({
@@ -33,6 +34,7 @@ export default function TicketSection({
   ticketingDate = null,
   isSoldOut = false,
   initialIsNotified = false,
+  waitlistChance = null,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -163,6 +165,7 @@ export default function TicketSection({
             ticketingOpensAt={ticketingDate}
             initialIsNotified={initialIsNotified}
             isLoggedIn={userEmail != null}
+            waitlistChance={waitlistChance}
           />
         </div>
       )}
