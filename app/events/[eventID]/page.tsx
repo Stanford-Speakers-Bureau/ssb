@@ -176,6 +176,9 @@ export default async function EventPage({ params }: PageProps) {
       name: event.name,
       ...(event.desc && { description: event.desc }),
       ...(event.start_time_date && { startDate: event.start_time_date }),
+      ...(event.start_time_date && {
+        endDate: new Date(new Date(event.start_time_date).getTime() + 2 * 60 * 60 * 1000).toISOString(),
+      }),
       ...(event.doors_open && { doorTime: event.doors_open }),
       location: {
         "@type": "Place",
@@ -183,8 +186,10 @@ export default async function EventPage({ params }: PageProps) {
         ...(event.venue_link && { url: event.venue_link }),
         address: {
           "@type": "PostalAddress",
+          streetAddress: "450 Serra Mall",
           addressLocality: "Stanford",
           addressRegion: "CA",
+          postalCode: "94305",
           addressCountry: "US",
         },
       },
@@ -209,6 +214,7 @@ export default async function EventPage({ params }: PageProps) {
         availability: isSoldOut
           ? "https://schema.org/SoldOut"
           : "https://schema.org/InStock",
+        validFrom: event.ticketing_date || event.release_date || event.start_time_date || new Date().toISOString(),
         url: `${baseURL}/events/${event.route || eventID}`,
       },
     }
