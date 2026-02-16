@@ -922,7 +922,7 @@ export default function TicketButton({
                   <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-zinc-200/40 to-transparent" />
                 </motion.button>
 
-                <p className="text-center text-[11px] text-zinc-500 mt-2.5">
+                <p className="text-center text-[12px] text-zinc-400 mt-2.5 font-medium">
                   Based on historical cancelation data, you have a <strong>{waitlistChance?.toLowerCase() || "high"} chance</strong> of getting a ticket.
                 </p>
               </div>
