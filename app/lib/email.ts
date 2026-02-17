@@ -455,8 +455,8 @@ async function generateTicketEmailHTML(
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
-  const cancelTicketUrl = eventRoute
-    ? `${baseUrl}/events/${eventRoute}?cancel_ticket=${ticketId}`
+  const cancelTicketUrl = ticketId
+    ? `${baseUrl}/cancel/${ticketId}`
     : null;
   const logoUrl = `${baseUrl}/logo.png`;
   const googleCalendarUrl = generateGoogleCalendarUrl({
@@ -936,8 +936,8 @@ function generateTicketEmailText(data: TicketEmailData): string {
   const eventUrl = eventRoute
     ? `${baseUrl}/events/${eventRoute}`
     : null;
-  const cancelTicketUrl = eventRoute
-    ? `${baseUrl}/events/${eventRoute}?cancel_ticket=${ticketId}`
+  const cancelTicketUrl = ticketId
+    ? `${baseUrl}/cancel/${ticketId}`
     : null;
 
   // Generate referral code from email
