@@ -670,7 +670,10 @@ export default function TicketButton({
       changed = true;
     }
     if (url.searchParams.get("notify") === "true") {
-      sessionStorage.setItem(`auto_notify_pending:${eventId}`, "1");
+      // Only store notify intent if event is not sold out and ticketing isn't open yet
+      if (!isSoldOut && !isTicketingOpen) {
+        sessionStorage.setItem(`auto_notify_pending:${eventId}`, "1");
+      }
       url.searchParams.delete("notify");
       changed = true;
     }
@@ -695,6 +698,13 @@ export default function TicketButton({
     const cancelTicketParam = url.searchParams.get("cancel_ticket");
 
     if (cancelTicketParam) {
+      // If not logged in, redirect to login and come back with the cancel param
+      if (!isLoggedIn) {
+        const currentUrl = window.location.href;
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(currentUrl)}`;
+        return;
+      }
+
       // Clean up the URL immediately
       url.searchParams.delete("cancel_ticket");
       window.history.replaceState(
@@ -708,7 +718,7 @@ export default function TicketButton({
         setShowCancelTicketModal(true);
       }
     }
-  }, [hasTicket]);
+  }, [hasTicket, isLoggedIn]);
 
   useEffect(() => {
     const autoTicketKey = `auto_ticket_pending:${eventId}`;
@@ -737,12 +747,13 @@ export default function TicketButton({
   }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isTicketingOpen]);
 
   // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
+  // Skip if event is sold out (user should join waitlist instead) or ticketing is already open
   useEffect(() => {
     const autoNotifyKey = `auto_notify_pending:${eventId}`;
     const pending = sessionStorage.getItem(autoNotifyKey) === "1";
     if (!pending) return;
     if (autoNotifyProcessed.current) return;
-    if (isNotified) {
+    if (isNotified || isSoldOut || isTicketingOpen) {
       sessionStorage.removeItem(autoNotifyKey);
       return;
     }
@@ -750,7 +761,7 @@ export default function TicketButton({
     autoNotifyProcessed.current = true;
     sessionStorage.removeItem(autoNotifyKey);
     void handleNotify();
-  }, [eventId, isNotified, handleNotify]);
+  }, [eventId, isNotified, isSoldOut, isTicketingOpen, handleNotify]);
 
   // Auto-join waitlist after redirect from authentication
   useEffect(() => {
