@@ -910,20 +910,22 @@ export default function TicketButton({
                 </p>
 
                 {/* Value props row */}
-                <div className="flex items-center gap-4 sm:gap-5 mb-6">
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    <span className="text-xs sm:text-sm text-zinc-300">Instant delivery</span>
+                {waitlistChance == "high" && (
+                  <div className="flex items-center gap-4 sm:gap-5 mb-6">
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                      <span className="text-xs sm:text-sm text-zinc-300">Instant delivery</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                      <span className="text-xs sm:text-sm text-zinc-300">High chance of getting a ticket</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    <span className="text-xs sm:text-sm text-zinc-300">{waitlistChance || "High"} chance of getting a ticket</span>
-                  </div>
-                </div>
+                )}
 
                 {/* CTA Button */}
                 <motion.button
@@ -955,9 +957,9 @@ export default function TicketButton({
                   <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-zinc-200/40 to-transparent" />
                 </motion.button>
 
-                <p className="text-center text-[12px] text-zinc-400 mt-2.5 font-medium">
-                  Based on historical cancelation data, you have a <strong>{waitlistChance?.toLowerCase() || "high"} chance</strong> of getting a ticket.
-                </p>
+                {waitlistChance === "High" && <p className="text-center text-[12px] text-zinc-400 mt-2.5 font-medium">
+                  Based on historical cancelation data, you have a <strong>high chance</strong> of getting a ticket.
+                </p>}
               </div>
             </div>
           )}
@@ -1028,21 +1030,22 @@ export default function TicketButton({
             {/* Bottom section - chance + info */}
             <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-4 space-y-3">
               {/* Chance of getting a ticket */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                    {waitlistChance || "High"} chance of getting a ticket
-                  </p>
-                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                    Based on historical cancellation data
-                  </p>
-                </div>
-              </div>
+              {waitlistChance === "High" && (
+                <div className="flex items-center gap-2.5">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      High chance of getting a ticket
+                    </p>
+                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                      Based on historical cancellation data
+                    </p>
+                  </div>
+                </div>)}
 
               {/* Compact info row */}
               <div className="flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
