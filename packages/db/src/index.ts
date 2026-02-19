@@ -21,7 +21,6 @@ function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
   const client = postgres(connectionString, {
     prepare: false,
     max: hyperdrive ? 1 : 10,
-    ssl: hyperdrive ? false : undefined,
     connect_timeout: 10,
   });
   return drizzle(client, { schema });
