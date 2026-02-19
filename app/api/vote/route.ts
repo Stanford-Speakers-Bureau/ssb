@@ -91,17 +91,8 @@ export async function POST(req: Request) {
     // Insert the vote
     await db.insert(votes).values({ speakerId: speaker_id, email: user.email });
 
-    // Fetch updated vote count (kept in sync via DB triggers)
-    const updatedSuggestion = await db.query.suggest.findFirst({
-      where: eq(suggest.id, speaker_id),
-      columns: { votes: true },
-    });
-
-    const newVoteCount =
-      updatedSuggestion ? updatedSuggestion.votes : suggestion.votes + 1;
-
     return NextResponse.json(
-      { success: true, message: VOTE_MESSAGES.SUCCESS, newVoteCount },
+      { success: true },
       { status: 200 },
     );
   } catch (error) {
@@ -187,17 +178,8 @@ export async function DELETE(req: Request) {
     // Delete the vote
     await db.delete(votes).where(eq(votes.id, existingVote.id));
 
-    // Fetch updated vote count (kept in sync via DB triggers)
-    const updatedSuggestion = await db.query.suggest.findFirst({
-      where: eq(suggest.id, speaker_id),
-      columns: { votes: true },
-    });
-
-    const newVoteCount =
-      updatedSuggestion ? updatedSuggestion.votes : Math.max(suggestion.votes - 1, 0);
-
     return NextResponse.json(
-      { success: true, message: VOTE_MESSAGES.REMOVED, newVoteCount },
+      { success: true },
       { status: 200 },
     );
   } catch (error) {
