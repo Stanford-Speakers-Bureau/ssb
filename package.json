@@ -18,6 +18,7 @@
   "dependencies": {
     "@opennextjs/cloudflare": "^1.16.5",
     "@ssb/db": "file:./packages/db",
+    "drizzle-orm": "^0.45.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "@types/qrcode": "^1.5.6",
