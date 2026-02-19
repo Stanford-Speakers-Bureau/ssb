@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import {
-  getSupabaseClient,
   verifyAdminOrScannerRequest,
   getTicketCounts,
 } from "@/app/lib/supabase";
+import { db, eq, events } from "@ssb/db";
 
 /**
  * Public endpoint to check if there's a live event
@@ -11,22 +11,17 @@ import {
  */
 export async function GET() {
   try {
-    const adminClient = getSupabaseClient();
+    const liveEvent = await db.query.events.findFirst({
+      where: eq(events.live, true),
+      columns: { id: true, name: true, venue: true, startTimeDate: true, scanned: true, tickets: true, reserved: true },
+    });
 
-    // Get the live event
-    const { data: liveEvent, error: liveEventError } = await adminClient
-      .from("events")
-      .select("id, name, venue, start_time_date, scanned, tickets, reserved")
-      .eq("live", true)
-      .single();
-
-    if (liveEventError || !liveEvent) {
+    if (!liveEvent) {
       return NextResponse.json(
         { isLive: false, liveEvent: null },
         { status: 200 },
       );
     }
-
 
     const auth = await verifyAdminOrScannerRequest();
     if (!auth.authorized) {
@@ -40,8 +35,6 @@ export async function GET() {
         { status: 200 },
       );
     } else {
-      // Calculate total tickets sold by counting directly from tickets table
-      // This is more accurate than using the cached events.tickets field
       const ticketCounts = await getTicketCounts(liveEvent.id);
       const totalSold = ticketCounts.totalCount;
 
@@ -51,7 +44,7 @@ export async function GET() {
             id: liveEvent.id,
             name: liveEvent.name,
             venue: liveEvent.venue,
-            start_time_date: liveEvent.start_time_date,
+            start_time_date: liveEvent.startTimeDate?.toISOString() ?? null,
             scanned: liveEvent.scanned || 0,
             totalSold: totalSold,
           },

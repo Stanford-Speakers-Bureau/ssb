@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, and, suggest, votes } from "@ssb/db";
 import { voteRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
 
@@ -21,7 +21,6 @@ export async function POST(req: Request) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get current user
     const {
       data: { user },
       error: userError,
@@ -34,14 +33,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Rate limit by user email
     const rateLimitResponse = await checkRateLimit(
       voteRatelimit,
       `vote:${user.email}`,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
-    // Parse request body
     let body;
     try {
       body = await req.json();
@@ -58,7 +55,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate UUID format
     if (!isValidUUID(speaker_id)) {
       return NextResponse.json(
         { error: "Invalid speaker ID format" },
@@ -66,30 +62,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-
     // Check if the speaker suggestion exists and is approved
-    const { data: suggestion, error: suggestionError } = await adminClient
-      .from("suggest")
-      .select("id, votes")
-      .eq("id", speaker_id)
-      .eq("approved", true)
-      .single();
+    const suggestion = await db.query.suggest.findFirst({
+      where: and(eq(suggest.id, speaker_id), eq(suggest.approved, true)),
+      columns: { id: true, votes: true },
+    });
 
-    if (suggestionError || !suggestion) {
+    if (!suggestion) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_SPEAKER_NOT_FOUND },
         { status: 404 },
       );
     }
 
-    // Check if user has already voted for this speaker
-    const { data: existingVote } = await adminClient
-      .from("votes")
-      .select("id")
-      .eq("speaker_id", speaker_id)
-      .eq("email", user.email)
-      .single();
+    // Check if user has already voted
+    const existingVote = await db.query.votes.findFirst({
+      where: and(eq(votes.speakerId, speaker_id), eq(votes.email, user.email)),
+      columns: { id: true },
+    });
 
     if (existingVote) {
       return NextResponse.json(
@@ -99,45 +89,19 @@ export async function POST(req: Request) {
     }
 
     // Insert the vote
-    const { error: voteError } = await adminClient.from("votes").insert([
-      {
-        speaker_id,
-        email: user.email,
-      },
-    ]);
+    await db.insert(votes).values({ speakerId: speaker_id, email: user.email });
 
-    if (voteError) {
-      console.error("Vote insert error:", voteError);
-      return NextResponse.json(
-        { error: VOTE_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
-
-    // Fetch updated vote count from suggest table (kept in sync via DB triggers)
-    const { data: updatedSuggestion, error: updatedSuggestionError } =
-      await adminClient
-        .from("suggest")
-        .select("votes")
-        .eq("id", speaker_id)
-        .single();
-
-    if (updatedSuggestionError) {
-      console.error(
-        "Failed to fetch updated vote count:",
-        updatedSuggestionError,
-      );
-    }
+    // Fetch updated vote count (kept in sync via DB triggers)
+    const updatedSuggestion = await db.query.suggest.findFirst({
+      where: eq(suggest.id, speaker_id),
+      columns: { votes: true },
+    });
 
     const newVoteCount =
-      updatedSuggestion?.votes ?? (suggestion.votes || 0) + 1;
+      updatedSuggestion ? updatedSuggestion.votes : suggestion.votes + 1;
 
     return NextResponse.json(
-      {
-        success: true,
-        message: VOTE_MESSAGES.SUCCESS,
-        newVoteCount,
-      },
+      { success: true, message: VOTE_MESSAGES.SUCCESS, newVoteCount },
       { status: 200 },
     );
   } catch (error) {
@@ -153,7 +117,6 @@ export async function DELETE(req: Request) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get current user
     const {
       data: { user },
       error: userError,
@@ -166,14 +129,12 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Rate limit by user email
     const rateLimitResponse = await checkRateLimit(
       voteRatelimit,
       `vote:${user.email}`,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
-    // Parse request body
     let body;
     try {
       body = await req.json();
@@ -190,7 +151,6 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Validate UUID format
     if (!isValidUUID(speaker_id)) {
       return NextResponse.json(
         { error: "Invalid speaker ID format" },
@@ -198,16 +158,13 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-
     // Check if the speaker suggestion exists
-    const { data: suggestion, error: suggestionError } = await adminClient
-      .from("suggest")
-      .select("id, votes")
-      .eq("id", speaker_id)
-      .single();
+    const suggestion = await db.query.suggest.findFirst({
+      where: eq(suggest.id, speaker_id),
+      columns: { id: true, votes: true },
+    });
 
-    if (suggestionError || !suggestion) {
+    if (!suggestion) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_SPEAKER_NOT_FOUND },
         { status: 404 },
@@ -215,12 +172,10 @@ export async function DELETE(req: Request) {
     }
 
     // Check if user has voted for this speaker
-    const { data: existingVote } = await adminClient
-      .from("votes")
-      .select("id")
-      .eq("speaker_id", speaker_id)
-      .eq("email", user.email)
-      .single();
+    const existingVote = await db.query.votes.findFirst({
+      where: and(eq(votes.speakerId, speaker_id), eq(votes.email, user.email)),
+      columns: { id: true },
+    });
 
     if (!existingVote) {
       return NextResponse.json(
@@ -230,44 +185,19 @@ export async function DELETE(req: Request) {
     }
 
     // Delete the vote
-    const { error: deleteError } = await adminClient
-      .from("votes")
-      .delete()
-      .eq("speaker_id", speaker_id)
-      .eq("email", user.email);
+    await db.delete(votes).where(eq(votes.id, existingVote.id));
 
-    if (deleteError) {
-      console.error("Vote delete error:", deleteError);
-      return NextResponse.json(
-        { error: VOTE_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
-
-    // Fetch updated vote count from suggest table (kept in sync via DB triggers)
-    const { data: updatedSuggestion, error: updatedSuggestionError } =
-      await adminClient
-        .from("suggest")
-        .select("votes")
-        .eq("id", speaker_id)
-        .single();
-
-    if (updatedSuggestionError) {
-      console.error(
-        "Failed to fetch updated vote count:",
-        updatedSuggestionError,
-      );
-    }
+    // Fetch updated vote count (kept in sync via DB triggers)
+    const updatedSuggestion = await db.query.suggest.findFirst({
+      where: eq(suggest.id, speaker_id),
+      columns: { votes: true },
+    });
 
     const newVoteCount =
-      updatedSuggestion?.votes ?? Math.max((suggestion.votes || 0) - 1, 0);
+      updatedSuggestion ? updatedSuggestion.votes : Math.max(suggestion.votes - 1, 0);
 
     return NextResponse.json(
-      {
-        success: true,
-        message: VOTE_MESSAGES.REMOVED,
-        newVoteCount,
-      },
+      { success: true, message: VOTE_MESSAGES.REMOVED, newVoteCount },
       { status: 200 },
     );
   } catch (error) {

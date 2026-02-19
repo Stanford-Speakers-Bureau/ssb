@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.14.6",
+    "@ssb/db": "file:../ssb-db",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
     "@types/qrcode": "^1.5.6",

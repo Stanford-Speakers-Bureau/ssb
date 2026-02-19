@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, suggest, votes } from "@ssb/db";
 import Image from "next/image";
 import Link from "next/link";
 import SuggestForm from "./SuggestForm";
@@ -32,31 +32,19 @@ type UserSuggestion = {
 async function getLeaderboardData(
   userEmail: string | null,
 ): Promise<Suggestion[]> {
-  const supabase = getSupabaseClient();
+  const suggestions = await db.query.suggest.findMany({
+    where: eq(suggest.approved, true),
+    columns: { id: true, speaker: true, votes: true },
+    orderBy: (suggest, { desc }) => [desc(suggest.votes)],
+  });
 
-  // Get approved suggestions sorted by votes
-  const { data: suggestions, error } = await supabase
-    .from("suggest")
-    .select("id, speaker, votes")
-    .eq("approved", true)
-    .order("votes", { ascending: false });
-
-  if (error || !suggestions) {
-    console.error("Error fetching suggestions:", error);
-    return [];
-  }
-
-  // If user is logged in, check which ones they've voted for
   let userVotes: Set<string> = new Set();
   if (userEmail) {
-    const { data: votes } = await supabase
-      .from("votes")
-      .select("speaker_id")
-      .eq("email", userEmail);
-
-    if (votes) {
-      userVotes = new Set(votes.map((v) => v.speaker_id));
-    }
+    const userVoteRows = await db.query.votes.findMany({
+      where: eq(votes.email, userEmail),
+      columns: { speakerId: true },
+    });
+    userVotes = new Set(userVoteRows.map((v) => v.speakerId).filter(Boolean) as string[]);
   }
 
   return suggestions.map((s) => ({
@@ -72,18 +60,11 @@ async function getUserSuggestions(
 ): Promise<UserSuggestion[]> {
   if (!userEmail) return [];
 
-  const supabase = getSupabaseClient();
-
-  const { data, error } = await supabase
-    .from("suggest")
-    .select("id, speaker, approved, reviewed, duplicate")
-    .eq("email", userEmail)
-    .order("created_at", { ascending: false });
-
-  if (error || !data) {
-    console.error("Error fetching user suggestions:", error);
-    return [];
-  }
+  const data = await db.query.suggest.findMany({
+    where: eq(suggest.email, userEmail),
+    columns: { id: true, speaker: true, approved: true, reviewed: true, duplicate: true },
+    orderBy: (suggest, { desc }) => [desc(suggest.createdAt)],
+  });
 
   return data.map((s) => ({
     id: s.id,

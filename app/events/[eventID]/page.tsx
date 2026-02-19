@@ -9,9 +9,9 @@ import {
   formatEventDate,
   formatTime,
   createServerSupabaseClient,
-  getSupabaseClient,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
@@ -85,31 +85,23 @@ async function getUserTicketStatus(eventId: string): Promise<{
     if (!user?.email)
       return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
 
-    const adminClient = getSupabaseClient();
-    const [ticketResult, waitlistResult] = await Promise.all([
-      adminClient
-        .from("tickets")
-        .select("id, type, name")
-        .eq("event_id", eventId)
-        .eq("email", user.email)
-        .single(),
-      adminClient
-        .from("waitlist")
-        .select("id")
-        .eq("event_id", eventId)
-        .eq("email", user.email)
-        .maybeSingle(),
+    const [ticket, waitlistEntry] = await Promise.all([
+      db.query.tickets.findFirst({
+        where: and(eq(tickets.eventId, eventId), eq(tickets.email, user.email)),
+        columns: { id: true, type: true, name: true },
+      }),
+      db.query.waitlist.findFirst({
+        where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
+        columns: { id: true },
+      }),
     ]);
 
-    const data = ticketResult.data;
-    const isOnWaitlist = !!waitlistResult.data;
-
     return {
-      ticketId: data?.id ?? null,
+      ticketId: ticket?.id ?? null,
       userEmail: user.email,
-      ticketType: data?.type ?? null,
-      ticketName: data?.name ?? null,
-      isOnWaitlist,
+      ticketType: ticket?.type ?? null,
+      ticketName: ticket?.name ?? null,
+      isOnWaitlist: !!waitlistEntry,
     };
   } catch {
     return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
@@ -125,16 +117,12 @@ async function getUserNotificationStatus(eventId: string): Promise<boolean> {
 
     if (!user?.email) return false;
 
-    const adminClient = getSupabaseClient();
-    const { data, error } = await adminClient
-      .from("notify")
-      .select("id")
-      .eq("email", user.email)
-      .eq("speaker_id", eventId)
-      .maybeSingle();
+    const entry = await db.query.notify.findFirst({
+      where: and(eq(notify.email, user.email), eq(notify.speakerId, eventId)),
+      columns: { id: true },
+    });
 
-    if (error) return false;
-    return !!data;
+    return !!entry;
   } catch {
     return false;
   }

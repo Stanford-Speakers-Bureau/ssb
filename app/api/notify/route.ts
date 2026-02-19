@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, and, events, notify } from "@ssb/db";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { notifyRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
@@ -35,15 +35,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify event exists using admin client
-    const adminClient = getSupabaseClient();
-    const { data: event, error: eventError } = await adminClient
-      .from("events")
-      .select("id")
-      .eq("id", speaker_id)
-      .single();
+    // Verify event exists
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, speaker_id),
+      columns: { id: true },
+    });
 
-    if (eventError || !event) {
+    if (!event) {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
@@ -73,12 +71,10 @@ export async function POST(req: Request) {
     if (rateLimitResponse) return rateLimitResponse;
 
     // Check if notification signup already exists
-    const { data: existingNotify } = await adminClient
-      .from("notify")
-      .select("id")
-      .eq("email", user.email)
-      .eq("speaker_id", speaker_id)
-      .single();
+    const existingNotify = await db.query.notify.findFirst({
+      where: and(eq(notify.email, user.email), eq(notify.speakerId, speaker_id)),
+      columns: { id: true },
+    });
 
     if (existingNotify) {
       return NextResponse.json(
@@ -88,16 +84,7 @@ export async function POST(req: Request) {
     }
 
     // Insert notification signup
-    const { error } = await adminClient
-      .from("notify")
-      .insert([{ email: user.email, speaker_id }]);
-
-    if (error) {
-      return NextResponse.json(
-        { error: NOTIFY_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
+    await db.insert(notify).values({ email: user.email, speakerId: speaker_id });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {

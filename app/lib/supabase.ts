@@ -1,18 +1,23 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { db, eq, and, gte, events, roles, referrals } from "@ssb/db";
+import type { InferSelectModel } from "@ssb/db";
+import {
+  getTicketCounts as _getTicketCounts,
+  getAvailablePublicTickets as _getAvailablePublicTickets,
+  isEventUnderCapacity as _isEventUnderCapacity,
+  getUserWaitlistStatus as _getUserWaitlistStatus,
+  getWaitlistCount as _getWaitlistCount,
+} from "@ssb/db/queries";
 import { generateReferralCode } from "./utils";
 
-/**
- * Simple Supabase client for public data queries (bypasses RLS with service key)
- */
-export function getSupabaseClient() {
-  return createSupabaseClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_KEY!,
-  );
-}
+type DBEvent = InferSelectModel<typeof events>;
 
+/**
+ * Serialized event type used across the app.
+ * Maps from DB Event (camelCase) to the snake_case string/number format the UI expects.
+ */
 export type Event = {
   id: string;
   created_at: string;
@@ -21,10 +26,6 @@ export type Event = {
   tagline: string | null;
   img: string | null;
   capacity: number;
-  /**
-   * Number of tickets sold so far.
-   * (Newer schema field; fall back to `reserved` in older rows/clients.)
-   */
   tickets?: number | null;
   venue: string | null;
   reserved: number | null;
@@ -40,6 +41,34 @@ export type Event = {
   livestream?: boolean | null;
 };
 
+/**
+ * Convert a DB Event to the serialized Event type used by the UI.
+ */
+export function serializeEvent(e: DBEvent): Event {
+  return {
+    id: e.id,
+    created_at: e.createdAt.toISOString(),
+    name: e.name,
+    desc: e.desc,
+    tagline: e.tagline,
+    img: e.img,
+    capacity: e.capacity,
+    tickets: e.tickets,
+    venue: e.venue,
+    reserved: e.reserved,
+    venue_link: e.venueLink,
+    release_date: e.releaseDate?.toISOString() ?? null,
+    ticketing_date: e.ticketingDate?.toISOString() ?? null,
+    banner: e.banner,
+    start_time_date: e.startTimeDate?.toISOString() ?? null,
+    doors_open: e.doorsOpen?.toISOString() ?? null,
+    route: e.route,
+    img_version: e.imgVersion,
+    waitlist_chance: e.waitlistChance ?? null,
+    livestream: e.livestream ?? null,
+  };
+}
+
 type UnauthorizedResult = {
   authorized: false;
   error: string;
@@ -52,6 +81,17 @@ type AuthorizedResult = {
 };
 
 export type AdminVerificationResult = UnauthorizedResult | AuthorizedResult;
+
+/**
+ * Supabase client for Auth and Storage operations only.
+ * Database queries use Drizzle via @ssb/db.
+ */
+export function getSupabaseClient() {
+  return createSupabaseClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!,
+  );
+}
 
 /**
  * Verify that the current request is authenticated and belongs to either an admin or scanner user.
@@ -68,25 +108,24 @@ export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationRe
     return { authorized: false, error: "Not authenticated" };
   }
 
-  const adminClient = getSupabaseClient();
-  const { data: roleRecord } = await adminClient
-    .from("roles")
-    .select("roles")
-    .eq("email", user.email)
-    .single();
+  const roleRecord = await db.query.roles.findFirst({
+    where: eq(roles.email, user.email),
+    columns: { roles: true },
+  });
 
   if (!roleRecord) {
     return { authorized: false, error: "Not authorized" };
   }
 
-  const roles = roleRecord.roles?.split(",") || [];
-  const isAdmin = roles.includes("admin");
-  const isScanner = roles.includes("scanner");
+  const userRoles = roleRecord.roles?.split(",") || [];
+  const isAdmin = userRoles.includes("admin");
+  const isScanner = userRoles.includes("scanner");
 
   if (!isAdmin && !isScanner) {
     return { authorized: false, error: "Not authorized" };
   }
 
+  const adminClient = getSupabaseClient();
   return { authorized: true, email: user.email, adminClient };
 }
 
@@ -122,21 +161,13 @@ export async function createServerSupabaseClient() {
  * Get the closest upcoming event for the banner
  */
 export async function getClosestUpcomingEvent(): Promise<Event | null> {
-  const supabase = getSupabaseClient();
+  const event = await db.query.events.findFirst({
+    where: gte(events.doorsOpen, new Date()),
+    orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+  });
 
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .gte("doors_open", new Date().toISOString())
-    .order("doors_open", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (error) {
-    return null;
-  }
-
-  return data;
+  if (!event) return null;
+  return serializeEvent(event);
 }
 
 /**
@@ -219,9 +250,6 @@ function getOrdinalSuffix(day: number): string {
 
 /**
  * Check if an event is still a mystery (not yet revealed)
- * An event is a mystery if:
- * - There's a release_date and we're before that date, OR
- * - There's no release_date and no name
  */
 export function isEventMystery(event: {
   release_date: string | null;
@@ -235,7 +263,6 @@ export function isEventMystery(event: {
   if (releaseDateStr == null) {
     return !event.name;
   }
-  // TypeScript should narrow here, but if not, we explicitly assert
   const releaseDate = new Date(releaseDateStr as string);
   return now < releaseDate;
 }
@@ -244,38 +271,24 @@ export function isEventMystery(event: {
  * Get an event by its route slug
  */
 export async function getEventByRoute(route: string): Promise<Event | null> {
-  const supabase = getSupabaseClient();
+  const event = await db.query.events.findFirst({
+    where: eq(events.route, route),
+  });
 
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("route", route)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data;
+  if (!event) return null;
+  return serializeEvent(event);
 }
 
 /**
  * Get an event by its ID
  */
 export async function getEventById(id: string): Promise<Event | null> {
-  const supabase = getSupabaseClient();
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, id),
+  });
 
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data;
+  if (!event) return null;
+  return serializeEvent(event);
 }
 
 /**
@@ -300,278 +313,51 @@ export { generateReferralCode };
 /**
  * Update referral records when a ticket is created.
  * Ensures a referral record exists for the user's referral code.
- *
- * This function is non-blocking and logs errors without throwing.
  */
 export async function updateReferralRecords(
   eventId: string,
   userEmail: string,
 ): Promise<void> {
   try {
-    const adminClient = getSupabaseClient();
     const userReferralCode = generateReferralCode(userEmail);
 
-    // Ensure the current user has a referral record for this event (for sharing)
     if (userReferralCode) {
-      const { data: userReferral } = await adminClient
-        .from("referrals")
-        .select("id")
-        .eq("event_id", eventId)
-        .eq("referral_code", userReferralCode)
-        .single();
-
-      if (!userReferral) {
-        // Create referral record for the user
-        const { error: insertError } = await adminClient
-          .from("referrals")
-          .insert({
-            event_id: eventId,
-            referral_code: userReferralCode,
-            count: 0,
-          });
-
-        if (insertError) {
-          console.error("Error creating user referral record:", insertError);
-        }
-      }
+      await db.insert(referrals)
+        .values({
+          eventId,
+          referralCode: userReferralCode,
+          count: 0,
+        })
+        .onConflictDoNothing();
     }
   } catch (error) {
     console.error("Error updating referral records:", error);
-    // Don't throw - this is a non-critical operation
   }
 }
 
-/**
- * TICKET COUNTING BUSINESS LOGIC
- * ==============================
- *
- * Events have a capacity and reserved slots:
- * - capacity: Total venue capacity (fire code limit)
- * - reserved: Pre-allocated slots for VIP tickets
- *
- * VIP Tickets:
- * - Created by admins via direct database INSERT
- * - Don't count towards public capacity (if <= reserved)
- * - If VIPs exceed reserved, they reduce public capacity (overflow)
- *
- * Public Tickets:
- * - Created via create_ticket_with_name RPC (user-facing)
- * - Type = 'STANDARD' or null
- * - Limited to: capacity - max(reserved, vip_count)
- *
- * Example:
- * - capacity: 100, reserved: 10
- * - 5 VIPs created → public can buy 90 tickets
- * - 15 VIPs created → public can buy 85 tickets (overflow)
- * - Total tickets never exceeds capacity
- */
-
-/**
- * Gets detailed ticket counts for an event
- * Separates VIP and public tickets for proper capacity management
- *
- * @param eventId - The event UUID
- * @returns Object with vipCount, publicCount, and totalCount
- */
-export async function getTicketCounts(eventId: string): Promise<{
-  vipCount: number;
-  publicCount: number;
-  totalCount: number;
-}> {
-  const adminClient = getSupabaseClient();
-
-  // Count VIP tickets (admin-created only)
-  const { count: vipCount } = await adminClient
-    .from("tickets")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId)
-    .eq("type", "VIP");
-
-  // Count public tickets (STANDARD or null)
-  const { count: publicCount } = await adminClient
-    .from("tickets")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId)
-    .or("type.eq.STANDARD,type.eq.EXTERNAL,type.is.null");
-
-  return {
-    vipCount: vipCount ?? 0,
-    publicCount: publicCount ?? 0,
-    totalCount: (vipCount ?? 0) + (publicCount ?? 0),
-  };
+// Re-export shared query helpers from @ssb/db, bound to the singleton db client
+export async function getTicketCounts(eventId: string) {
+  return _getTicketCounts(db, eventId);
 }
 
-/**
- * Calculates available public ticket capacity with unified logic
- *
- * Business Rules:
- * - Reserved slots are pre-allocated for VIP tickets
- * - VIP tickets don't count towards public capacity UNLESS they exceed reserved
- * - If VIPs <= reserved: public capacity = capacity - reserved
- * - If VIPs > reserved: public capacity = capacity - vipCount (overflow protection)
- * - Total tickets (VIP + public) can never exceed capacity
- *
- * @param eventId - The event UUID
- * @returns Detailed capacity information for displaying to users
- */
-export async function getAvailablePublicTickets(eventId: string): Promise<{
-  available: number; // How many public tickets can still be sold
-  publicSold: number; // How many public tickets have been sold
-  maxPublic: number; // Maximum public ticket capacity (accounting for VIP overflow)
-  vipCount: number; // How many VIP tickets exist
-  totalCapacity: number; // Total event capacity
-  reserved: number; // Reserved slots for VIPs
-}> {
-  const adminClient = getSupabaseClient();
-
-  // Get event capacity info
-  const { data: event } = await adminClient
-    .from("events")
-    .select("capacity, reserved")
-    .eq("id", eventId)
-    .single();
-
-  if (!event || !event.capacity) {
-    return {
-      available: 0,
-      publicSold: 0,
-      maxPublic: 0,
-      vipCount: 0,
-      totalCapacity: 0,
-      reserved: 0,
-    };
-  }
-
-  const capacity = event.capacity;
-  const reserved = event.reserved ?? 0;
-
-  // Get actual ticket counts from database
-  const { vipCount, publicCount } = await getTicketCounts(eventId);
-
-  // Calculate public capacity with VIP overflow protection
-  // If VIPs exceed reserved, they start taking from public capacity
-  let maxPublic: number;
-  if (vipCount <= reserved) {
-    // Normal case: VIPs fit within reserved allocation
-    maxPublic = capacity - reserved;
-  } else {
-    // Overflow case: VIPs exceed reserved, reduce public capacity
-    maxPublic = capacity - vipCount;
-  }
-
-  // Ensure maxPublic is non-negative
-  maxPublic = Math.max(0, maxPublic);
-
-  // Calculate available public tickets
-  const available = Math.max(0, maxPublic - publicCount);
-
-  return {
-    available,
-    publicSold: publicCount,
-    maxPublic,
-    vipCount,
-    totalCapacity: capacity,
-    reserved,
-  };
+export async function getAvailablePublicTickets(eventId: string) {
+  return _getAvailablePublicTickets(db, eventId);
 }
 
-/**
- * Check if an event is under capacity (has available public tickets)
- *
- * @param eventId - The event UUID
- * @returns True if there are available tickets or no capacity is set, false if sold out
- */
-export async function isEventUnderCapacity(eventId: string): Promise<boolean> {
-  const adminClient = getSupabaseClient();
-
-  // Get event capacity info
-  const { data: event } = await adminClient
-    .from("events")
-    .select("capacity")
-    .eq("id", eventId)
-    .single();
-
-  // If no capacity is set, event is never "sold out"
-  if (!event?.capacity) {
-    return true;
-  }
-
-  const ticketInfo = await getAvailablePublicTickets(eventId);
-  return ticketInfo.available > 0;
+export async function isEventUnderCapacity(eventId: string) {
+  return _isEventUnderCapacity(db, eventId);
 }
 
-/**
- * WAITLIST FUNCTIONALITY
- * ======================
- *
- * Waitlist system for sold-out events:
- * - Users can join waitlist when event is sold out
- * - Position is stored as integer (first-come-first-serve based on created_at)
- * - Hard delete when user leaves (recalculate positions)
- * - Waitlist closes 2 hours before event (in-person waitlist only)
- * - Admin can view and manually convert waitlist entries to tickets
- */
-
-/**
- * Get user's waitlist status for an event
- *
- * @param eventId - The event UUID
- * @param userEmail - User's email address
- * @returns Object with isOnWaitlist, position, and total count
- */
-export async function getUserWaitlistStatus(
-  eventId: string,
-  userEmail: string,
-): Promise<{
-  isOnWaitlist: boolean;
-  position: number | null;
-  totalWaitlist: number;
-}> {
-  const adminClient = getSupabaseClient();
-
-  // Get user's waitlist entry
-  const { data: entry } = await adminClient
-    .from("waitlist")
-    .select("position")
-    .eq("event_id", eventId)
-    .eq("email", userEmail)
-    .single();
-
-  // Get total waitlist count
-  const { count: totalCount } = await adminClient
-    .from("waitlist")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
-
-  return {
-    isOnWaitlist: !!entry,
-    position: entry?.position || null,
-    totalWaitlist: totalCount || 0,
-  };
+export async function getUserWaitlistStatus(eventId: string, userEmail: string) {
+  return _getUserWaitlistStatus(db, eventId, userEmail);
 }
 
-/**
- * Get total waitlist count for an event
- *
- * @param eventId - The event UUID
- * @returns Total number of users on the waitlist
- */
-export async function getWaitlistCount(eventId: string): Promise<number> {
-  const adminClient = getSupabaseClient();
-
-  const { count } = await adminClient
-    .from("waitlist")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
-
-  return count || 0;
+export async function getWaitlistCount(eventId: string) {
+  return _getWaitlistCount(db, eventId);
 }
 
 /**
  * Check if waitlist is closed (within 2 hours of doors open)
- *
- * @param doorsOpen - ISO timestamp of when doors open
- * @returns True if waitlist should be closed
  */
 export function isWaitlistClosed(doorsOpen: string | null): boolean {
   if (!doorsOpen) return false;

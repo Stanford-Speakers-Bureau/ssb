@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import {
   verifyAdminOrScannerRequest,
   createServerSupabaseClient,
+  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, and, events, tickets } from "@ssb/db";
 import { isValidEmail } from "@/app/lib/validation";
 import { sendVIPScanNotification } from "@/app/lib/email";
 
@@ -29,7 +31,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const adminClient = auth.adminClient!;
 
     // Get scanner's user information
     const supabase = await createServerSupabaseClient();
@@ -47,13 +48,12 @@ export async function POST(req: Request) {
     }
 
     // Check if there's a live event
-    const { data: liveEvent, error: liveEventError } = await adminClient
-      .from("events")
-      .select("id, name")
-      .eq("live", true)
-      .single();
+    const liveEvent = await db.query.events.findFirst({
+      where: eq(events.live, true),
+      columns: { id: true, name: true },
+    });
 
-    if (liveEventError || !liveEvent) {
+    if (!liveEvent) {
       return NextResponse.json(
         {
           error: "No event is currently live. Scanning is disabled.",
@@ -63,37 +63,55 @@ export async function POST(req: Request) {
       );
     }
 
-    let ticket: any = null;
-    let fetchError: any = null;
-
-    const selectFields =
-      "id, type, scanned, scan_time, email, name, event_id, scan_user, scan_email";
+    let ticket: {
+      id: string;
+      type: string;
+      scanned: boolean;
+      scanTime: Date | null;
+      email: string;
+      name: string | null;
+      eventId: string | null;
+      scanUser: string | null;
+      scanEmail: string | null;
+    } | null = null;
 
     if (ticket_id) {
-      const res = await adminClient
-        .from("tickets")
-        .select(selectFields)
-        .eq("id", ticket_id)
-        .single();
-      ticket = res.data;
-      fetchError = res.error;
+      ticket = await db.query.tickets.findFirst({
+        where: eq(tickets.id, ticket_id),
+        columns: {
+          id: true,
+          type: true,
+          scanned: true,
+          scanTime: true,
+          email: true,
+          name: true,
+          eventId: true,
+          scanUser: true,
+          scanEmail: true,
+        },
+      }) ?? null;
     } else if (emailSUNET) {
       const email = !isValidEmail(emailSUNET)
         ? `${emailSUNET}@stanford.edu`
         : emailSUNET;
 
-      const res = await adminClient
-        .from("tickets")
-        .select(selectFields)
-        .eq("email", email)
-        .eq("event_id", event_id)
-        .single();
-      ticket = res.data;
-      fetchError = res.error;
+      ticket = await db.query.tickets.findFirst({
+        where: and(eq(tickets.email, email), eq(tickets.eventId, event_id!)),
+        columns: {
+          id: true,
+          type: true,
+          scanned: true,
+          scanTime: true,
+          email: true,
+          name: true,
+          eventId: true,
+          scanUser: true,
+          scanEmail: true,
+        },
+      }) ?? null;
     }
-    // don't need else here since we did a check above
 
-    if (fetchError || !ticket) {
+    if (!ticket) {
       return NextResponse.json(
         { error: "Invalid ticket", status: "invalid" },
         { status: 404 },
@@ -101,7 +119,7 @@ export async function POST(req: Request) {
     }
 
     // Check if ticket belongs to the live event
-    if (ticket.event_id !== liveEvent.id) {
+    if (ticket.eventId !== liveEvent.id) {
       return NextResponse.json(
         {
           error: `This ticket is for a different event. Only tickets for "${liveEvent.name}" can be scanned.`,
@@ -115,10 +133,11 @@ export async function POST(req: Request) {
     let userName: string | null = ticket.name || null;
     if (!userName && ticket.email) {
       try {
+        const adminClient = getSupabaseClient();
         const { data: usersList, error: authError } =
           await adminClient.auth.admin.listUsers();
         if (!authError && usersList?.users) {
-          const user = usersList.users.find((u) => u.email === ticket.email);
+          const user = usersList.users.find((u) => u.email === ticket!.email);
           if (user?.user_metadata) {
             userName =
               user.user_metadata.full_name ||
@@ -143,11 +162,11 @@ export async function POST(req: Request) {
             id: ticket.id,
             type: ticket.type,
             scanned: ticket.scanned,
-            scan_time: ticket.scan_time,
+            scan_time: ticket.scanTime?.toISOString() ?? null,
             email: ticket.email,
             name: userName,
-            scan_user: ticket.scan_user,
-            scan_email: ticket.scan_email,
+            scan_user: ticket.scanUser,
+            scan_email: ticket.scanEmail,
           },
         },
         { status: 200 },
@@ -155,43 +174,37 @@ export async function POST(req: Request) {
     }
 
     // Update ticket: set scanned to true and scan_time to current timestamp
-    // Use local timezone-aware timestamp
     const now = new Date();
     const scanTime = now.toISOString();
 
-    const { data: updatedTicket, error: updateError } = await adminClient
-      .from("tickets")
-      .update({
+    const [updatedTicket] = await db.update(tickets)
+      .set({
         scanned: true,
-        scan_time: scanTime,
-        scan_user: scannerName,
-        scan_email: scannerEmail,
+        scanTime: now,
+        scanUser: scannerName,
+        scanEmail: scannerEmail,
       })
-      .eq("id", ticket.id)
-      .select("id, type, scanned, scan_time, email, scan_user, scan_email")
-      .single();
-
-    if (updateError) {
-      console.error("Ticket scan update error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to update ticket" },
-        { status: 500 },
-      );
-    }
+      .where(eq(tickets.id, ticket.id))
+      .returning({
+        id: tickets.id,
+        type: tickets.type,
+        scanned: tickets.scanned,
+        scanTime: tickets.scanTime,
+        email: tickets.email,
+        scanUser: tickets.scanUser,
+        scanEmail: tickets.scanEmail,
+      });
 
     // Note: Event scanned count is automatically incremented by database trigger
     // when ticket.scanned is set to true (auto_increment_event_scanned)
-
-    // Get user name - reuse userName from above (same ticket)
-    const userNameResponse: string | null = userName;
 
     // Send VIP scan notification email if ticket is VIP
     if (updatedTicket.type?.toUpperCase() === "VIP") {
       try {
         await sendVIPScanNotification({
           attendeeEmail: updatedTicket.email || "",
-          attendeeName: userNameResponse,
-          eventName: liveEvent.name,
+          attendeeName: userName,
+          eventName: liveEvent.name || "Event",
           ticketId: updatedTicket.id,
           scanTime: scanTime,
           scannerName: scannerName,
@@ -209,8 +222,14 @@ export async function POST(req: Request) {
         message: "Ticket scanned successfully",
         status: "scanned",
         ticket: {
-          ...updatedTicket,
-          name: userNameResponse,
+          id: updatedTicket.id,
+          type: updatedTicket.type,
+          scanned: updatedTicket.scanned,
+          scan_time: updatedTicket.scanTime?.toISOString() ?? null,
+          email: updatedTicket.email,
+          name: userName,
+          scan_user: updatedTicket.scanUser,
+          scan_email: updatedTicket.scanEmail,
         },
       },
       { status: 200 },
@@ -241,16 +260,13 @@ export async function GET(req: Request) {
       );
     }
 
-    const adminClient = auth.adminClient!;
-
     // Check if there's a live event
-    const { data: liveEvent, error: liveEventError } = await adminClient
-      .from("events")
-      .select("id, name")
-      .eq("live", true)
-      .single();
+    const liveEvent = await db.query.events.findFirst({
+      where: eq(events.live, true),
+      columns: { id: true, name: true },
+    });
 
-    if (liveEventError || !liveEvent) {
+    if (!liveEvent) {
       return NextResponse.json(
         {
           error: "No event is currently live. Scanning is disabled.",
@@ -261,15 +277,22 @@ export async function GET(req: Request) {
     }
 
     // Get ticket status without updating it
-    const { data: ticket, error: fetchError } = await adminClient
-      .from("tickets")
-      .select(
-        "id, type, scanned, scan_time, email, name, event_id, scan_user, scan_email",
-      )
-      .eq("id", ticket_id)
-      .single();
+    const ticket = await db.query.tickets.findFirst({
+      where: eq(tickets.id, ticket_id),
+      columns: {
+        id: true,
+        type: true,
+        scanned: true,
+        scanTime: true,
+        email: true,
+        name: true,
+        eventId: true,
+        scanUser: true,
+        scanEmail: true,
+      },
+    });
 
-    if (fetchError || !ticket) {
+    if (!ticket) {
       return NextResponse.json(
         { error: "Invalid ticket", status: "invalid" },
         { status: 404 },
@@ -277,7 +300,7 @@ export async function GET(req: Request) {
     }
 
     // Check if ticket belongs to the live event
-    if (ticket.event_id !== liveEvent.id) {
+    if (ticket.eventId !== liveEvent.id) {
       return NextResponse.json(
         {
           error: `This ticket is for a different event. Only tickets for "${liveEvent.name}" can be scanned.`,
@@ -291,6 +314,7 @@ export async function GET(req: Request) {
     let userName: string | null = ticket.name || null;
     if (!userName && ticket.email) {
       try {
+        const adminClient = getSupabaseClient();
         const { data: usersList, error: authError } =
           await adminClient.auth.admin.listUsers();
         if (!authError && usersList?.users) {
@@ -317,11 +341,11 @@ export async function GET(req: Request) {
             id: ticket.id,
             type: ticket.type,
             scanned: ticket.scanned,
-            scan_time: ticket.scan_time,
+            scan_time: ticket.scanTime?.toISOString() ?? null,
             email: ticket.email,
             name: userName,
-            scan_user: ticket.scan_user,
-            scan_email: ticket.scan_email,
+            scan_user: ticket.scanUser,
+            scan_email: ticket.scanEmail,
           },
         },
         { status: 200 },
@@ -335,7 +359,7 @@ export async function GET(req: Request) {
           id: ticket.id,
           type: ticket.type,
           scanned: ticket.scanned,
-          scan_time: ticket.scan_time,
+          scan_time: ticket.scanTime?.toISOString() ?? null,
           email: ticket.email,
           name: userName,
         },
@@ -350,4 +374,3 @@ export async function GET(req: Request) {
     );
   }
 }
-

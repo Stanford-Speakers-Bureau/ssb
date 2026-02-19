@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
   updateReferralRecords,
   getAvailablePublicTickets,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { db, eq, and, sql, events, tickets, referrals, waitlist } from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
@@ -77,39 +77,50 @@ export async function GET(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data: tickets, error } = await adminClient
-      .from("tickets")
-      .select(
-        `
-        id,
-        event_id,
-        created_at,
-        type,
-        name,
-        events (
-          id,
-          name,
-          route,
-          start_time_date,
-          venue
-        )
-      `,
-      )
-      .eq("email", user.email)
-      .order("created_at", { ascending: false });
+    const userTickets = await db.query.tickets.findMany({
+      where: eq(tickets.email, user.email),
+      columns: {
+        id: true,
+        eventId: true,
+        createdAt: true,
+        type: true,
+        name: true,
+      },
+      with: {
+        event: {
+          columns: {
+            id: true,
+            name: true,
+            route: true,
+            startTimeDate: true,
+            venue: true,
+          },
+        },
+      },
+      orderBy: (tickets, { desc }) => [desc(tickets.createdAt)],
+    });
 
-    if (error) {
-      console.error("Error fetching user tickets:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch tickets" },
-        { status: 500 },
-      );
-    }
+    // Transform to match expected API shape (snake_case)
+    const serializedTickets = userTickets.map((t) => ({
+      id: t.id,
+      event_id: t.eventId,
+      created_at: t.createdAt.toISOString(),
+      type: t.type,
+      name: t.name,
+      events: t.event
+        ? {
+            id: t.event.id,
+            name: t.event.name,
+            route: t.event.route,
+            start_time_date: t.event.startTimeDate?.toISOString() ?? null,
+            venue: t.event.venue,
+          }
+        : null,
+    }));
 
     return NextResponse.json(
       {
-        tickets: tickets || [],
+        tickets: serializedTickets,
       },
       { status: 200 },
     );
@@ -176,12 +187,10 @@ export async function POST(req: Request) {
       referral = cookieStore.get("referral")?.value || null;
     }
 
-    const adminClient = getSupabaseClient();
-    const { data: event } = await adminClient
-      .from("events")
-      .select("start_time_date, release_date, ticketing_date")
-      .eq("id", event_id)
-      .single();
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, event_id),
+      columns: { startTimeDate: true, releaseDate: true, ticketingDate: true },
+    });
 
     if (!event) {
       return NextResponse.json(
@@ -196,14 +205,11 @@ export async function POST(req: Request) {
     // - Skip entirely when LOCAL_TICKETING_ENABLED is set (local development)
     if (process.env.LOCAL_TICKETING_ENABLED !== "true") {
       const effectiveTicketingDate =
-        (event as { ticketing_date?: string | null }).ticketing_date ??
-        (event as { release_date?: string | null }).release_date ??
-        null;
+        event.ticketingDate ?? event.releaseDate ?? null;
 
       if (effectiveTicketingDate) {
-        const openAt = new Date(effectiveTicketingDate);
         const now = new Date();
-        if (!Number.isNaN(openAt.getTime()) && now < openAt) {
+        if (now < effectiveTicketingDate) {
           return NextResponse.json(
             { error: TICKET_MESSAGES.ERROR_TICKETING_NOT_OPEN },
             { status: 400 },
@@ -212,10 +218,9 @@ export async function POST(req: Request) {
       }
     }
 
-    if (event.start_time_date) {
-      const eventStartTime = new Date(event.start_time_date);
+    if (event.startTimeDate) {
       const now = new Date();
-      if (now >= eventStartTime) {
+      if (now >= event.startTimeDate) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
           { status: 400 },
@@ -232,12 +237,13 @@ export async function POST(req: Request) {
         );
       }
 
-      const { data: referralRecord } = await adminClient
-        .from("referrals")
-        .select("id")
-        .eq("event_id", event_id)
-        .eq("referral_code", referral.trim().toLowerCase())
-        .single();
+      const referralRecord = await db.query.referrals.findFirst({
+        where: and(
+          eq(referrals.eventId, event_id),
+          eq(referrals.referralCode, referral.trim().toLowerCase()),
+        ),
+        columns: { id: true },
+      });
 
       if (!referralRecord) {
         return NextResponse.json(
@@ -255,17 +261,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "create_ticket_with_name",
-      {
-        p_event_id: event_id,
-        p_referral: referral,
-        p_user_name: nameForTicket,
-      },
-    );
-
-    if (rpcError) {
-      if (rpcError.code === "42883") {
+    // Call stored procedure via raw SQL (atomic ticket creation with FOR UPDATE locking)
+    let rpcData: any;
+    try {
+      const result = await db.execute<{ create_ticket_with_name: any }>(sql`
+        SELECT create_ticket_with_name(
+          ${event_id}::uuid,
+          ${referral},
+          ${nameForTicket},
+          ${user.email}
+        )
+      `);
+      rpcData = result[0]?.create_ticket_with_name ?? null;
+    } catch (rpcError: any) {
+      const msg = (rpcError.message || "").toLowerCase();
+      if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Ticket RPC missing:", rpcError);
         return NextResponse.json(
           {
@@ -275,21 +285,19 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-
-      const msg = (rpcError.message || "").toLowerCase();
-      if (rpcError.code === "P0001" || msg.includes("capacity")) {
+      if (msg.includes("capacity")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_CAPACITY_EXCEEDED },
           { status: 400 },
         );
       }
-      if (rpcError.code === "P0001" || msg.includes("already")) {
+      if (msg.includes("already")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },
           { status: 400 },
         );
       }
-      if (rpcError.code === "P0001" || msg.includes("event_not_found")) {
+      if (msg.includes("event_not_found")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
           { status: 404 },
@@ -303,52 +311,48 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: ticket } = await adminClient
-      .from("tickets")
-      .select(
-        `
-          id,
-          email,
-          type,
-          name,
-          event_id,
-          events (
-            id,
-            name,
-            route,
-            start_time_date,
-            venue,
-            venue_link,
-            desc,
-            doors_open
-          )
-        `,
-      )
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+    const ticket = await db.query.tickets.findFirst({
+      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
+      columns: {
+        id: true,
+        email: true,
+        type: true,
+        name: true,
+        eventId: true,
+      },
+      with: {
+        event: {
+          columns: {
+            id: true,
+            name: true,
+            route: true,
+            startTimeDate: true,
+            venue: true,
+            venueLink: true,
+            desc: true,
+            doorsOpen: true,
+          },
+        },
+      },
+      orderBy: (tickets, { desc }) => [desc(tickets.createdAt)],
+    });
 
     await updateReferralRecords(event_id, user.email);
 
     if (ticket) {
       try {
-        const event = Array.isArray(ticket.events)
-          ? ticket.events[0]
-          : ticket.events;
         await sendTicketEmail({
           name: nameForTicket,
           email: ticket.email,
-          eventName: event?.name || "Event",
+          eventName: ticket.event?.name || "Event",
           ticketType: ticket.type || "STANDARD",
-          eventStartTime: event?.start_time_date || null,
-          eventRoute: event?.route || null,
+          eventStartTime: ticket.event?.startTimeDate?.toISOString() || null,
+          eventRoute: ticket.event?.route || null,
           ticketId: ticket.id,
-          eventVenue: event?.venue || null,
-          eventVenueLink: event?.venue_link || null,
-          eventDescription: event?.desc || null,
-          doorsOpenTime: event?.doors_open || null,
+          eventVenue: ticket.event?.venue || null,
+          eventVenueLink: ticket.event?.venueLink || null,
+          eventDescription: ticket.event?.desc || null,
+          doorsOpenTime: ticket.event?.doorsOpen?.toISOString() || null,
         });
       } catch (emailError) {
         console.error("Email sending error:", emailError);
@@ -419,23 +423,20 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-
     // Check if event is currently live or has already started/ended
-    const { data: eventRow } = await adminClient
-      .from("events")
-      .select("id, is_live, start_time_date")
-      .eq("id", event_id)
-      .single();
+    const eventRow = await db.query.events.findFirst({
+      where: eq(events.id, event_id),
+      columns: { id: true, live: true, startTimeDate: true },
+    });
 
-    if (eventRow?.is_live) {
+    if (eventRow?.live) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
         { status: 400 },
       );
     }
 
-    if (eventRow?.start_time_date && new Date() >= new Date(eventRow.start_time_date)) {
+    if (eventRow?.startTimeDate && new Date() >= new Date(eventRow.startTimeDate)) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
@@ -443,12 +444,10 @@ export async function DELETE(req: Request) {
     }
 
     // Check if user has a ticket for this event
-    const { data: existingTicket } = await adminClient
-      .from("tickets")
-      .select("id")
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .single();
+    const existingTicket = await db.query.tickets.findFirst({
+      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
+      columns: { id: true },
+    });
 
     if (!existingTicket) {
       return NextResponse.json(
@@ -458,65 +457,50 @@ export async function DELETE(req: Request) {
     }
 
     // Delete the ticket
-    const { error: deleteError } = await adminClient
-      .from("tickets")
-      .delete()
-      .eq("event_id", event_id)
-      .eq("email", user.email);
-
-    if (deleteError) {
-      console.error("Ticket deletion error:", deleteError);
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
+    await db.delete(tickets).where(eq(tickets.id, existingTicket.id));
 
     // Pull the top person off the waitlist (if any) only if under capacity
-    const { data: topWaitlistEntry } = await adminClient
-      .from("waitlist")
-      .select("email, referral, event_id, name")
-      .eq("event_id", event_id)
-      .order("position", { ascending: true })
-      .limit(1)
-      .single();
+    const topWaitlistEntry = await db.query.waitlist.findFirst({
+      where: eq(waitlist.eventId, event_id),
+      orderBy: (waitlist, { asc }) => [asc(waitlist.position)],
+      columns: { email: true, referral: true, eventId: true, name: true },
+    });
 
     if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
       // Create ticket for the waitlist person (transfer name from waitlist)
-      const { data: newTicket } = await adminClient
-        .from("tickets")
-        .insert({
-          event_id: topWaitlistEntry.event_id,
+      const [newTicket] = await db.insert(tickets)
+        .values({
+          eventId: topWaitlistEntry.eventId,
           email: topWaitlistEntry.email,
           name: topWaitlistEntry.name ?? null,
           type: "STANDARD",
         })
-        .select(
-          `
-          id,
-          email,
-          type,
-          event_id,
-          events (
-            id,
-            name,
-            route,
-            start_time_date,
-            venue,
-            venue_link,
-            desc,
-            doors_open
-          )
-        `,
-        )
-        .single();
+        .returning({
+          id: tickets.id,
+          email: tickets.email,
+          type: tickets.type,
+          eventId: tickets.eventId,
+        });
+
+      // Get event details for email
+      const eventForEmail = newTicket.eventId ? await db.query.events.findFirst({
+        where: eq(events.id, newTicket.eventId),
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          startTimeDate: true,
+          venue: true,
+          venueLink: true,
+          desc: true,
+          doorsOpen: true,
+        },
+      }) : null;
 
       // Remove them from the waitlist
-      await adminClient
-        .from("waitlist")
-        .delete()
-        .eq("email", topWaitlistEntry.email)
-        .eq("event_id", event_id);
+      await db.delete(waitlist).where(
+        and(eq(waitlist.email, topWaitlistEntry.email), eq(waitlist.eventId, event_id)),
+      );
 
       // Update referral records if they had a referral code
       if (topWaitlistEntry.referral) {
@@ -526,21 +510,18 @@ export async function DELETE(req: Request) {
       // Send ticket email to the waitlist person
       if (newTicket) {
         try {
-          const event = Array.isArray(newTicket.events)
-            ? newTicket.events[0]
-            : newTicket.events;
           await sendTicketEmail({
             email: newTicket.email,
             name: topWaitlistEntry.name ?? null,
-            eventName: event?.name || "Event",
+            eventName: eventForEmail?.name || "Event",
             ticketType: newTicket.type || "STANDARD",
-            eventStartTime: event?.start_time_date || null,
-            eventRoute: event?.route || null,
+            eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
+            eventRoute: eventForEmail?.route || null,
             ticketId: newTicket.id,
-            eventVenue: event?.venue || null,
-            eventVenueLink: event?.venue_link || null,
-            eventDescription: event?.desc || null,
-            doorsOpenTime: event?.doors_open || null,
+            eventVenue: eventForEmail?.venue || null,
+            eventVenueLink: eventForEmail?.venueLink || null,
+            eventDescription: eventForEmail?.desc || null,
+            doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
           });
           console.log(
             `Ticket created for waitlist user ${topWaitlistEntry.email}`,

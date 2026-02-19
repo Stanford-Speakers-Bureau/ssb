@@ -8,9 +8,10 @@ import {
   formatEventDate,
   formatTime,
   getImageProxyUrl,
-  getSupabaseClient,
   isEventMystery,
+  serializeEvent,
 } from "@/app/lib/supabase";
+import { db, eq, gte, count as dbCount, events, tickets, notify } from "@ssb/db";
 
 
 export const metadata: Metadata = {
@@ -38,66 +39,31 @@ type SanitizedEvent = {
 
 async function getTicketCount(eventId: string): Promise<number> {
   try {
-    const supabase = getSupabaseClient();
-    const { count, error } = await supabase
-      .from("tickets")
-      .select("*", { count: "exact", head: true })
-      .eq("event_id", eventId);
-
-    if (error) {
-      console.error("Ticket count error:", error);
-      return 0;
-    }
-
-    return count ?? 0;
+    const [result] = await db.select({ count: dbCount() })
+      .from(tickets)
+      .where(eq(tickets.eventId, eventId));
+    return result?.count ?? 0;
   } catch {
     return 0;
   }
 }
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
-  const supabase = getSupabaseClient();
-
-  // Add 1-day buffer so events stay visible until the day after
   const bufferDate = new Date();
   bufferDate.setDate(bufferDate.getDate() - 1);
 
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .gte("start_time_date", bufferDate.toISOString())
-    .order("start_time_date", { ascending: true });
-
-  if (error) {
-    return [];
-  }
-
-  const events = (data || []) as Array<{
-    id: string;
-    start_time_date: string | null;
-    doors_open: string | null;
-    venue: string | null;
-    venue_link: string | null;
-    name: string | null;
-    desc: string | null;
-    tagline: string | null;
-    route: string | null;
-    img: string | null;
-    capacity: number | null;
-    reserved: number | null;
-    speaker_id?: string | null;
-    release_date: string | null;
-    img_version?: number | null;
-  }>;
+  const rawEvents = await db.query.events.findMany({
+    where: gte(events.startTimeDate, bufferDate),
+    orderBy: (events, { asc }) => [asc(events.startTimeDate)],
+  });
 
   return await Promise.all(
-    events.map(async (event) => {
+    rawEvents.map(async (rawEvent) => {
+      const event = serializeEvent(rawEvent);
       const isMystery = isEventMystery(event);
 
-      // Fetch ticket count for non-mystery events
       const ticketsSold = isMystery ? null : await getTicketCount(event.id);
 
-      // Only expose safe fields - never leak speaker info for mystery events
       return {
         id: event.id,
         start_time_date: event.start_time_date,
@@ -129,13 +95,12 @@ async function getUserNotifications(): Promise<Set<string>> {
 
     if (!user?.email) return new Set();
 
-    const adminClient = getSupabaseClient();
-    const { data } = await adminClient
-      .from("notify")
-      .select("speaker_id")
-      .eq("email", user.email);
+    const notifications = await db.query.notify.findMany({
+      where: eq(notify.email, user.email),
+      columns: { speakerId: true },
+    });
 
-    return new Set(data?.map((n) => n.speaker_id) || []);
+    return new Set(notifications.map((n) => n.speakerId));
   } catch {
     return new Set();
   }
