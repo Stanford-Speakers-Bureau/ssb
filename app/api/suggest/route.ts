@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, suggest, votes, roles } from "@ssb/db";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, suggestRatelimit } from "@/app/lib/ratelimit";
 
@@ -53,12 +53,10 @@ export async function POST(req: Request) {
     }
 
     // Check if user is banned
-    const adminClient = getSupabaseClient();
-    const { data: userRole } = await adminClient
-      .from("roles")
-      .select("roles")
-      .eq("email", user.email)
-      .single();
+    const userRole = await db.query.roles.findFirst({
+      where: eq(roles.email, user.email),
+      columns: { roles: true },
+    });
 
     if (userRole?.roles?.split(",").includes("banned")) {
       return NextResponse.json(
@@ -130,21 +128,13 @@ export async function POST(req: Request) {
     }
 
     // Check for existing suggestions from this user to prevent duplicates
-    const { data: existingSuggestions, error: checkError } = await adminClient
-      .from("suggest")
-      .select("speaker")
-      .eq("email", user.email);
-
-    if (checkError) {
-      console.error("Error checking existing suggestions:", checkError);
-      return NextResponse.json(
-        { error: SUGGEST_MESSAGES.ERROR_GENERIC },
-        { status: 500 },
-      );
-    }
+    const existingSuggestions = await db.query.suggest.findMany({
+      where: eq(suggest.email, user.email),
+      columns: { speaker: true },
+    });
 
     const existingSpeakers = new Set(
-      existingSuggestions?.map((s) => s.speaker) || [],
+      existingSuggestions.map((s) => s.speaker),
     );
 
     // Filter out speakers that have already been suggested by this user
@@ -161,38 +151,23 @@ export async function POST(req: Request) {
 
     // Insert all new speakers and cast a vote for each
     for (const speakerName of newSpeakers) {
-      // Insert suggestion using admin client (to bypass RLS) and return its id
-      const { data: suggestion, error: suggestError } = await adminClient
-        .from("suggest")
-        .insert([
-          {
-            email: user.email,
-            speaker: speakerName,
-            approved: false,
-            reviewed: false,
-            votes: 0,
-          },
-        ])
-        .select("id")
-        .single();
-
-      if (suggestError || !suggestion) {
-        console.error("Suggest insert error:", suggestError);
-        return NextResponse.json(
-          { error: SUGGEST_MESSAGES.ERROR_GENERIC },
-          { status: 500 },
-        );
-      }
+      const [suggestion] = await db.insert(suggest)
+        .values({
+          email: user.email,
+          speaker: speakerName,
+          approved: false,
+          reviewed: false,
+          votes: 0,
+        })
+        .returning({ id: suggest.id });
 
       // Automatically create an initial vote for the suggester
-      const { error: voteError } = await adminClient.from("votes").insert([
-        {
-          speaker_id: suggestion.id,
+      try {
+        await db.insert(votes).values({
+          speakerId: suggestion.id,
           email: user.email,
-        },
-      ]);
-
-      if (voteError) {
+        });
+      } catch (voteError) {
         console.error("Initial vote insert error:", voteError);
         // Suggestion was created successfully; vote is a best-effort enhancement
       }

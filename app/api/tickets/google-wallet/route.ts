@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getImageProxyUrl,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getGoogleWalletPass } from "@/app/lib/wallet";
+import { db, eq, and, tickets } from "@ssb/db";
 
 type TicketWalletData = {
   email: string;
@@ -21,6 +21,39 @@ type TicketWalletData = {
   eventAddress: number;
   start_time_date: string;
 };
+
+async function getTicketForWallet(ticketId: string, userEmail: string) {
+  const ticket = await db.query.tickets.findFirst({
+    where: and(eq(tickets.id, ticketId), eq(tickets.email, userEmail)),
+    columns: {
+      id: true,
+      email: true,
+      name: true,
+      type: true,
+      eventId: true,
+    },
+    with: {
+      event: {
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          doorsOpen: true,
+          startTimeDate: true,
+          venue: true,
+          img: true,
+          imgVersion: true,
+          venueLink: true,
+          latitude: true,
+          longitude: true,
+          address: true,
+        },
+      },
+    },
+  });
+
+  return ticket;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,47 +81,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data: ticket } = await adminClient
-      .from("tickets")
-      .select(
-        `
-          id,
-          email,
-          name,
-          type,
-          event_id,
-          events (
-            id,
-            name,
-            route,
-            doors_open,
-            start_time_date,
-            venue,
-            img,
-            img_version,
-            venue_link,
-            latitude,
-            longitude,
-            address
-          )
-        `,
-      )
-      .eq("id", ticket_id)
-      .eq("email", user.email)
-      .limit(1)
-      .single();
-
-    const event = Array.isArray(ticket?.events)
-      ? ticket.events[0]
-      : ticket?.events;
+    const ticket = await getTicketForWallet(ticket_id, user.email);
+    const event = ticket?.event;
 
     if (!ticket || !event) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
     const imgUrl = event.img
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}${getImageProxyUrl(event.id, event.img_version)}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}${getImageProxyUrl(event.id, event.imgVersion)}`
       : null;
     if (!imgUrl) {
       return NextResponse.json(
@@ -100,17 +101,17 @@ export async function GET(req: NextRequest) {
     const ticketData: TicketWalletData = {
       email: ticket.email,
       name: ticket.name,
-      eventName: event.name,
+      eventName: event.name!,
       ticketType: ticket.type,
-      eventDoorTime: event.doors_open,
+      eventDoorTime: event.doorsOpen?.toISOString() ?? "",
       ticketId: ticket.id,
-      eventVenue: event.venue,
-      eventVenueLink: event.venue_link,
+      eventVenue: event.venue!,
+      eventVenueLink: event.venueLink!,
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
-      eventLat: event.latitude,
-      eventLng: event.longitude,
-      eventAddress: event.address,
-      start_time_date: event.start_time_date,
+      eventLat: Number(event.latitude),
+      eventLng: Number(event.longitude),
+      eventAddress: event.address as any,
+      start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 
     const walletUrl = await getGoogleWalletPass(imgUrl, ticketData);
@@ -162,47 +163,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data: ticket } = await adminClient
-      .from("tickets")
-      .select(
-        `
-          id,
-          email,
-          name,
-          type,
-          event_id,
-          events (
-            id,
-            name,
-            route,
-            doors_open,
-            start_time_date,
-            venue,
-            img,
-            img_version,
-            venue_link,
-            latitude,
-            longitude,
-            address
-          )
-        `,
-      )
-      .eq("id", ticket_id)
-      .eq("email", user.email) // ensure the user actually owns the ticket
-      .limit(1)
-      .single();
-
-    const event = Array.isArray(ticket?.events)
-      ? ticket.events[0]
-      : ticket?.events;
+    const ticket = await getTicketForWallet(ticket_id, user.email);
+    const event = ticket?.event;
 
     if (!ticket || !event) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
     const imgUrl = event.img
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}${getImageProxyUrl(event.id, event.img_version)}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}${getImageProxyUrl(event.id, event.imgVersion)}`
       : null;
     if (!imgUrl) {
       return NextResponse.json(
@@ -213,17 +182,17 @@ export async function POST(req: NextRequest) {
     const ticketData: TicketWalletData = {
       email: ticket.email,
       name: ticket.name,
-      eventName: event.name,
+      eventName: event.name!,
       ticketType: ticket.type,
-      eventDoorTime: event.doors_open,
+      eventDoorTime: event.doorsOpen?.toISOString() ?? "",
       ticketId: ticket.id,
-      eventVenue: event.venue,
-      eventVenueLink: event.venue_link,
+      eventVenue: event.venue!,
+      eventVenueLink: event.venueLink!,
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
-      eventLat: event.latitude,
-      eventLng: event.longitude,
-      eventAddress: event.address,
-      start_time_date: event.start_time_date,
+      eventLat: Number(event.latitude),
+      eventLng: Number(event.longitude),
+      eventAddress: event.address as any,
+      start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 
     const passBuf = await getGoogleWalletPass(imgUrl, ticketData);

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
   getAvailablePublicTickets,
   isWaitlistClosed,
 } from "@/app/lib/supabase";
+import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { sendWaitlistEmail } from "@/app/lib/email";
 
@@ -65,14 +65,20 @@ export async function POST(req: Request) {
     }
 
     // Get event details
-    const adminClient = getSupabaseClient();
-    const { data: event, error: eventError } = await adminClient
-      .from("events")
-      .select("*")
-      .eq("id", event_id)
-      .single();
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, event_id),
+      columns: {
+        id: true,
+        name: true,
+        doorsOpen: true,
+        startTimeDate: true,
+        venue: true,
+        venueLink: true,
+        desc: true,
+      },
+    });
 
-    if (eventError || !event) {
+    if (!event) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
@@ -80,7 +86,7 @@ export async function POST(req: Request) {
     }
 
     // Check if waitlist is closed (2 hours before doors open)
-    if (isWaitlistClosed(event.doors_open)) {
+    if (isWaitlistClosed(event.doorsOpen?.toISOString() ?? null)) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
         { status: 400 },
@@ -97,12 +103,10 @@ export async function POST(req: Request) {
     }
 
     // Check user doesn't already have a ticket
-    const { data: existingTicket } = await adminClient
-      .from("tickets")
-      .select("id")
-      .eq("event_id", event_id)
-      .eq("email", user.email)
-      .single();
+    const existingTicket = await db.query.tickets.findFirst({
+      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
+      columns: { id: true },
+    });
 
     if (existingTicket) {
       return NextResponse.json(
@@ -125,18 +129,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // Use RPC to atomically join waitlist (prevents position collisions)
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "join_waitlist_with_name",
-      {
-        p_event_id: event_id,
-        p_referral: referral || null,
-        p_name: waitlistName,
-      },
-    );
-
-    if (rpcError) {
-      if (rpcError.code === "42883") {
+    // Use stored procedure to atomically join waitlist (prevents position collisions)
+    let rpcData: any;
+    try {
+      const result = await db.execute<{ join_waitlist_with_name: any }>(sql`
+        SELECT join_waitlist_with_name(
+          ${event_id}::uuid,
+          ${referral || null},
+          ${waitlistName},
+          ${user.email}
+        )
+      `);
+      rpcData = result[0]?.join_waitlist_with_name;
+    } catch (rpcError: any) {
+      const msg = (rpcError.message || "").toLowerCase();
+      if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Waitlist RPC missing:", rpcError);
         return NextResponse.json(
           {
@@ -146,9 +153,7 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-
-      const msg = (rpcError.message || "").toLowerCase();
-      if (rpcError.code === "P0001" || msg.includes("already")) {
+      if (msg.includes("already")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_ALREADY_ON_WAITLIST },
           { status: 400 },
@@ -169,14 +174,12 @@ export async function POST(req: Request) {
 
     // Calculate actual position (same logic as GET handler)
     // This ensures the email shows the same position as the UI
-    const { count: aheadCount } = await adminClient
-      .from("waitlist")
-      .select("*", { count: "exact", head: true })
-      .eq("event_id", event_id)
-      .lt("position", nextPosition);
+    const [aheadResult] = await db.select({ count: count() })
+      .from(waitlist)
+      .where(and(eq(waitlist.eventId, event_id), lt(waitlist.position, nextPosition)));
 
     // User's actual position is count of people ahead + 1 (1-indexed)
-    const actualPosition = (aheadCount || 0) + 1;
+    const actualPosition = (aheadResult?.count ?? 0) + 1;
 
     // Send email immediately
     try {
@@ -184,9 +187,9 @@ export async function POST(req: Request) {
         email: user.email,
         eventName: event.name || "Event",
         position: actualPosition,
-        eventStartTime: event.start_time_date,
+        eventStartTime: event.startTimeDate?.toISOString() ?? null,
         eventVenue: event.venue,
-        eventVenueLink: event.venue_link,
+        eventVenueLink: event.venueLink,
         eventDescription: event.desc,
       });
     } catch (emailError) {
@@ -242,13 +245,14 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Use RPC to atomically leave waitlist (prevents race conditions during recalculation)
-    const { error: rpcError } = await supabase.rpc("leave_waitlist", {
-      p_event_id: event_id,
-    });
-
-    if (rpcError) {
-      if (rpcError.code === "42883") {
+    // Use stored procedure to atomically leave waitlist (prevents race conditions during recalculation)
+    try {
+      await db.execute(sql`
+        SELECT leave_waitlist(${event_id}::uuid, ${user.email})
+      `);
+    } catch (rpcError: any) {
+      const msg = (rpcError.message || "").toLowerCase();
+      if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Waitlist RPC missing:", rpcError);
         return NextResponse.json(
           {
@@ -258,9 +262,7 @@ export async function DELETE(req: Request) {
           { status: 500 },
         );
       }
-
-      const msg = (rpcError.message || "").toLowerCase();
-      if (rpcError.code === "P0001" || msg.includes("not_found")) {
+      if (msg.includes("not_found")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_NOT_ON_WAITLIST },
           { status: 400 },
@@ -308,69 +310,82 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get("eventId");
 
-    const adminClient = getSupabaseClient();
-
     if (eventId) {
       // Get status for specific event
-      const { data: entry } = await adminClient
-        .from("waitlist")
-        .select("position")
-        .eq("event_id", eventId)
-        .eq("email", user.email)
-        .single();
+      const entry = await db.query.waitlist.findFirst({
+        where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
+        columns: { position: true },
+      });
 
-      const { count: totalCount } = await adminClient
-        .from("waitlist")
-        .select("*", { count: "exact", head: true })
-        .eq("event_id", eventId);
+      const [totalResult] = await db.select({ count: count() })
+        .from(waitlist)
+        .where(eq(waitlist.eventId, eventId));
 
       // Calculate actual position by counting how many people are ahead (have lower position numbers)
       let actualPosition: number | null = null;
       if (entry) {
-        const { count: aheadCount } = await adminClient
-          .from("waitlist")
-          .select("*", { count: "exact", head: true })
-          .eq("event_id", eventId)
-          .lt("position", entry.position);
+        const [aheadResult] = await db.select({ count: count() })
+          .from(waitlist)
+          .where(and(eq(waitlist.eventId, eventId), lt(waitlist.position, entry.position)));
 
         // User's actual position is count of people ahead + 1 (1-indexed)
-        actualPosition = (aheadCount || 0) + 1;
+        actualPosition = (aheadResult?.count ?? 0) + 1;
       }
 
       return NextResponse.json(
         {
           isOnWaitlist: !!entry,
           position: actualPosition,
-          total: totalCount || 0,
+          total: totalResult?.count ?? 0,
         },
         { status: 200 },
       );
     } else {
       // Get all waitlist entries for user
-      const { data: entries } = await adminClient
-        .from("waitlist")
-        .select(
-          `
-          id,
-          position,
-          created_at,
-          referral,
-          event_id,
-          events (
-            id,
-            name,
-            route,
-            start_time_date,
-            venue
-          )
-        `,
-        )
-        .eq("email", user.email)
-        .order("created_at", { ascending: false });
+      const entries = await db.query.waitlist.findMany({
+        where: eq(waitlist.email, user.email),
+        columns: {
+          id: true,
+          position: true,
+          createdAt: true,
+          referral: true,
+          eventId: true,
+        },
+        with: {
+          event: {
+            columns: {
+              id: true,
+              name: true,
+              route: true,
+              startTimeDate: true,
+              venue: true,
+            },
+          },
+        },
+        orderBy: (waitlist, { desc }) => [desc(waitlist.createdAt)],
+      });
+
+      // Transform to match expected API shape (snake_case)
+      const serializedEntries = entries.map((e) => ({
+        id: e.id,
+        position: e.position,
+        created_at: e.createdAt.toISOString(),
+        referral: e.referral,
+        event_id: e.eventId,
+        events: e.event
+          ? {
+              id: e.event.id,
+              name: e.event.name,
+              route: e.event.route,
+              start_time_date: e.event.startTimeDate?.toISOString() ?? null,
+              venue: e.event.venue,
+            }
+          : null,
+      }));
 
       return NextResponse.json(
         {
-          waitlists: entries || [],
+          waitlists: serializedEntries,
         },
         { status: 200 },
       );

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getSupabaseClient } from "@/app/lib/supabase";
+import { db, events, and, isNotNull } from "@ssb/db";
 
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
@@ -28,20 +28,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseURL}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  // Fetch published events with a route
-  const supabase = getSupabaseClient();
-  const { data: events } = await supabase
-    .from("events")
-    .select("route, name, release_date")
-    .not("route", "is", null)
-    .not("name", "is", null);
+  const now = new Date();
 
-  const now = new Date().toISOString();
+  const allEvents = await db.query.events.findMany({
+    where: and(isNotNull(events.route), isNotNull(events.name)),
+    columns: { route: true, releaseDate: true },
+  });
 
-  const eventPages: MetadataRoute.Sitemap = (events || [])
+  const eventPages: MetadataRoute.Sitemap = allEvents
     .filter((e) => {
-      // Exclude mystery events (release_date in the future)
-      if (e.release_date && e.release_date > now) return false;
+      if (e.releaseDate && e.releaseDate > now) return false;
       return true;
     })
     .map((e) => ({

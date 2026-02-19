@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
+import { db, eq, and, referrals } from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { checkRateLimit, referralValidateRatelimit } from "@/app/lib/ratelimit";
 
@@ -16,7 +16,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get("eventId") || searchParams.get("event_id");
 
-    // 2. If Not Admin, Handle User Request
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
@@ -42,25 +41,12 @@ export async function GET(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data, error } = await adminClient
-      .from("referrals")
-      .select("count")
-      .eq("event_id", eventId)
-      .eq("referral_code", userReferralCode)
-      .single();
+    const referral = await db.query.referrals.findFirst({
+      where: and(eq(referrals.eventId, eventId), eq(referrals.referralCode, userReferralCode)),
+      columns: { count: true },
+    });
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        return NextResponse.json({ count: 0 }, { status: 200 });
-      }
-      return NextResponse.json(
-        { error: "Failed to fetch referral count" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ count: data?.count ?? 0 }, { status: 200 });
+    return NextResponse.json({ count: referral?.count ?? 0 }, { status: 200 });
   } catch (error) {
     console.error("Referral API error:", error);
     return NextResponse.json(
@@ -131,15 +117,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data, error } = await adminClient
-      .from("referrals")
-      .select("id")
-      .eq("event_id", event_id)
-      .eq("referral_code", referral_code.trim().toLowerCase())
-      .single();
+    const referral = await db.query.referrals.findFirst({
+      where: and(
+        eq(referrals.eventId, event_id),
+        eq(referrals.referralCode, referral_code.trim().toLowerCase()),
+      ),
+      columns: { id: true },
+    });
 
-    if (error || !data) {
+    if (!referral) {
       return NextResponse.json(
         {
           valid: false,

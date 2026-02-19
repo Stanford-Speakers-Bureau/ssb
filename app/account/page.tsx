@@ -3,39 +3,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   createServerSupabaseClient,
-  getSupabaseClient,
   formatEventDate,
   formatTime,
 } from "@/app/lib/supabase";
+import { db, eq, tickets } from "@ssb/db";
 import SignOutButton from "./SignOutButton";
 
 export const metadata: Metadata = {
   title: "My Account",
   robots: { index: false, follow: false },
 };
-
-interface RawTicket {
-  id: string;
-  event_id: string;
-  created_at: string;
-  type: string | null;
-  events:
-    | {
-        id: string;
-        name: string | null;
-        route: string | null;
-        doors_open: string | null;
-        venue: string | null;
-      }
-    | {
-        id: string;
-        name: string | null;
-        route: string | null;
-        doors_open: string | null;
-        venue: string | null;
-      }[]
-    | null;
-}
 
 interface Ticket {
   id: string;
@@ -54,7 +31,6 @@ interface Ticket {
 async function getUserTickets(): Promise<Ticket[]> {
   const supabase = await createServerSupabaseClient();
 
-  // Get current user
   const {
     data: { user },
     error: userError,
@@ -64,45 +40,31 @@ async function getUserTickets(): Promise<Ticket[]> {
     return [];
   }
 
-  const adminClient = getSupabaseClient();
+  const userTickets = await db.query.tickets.findMany({
+    where: eq(tickets.email, user.email),
+    with: {
+      event: {
+        columns: { id: true, name: true, route: true, doorsOpen: true, venue: true },
+      },
+    },
+    orderBy: (tickets, { desc }) => [desc(tickets.createdAt)],
+  });
 
-  // Get all tickets for this user with event information
-  const { data: tickets, error } = await adminClient
-    .from("tickets")
-    .select(
-      `
-      id,
-      event_id,
-      created_at,
-      type,
-      events (
-        id,
-        name,
-        route,
-        doors_open,
-        venue
-      )
-    `,
-    )
-    .eq("email", user.email)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching user tickets:", error);
-    return [];
-  }
-
-  // Handle events relation - Supabase may return it as array or object
-  return (tickets || []).map((ticket: RawTicket) => {
-    let events = ticket.events;
-    if (Array.isArray(events)) {
-      events = events[0] || null;
-    }
-    return {
-      ...ticket,
-      events,
-    };
-  }) as Ticket[];
+  return userTickets.map((t) => ({
+    id: t.id,
+    event_id: t.eventId || "",
+    created_at: t.createdAt.toISOString(),
+    type: t.type,
+    events: t.event
+      ? {
+          id: t.event.id,
+          name: t.event.name,
+          route: t.event.route,
+          doors_open: t.event.doorsOpen?.toISOString() ?? null,
+          venue: t.event.venue,
+        }
+      : null,
+  }));
 }
 
 export default async function AccountPage() {

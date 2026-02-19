@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getSignedImageUrl,
-  getSupabaseClient,
 } from "@/app/lib/supabase";
 import { getAppleWalletPass } from "@/app/lib/wallet";
+import { db, eq, and, tickets } from "@ssb/db";
 
 type TicketWalletData = {
   email: string;
@@ -52,38 +52,34 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const adminClient = getSupabaseClient();
-    const { data: ticket } = await adminClient
-      .from("tickets")
-      .select(
-        `
-          id,
-          email,
-          name,
-          type,
-          event_id,
-          events (
-            name,
-            doors_open,
-            start_time_date,
-            venue,
-            img,
-            venue_link,
-            route,
-            latitude,
-            longitude,
-            address
-          )
-        `,
-      )
-      .eq("id", ticket_id)
-      .eq("email", user.email) // ensure the user actually owns the ticket
-      .limit(1)
-      .single();
+    const ticket = await db.query.tickets.findFirst({
+      where: and(eq(tickets.id, ticket_id), eq(tickets.email, user.email)),
+      columns: {
+        id: true,
+        email: true,
+        name: true,
+        type: true,
+        eventId: true,
+      },
+      with: {
+        event: {
+          columns: {
+            name: true,
+            doorsOpen: true,
+            startTimeDate: true,
+            venue: true,
+            img: true,
+            venueLink: true,
+            route: true,
+            latitude: true,
+            longitude: true,
+            address: true,
+          },
+        },
+      },
+    });
 
-    const event = Array.isArray(ticket?.events)
-      ? ticket.events[0]
-      : ticket?.events;
+    const event = ticket?.event;
 
     if (!ticket || !event) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -102,17 +98,17 @@ export async function GET(req: NextRequest) {
     const ticketData: TicketWalletData = {
       email: ticket.email,
       name: ticket.name,
-      eventName: event.name,
+      eventName: event.name!,
       ticketType: ticket.type,
-      eventDoorTime: event.doors_open,
+      eventDoorTime: event.doorsOpen?.toISOString() ?? "",
       ticketId: ticket.id,
-      eventVenue: event.venue,
-      eventVenueLink: event.venue_link,
+      eventVenue: event.venue!,
+      eventVenueLink: event.venueLink!,
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
-      eventLat: event.latitude,
-      eventLng: event.longitude,
-      eventAddress: event.address,
-      start_time_date: event.start_time_date,
+      eventLat: Number(event.latitude),
+      eventLng: Number(event.longitude),
+      eventAddress: event.address as any,
+      start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 
     const passBuf = await getAppleWalletPass(imgBuffer, ticketData);
