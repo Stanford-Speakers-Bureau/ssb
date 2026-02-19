@@ -34,7 +34,7 @@ export default function TicketQRCode({
               padding: "6px",
               background: isExternal
                 ? "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(22, 163, 74, 0.55) 90deg, rgba(22, 163, 74, 0.55) 112deg, transparent 130deg, transparent 240deg, #16a34a 270deg, #16a34a 300deg, transparent 330deg, transparent 360deg)"
-                : "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
+                : "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(212, 175, 55, 0.55) 90deg, rgba(212, 175, 55, 0.55) 112deg, transparent 130deg, transparent 240deg, #D4AF37 270deg, #D4AF37 300deg, transparent 330deg, transparent 360deg)",
               WebkitMask:
                 "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
               WebkitMaskComposite: "xor",
@@ -60,8 +60,8 @@ export default function TicketQRCode({
         </div>
       </div>
       {isVIP && (
-        <div className="mt-2 px-3 py-1 bg-[#A80D0C] rounded-full">
-          <p className="text-xs sm:text-sm font-bold text-white">VIP</p>
+        <div className="mt-2 px-3 py-1 bg-[#D4AF37] rounded-full">
+          <p className="text-xs sm:text-sm font-bold text-[#1a1a1a]">VIP</p>
         </div>
       )}
       {isExternal && (
