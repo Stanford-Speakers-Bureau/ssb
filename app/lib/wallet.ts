@@ -90,6 +90,7 @@ export async function getAppleWalletPass(
   };
 
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
+  const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
   const props = {
     passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
     teamIdentifier: "SNC2X5N2CY",
@@ -97,10 +98,14 @@ export async function getAppleWalletPass(
     organizationName: "Stanford Speakers Bureau",
 
     description: ticket.ticketType,
-    backgroundColor: isVIP ? "rgb(122, 92, 0)" : "rgb(168, 13, 12)",
-    foregroundColor: isVIP ? "rgb(255, 255, 255)" : "rgb(255, 255, 255)",
-    labelColor: isVIP ? "rgb(255, 235, 180)" : "rgb(255, 215, 0)",
+    backgroundColor: isVIP ? "rgb(122, 92, 0)" : isExternal ? "rgb(22, 101, 52)" : "rgb(168, 13, 12)",
+    foregroundColor: "rgb(255, 255, 255)",
+    labelColor: isVIP ? "rgb(255, 235, 180)" : isExternal ? "rgb(187, 247, 208)" : "rgb(255, 215, 0)",
   };
+
+  // Parse DB timestamps (stored as Pacific-naive) into proper UTC Dates
+  const doorTimeUTC = fromZonedTime(ticket.eventDoorTime, PACIFIC_TIMEZONE);
+  const startTimeUTC = fromZonedTime(ticket.start_time_date, PACIFIC_TIMEZONE);
 
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
@@ -111,13 +116,13 @@ export async function getAppleWalletPass(
       minute: "2-digit",
       hour12: true,
       timeZone: PACIFIC_TIMEZONE,
-    }).format(new Date(ticket.eventDoorTime)),
+    }).format(doorTimeUTC),
     value: new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       timeZone: PACIFIC_TIMEZONE,
-    }).format(new Date(ticket.eventDoorTime)),
+    }).format(doorTimeUTC),
     textAlignment: "PKTextAlignmentLeft",
   });
   pass.secondaryFields.push(
@@ -175,7 +180,7 @@ export async function getAppleWalletPass(
         minute: "2-digit",
         hour12: true,
         timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.start_time_date)),
+      }).format(startTimeUTC),
     },
     {
       key: "back-door-time",
@@ -185,7 +190,7 @@ export async function getAppleWalletPass(
         minute: "2-digit",
         hour12: true,
         timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.eventDoorTime)),
+      }).format(doorTimeUTC),
     },
     {
       key: "back-date",
@@ -195,7 +200,7 @@ export async function getAppleWalletPass(
         month: "short",
         day: "numeric",
         timeZone: PACIFIC_TIMEZONE,
-      }).format(new Date(ticket.eventDoorTime)),
+      }).format(doorTimeUTC),
     },
     {
       key: "back-type",
@@ -229,7 +234,7 @@ export async function getAppleWalletPass(
     },
   );
   pass.setExpirationDate(
-    new Date(Date.parse(ticket.eventDoorTime) + 86_400_000),
+    new Date(doorTimeUTC.getTime() + 86_400_000),
   );
   // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
   // pass.setLocations({
@@ -238,7 +243,7 @@ export async function getAppleWalletPass(
   // });
   pass.setRelevantDates([
     {
-      relevantDate: fromZonedTime(ticket.eventDoorTime, PACIFIC_TIMEZONE),
+      relevantDate: doorTimeUTC,
     },
   ]);
 
@@ -289,7 +294,7 @@ export async function getGoogleWalletPass(
           },
           issuerName: "Stanford Speakers Bureau",
           hexBackgroundColor:
-            ticket.ticketType?.toUpperCase().trim() === "VIP" ? "#7A5C00" : "#A80D0C",
+            ticket.ticketType?.toUpperCase().trim() === "VIP" ? "#7A5C00" : ticket.ticketType?.toUpperCase().trim() === "EXTERNAL" ? "#166534" : "#A80D0C",
           heroImage: {
             sourceUri: {
               uri: image_signed,
