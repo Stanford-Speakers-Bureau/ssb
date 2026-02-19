@@ -392,7 +392,7 @@ export async function getTicketCounts(eventId: string): Promise<{
     .from("tickets")
     .select("*", { count: "exact", head: true })
     .eq("event_id", eventId)
-    .or("type.eq.STANDARD,type.is.null");
+    .or("type.eq.STANDARD,type.eq.EXTERNAL,type.is.null");
 
   return {
     vipCount: vipCount ?? 0,
