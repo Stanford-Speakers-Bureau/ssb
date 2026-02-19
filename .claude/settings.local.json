@@ -10,7 +10,8 @@
       "Bash(bunx tsc:*)",
       "Bash(bunx next build:*)",
       "Bash(bash:*)",
-      "Bash(bun run build:*)"
+      "Bash(bun run build:*)",
+      "Bash(bun run postinstall:*)"
     ]
   }
 }

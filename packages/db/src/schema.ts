@@ -37,8 +37,8 @@ export const events = pgTable("events", {
   imgVersion: bigint("img_version", { mode: "number" }).notNull().default(1),
   ticketingDate: timestamp("ticketing_date", { withTimezone: true }),
   livestream: boolean("livestream").default(false),
-  scannedCount: bigint("scanned_count", { mode: "number" }).notNull().default(0),
-  waitlistChance: text("waitlist_chance"),
+  title: text("title"),
+  waitlistChance: text("waitlist_chance").notNull().default("High"),
 });
 
 // ── Tickets ─────────────────────────────────────────────────────────────────
