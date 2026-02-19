@@ -20,7 +20,7 @@ function getHyperdriveConnectionString(): string | null {
 function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
   const client = postgres(connectionString, {
     prepare: false,
-    max: hyperdrive ? 1 : 10,
+    max: hyperdrive ? 5 : 10,
     connect_timeout: 10,
   });
   return drizzle(client, { schema });

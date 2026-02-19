@@ -11,7 +11,8 @@
       "Bash(bunx next build:*)",
       "Bash(bash:*)",
       "Bash(bun run build:*)",
-      "Bash(bun run postinstall:*)"
+      "Bash(bun run postinstall:*)",
+      "WebFetch(domain:developers.cloudflare.com)"
     ]
   }
 }
