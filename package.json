@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "postinstall": "rm -rf node_modules/@ssb/db && mkdir -p node_modules/@ssb/db && cp -R packages/db/package.json packages/db/tsconfig.json packages/db/src node_modules/@ssb/db/",
     "build": "next build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -16,7 +17,7 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.16.5",
-    "@ssb/db": "file:../ssb-db",
+    "@ssb/db": "file:./packages/db",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "@types/qrcode": "^1.5.6",
