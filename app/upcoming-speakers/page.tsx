@@ -55,6 +55,10 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const rawEvents = await db.query.events.findMany({
     where: gte(events.startTimeDate, bufferDate),
     orderBy: (events, { asc }) => [asc(events.startTimeDate)],
+  }).catch((err: unknown) => {
+    const cause = (err as Error & { cause?: Error })?.cause;
+    console.error("[getUpcomingEvents] query failed:", cause?.message ?? (err as Error).message);
+    throw err;
   });
 
   return await Promise.all(
