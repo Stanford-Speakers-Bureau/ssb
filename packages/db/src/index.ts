@@ -8,34 +8,36 @@ const globalForDb = globalThis as unknown as {
   db: DrizzleDb | undefined;
 };
 
-function getConnectionString(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require("@opennextjs/cloudflare");
-    const { env } = getCloudflareContext();
-    const hyperdrive = (env as Record<string, unknown>)
-      ?.HYPERDRIVE as { connectionString?: string } | undefined;
-    if (hyperdrive?.connectionString) {
-      return hyperdrive.connectionString;
-    }
-  } catch {
-    // Not in a CF request context or package unavailable — fall through
-  }
-  return process.env.DATABASE_URL!;
+// Read the Hyperdrive connection string directly from the globalThis symbol that
+// OpenNext's worker entrypoint always sets — no require("@opennextjs/cloudflare") needed.
+function getHyperdriveConnectionString(): string | null {
+  const cfCtx = (globalThis as unknown as Record<symbol, unknown>)[
+    Symbol.for("__cloudflare-context__")
+  ] as { env?: { HYPERDRIVE?: { connectionString?: string } } } | undefined;
+  return cfCtx?.env?.HYPERDRIVE?.connectionString ?? null;
 }
 
-function createDb(): DrizzleDb {
-  const client = postgres(getConnectionString(), { prepare: false });
+function createDb(connectionString: string): DrizzleDb {
+  const client = postgres(connectionString, {
+    prepare: false,
+    connect_timeout: 10, // seconds — fail fast instead of hanging indefinitely
+  });
   return drizzle(client, { schema });
 }
 
-// Proxy that lazily creates the DB on first use.
-// Deferring until request-time ensures the Cloudflare context (and therefore
-// the Hyperdrive binding) is available when getConnectionString() is called.
+// Proxy that lazily resolves the DB on first property access.
+// - In Cloudflare Workers: uses the Hyperdrive connection string from the worker context.
+//   Hyperdrive manages the actual DB connection pool, so a fresh client per access is fine.
+// - Elsewhere (local/SSR): uses DATABASE_URL with a singleton.
 export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
   get(_, prop) {
+    const hyperdriveConnStr = getHyperdriveConnectionString();
+    if (hyperdriveConnStr) {
+      const requestDb = createDb(hyperdriveConnStr);
+      return (requestDb as unknown as Record<string | symbol, unknown>)[prop];
+    }
     if (!globalForDb.db) {
-      globalForDb.db = createDb();
+      globalForDb.db = createDb(process.env.DATABASE_URL!);
     }
     return (globalForDb.db as unknown as Record<string | symbol, unknown>)[prop];
   },

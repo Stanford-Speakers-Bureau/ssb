@@ -59,8 +59,6 @@
 		"SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
 		"NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
 		"UPSTASH_REDIS_REST_URL": "https://concrete-vervet-23231.upstash.io",
-		"SES_FROM_EMAIL": "tickets@stanfordspeakersbureau.com",
-		"GOOGLE_WALLET_EMAIL": "wallet-signer@stanford-speakers-bureau.iam.gserviceaccount.com",
 		"AWS_REGION": "us-east-2",
 	},
 	"hyperdrive": [
