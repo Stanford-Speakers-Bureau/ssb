@@ -91,6 +91,7 @@ export async function getAppleWalletPass(
 
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
+  const isWaitlist = ticket.ticketType?.toUpperCase().trim() === "WAITLIST";
   const props = {
     passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
     teamIdentifier: "SNC2X5N2CY",
@@ -102,13 +103,17 @@ export async function getAppleWalletPass(
       ? "rgb(122, 92, 0)"
       : isExternal
         ? "rgb(22, 101, 52)"
-        : "rgb(168, 13, 12)",
+        : isWaitlist
+          ? "rgb(82, 82, 91)"
+          : "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
     labelColor: isVIP
       ? "rgb(255, 235, 180)"
       : isExternal
         ? "rgb(187, 247, 208)"
-        : "rgb(255, 215, 0)",
+        : isWaitlist
+          ? "rgb(228, 228, 231)"
+          : "rgb(255, 215, 0)",
   };
 
   // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
@@ -306,7 +311,9 @@ export async function getGoogleWalletPass(
               ? "#7A5C00"
               : ticket.ticketType?.toUpperCase().trim() === "EXTERNAL"
                 ? "#166534"
-                : "#A80D0C",
+                : ticket.ticketType?.toUpperCase().trim() === "WAITLIST"
+                  ? "#52525b"
+                  : "#A80D0C",
           heroImage: {
             sourceUri: {
               uri: image_signed,

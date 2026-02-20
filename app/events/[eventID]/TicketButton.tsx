@@ -17,6 +17,7 @@ type TicketButtonProps = {
   initialIsNotified?: boolean;
   isLoggedIn?: boolean;
   waitlistChance?: string | null;
+  waitlistMode?: boolean;
 };
 
 const TICKET_MESSAGES = {
@@ -45,6 +46,7 @@ export default function TicketButton({
   initialIsNotified = false,
   isLoggedIn = false,
   waitlistChance = null,
+  waitlistMode = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -140,13 +142,8 @@ export default function TicketButton({
     ? new Date() >= new Date(eventStartTime)
     : false;
 
-  // Check if within 2-hour cutoff for waitlist (based on doors open time)
-  const twoHoursBeforeDoorsOpen = doorsOpen
-    ? new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000
-    : null;
-  const isWithinWaitlistCutoff = twoHoursBeforeDoorsOpen
-    ? new Date().getTime() >= twoHoursBeforeDoorsOpen
-    : false;
+  // When waitlistMode is enabled on the event, joining the waitlist issues a WAITLIST ticket
+  const isWithinWaitlistCutoff = waitlistMode;
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -234,14 +231,31 @@ export default function TicketButton({
       const data = (await response.json()) as {
         position?: number;
         error?: string;
+        ticket_type?: string;
+        ticket_id?: string;
       };
 
       if (response.ok) {
-        setIsOnWaitlist(true);
-        setWaitlistPosition(null);
-        setIsWaitlistPositionReady(false);
-        await checkWaitlistStatus();
-        setMessage("Successfully joined the waitlist!");
+        if (data.ticket_type === "WAITLIST") {
+          // Within 2h of event: got a WAITLIST ticket instead of a waitlist entry
+          setHasTicket(true);
+          setMessage("You've been added to the in-person waitlist.");
+          window.dispatchEvent(
+            new CustomEvent("ticketChanged", {
+              detail: {
+                hasTicket: true,
+                ticketId: data.ticket_id ?? null,
+                ticketName: null,
+              },
+            }),
+          );
+        } else {
+          setIsOnWaitlist(true);
+          setWaitlistPosition(null);
+          setIsWaitlistPositionReady(false);
+          await checkWaitlistStatus();
+          setMessage("Successfully joined the waitlist!");
+        }
         // Clear referral from session storage
         sessionStorage.removeItem(referralKey);
       } else {
@@ -831,21 +845,7 @@ export default function TicketButton({
 
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
-    // Within 2-hour cutoff - show in-person message
-    if (isWithinWaitlistCutoff) {
-      return (
-        <div className="mb-5">
-          <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] px-4 py-3">
-            <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
-              This event is sold out. Please come to the venue in person for the
-              in-person waitlist.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    // User is NOT on waitlist - show join button
+    // User is NOT on waitlist - show join button (within 2h issues a WAITLIST ticket)
     if (!isOnWaitlist) {
       return (
         <div className="mb-5">
@@ -886,8 +886,9 @@ export default function TicketButton({
                 <motion.div
                   className="absolute inset-[-50%]"
                   style={{
-                    background:
-                      "conic-gradient(from 0deg, #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
+                    background: isWithinWaitlistCutoff
+                      ? "conic-gradient(from 0deg, #52525b, #71717a, #a1a1aa, #52525b, #71717a, #52525b)"
+                      : "conic-gradient(from 0deg, #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
                   }}
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
@@ -902,13 +903,19 @@ export default function TicketButton({
 
                 {/* Hero copy */}
                 <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight mb-1.5">
-                  Still want in?
+                  {isWithinWaitlistCutoff ? "Join the in-person waitlist" : "Still want in?"}
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
+<<<<<<< Updated upstream
                   Many attendees flake - <strong>come in person to the venue and join the in person standby line, which is first come, first serve.</strong>
                   Spots open up when people don't show up. Or, you can join the online waitlist and
                   we&apos;ll automatically grab you a ticket the moment one is
                   available.
+=======
+                  {isWithinWaitlistCutoff
+                    ? "Get a waitlist ticket to present at the door. This does not guarantee a seat — you'll be admitted as space becomes available."
+                    : "Spots open up when people cancel. Join the waitlist and we\u2019ll automatically grab you a ticket the moment one is available."}
+>>>>>>> Stashed changes
                 </p>
 
                 {/* Value props row */}
@@ -975,6 +982,8 @@ export default function TicketButton({
                         <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
                         Joining...
                       </>
+                    ) : isWithinWaitlistCutoff ? (
+                      "Join In-Person Waitlist"
                     ) : (
                       "Join Waitlist"
                     )}

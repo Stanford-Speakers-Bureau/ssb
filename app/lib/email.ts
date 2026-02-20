@@ -478,6 +478,7 @@ async function generateTicketEmailHTML(
   const qrImageSrc = options?.qrCid ? `cid:${options.qrCid}` : "";
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const isWaitlist = ticketType?.toUpperCase() === "WAITLIST";
   const ticketValidTime = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
       hour: "numeric",
@@ -578,6 +579,16 @@ async function generateTicketEmailHTML(
     u + .body .external-shadow {
       box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important;
     }
+    u + .body .qr-code-wrapper-waitlist {
+      background-color: #52525b !important;
+      background-image: linear-gradient(180deg, #52525b, #52525c) !important;
+    }
+    u + .body .waitlist-border {
+      border-color: #52525b !important;
+    }
+    u + .body .waitlist-shadow {
+      box-shadow: 0 0 15px rgba(82, 82, 91, 0.3) !important;
+    }
     u + .body .button {
       background-color: #A80D0C !important; 
       background-image: linear-gradient(#A80D0C, #A80D0D) !important;
@@ -612,6 +623,8 @@ async function generateTicketEmailHTML(
       .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }
       .external-border { border-color: #16a34a !important; }
       .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }
+      .waitlist-border { border-color: #52525b !important; }
+      .waitlist-shadow { box-shadow: 0 0 15px rgba(82, 82, 91, 0.3) !important; }
     }
 
     /* Mobile responsive */
@@ -630,17 +643,17 @@ async function generateTicketEmailHTML(
 </head>
 <body class="body" style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #18181b; color: #f4f4f5;">
 
-  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #27272a;${isVIP ? " border: 3px solid #D4AF37;" : isExternal ? " border: 3px solid #16a34a;" : ""}">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #27272a;${isVIP ? " border: 3px solid #D4AF37;" : isExternal ? " border: 3px solid #16a34a;" : isWaitlist ? " border: 3px solid #52525b;" : ""}">
 
     <!-- Header -->
     <tr>
-      <td align="center" class="email-header" style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 30px; text-align: center;${isVIP ? " border: 3px solid #D4AF37; border-bottom: none;" : isExternal ? " border: 3px solid #16a34a; border-bottom: none;" : ""}">
+      <td align="center" class="email-header" style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 30px; text-align: center;${isVIP ? " border: 3px solid #D4AF37; border-bottom: none;" : isExternal ? " border: 3px solid #16a34a; border-bottom: none;" : isWaitlist ? " border: 3px solid #52525b; border-bottom: none;" : ""}">
         <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="Stanford Speakers Bureau Logo" class="logo" style="width: 60px; height: 60px; margin: 0 auto; display: block;" />
         </div>
         ${gmailBlendStart}
           <h2 class="header-subtitle" style="margin: 0 0 12px 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</h2>
-          <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">${isVIP ? "Your VIP ticket is reserved!" : isExternal ? "Your external ticket is confirmed!" : "Your seat is reserved!"}</h1>
+          <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">${isVIP ? "Your VIP ticket is reserved!" : isExternal ? "Your external ticket is confirmed!" : isWaitlist ? "You're on the in-person waitlist!" : "Your seat is reserved!"}</h1>
         ${gmailBlendEnd}
       </td>
     </tr>
@@ -651,7 +664,18 @@ async function generateTicketEmailHTML(
         <div class="email-content" style="padding: 0; max-width: 600px; margin: 0 auto;">
           
           ${getImportantNoticeHTML(gmailBlendStart, gmailBlendEnd, undefined, eventUrl)}
-          
+
+          ${isWaitlist ? `
+          <div style="background-color: #422006; border: 1px solid #92400e; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;">
+            ${gmailBlendStart}
+            <p style="margin: 0 0 8px 0; color: #fbbf24; font-size: 15px; font-weight: 700;">⚠ This does not guarantee you a seat</p>
+            <p style="margin: 0; color: #fde68a; font-size: 14px; line-height: 1.6;">
+              This is an in-person waitlist ticket. You will only be admitted if space is available at the door. Please arrive early and check in with staff.
+            </p>
+            ${gmailBlendEnd}
+          </div>
+          ` : ""}
+
           ${gmailBlendStart}
             ${isVIP
       ? `
@@ -688,7 +712,7 @@ async function generateTicketEmailHTML(
     }
           
           <!-- Event Details Card -->
-          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : isExternal ? " border: 2px solid #16a34a; border-radius: 8px; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);" : ""}">
+          <div class="details-card" style="background-color: #18181b; padding: 24px; margin-bottom: 24px;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : isExternal ? " border: 2px solid #16a34a; border-radius: 8px; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);" : isWaitlist ? " border: 2px solid #52525b; border-radius: 8px; box-shadow: 0 0 15px rgba(82, 82, 91, 0.3);" : ""}">
             
             ${gmailBlendStart}
               <h2 class="details-title" style="margin: 0 0 20px 0; color: #ffffff; font-size: 22px; font-weight: 600;">Event Details</h2>
@@ -826,13 +850,13 @@ async function generateTicketEmailHTML(
           ${qrImageSrc
       ? `
           <!-- QR Code Section -->
-          <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : isExternal ? " border: 2px solid #16a34a; border-radius: 8px; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);" : ""}">
+          <div class="qr-section" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center;${isVIP ? " border: 2px solid #D4AF37; border-radius: 8px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);" : isExternal ? " border: 2px solid #16a34a; border-radius: 8px; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);" : isWaitlist ? " border: 2px solid #52525b; border-radius: 8px; box-shadow: 0 0 15px rgba(82, 82, 91, 0.3);" : ""}">
 
             ${gmailBlendStart}
               <h2 class="qr-title" style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 600;">Your Ticket QR Code</h2>
             ${gmailBlendEnd}
 
-            <div class="qr-code-wrapper${isVIP ? " qr-code-wrapper-vip" : isExternal ? " qr-code-wrapper-external" : ""}" style="display: inline-block; border-radius: 12px; ${isVIP ? "background-color: #D4AF37; padding: 4px;" : isExternal ? "background-color: #16a34a; padding: 4px;" : "padding: 0;"
+            <div class="qr-code-wrapper${isVIP ? " qr-code-wrapper-vip" : isExternal ? " qr-code-wrapper-external" : isWaitlist ? " qr-code-wrapper-waitlist" : ""}" style="display: inline-block; border-radius: 12px; ${isVIP ? "background-color: #D4AF37; padding: 4px;" : isExternal ? "background-color: #16a34a; padding: 4px;" : isWaitlist ? "background-color: #52525b; padding: 4px;" : "padding: 0;"
       }">
               <div style="background-color: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
                 <img src="${qrImageSrc}" alt="Ticket QR Code" class="qr-code-img" style="display: block; width: 350px; max-width: 100%; height: auto;" />
@@ -855,7 +879,15 @@ async function generateTicketEmailHTML(
               </span>
             </div>
             `
-          : ""
+          : isWaitlist
+            ? `
+            <div style="margin-top: 12px;">
+              <span style="display: inline-block; padding: 6px 16px; background-color: #52525b; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+                WAITLIST
+              </span>
+            </div>
+            `
+            : ""
       }
             
             <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
@@ -974,11 +1006,11 @@ function generateTicketEmailText(data: TicketEmailData): string {
       : null;
 
   return `
-${ticketType?.toUpperCase() === "VIP" ? "VIP Ticket Confirmed!" : ticketType?.toUpperCase() === "EXTERNAL" ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
+${ticketType?.toUpperCase() === "VIP" ? "VIP Ticket Confirmed!" : ticketType?.toUpperCase() === "EXTERNAL" ? "External Ticket Confirmed!" : ticketType?.toUpperCase() === "WAITLIST" ? "In-Person Waitlist Ticket" : "Ticket Confirmed!"}
 
 Thank you for your ticket purchase. Your ticket has been confirmed!
 
-${ticketType?.toUpperCase() === "VIP" ? "We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.\n\n" : ""}Event Details:
+${ticketType?.toUpperCase() === "WAITLIST" ? "⚠ IMPORTANT: This does not guarantee you a seat. This is an in-person waitlist ticket. You will only be admitted if space is available at the door. Please arrive early and check in with staff.\n\n" : ""}${ticketType?.toUpperCase() === "VIP" ? "We've reserved a seat for you in the front few rows. When you arrive at the event, please use the VIP entrance.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
@@ -1121,6 +1153,7 @@ type WaitlistEmailData = {
   eventName: string;
   position: number;
   eventStartTime: string | null;
+  doorsOpenTime?: string | null;
   eventVenue?: string | null;
   eventVenueLink?: string | null;
   eventDescription?: string | null;
@@ -1132,7 +1165,7 @@ type WaitlistEmailData = {
 async function generateWaitlistEmailHTML(
   data: WaitlistEmailData,
 ): Promise<string> {
-  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } =
+  const { eventName, position, eventStartTime, doorsOpenTime, eventVenue, eventVenueLink } =
     data;
 
   const formattedDate = eventStartTime
@@ -1141,12 +1174,18 @@ async function generateWaitlistEmailHTML(
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
+    : "TBA";
+
+  const formattedDoorsOpen = doorsOpenTime
+    ? new Intl.DateTimeFormat("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
       timeZone: PACIFIC_TIMEZONE,
-    }).format(new Date(eventStartTime))
-    : "TBA";
+    }).format(new Date(doorsOpenTime))
+    : null;
 
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
@@ -1283,12 +1322,22 @@ async function generateWaitlistEmailHTML(
               </tr>
               <tr>
                 <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
-                  ${gmailBlendStart}Date & Time:${gmailBlendEnd}
+                  ${gmailBlendStart}Date:${gmailBlendEnd}
                 </td>
                 <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
                   ${gmailBlendStart}${formattedDate}${gmailBlendEnd}
                 </td>
               </tr>
+              ${formattedDoorsOpen ? `
+              <tr>
+                <td class="details-label" style="padding: 8px 0; color: #a1a1aa; font-size: 14px; vertical-align: top;">
+                  ${gmailBlendStart}Doors Open:${gmailBlendEnd}
+                </td>
+                <td class="details-value" style="padding: 8px 0; color: #f4f4f5; font-size: 14px; font-weight: 500;">
+                  ${gmailBlendStart}${formattedDoorsOpen}${gmailBlendEnd}
+                </td>
+              </tr>
+              ` : ""}
               ${eventVenue
       ? `
               <tr>
@@ -1344,7 +1393,7 @@ async function generateWaitlistEmailHTML(
  * Generate plain text email content for waitlist confirmation
  */
 function generateWaitlistEmailText(data: WaitlistEmailData): string {
-  const { eventName, position, eventStartTime, eventVenue } = data;
+  const { eventName, position, eventStartTime, doorsOpenTime, eventVenue } = data;
 
   const formattedDate = eventStartTime
     ? new Intl.DateTimeFormat("en-US", {
@@ -1352,12 +1401,18 @@ function generateWaitlistEmailText(data: WaitlistEmailData): string {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: PACIFIC_TIMEZONE,
+    }).format(new Date(eventStartTime))
+    : "TBA";
+
+  const formattedDoorsOpen = doorsOpenTime
+    ? new Intl.DateTimeFormat("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
       timeZone: PACIFIC_TIMEZONE,
-    }).format(new Date(eventStartTime))
-    : "TBA";
+    }).format(new Date(doorsOpenTime))
+    : null;
 
   return `
 You're on the waitlist!
@@ -1368,8 +1423,8 @@ Your Position: #${position}
 
 Event Details:
 - Event: ${eventName}
-- Date & Time: ${formattedDate}
-${eventVenue ? `- Location: ${eventVenue}` : ""}
+- Date: ${formattedDate}
+${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}${eventVenue ? `- Location: ${eventVenue}` : ""}
 
 Important: The online waitlist closes 2 hours before the event. After that, please come to the venue for the in-person waitlist.
 

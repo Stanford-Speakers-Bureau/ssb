@@ -478,6 +478,7 @@ export default async function EventPage({ params }: PageProps) {
                 ticketingDate={process.env.LOCAL_TICKETING_ENABLED === "true" ? null : (event.ticketing_date ?? event.release_date)}
                 initialIsNotified={isNotified}
                 waitlistChance={event.waitlist_chance}
+                waitlistMode={event.waitlist_mode ?? false}
               />
             </div>
           </div>

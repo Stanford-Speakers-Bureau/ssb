@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+<<<<<<< Updated upstream
 import { db, eq, and, events, sql, isNotNull } from "@ssb/db";
+=======
+>>>>>>> Stashed changes
 import HomeClient from "./HomeClient";
+import { createServerSupabaseClient } from "./lib/supabase";
+import { db, eq, events } from "@ssb/db";
 
 export const metadata: Metadata = {
   title: { absolute: "Stanford Speakers Bureau" },
@@ -10,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
+<<<<<<< Updated upstream
   try {
     const result = await db
       .select({ route: events.route })
@@ -31,6 +37,19 @@ export default async function Home() {
     }
   } catch {
     // DB error — fail open, render home page normally
+=======
+  const liveEvent = await db.query.events.findFirst({
+    where: eq(events.live, true),
+    columns: { route: true, id: true },
+  });
+
+  if (liveEvent) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      redirect(`/events/${liveEvent.route ?? liveEvent.id}`);
+    }
+>>>>>>> Stashed changes
   }
 
   return (

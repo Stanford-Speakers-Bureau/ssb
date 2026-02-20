@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     // Check if there's a live event
     const liveEvent = await db.query.events.findFirst({
       where: eq(events.live, true),
-      columns: { id: true, name: true },
+      columns: { id: true, name: true, waitlistMode: true },
     });
 
     if (!liveEvent) {
@@ -123,6 +123,17 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: `This ticket is for a different event. Only tickets for "${liveEvent.name}" can be scanned.`,
+          status: "invalid",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Reject WAITLIST tickets when waitlist mode is not enabled
+    if (ticket.type === "WAITLIST" && !liveEvent.waitlistMode) {
+      return NextResponse.json(
+        {
+          error: "Waitlist mode is not active. Waitlist tickets cannot be scanned yet.",
           status: "invalid",
         },
         { status: 400 },
@@ -263,7 +274,7 @@ export async function GET(req: Request) {
     // Check if there's a live event
     const liveEvent = await db.query.events.findFirst({
       where: eq(events.live, true),
-      columns: { id: true, name: true },
+      columns: { id: true, name: true, waitlistMode: true },
     });
 
     if (!liveEvent) {
@@ -304,6 +315,17 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           error: `This ticket is for a different event. Only tickets for "${liveEvent.name}" can be scanned.`,
+          status: "invalid",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Reject WAITLIST tickets when waitlist mode is not enabled
+    if (ticket.type === "WAITLIST" && !liveEvent.waitlistMode) {
+      return NextResponse.json(
+        {
+          error: "Waitlist mode is not active. Waitlist tickets cannot be scanned yet.",
           status: "invalid",
         },
         { status: 400 },

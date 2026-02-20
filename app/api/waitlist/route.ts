@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getAvailablePublicTickets,
-  isWaitlistClosed,
 } from "@/app/lib/supabase";
 import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { sendWaitlistEmail } from "@/app/lib/email";
+import { sendWaitlistEmail, sendTicketEmail } from "@/app/lib/email";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -75,6 +74,8 @@ export async function POST(req: Request) {
         venue: true,
         venueLink: true,
         desc: true,
+        route: true,
+        waitlistMode: true,
       },
     });
 
@@ -85,13 +86,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if waitlist is closed (2 hours before doors open)
-    if (isWaitlistClosed(event.doorsOpen?.toISOString() ?? null)) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
-        { status: 400 },
-      );
-    }
+    // When waitlistMode is enabled on the event, issue a WAITLIST ticket instead of a waitlist entry
+    const withinTwoHours = event.waitlistMode;
 
     // Check if event is sold out
     const { available } = await getAvailablePublicTickets(event_id);
@@ -126,6 +122,49 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Name is required to join the waitlist" },
         { status: 400 },
+      );
+    }
+
+    // Within 2 hours of event start: issue a WAITLIST ticket instead of a waitlist entry
+    if (withinTwoHours) {
+      const [newTicket] = await db
+        .insert(tickets)
+        .values({
+          email: user.email,
+          eventId: event_id,
+          type: "WAITLIST",
+          name: waitlistName,
+          referral: referral || null,
+        })
+        .returning({ id: tickets.id });
+
+      // Send ticket email with WAITLIST type (template includes the "no guarantee" notice)
+      try {
+        await sendTicketEmail({
+          email: user.email,
+          name: waitlistName,
+          eventName: event.name || "Event",
+          ticketType: "WAITLIST",
+          ticketId: newTicket.id,
+          eventStartTime: event.startTimeDate?.toISOString() ?? null,
+          eventRoute: event.route ?? null,
+          eventVenue: event.venue,
+          eventVenueLink: event.venueLink,
+          eventDescription: event.desc,
+          doorsOpenTime: event.doorsOpen?.toISOString() ?? null,
+        });
+      } catch (emailError) {
+        console.error("Waitlist ticket email error:", emailError);
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "You've been added to the in-person waitlist.",
+          ticket_type: "WAITLIST",
+          ticket_id: newTicket.id,
+        },
+        { status: 200 },
       );
     }
 
@@ -188,6 +227,7 @@ export async function POST(req: Request) {
         eventName: event.name || "Event",
         position: actualPosition,
         eventStartTime: event.startTimeDate?.toISOString() ?? null,
+        doorsOpenTime: event.doorsOpen?.toISOString() ?? null,
         eventVenue: event.venue,
         eventVenueLink: event.venueLink,
         eventDescription: event.desc,

@@ -27,21 +27,24 @@ function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
 }
 
 // Proxy that lazily resolves the DB on first property access.
-// - In Cloudflare Workers: uses the Hyperdrive connection string from the worker context.
-//   Hyperdrive manages the actual DB connection pool, so a fresh client per access is fine.
-// - Elsewhere (local/SSR): uses DATABASE_URL with a singleton.
+// - Local dev: uses DATABASE_URL from .env as a singleton.
+// - Production (Cloudflare Workers): uses Hyperdrive connection string.
 export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
   get(_, prop) {
+    // Local dev: use DATABASE_URL from .env as a singleton
+    if (process.env.DATABASE_URL) {
+      if (!globalForDb.db) {
+        globalForDb.db = createDb(process.env.DATABASE_URL);
+      }
+      return (globalForDb.db as unknown as Record<string | symbol, unknown>)[prop];
+    }
+    // Production (Cloudflare Workers): use Hyperdrive
     const hyperdriveConnStr = getHyperdriveConnectionString();
     if (hyperdriveConnStr) {
       const requestDb = createDb(hyperdriveConnStr, true);
       return (requestDb as unknown as Record<string | symbol, unknown>)[prop];
     }
-    console.error("[db] Hyperdrive context not found, falling back to DATABASE_URL");
-    if (!globalForDb.db) {
-      globalForDb.db = createDb(process.env.DATABASE_URL!);
-    }
-    return (globalForDb.db as unknown as Record<string | symbol, unknown>)[prop];
+    throw new Error("No DATABASE_URL or Hyperdrive connection available");
   },
 });
 

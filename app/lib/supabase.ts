@@ -39,6 +39,7 @@ export type Event = {
   img_version?: number | null;
   waitlist_chance?: string | null;
   livestream?: boolean | null;
+  waitlist_mode?: boolean | null;
 };
 
 /**
@@ -66,6 +67,7 @@ export function serializeEvent(e: DBEvent): Event {
     img_version: e.imgVersion,
     waitlist_chance: e.waitlistChance ?? null,
     livestream: e.livestream ?? null,
+    waitlist_mode: e.waitlistMode ?? false,
   };
 }
 
@@ -357,12 +359,13 @@ export async function getWaitlistCount(eventId: string) {
 }
 
 /**
- * Check if waitlist is closed (within 2 hours of doors open)
+ * Check if waitlist is closed (within 2 hours of event start time).
+ * When closed, joining the waitlist will issue a WAITLIST ticket instead.
  */
-export function isWaitlistClosed(doorsOpen: string | null): boolean {
-  if (!doorsOpen) return false;
+export function isWaitlistClosed(eventStartTime: string | null): boolean {
+  if (!eventStartTime) return false;
 
-  const twoHoursBeforeDoorsOpen =
-    new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000;
-  return Date.now() >= twoHoursBeforeDoorsOpen;
+  const twoHoursBeforeStart =
+    new Date(eventStartTime).getTime() - 2 * 60 * 60 * 1000;
+  return Date.now() >= twoHoursBeforeStart;
 }

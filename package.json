@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "rm -rf node_modules/@ssb/db && mkdir -p node_modules/@ssb/db && cp -R packages/db/package.json packages/db/tsconfig.json packages/db/src node_modules/@ssb/db/",
+  "postinstall": "rm -rf node_modules/@ssb/db && mkdir -p node_modules/@ssb/db && cp -R packages/db/package.json packages/db/tsconfig.json packages/db/src node_modules/@ssb/db/",
     "build": "next build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -13,7 +13,8 @@
     "start": "next start",
     "u": "bunx npm-check-updates -u && bun install",
     "lint": "eslint",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "seed": "docker exec -i supabase_db_ssb-local psql -U postgres -d postgres < supabase/seed.sql"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.16.5",

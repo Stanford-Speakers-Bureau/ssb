@@ -39,6 +39,7 @@ export const events = pgTable("events", {
   livestream: boolean("livestream").default(false),
   title: text("title"),
   waitlistChance: text("waitlist_chance").notNull().default("High"),
+  waitlistMode: boolean("waitlist").notNull().default(false),
 });
 
 // ── Tickets ─────────────────────────────────────────────────────────────────
