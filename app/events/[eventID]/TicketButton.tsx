@@ -56,6 +56,7 @@ export default function TicketButton({
   const autoTicketProcessed = useRef(false);
   const autoNotifyProcessed = useRef(false);
   const autoWaitlistProcessed = useRef(false);
+  const autoWaitlistTicketProcessed = useRef(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Waitlist states
@@ -72,6 +73,9 @@ export default function TicketButton({
   // No bags policy modal states
   const [showNoBagsModal, setShowNoBagsModal] = useState(false);
   const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
+  const [noBagsIntent, setNoBagsIntent] = useState<
+    "ticket" | "waitlist_ticket"
+  >("ticket");
 
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
@@ -559,10 +563,76 @@ export default function TicketButton({
     }
   }, [checkLiveEvent, eventId, hasTicket, referralCode, referralWarning]);
 
+  // Waitlist ticket creation: issued when sold out and within 2 hours of event
+  const processWaitlistTicketRequest = useCallback(async () => {
+    setIsLoading(true);
+    setMessage(null);
+    let redirecting = false;
+
+    try {
+      const response = await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId, type: "WAITLIST" }),
+      });
+
+      if (response.status === 401) {
+        redirecting = true;
+        const currentPath = window.location.pathname;
+        const redirectUrl = `${currentPath}?waitlist_ticket=true`;
+        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        return;
+      }
+
+      const data = (await response.json()) as {
+        ticketId?: string;
+        ticketName?: string | null;
+        error?: string;
+      };
+
+      if (response.ok) {
+        setHasTicket(true);
+        setMessage(TICKET_MESSAGES.SUCCESS);
+        // Confetti on successful ticket creation
+        void import("canvas-confetti").then(({ default: confetti }) => {
+          const fire = confetti.create(undefined, {
+            resize: true,
+            useWorker: false,
+          });
+          fire({
+            particleCount: 300,
+            spread: 180,
+            startVelocity: 60,
+            scalar: 1.3,
+            origin: { y: 0.5 },
+            zIndex: 9999,
+          });
+        });
+        // Dispatch event to update ticket status
+        window.dispatchEvent(
+          new CustomEvent("ticketChanged", {
+            detail: {
+              hasTicket: true,
+              ticketId: data.ticketId || null,
+              ticketName: data.ticketName ?? null,
+            },
+          }),
+        );
+      } else {
+        setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
+      }
+    } catch {
+      setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+    } finally {
+      if (!redirecting) setIsLoading(false);
+    }
+  }, [eventId]);
+
   // Handle ticket click - show no bags modal first if creating ticket
   const handleTicketClick = useCallback(() => {
     if (!hasTicket) {
       // Show no bags policy modal before creating ticket
+      setNoBagsIntent("ticket");
       setShowNoBagsModal(true);
       setNoBagsConfirmation("");
     } else {
@@ -571,14 +641,30 @@ export default function TicketButton({
     }
   }, [hasTicket, processTicketRequest]);
 
+  // Handle waitlist ticket click - show no bags modal first
+  const handleWaitlistTicketClick = useCallback(() => {
+    setNoBagsIntent("waitlist_ticket");
+    setShowNoBagsModal(true);
+    setNoBagsConfirmation("");
+  }, []);
+
   // Handle confirming no bags policy
   const handleConfirmNoBags = useCallback(() => {
     if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
       setShowNoBagsModal(false);
       setNoBagsConfirmation("");
-      void processTicketRequest();
+      if (noBagsIntent === "waitlist_ticket") {
+        void processWaitlistTicketRequest();
+      } else {
+        void processTicketRequest();
+      }
     }
-  }, [noBagsConfirmation, processTicketRequest]);
+  }, [
+    noBagsConfirmation,
+    noBagsIntent,
+    processTicketRequest,
+    processWaitlistTicketRequest,
+  ]);
 
   // Validate referral code
   const validateReferralCode = useCallback(
@@ -678,6 +764,11 @@ export default function TicketButton({
     if (url.searchParams.get("waitlist") === "true") {
       sessionStorage.setItem(`auto_waitlist_pending:${eventId}`, "1");
       url.searchParams.delete("waitlist");
+      changed = true;
+    }
+    if (url.searchParams.get("waitlist_ticket") === "true") {
+      sessionStorage.setItem(`auto_waitlist_ticket_pending:${eventId}`, "1");
+      url.searchParams.delete("waitlist_ticket");
       changed = true;
     }
 
@@ -780,6 +871,22 @@ export default function TicketButton({
     void handleJoinWaitlist();
   }, [eventId, handleJoinWaitlist, isOnWaitlist, hasTicket]);
 
+  // Auto-create waitlist ticket after redirect from authentication
+  useEffect(() => {
+    const autoWaitlistTicketKey = `auto_waitlist_ticket_pending:${eventId}`;
+    const pending = sessionStorage.getItem(autoWaitlistTicketKey) === "1";
+    if (!pending) return;
+    if (autoWaitlistTicketProcessed.current) return;
+    if (hasTicket) {
+      sessionStorage.removeItem(autoWaitlistTicketKey);
+      return;
+    }
+
+    autoWaitlistTicketProcessed.current = true;
+    sessionStorage.removeItem(autoWaitlistTicketKey);
+    void handleWaitlistTicketClick();
+  }, [eventId, handleWaitlistTicketClick, hasTicket]);
+
   // Cleanup validation timeout on unmount
   useEffect(() => {
     return () => {
@@ -831,16 +938,141 @@ export default function TicketButton({
 
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
-    // Within 2-hour cutoff - show in-person message
+    // Within 2-hour cutoff - allow getting a WAITLIST ticket
     if (isWithinWaitlistCutoff) {
       return (
         <div className="mb-5">
-          <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] px-4 py-3">
+          <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] px-4 py-3 mb-4">
             <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
-              This event is sold out. Please come to the venue in person for the
-              in-person waitlist.
+              This event is sold out. Get a waitlist ticket below and come to
+              the venue in person — you&apos;ll be admitted if spots open up.
             </p>
           </div>
+
+          {!isLoggedIn && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+              <svg
+                className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                This event is only open to Stanford affiliates.
+              </p>
+            </div>
+          )}
+
+          <motion.button
+            whileHover={isLoading ? {} : { scale: 1.02 }}
+            whileTap={isLoading ? {} : { scale: 0.98 }}
+            onClick={handleWaitlistTicketClick}
+            disabled={isLoading}
+            className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
+          >
+            {isLoading ? "Creating waitlist ticket..." : "Get Waitlist Ticket"}
+          </motion.button>
+
+          {message && (
+            <p className={`mt-3 text-xs sm:text-sm ${messageClass(message)}`}>
+              {message}
+            </p>
+          )}
+
+          {/* No Bags Policy Modal – portaled to body */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <AnimatePresence>
+                {showNoBagsModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowNoBagsModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                      transition={{
+                        type: "spring",
+                        duration: 0.3,
+                        bounce: 0.15,
+                      }}
+                      className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">
+                        No Bags Policy
+                      </h3>
+                      <p className="text-zinc-500 dark:text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
+                        This event has a strict no bags policy.{" "}
+                        <strong>
+                          You will be turned away at the entrance with any form
+                          of a bag larger than a small clutch purse.
+                        </strong>{" "}
+                        (4.5&quot; x 6.5&quot;)
+                      </p>
+                      <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+                        Type &quot;no bags&quot; below to confirm you
+                        understand:
+                      </p>
+                      <input
+                        type="text"
+                        value={noBagsConfirmation}
+                        onChange={(e) => setNoBagsConfirmation(e.target.value)}
+                        placeholder="Type 'no bags' to confirm"
+                        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
+                        onKeyDown={(e) => {
+                          if (
+                            e.key === "Enter" &&
+                            noBagsConfirmation.toLowerCase().trim() ===
+                              "no bags"
+                          ) {
+                            handleConfirmNoBags();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setShowNoBagsModal(false);
+                            setNoBagsConfirmation("");
+                          }}
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] rounded-lg transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25"
+                        >
+                          Cancel
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleConfirmNoBags}
+                          disabled={
+                            noBagsConfirmation.toLowerCase().trim() !==
+                            "no bags"
+                          }
+                          className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Proceed
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body,
+            )}
         </div>
       );
     }
@@ -905,10 +1137,14 @@ export default function TicketButton({
                   Still want in?
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
-                  Many attendees flake - <strong>come in person to the venue and join the in person standby line, which is first come, first serve.</strong>
-                  Spots open up when people don't show up. Or, you can join the online waitlist and
-                  we&apos;ll automatically grab you a ticket the moment one is
-                  available.
+                  Many attendees flake -{" "}
+                  <strong>
+                    come in person to the venue and join the in person standby
+                    line, which is first come, first serve.
+                  </strong>
+                  Spots open up when people don't show up. Or, you can join the
+                  online waitlist and we&apos;ll automatically grab you a ticket
+                  the moment one is available.
                 </p>
 
                 {/* Value props row */}
@@ -1392,10 +1628,11 @@ export default function TicketButton({
           )}
           {message && !isCancelDisabled && !isSalesDisabled && (
             <p
-              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully")
-                ? "text-green-400"
-                : "text-red-400"
-                }`}
+              className={`mt-3 text-xs sm:text-sm ${
+                message.includes("successfully")
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
             >
               {message}
             </p>
@@ -1506,7 +1743,7 @@ export default function TicketButton({
                           if (
                             e.key === "Enter" &&
                             noBagsConfirmation.toLowerCase().trim() ===
-                            "no bags"
+                              "no bags"
                           ) {
                             handleConfirmNoBags();
                           }

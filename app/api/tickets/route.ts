@@ -4,8 +4,18 @@ import {
   updateReferralRecords,
   getAvailablePublicTickets,
   isEventUnderCapacity,
+  isWaitlistClosed,
 } from "@/app/lib/supabase";
-import { db, eq, and, sql, events, tickets, referrals, waitlist } from "@ssb/db";
+import {
+  db,
+  eq,
+  and,
+  sql,
+  events,
+  tickets,
+  referrals,
+  waitlist,
+} from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
@@ -142,9 +152,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
     // Extract name from Google OAuth metadata (required for create_ticket_with_name)
     const userName: string | null =
-      user?.user_metadata?.full_name ||
-      user?.user_metadata?.name ||
-      null;
+      user?.user_metadata?.full_name || user?.user_metadata?.name || null;
 
     // --- USER CREATE TICKET ---
     if (userError || !user?.email) {
@@ -168,9 +176,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral: referralFromBody } = body as {
+    const {
+      event_id,
+      referral: referralFromBody,
+      type: ticketType,
+    } = body as {
       event_id?: string;
       referral?: string;
+      type?: string;
     };
 
     if (!event_id || typeof event_id !== "string") {
@@ -189,7 +202,12 @@ export async function POST(req: Request) {
 
     const event = await db.query.events.findFirst({
       where: eq(events.id, event_id),
-      columns: { startTimeDate: true, releaseDate: true, ticketingDate: true },
+      columns: {
+        startTimeDate: true,
+        releaseDate: true,
+        ticketingDate: true,
+        doorsOpen: true,
+      },
     });
 
     if (!event) {
@@ -226,6 +244,122 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
+    }
+
+    // --- WAITLIST TICKET: issued when sold out and within 2 hours of doors open ---
+    if (ticketType === "WAITLIST") {
+      // Verify we're within the 2-hour cutoff window
+      const doorsOpenStr = event.doorsOpen?.toISOString() ?? null;
+      if (!isWaitlistClosed(doorsOpenStr)) {
+        return NextResponse.json(
+          {
+            error:
+              "Waitlist tickets are only available within 2 hours of the event.",
+          },
+          { status: 400 },
+        );
+      }
+
+      // Check user doesn't already have a ticket (any type)
+      const existingTicket = await db.query.tickets.findFirst({
+        where: and(
+          eq(tickets.eventId, event_id),
+          eq(tickets.email, user.email),
+        ),
+        columns: { id: true },
+      });
+
+      if (existingTicket) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },
+          { status: 400 },
+        );
+      }
+
+      const nameForTicket = userName?.trim();
+      if (!nameForTicket) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_NAME_REQUIRED },
+          { status: 400 },
+        );
+      }
+
+      // Insert directly, bypassing the capacity-checking stored procedure
+      const [waitlistTicket] = await db
+        .insert(tickets)
+        .values({
+          eventId: event_id,
+          email: user.email,
+          name: nameForTicket,
+          type: "WAITLIST",
+          referral: referral ?? null,
+        })
+        .returning({
+          id: tickets.id,
+          email: tickets.email,
+          type: tickets.type,
+          name: tickets.name,
+          eventId: tickets.eventId,
+        });
+
+      // Get event details for email
+      const eventForEmail = waitlistTicket?.eventId
+        ? await db.query.events.findFirst({
+            where: eq(events.id, waitlistTicket.eventId),
+            columns: {
+              id: true,
+              name: true,
+              route: true,
+              startTimeDate: true,
+              venue: true,
+              venueLink: true,
+              desc: true,
+              doorsOpen: true,
+            },
+          })
+        : null;
+
+      if (referral) {
+        await updateReferralRecords(event_id, user.email);
+      }
+
+      // Send ticket confirmation email
+      if (waitlistTicket) {
+        try {
+          await sendTicketEmail({
+            name: nameForTicket,
+            email: waitlistTicket.email,
+            eventName: eventForEmail?.name || "Event",
+            ticketType: "WAITLIST",
+            eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
+            eventRoute: eventForEmail?.route || null,
+            ticketId: waitlistTicket.id,
+            eventVenue: eventForEmail?.venue || null,
+            eventVenueLink: eventForEmail?.venueLink || null,
+            eventDescription: eventForEmail?.desc || null,
+            doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
+          });
+        } catch (emailError) {
+          console.error("Waitlist ticket email error:", emailError);
+          return NextResponse.json(
+            {
+              error:
+                "Ticket was created but failed to send confirmation email. Please contact support.",
+            },
+            { status: 500 },
+          );
+        }
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: TICKET_MESSAGES.SUCCESS,
+          ticketId: waitlistTicket?.id ?? null,
+          ticketName: waitlistTicket?.name ?? nameForTicket ?? null,
+        },
+        { status: 200 },
+      );
     }
 
     if (referral) {
@@ -436,7 +570,10 @@ export async function DELETE(req: Request) {
       );
     }
 
-    if (eventRow?.startTimeDate && new Date() >= new Date(eventRow.startTimeDate)) {
+    if (
+      eventRow?.startTimeDate &&
+      new Date() >= new Date(eventRow.startTimeDate)
+    ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
@@ -468,7 +605,8 @@ export async function DELETE(req: Request) {
 
     if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
       // Create ticket for the waitlist person (transfer name from waitlist)
-      const [newTicket] = await db.insert(tickets)
+      const [newTicket] = await db
+        .insert(tickets)
         .values({
           eventId: topWaitlistEntry.eventId,
           email: topWaitlistEntry.email,
@@ -483,24 +621,31 @@ export async function DELETE(req: Request) {
         });
 
       // Get event details for email
-      const eventForEmail = newTicket.eventId ? await db.query.events.findFirst({
-        where: eq(events.id, newTicket.eventId),
-        columns: {
-          id: true,
-          name: true,
-          route: true,
-          startTimeDate: true,
-          venue: true,
-          venueLink: true,
-          desc: true,
-          doorsOpen: true,
-        },
-      }) : null;
+      const eventForEmail = newTicket.eventId
+        ? await db.query.events.findFirst({
+            where: eq(events.id, newTicket.eventId),
+            columns: {
+              id: true,
+              name: true,
+              route: true,
+              startTimeDate: true,
+              venue: true,
+              venueLink: true,
+              desc: true,
+              doorsOpen: true,
+            },
+          })
+        : null;
 
       // Remove them from the waitlist
-      await db.delete(waitlist).where(
-        and(eq(waitlist.email, topWaitlistEntry.email), eq(waitlist.eventId, event_id)),
-      );
+      await db
+        .delete(waitlist)
+        .where(
+          and(
+            eq(waitlist.email, topWaitlistEntry.email),
+            eq(waitlist.eventId, event_id),
+          ),
+        );
 
       // Update referral records if they had a referral code
       if (topWaitlistEntry.referral) {
