@@ -179,7 +179,7 @@ async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
 const REFERRAL_ENABLED = false;
 
 const FROM_EMAIL =
-  process.env.SES_FROM_EMAIL || "hello@stanfordspeakersbureau.com";
+  process.env.SES_FROM_EMAIL || "tickets@stanfordspeakersbureau.com";
 
 /**
  * Generates the HTML for the "Important" notice block used in email templates.
