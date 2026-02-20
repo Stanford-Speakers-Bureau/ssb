@@ -448,7 +448,7 @@ export default async function EventPage({ params }: PageProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm sm:text-base font-bold text-white leading-snug">
-                          This event will be livestreamed
+                          This event will be livestreamed to the public!
                           {event.start_time_date && getTimeUntil(event.start_time_date) && (
                             <span className="font-normal text-white/80">
                               {" "}in {getTimeUntil(event.start_time_date)}
@@ -456,7 +456,7 @@ export default async function EventPage({ params }: PageProps) {
                           )}
                         </p>
                         <p className="text-xs sm:text-sm text-white/75 mt-0.5">
-                          Links available closer to the event
+                          A link will be available closer to the event
                         </p>
                       </div>
                     </div>

@@ -905,7 +905,8 @@ export default function TicketButton({
                   Still want in?
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
-                  Spots open up when people cancel. Join the waitlist and
+                  Many attendees flake \u2014 come in person to the venue and join the in person standby line.
+                  Spots open up when people don't show up. Or, you can join the online waitlist and
                   we&apos;ll automatically grab you a ticket the moment one is
                   available.
                 </p>
@@ -1044,7 +1045,7 @@ export default function TicketButton({
                   ? "You\u2019re next \u2014 the first spot that opens is yours."
                   : waitlistPosition <= 3
                     ? `Almost there \u2014 only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
-                    : "Sit tight \u2014 we\u2019ll email your ticket the moment a spot opens."}
+                    : "Many attendees flake \u2014 come in person to the venue and join the in person standby line. Or, you can sit tight \u2014 we\u2019ll email your ticket the moment a spot opens."}
               </p>
             </div>
 
@@ -1391,11 +1392,10 @@ export default function TicketButton({
           )}
           {message && !isCancelDisabled && !isSalesDisabled && (
             <p
-              className={`mt-3 text-xs sm:text-sm ${
-                message.includes("successfully")
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
+              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully")
+                ? "text-green-400"
+                : "text-red-400"
+                }`}
             >
               {message}
             </p>
@@ -1506,7 +1506,7 @@ export default function TicketButton({
                           if (
                             e.key === "Enter" &&
                             noBagsConfirmation.toLowerCase().trim() ===
-                              "no bags"
+                            "no bags"
                           ) {
                             handleConfirmNoBags();
                           }
