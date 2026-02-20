@@ -12,7 +12,8 @@
       "Bash(bash:*)",
       "Bash(bun run build:*)",
       "Bash(bun run postinstall:*)",
-      "WebFetch(domain:developers.cloudflare.com)"
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebFetch(domain:developers.google.com)"
     ]
   }
 }

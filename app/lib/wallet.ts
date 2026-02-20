@@ -1,7 +1,7 @@
 import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import { SignJWT, importPKCS8 } from "jose";
-import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 
 type TicketWalletData = {
   email: string;
@@ -98,14 +98,24 @@ export async function getAppleWalletPass(
     organizationName: "Stanford Speakers Bureau",
 
     description: ticket.ticketType,
-    backgroundColor: isVIP ? "rgb(122, 92, 0)" : isExternal ? "rgb(22, 101, 52)" : "rgb(168, 13, 12)",
+    backgroundColor: isVIP
+      ? "rgb(122, 92, 0)"
+      : isExternal
+        ? "rgb(22, 101, 52)"
+        : "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
-    labelColor: isVIP ? "rgb(255, 235, 180)" : isExternal ? "rgb(187, 247, 208)" : "rgb(255, 215, 0)",
+    labelColor: isVIP
+      ? "rgb(255, 235, 180)"
+      : isExternal
+        ? "rgb(187, 247, 208)"
+        : "rgb(255, 215, 0)",
   };
 
-  // Parse DB timestamps (stored as Pacific-naive) into proper UTC Dates
-  const doorTimeUTC = fromZonedTime(ticket.eventDoorTime, PACIFIC_TIMEZONE);
-  const startTimeUTC = fromZonedTime(ticket.start_time_date, PACIFIC_TIMEZONE);
+  // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
+  // produces a UTC "Z" string — parse directly rather than re-applying a
+  // Pacific offset via fromZonedTime, which would double-shift the time.
+  const doorTimeUTC = new Date(ticket.eventDoorTime);
+  const startTimeUTC = new Date(ticket.start_time_date);
 
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
@@ -233,9 +243,7 @@ export async function getAppleWalletPass(
       value: ticket.eventLink,
     },
   );
-  pass.setExpirationDate(
-    new Date(doorTimeUTC.getTime() + 86_400_000),
-  );
+  pass.setExpirationDate(new Date(doorTimeUTC.getTime() + 86_400_000));
   // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
   // pass.setLocations({
   //   latitude: ticket.eventLat,
@@ -294,7 +302,11 @@ export async function getGoogleWalletPass(
           },
           issuerName: "Stanford Speakers Bureau",
           hexBackgroundColor:
-            ticket.ticketType?.toUpperCase().trim() === "VIP" ? "#7A5C00" : ticket.ticketType?.toUpperCase().trim() === "EXTERNAL" ? "#166534" : "#A80D0C",
+            ticket.ticketType?.toUpperCase().trim() === "VIP"
+              ? "#7A5C00"
+              : ticket.ticketType?.toUpperCase().trim() === "EXTERNAL"
+                ? "#166534"
+                : "#A80D0C",
           heroImage: {
             sourceUri: {
               uri: image_signed,
