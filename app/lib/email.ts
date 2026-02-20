@@ -1517,18 +1517,6 @@ function generateVIPScanNotificationHTML(
     <h2 style="margin: 0;">VIP Ticket Scanned</h2>
   </div>
   <div class="content">
-    <p>A VIP ticket has been scanned for the following event:</p>
-    
-    <div class="info-row">
-      <span class="label">Event:</span>
-      <span class="value">${eventName}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="label">Attendee Email:</span>
-      <span class="value">${attendeeEmail}</span>
-    </div>
-    
     ${attendeeName ? `
     <div class="info-row">
       <span class="label">Attendee Name:</span>
@@ -1537,13 +1525,8 @@ function generateVIPScanNotificationHTML(
     ` : ""}
     
     <div class="info-row">
-      <span class="label">Ticket ID:</span>
-      <span class="value">${ticketId}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="label">Scan Time:</span>
-      <span class="value">${formattedScanTime}</span>
+      <span class="label">Attendee Email:</span>
+      <span class="value">${attendeeEmail}</span>
     </div>
     
     ${scannerName ? `
@@ -1557,6 +1540,21 @@ function generateVIPScanNotificationHTML(
       <span class="value">${scannerEmail}</span>
     </div>
     ` : ""}
+    
+    <div class="info-row">
+      <span class="label">Event:</span>
+      <span class="value">${eventName}</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="label">Ticket ID:</span>
+      <span class="value">${ticketId}</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="label">Scan Time:</span>
+      <span class="value">${formattedScanTime}</span>
+    </div>
   </div>
 </body>
 </html>
