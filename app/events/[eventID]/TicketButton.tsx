@@ -905,7 +905,7 @@ export default function TicketButton({
                   Still want in?
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
-                  Many attendees flake \u2014 come in person to the venue and join the in person standby line.
+                  Many attendees flake - <strong>come in person to the venue and join the in person standby line, which is first come, first serve.</strong>
                   Spots open up when people don't show up. Or, you can join the online waitlist and
                   we&apos;ll automatically grab you a ticket the moment one is
                   available.
@@ -1035,7 +1035,7 @@ export default function TicketButton({
                     #{waitlistPosition}
                   </span>
                   <span className="text-sm font-medium text-zinc-400 dark:text-zinc-500">
-                    in line
+                    on the online waitlist
                   </span>
                 </div>
               </div>
@@ -1045,7 +1045,7 @@ export default function TicketButton({
                   ? "You\u2019re next \u2014 the first spot that opens is yours."
                   : waitlistPosition <= 3
                     ? `Almost there \u2014 only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
-                    : "Many attendees flake \u2014 come in person to the venue and join the in person standby line. Or, you can sit tight \u2014 we\u2019ll email your ticket the moment a spot opens."}
+                    : "Many attendees flake \u2014 come in person to the venue and join the in person standby line, which is first come, first serve. Or, you can sit tight and we\u2019ll email your ticket the moment a spot opens."}
               </p>
             </div>
 
