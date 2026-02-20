@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { db, eq, and, events, sql, isNotNull } from "@ssb/db";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
@@ -7,7 +9,30 @@ export const metadata: Metadata = {
     "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
 };
 
-export default function Home() {
+export default async function Home() {
+  try {
+    const result = await db
+      .select({ route: events.route })
+      .from(events)
+      .where(
+        and(
+          eq(events.live, true),
+          isNotNull(events.route),
+          sql`(${events.startTimeDate} AT TIME ZONE 'America/Los_Angeles')::date
+              = (NOW() AT TIME ZONE 'America/Los_Angeles')::date`,
+          sql`NOW() < ${events.startTimeDate} + INTERVAL '2 hours'`
+        )
+      )
+      .limit(1);
+
+    const route = result[0]?.route;
+    if (route) {
+      redirect(`/events/${route}`);
+    }
+  } catch {
+    // DB error — fail open, render home page normally
+  }
+
   return (
     <>
       <script
