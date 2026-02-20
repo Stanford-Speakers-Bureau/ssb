@@ -204,6 +204,10 @@ export default function ScanClient() {
       statusTimeoutRef.current = null;
     }
 
+    // Reset status immediately so background snaps back to black
+    setStatus(null);
+    setTicketInfo(null);
+
     // Don't pause scanner - keep it running to avoid showing "paused" message
 
     setIsLoading(true);
@@ -240,12 +244,12 @@ export default function ScanClient() {
       }
 
       await fetchLiveEvent();
-      // Clear status after 5 seconds
+      // Clear status after 3 seconds
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
         statusTimeoutRef.current = null;
-      }, 10000);
+      }, 3000);
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
