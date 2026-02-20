@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
         destination: "/event-sponsorship",
         permanent: true,
       },
+      {
+        source: "/i/thm",
+        destination: "https://drive.google.com/file/d/1F4X7tBYPEJDUYvhQd09nzdfh7MNHO4oW/view?usp=sharing",
+        permanent: false,
+      },
     ];
   },
   async headers() {
