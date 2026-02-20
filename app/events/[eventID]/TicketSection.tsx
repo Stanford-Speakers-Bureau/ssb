@@ -250,7 +250,7 @@ export default function TicketSection({
                     </div>
                   )}
                 </button>
-                <button
+                {/* <button
                   onClick={onAddToGoogleWallet}
                   disabled={isLoadingGoogleWallet}
                   className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.97]"
@@ -267,7 +267,7 @@ export default function TicketSection({
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     </div>
                   )}
-                </button>
+                </button> */}
               </div>
             </div>
           )}

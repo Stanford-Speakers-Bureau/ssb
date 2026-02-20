@@ -865,11 +865,11 @@ async function generateTicketEmailHTML(
                     <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" width="auto" height="48" style="display: block; height: 48px; border: 0;" />
                   </a>
                 </td>
-                <td align="left" width="50%" style="padding-left: 4px;">
+                <!-- <td align="left" width="50%" style="padding-left: 4px;">
                   <a href="${baseUrl}/api/tickets/google-wallet?ticket_id=${ticketId}" target="_blank" rel="noopener noreferrer">
                     <img src="${baseUrl}/images/enUS_add_to_google_wallet_add-wallet-badge.png" alt="Add to Google Wallet" width="auto" height="48" style="display: block; height: 48px; border: 0;" />
                   </a>
-                </td>
+                </td> -->
               </tr>
             </table>
                         
