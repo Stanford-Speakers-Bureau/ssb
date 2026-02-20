@@ -28,10 +28,8 @@ const TICKET_MESSAGES = {
   ERROR_NO_TICKET: "You don't have a ticket for this event.",
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
-  EVENT_OVER_WITH_TICKET:
-    "This event is over. Thank you for attending!",
-  EVENT_PASSED:
-    "This event has passed.",
+  EVENT_OVER_WITH_TICKET: "This event is over. Thank you for attending!",
+  EVENT_PASSED: "This event has passed.",
   CREATING: "Creating ticket...",
   CANCELLING: "Cancelling ticket...",
 } as const;
@@ -538,7 +536,7 @@ export default function TicketButton({
             detail: {
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
-              ticketName: !hasTicket ? data.ticketName ?? null : null,
+              ticketName: !hasTicket ? (data.ticketName ?? null) : null,
             },
           }),
         );
@@ -700,7 +698,10 @@ export default function TicketButton({
     if (cancelTicketParam) {
       // If not logged in, redirect to login and come back with the cancel param
       if (!isLoggedIn) {
-        const currentUrl = window.location.href;
+        const currentUrl =
+          window.location.pathname +
+          window.location.search +
+          window.location.hash;
         window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(currentUrl)}`;
         return;
       }
@@ -814,8 +815,7 @@ export default function TicketButton({
     }
   };
 
-  const isCancelDisabled =
-    hasTicket && (isLiveEvent || hasEventStarted);
+  const isCancelDisabled = hasTicket && (isLiveEvent || hasEventStarted);
   const isSalesDisabled = hasEventStarted && !hasTicket;
   const isButtonDisabled =
     isLoading ||
@@ -849,7 +849,6 @@ export default function TicketButton({
     if (!isOnWaitlist) {
       return (
         <div className="mb-5">
-
           {!isLoggedIn && (
             <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
               <svg
@@ -887,7 +886,8 @@ export default function TicketButton({
                 <motion.div
                   className="absolute inset-[-50%]"
                   style={{
-                    background: "conic-gradient(from 0deg, #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
+                    background:
+                      "conic-gradient(from 0deg, #A80D0C, #ff4444, #ff6b6b, #A80D0C, #ff4444, #A80D0C)",
                   }}
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
@@ -905,24 +905,49 @@ export default function TicketButton({
                   Still want in?
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
-                  Spots open up when people cancel. Join the waitlist and we&apos;ll
-                  automatically grab you a ticket the moment one is available.
+                  Spots open up when people cancel. Join the waitlist and
+                  we&apos;ll automatically grab you a ticket the moment one is
+                  available.
                 </p>
 
                 {/* Value props row */}
                 {waitlistChance == "high" && (
                   <div className="flex items-center gap-4 sm:gap-5 mb-6">
                     <div className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      <svg
+                        className="w-4 h-4 text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
                       </svg>
-                      <span className="text-xs sm:text-sm text-zinc-300">Instant delivery</span>
+                      <span className="text-xs sm:text-sm text-zinc-300">
+                        Instant delivery
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      <svg
+                        className="w-4 h-4 text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
                       </svg>
-                      <span className="text-xs sm:text-sm text-zinc-300">High chance of getting a ticket</span>
+                      <span className="text-xs sm:text-sm text-zinc-300">
+                        High chance of getting a ticket
+                      </span>
                     </div>
                   </div>
                 )}
@@ -957,9 +982,12 @@ export default function TicketButton({
                   <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-zinc-200/40 to-transparent" />
                 </motion.button>
 
-                {waitlistChance === "High" && <p className="text-center text-[12px] text-zinc-400 mt-2.5 font-medium">
-                  Based on historical cancelation data, you have a <strong>high chance</strong> of getting a ticket.
-                </p>}
+                {waitlistChance === "High" && (
+                  <p className="text-center text-[12px] text-zinc-400 mt-2.5 font-medium">
+                    Based on historical cancelation data, you have a{" "}
+                    <strong>high chance</strong> of getting a ticket.
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -1033,8 +1061,18 @@ export default function TicketButton({
               {waitlistChance === "High" && (
                 <div className="flex items-center gap-2.5">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                    <svg
+                      className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                      />
                     </svg>
                   </div>
                   <div>
@@ -1045,20 +1083,43 @@ export default function TicketButton({
                       Based on historical cancellation data
                     </p>
                   </div>
-                </div>)}
+                </div>
+              )}
 
               {/* Compact info row */}
               <div className="flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
                 <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                  <svg
+                    className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+                    />
                   </svg>
                   <span>Auto-assigned</span>
                 </div>
-                <span className="text-zinc-200 dark:text-zinc-700">&middot;</span>
+                <span className="text-zinc-200 dark:text-zinc-700">
+                  &middot;
+                </span>
                 <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                  <svg
+                    className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                    />
                   </svg>
                   <span>Emailed instantly</span>
                 </div>
@@ -1104,8 +1165,8 @@ export default function TicketButton({
                       Leave Waitlist?
                     </h3>
                     <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                      You&apos;ll lose your spot. You can rejoin, but you&apos;ll be
-                      placed at the end of the line.
+                      You&apos;ll lose your spot. You can rejoin, but
+                      you&apos;ll be placed at the end of the line.
                     </p>
                     <div className="flex gap-3">
                       <motion.button
@@ -1137,99 +1198,102 @@ export default function TicketButton({
 
   // Ticketing not open yet: show "ticketing opens" + notify UI, or nothing (conditional render to satisfy Rules of Hooks)
   const showTicketingOpensOnly =
-    !hasTicket && !isTicketingOpen && !isSoldOut &&
+    !hasTicket &&
+    !isTicketingOpen &&
+    !isSoldOut &&
     ticketingOpensAt &&
     !Number.isNaN(ticketingOpensAt.getTime());
 
   return (
     <div>
       {!hasTicket && !isTicketingOpen && !isSoldOut ? (
-        showTicketingOpensOnly ? (<>
-          <div className="rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] p-3.5 sm:p-4">
-            <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
-              Ticketing opens{" "}
-              <span className="font-semibold text-yellow-900 dark:text-yellow-100">
-                {formatTicketingOpensAt(ticketingOpensAt!)}
-              </span>
-            </p>
-            <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
-              <button
-                onClick={handleNotifyClick}
-                disabled={isLoadingNotify || isNotified}
-                className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-zinc-900 dark:text-white transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoadingNotify ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
-                  </>
-                ) : isNotified ? (
-                  <>
-                    <svg
-                      className="w-4 h-4 text-green-400"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span>You&apos;ll be notified</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-4 h-4 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                      />
-                    </svg>
-                    <span>RSVP: Notify me when it opens</span>
-                  </>
-                )}
-              </button>
-              {notifyMessage && (
-                <p className="text-sm text-green-400">{notifyMessage}</p>
-              )}
-              {isNotified && !notifyMessage && (
-                <p className="text-sm text-green-400">
-                  {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
-                </p>
-              )}
-            </div>
-          </div>
-          {!isLoggedIn && (
-            <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
-              <svg
-                className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                />
-              </svg>
-              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                This event is only open to Stanford affiliates.
+        showTicketingOpensOnly ? (
+          <>
+            <div className="rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-500/[0.06] p-3.5 sm:p-4">
+              <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200/90 leading-relaxed">
+                Ticketing opens{" "}
+                <span className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  {formatTicketingOpensAt(ticketingOpensAt!)}
+                </span>
               </p>
+              <div className="mt-3 flex flex-col gap-3 items-center lg:flex-row lg:items-center">
+                <button
+                  onClick={handleNotifyClick}
+                  disabled={isLoadingNotify || isNotified}
+                  className="w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-zinc-900 dark:text-white transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:border-zinc-300 dark:hover:border-white/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingNotify ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>{TICKETING_NOTIFY_MESSAGES.SIGNING_UP}</span>
+                    </>
+                  ) : isNotified ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 text-green-400"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span>You&apos;ll be notified</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                        />
+                      </svg>
+                      <span>RSVP: Notify me when it opens</span>
+                    </>
+                  )}
+                </button>
+                {notifyMessage && (
+                  <p className="text-sm text-green-400">{notifyMessage}</p>
+                )}
+                {isNotified && !notifyMessage && (
+                  <p className="text-sm text-green-400">
+                    {TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-        </>
+            {!isLoggedIn && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+                <svg
+                  className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                  This event is only open to Stanford affiliates.
+                </p>
+              </div>
+            )}
+          </>
         ) : null
       ) : (
         <>
@@ -1265,37 +1329,38 @@ export default function TicketButton({
         </div>
       )} */}
 
-          {!hasTicket && (<>
-            {!isLoggedIn && (
-              <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
-                <svg
-                  className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                  />
-                </svg>
-                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                  This event is only open to Stanford affiliates.
-                </p>
-              </div>
-            )}
-            <motion.button
-              whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
-              whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
-              onClick={handleTicketClick}
-              disabled={isButtonDisabled}
-              className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
-            >
-              {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
-            </motion.button>
-          </>
+          {!hasTicket && (
+            <>
+              {!isLoggedIn && (
+                <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
+                  <svg
+                    className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                    />
+                  </svg>
+                  <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
+                    This event is only open to Stanford affiliates.
+                  </p>
+                </div>
+              )}
+              <motion.button
+                whileHover={isButtonDisabled ? {} : { scale: 1.02 }}
+                whileTap={isButtonDisabled ? {} : { scale: 0.98 }}
+                onClick={handleTicketClick}
+                disabled={isButtonDisabled}
+                className="rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed w-full active:scale-[0.98]"
+              >
+                {isLoading ? TICKET_MESSAGES.CREATING : "Get Ticket"}
+              </motion.button>
+            </>
           )}
           {hasTicket && !isCancelDisabled && (
             <motion.button
@@ -1326,8 +1391,11 @@ export default function TicketButton({
           )}
           {message && !isCancelDisabled && !isSalesDisabled && (
             <p
-              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully") ? "text-green-400" : "text-red-400"
-                }`}
+              className={`mt-3 text-xs sm:text-sm ${
+                message.includes("successfully")
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
             >
               {message}
             </p>
@@ -1349,7 +1417,11 @@ export default function TicketButton({
                       initial={{ scale: 0.95, opacity: 0, y: 10 }}
                       animate={{ scale: 1, opacity: 1, y: 0 }}
                       exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      transition={{
+                        type: "spring",
+                        duration: 0.3,
+                        bounce: 0.15,
+                      }}
                       className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -1357,8 +1429,8 @@ export default function TicketButton({
                         Cancel Ticket?
                       </h3>
                       <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed">
-                        Are you sure you want to cancel your ticket? You may not be able
-                        to get your ticket back if you cancel.
+                        Are you sure you want to cancel your ticket? You may not
+                        be able to get your ticket back if you cancel.
                       </p>
                       <div className="flex gap-3">
                         <motion.button
@@ -1401,7 +1473,11 @@ export default function TicketButton({
                       initial={{ scale: 0.95, opacity: 0, y: 10 }}
                       animate={{ scale: 1, opacity: 1, y: 0 }}
                       exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                      transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                      transition={{
+                        type: "spring",
+                        duration: 0.3,
+                        bounce: 0.15,
+                      }}
                       className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -1409,11 +1485,16 @@ export default function TicketButton({
                         No Bags Policy
                       </h3>
                       <p className="text-zinc-500 dark:text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
-                        This event has a strict no bags policy. <strong>You will be turned away
-                          at the entrance with any form of a bag larger than a small clutch purse.</strong> (4.5” x 6.5”)
+                        This event has a strict no bags policy.{" "}
+                        <strong>
+                          You will be turned away at the entrance with any form
+                          of a bag larger than a small clutch purse.
+                        </strong>{" "}
+                        (4.5” x 6.5”)
                       </p>
                       <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
-                        Type &quot;no bags&quot; below to confirm you understand:
+                        Type &quot;no bags&quot; below to confirm you
+                        understand:
                       </p>
                       <input
                         type="text"
@@ -1422,7 +1503,11 @@ export default function TicketButton({
                         placeholder="Type 'no bags' to confirm"
                         className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" && noBagsConfirmation.toLowerCase().trim() === "no bags") {
+                          if (
+                            e.key === "Enter" &&
+                            noBagsConfirmation.toLowerCase().trim() ===
+                              "no bags"
+                          ) {
                             handleConfirmNoBags();
                           }
                         }}
@@ -1444,7 +1529,10 @@ export default function TicketButton({
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handleConfirmNoBags}
-                          disabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+                          disabled={
+                            noBagsConfirmation.toLowerCase().trim() !==
+                            "no bags"
+                          }
                           className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Proceed
