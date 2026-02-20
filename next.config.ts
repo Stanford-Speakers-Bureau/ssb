@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/i/thm",
-        destination: "https://drive.google.com/file/d/1F4X7tBYPEJDUYvhQd09nzdfh7MNHO4oW/view?usp=sharing",
+        destination: "https://drive.google.com/file/d/1OxdUEGHx31u_lwL6vM_ajsJjleQZgphm/view?usp=sharing",
         permanent: false,
       },
     ];
