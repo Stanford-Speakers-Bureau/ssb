@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-<<<<<<< Updated upstream
-import { db, eq, and, events, sql, isNotNull } from "@ssb/db";
-=======
->>>>>>> Stashed changes
 import HomeClient from "./HomeClient";
 import { createServerSupabaseClient } from "./lib/supabase";
 import { db, eq, events } from "@ssb/db";
@@ -15,29 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-<<<<<<< Updated upstream
-  try {
-    const result = await db
-      .select({ route: events.route })
-      .from(events)
-      .where(
-        and(
-          eq(events.live, true),
-          isNotNull(events.route),
-          sql`(${events.startTimeDate} AT TIME ZONE 'America/Los_Angeles')::date
-              = (NOW() AT TIME ZONE 'America/Los_Angeles')::date`,
-          sql`NOW() < ${events.startTimeDate} + INTERVAL '2 hours'`
-        )
-      )
-      .limit(1);
-
-    const route = result[0]?.route;
-    if (route) {
-      redirect(`/events/${route}`);
-    }
-  } catch {
-    // DB error — fail open, render home page normally
-=======
   const liveEvent = await db.query.events.findFirst({
     where: eq(events.live, true),
     columns: { route: true, id: true },
@@ -49,7 +22,6 @@ export default async function Home() {
     if (user) {
       redirect(`/events/${liveEvent.route ?? liveEvent.id}`);
     }
->>>>>>> Stashed changes
   }
 
   return (

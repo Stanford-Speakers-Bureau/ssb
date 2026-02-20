@@ -906,16 +906,9 @@ export default function TicketButton({
                   {isWithinWaitlistCutoff ? "Join the in-person waitlist" : "Still want in?"}
                 </h3>
                 <p className="text-sm sm:text-[15px] text-zinc-400 leading-relaxed mb-6">
-<<<<<<< Updated upstream
-                  Many attendees flake - <strong>come in person to the venue and join the in person standby line, which is first come, first serve.</strong>
-                  Spots open up when people don't show up. Or, you can join the online waitlist and
-                  we&apos;ll automatically grab you a ticket the moment one is
-                  available.
-=======
                   {isWithinWaitlistCutoff
                     ? "Get a waitlist ticket to present at the door. This does not guarantee a seat — you'll be admitted as space becomes available."
                     : "Spots open up when people cancel. Join the waitlist and we\u2019ll automatically grab you a ticket the moment one is available."}
->>>>>>> Stashed changes
                 </p>
 
                 {/* Value props row */}
