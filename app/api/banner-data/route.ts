@@ -45,15 +45,12 @@ export async function GET(req: Request) {
     // Banner text and countdown target: reveal → tickets release → event
     const bannerText = isMystery
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
-      : closestEvent?.name +
-        (closestEvent?.name?.includes("and")
-          ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL
-          : BANNER_MESSAGES.EVENT_MESSAGE);
+      : closestEvent?.name + (closestEvent?.name?.includes("and") ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL : BANNER_MESSAGES.EVENT_MESSAGE);
 
     const countdownTarget = isMystery
       ? closestEvent?.release_date
       : isBeforeTicketing
-        ? (closestEvent?.ticketing_date ?? undefined)
+        ? closestEvent?.ticketing_date ?? undefined
         : closestEvent?.doors_open;
     const prefaceLabel = isMystery
       ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
@@ -68,12 +65,12 @@ export async function GET(req: Request) {
         : "/upcoming-speakers";
 
     return NextResponse.json({
-      showBanner: true,
+      showBanner,
       bannerProps: {
-        text: "BERNIE WILL BE ON AT 4 - CLICK HERE FOR LIVESTREAM",
-        href: "https://www.youtube.com/@StanfordSpeakersBureau/live",
-        prefaceLabel: "",
-        target: null,
+        text: bannerText,
+        href: bannerHref,
+        prefaceLabel,
+        target: countdownTarget || null,
       },
     });
   } catch {
