@@ -58,6 +58,38 @@ export default function PastSpeakersClient() {
                 >
                   <div className="mb-8">
                     <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
+                      Bernie Sanders
+                    </h3>
+                    <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
+                      U.S. Senator from Vermont
+                    </p>
+                    <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-2">
+                      Bernie Sanders is the longest-serving independent in congressional history, currently serving as U.S. Senator from Vermont. He previously served in the House of Representatives for 16 years. Sanders ran for the Democratic presidential nomination in 2016 and 2020, becoming one of the most prominent progressive voices in American politics. He is known for his decades-long advocacy on issues including income inequality, universal healthcare, climate change, and campaign finance reform. He served as chair of the Senate Budget Committee and has authored several books, including The Speech and Our Revolution.
+                    </p>
+                    <a
+                      href="https://youtu.be/Wx18tNmNYbE?t=712"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Watch Livestream →
+                    </a>
+                  </div>
+
+                  <div className="mb-8">
+                    <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
+                      Ro Khanna
+                    </h3>
+                    <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
+                      U.S. Representative, California&apos;s 17th Congressional District
+                    </p>
+                    <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-2">
+                      Ro Khanna represents California&apos;s 17th Congressional District, which encompasses the heart of Silicon Valley. A progressive Democrat, Khanna serves on the House Armed Services Committee and the House Oversight Committee, and has been a leading voice on technology policy, economic justice, and foreign policy reform. Before entering Congress, he taught economics at Stanford University and law at Santa Clara University. He is the author of Dignity in a Digital Age and Entrepreneurial Nation, and has championed initiatives to bring tech jobs to underserved communities across America.
+                    </p>
+                  </div>
+
+                  <div className="mb-8">
+                    <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
                       Hasan Minhaj
                     </h3>
                     <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
