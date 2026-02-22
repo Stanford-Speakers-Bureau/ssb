@@ -67,7 +67,7 @@ export default function PastSpeakersClient() {
                       Bernie Sanders is the longest-serving independent in congressional history, currently serving as U.S. Senator from Vermont. He previously served in the House of Representatives for 16 years. Sanders ran for the Democratic presidential nomination in 2016 and 2020, becoming one of the most prominent progressive voices in American politics. He is known for his decades-long advocacy on issues including income inequality, universal healthcare, climate change, and campaign finance reform. He served as chair of the Senate Budget Committee and has authored several books, including The Speech and Our Revolution.
                     </p>
                     <a
-                      href="https://www.youtube.com/watch?v=Wx18tNmNYbE"
+                      href="https://youtu.be/Wx18tNmNYbE?t=712"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
