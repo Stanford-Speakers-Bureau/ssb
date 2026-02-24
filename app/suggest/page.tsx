@@ -103,7 +103,7 @@ export default async function SuggestPage({
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full flex-1 bg-white dark:bg-black pt-24 justify-center">
+      <main className="flex w-full flex-1 flex-col bg-white dark:bg-black pt-24 items-center">
         {authError && (
           <div
             className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded text-sm font-medium text-red-800 bg-red-50 dark:bg-red-900/20 dark:text-red-300 shadow-lg"
@@ -112,6 +112,23 @@ export default async function SuggestPage({
             Authentication failed. Please try signing in again.
           </div>
         )}
+        <div className="w-full max-w-5xl px-6 sm:px-12 md:px-16 pt-2 pb-4">
+          <div className="relative w-full h-96 rounded-xl overflow-hidden">
+            <Image
+              src="/images/suggest.jpg"
+              alt="Empty stage with seats awaiting a speaker"
+              fill
+              className="object-cover object-bottom"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute bottom-4 left-5">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif drop-shadow-lg">
+                Who should speak next?
+              </h1>
+            </div>
+          </div>
+        </div>
         {/* Desktop Layout - Centered leaderboard + right column */}
         <div className="hidden lg:flex flex-1 justify-center items-start">
           <section className="w-full max-w-5xl flex items-start justify-center lg:py-8 py-6 px-6 sm:px-12 md:px-16">
