@@ -81,7 +81,6 @@ export default function HomeClient() {
               events since 1935. We meet weekly to discuss upcoming speakers and
               determine who is of interest to the Stanford community.
             </motion.p>
-            <div className="flex flex-row gap-4">
             <div className="flex flex-col md:flex-row gap-4">
               <MotionLink
                 initial={{ opacity: 0, y: 30 }}
