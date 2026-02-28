@@ -81,29 +81,57 @@ export default function HomeClient() {
               events since 1935. We meet weekly to discuss upcoming speakers and
               determine who is of interest to the Stanford community.
             </motion.p>
-            <MotionLink
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                opacity: {
-                  duration: 0.6,
-                  delay: 0.6,
-                  ease: [0.43, 0.13, 0.23, 0.96],
-                },
-                y: {
-                  duration: 0.6,
-                  delay: 0.6,
-                  ease: [0.43, 0.13, 0.23, 0.96],
-                },
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="/suggest"
-              prefetch={false}
-              className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
-            >
-              Suggest a Speaker!
-            </MotionLink>
+            <div className="flex flex-row gap-4">
+              <MotionLink
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  opacity: {
+                    duration: 0.6,
+                    delay: 0.6,
+                    ease: [0.43, 0.13, 0.23, 0.96],
+                  },
+                  y: {
+                    duration: 0.6,
+                    delay: 0.6,
+                    ease: [0.43, 0.13, 0.23, 0.96],
+                  },
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
+              >
+                Join the Mailing List!
+              </MotionLink>
+
+              <MotionLink
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  opacity: {
+                    duration: 0.6,
+                    delay: 0.6,
+                    ease: [0.43, 0.13, 0.23, 0.96],
+                  },
+                  y: {
+                    duration: 0.6,
+                    delay: 0.6,
+                    ease: [0.43, 0.13, 0.23, 0.96],
+                  },
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="/suggest"
+                prefetch={false}
+                className="rounded px-6 py-3 text-base font-semibold text-white border-2 border-[#A80D0C] bg-transparent transition-colors hover:bg-white/10"
+              >
+                Suggest a Speaker!
+              </MotionLink>
+            </div>
           </div>
         </div>
       </section>
