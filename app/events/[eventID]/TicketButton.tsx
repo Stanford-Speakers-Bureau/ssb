@@ -144,6 +144,10 @@ export default function TicketButton({
     ? new Date() >= new Date(eventStartTime)
     : false;
 
+  const isEventLongOver = eventStartTime
+    ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
+    : false;
+
   // Check if within 2-hour cutoff for waitlist (based on doors open time)
   const twoHoursBeforeDoorsOpen = doorsOpen
     ? new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000
@@ -938,6 +942,18 @@ export default function TicketButton({
 
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (isSoldOut && !hasTicket) {
+    if (isEventLongOver) {
+      return (
+        <div className="mb-5">
+          <div className="flex min-h-[3rem] items-center justify-center">
+            <p className="text-xs sm:text-sm text-yellow-400/80 text-center">
+              {TICKET_MESSAGES.EVENT_PASSED}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     // Within 2-hour cutoff - allow getting a WAITLIST ticket
     if (isWithinWaitlistCutoff) {
       return (
@@ -1035,7 +1051,7 @@ export default function TicketButton({
                           if (
                             e.key === "Enter" &&
                             noBagsConfirmation.toLowerCase().trim() ===
-                              "no bags"
+                            "no bags"
                           ) {
                             handleConfirmNoBags();
                           }
@@ -1628,11 +1644,10 @@ export default function TicketButton({
           )}
           {message && !isCancelDisabled && !isSalesDisabled && (
             <p
-              className={`mt-3 text-xs sm:text-sm ${
-                message.includes("successfully")
+              className={`mt-3 text-xs sm:text-sm ${message.includes("successfully")
                   ? "text-green-400"
                   : "text-red-400"
-              }`}
+                }`}
             >
               {message}
             </p>
@@ -1743,7 +1758,7 @@ export default function TicketButton({
                           if (
                             e.key === "Enter" &&
                             noBagsConfirmation.toLowerCase().trim() ===
-                              "no bags"
+                            "no bags"
                           ) {
                             handleConfirmNoBags();
                           }
