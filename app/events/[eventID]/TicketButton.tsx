@@ -981,7 +981,7 @@ export default function TicketButton({
                 />
               </svg>
               <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                This event is only open to Stanford affiliates.
+                This event is only open to Stanford affiliates, with priority for students.
               </p>
             </div>
           )}
@@ -1033,9 +1033,8 @@ export default function TicketButton({
                         This event has a strict no bags policy.{" "}
                         <strong>
                           You will be turned away at the entrance with any form
-                          of a bag larger than a small clutch purse.
+                          of a bag or purse.
                         </strong>{" "}
-                        (4.5&quot; x 6.5&quot;)
                       </p>
                       <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
                         Type &quot;no bags&quot; below to confirm you
@@ -1113,7 +1112,7 @@ export default function TicketButton({
                 />
               </svg>
               <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                This event is only open to Stanford affiliates.
+                This event is only open to Stanford affiliates, with priority for students.
               </p>
             </div>
           )}
@@ -1542,7 +1541,7 @@ export default function TicketButton({
                   />
                 </svg>
                 <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                  This event is only open to Stanford affiliates.
+                  This event is only open to Stanford affiliates, with priority for students.
                 </p>
               </div>
             )}
@@ -1600,7 +1599,7 @@ export default function TicketButton({
                     />
                   </svg>
                   <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-200 font-medium">
-                    This event is only open to Stanford affiliates.
+                    This event is only open to Stanford affiliates, with priority for students.
                   </p>
                 </div>
               )}
@@ -1645,8 +1644,8 @@ export default function TicketButton({
           {message && !isCancelDisabled && !isSalesDisabled && (
             <p
               className={`mt-3 text-xs sm:text-sm ${message.includes("successfully")
-                  ? "text-green-400"
-                  : "text-red-400"
+                ? "text-green-400"
+                : "text-red-400"
                 }`}
             >
               {message}
@@ -1740,9 +1739,8 @@ export default function TicketButton({
                         This event has a strict no bags policy.{" "}
                         <strong>
                           You will be turned away at the entrance with any form
-                          of a bag larger than a small clutch purse.
-                        </strong>{" "}
-                        (4.5” x 6.5”)
+                          of a bag or purse.
+                        </strong>
                       </p>
                       <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
                         Type &quot;no bags&quot; below to confirm you

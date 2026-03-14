@@ -48,7 +48,7 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
           Prohibited items
         </h3>
         <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
-          <li>Bags larger than a clutch purse (4.5" x 6.5")</li>
+          <li>Bags, including small purse</li>
           <li>Food or drink, including water bottles</li>
           <li>Signs, flags, banners, or flyers of any kind</li>
           <li>Chairs of any kind (ADA seating will be provided on-site)</li>
@@ -100,7 +100,6 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
         <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>Attendees may be photographed or recorded.</li>
           <li>No photography or recording, aside from pre-approved media.</li>
-          <li>Media requests must be made by 5pm PST on Tuesday, February 17th by emailing <a href="mailto:tickets@stanfordspeakersbureau.com" className="text-amber-500 dark:text-amber-100/90 underline underline-offset-2 decoration-amber-300 dark:decoration-amber-600 hover:text-amber-900 dark:hover:text-amber-300 transition-colors">tickets@stanfordspeakersbureau.com</a>.</li>
         </ul>
       </section>
       <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above condition and any others set by Stanford University.</p>
