@@ -6,6 +6,8 @@ import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
 import Image from "next/image";
 import { glassPanel, NoticeBanner } from "./ui";
+import ReferralShare from "./ReferralShare";
+import { generateReferralCode } from "@/app/lib/utils";
 
 type TicketSectionProps = {
   eventId: string;
@@ -23,6 +25,7 @@ type TicketSectionProps = {
   waitlistChance?: string | null;
   priorityText?: string | null;
   hideTicketingDate?: boolean;
+  referralsEnabled?: boolean;
 };
 
 export default function TicketSection({
@@ -41,6 +44,7 @@ export default function TicketSection({
   waitlistChance = null,
   priorityText = null,
   hideTicketingDate = false,
+  referralsEnabled = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -51,33 +55,10 @@ export default function TicketSection({
     initialTicketName,
   );
 
-  const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [qrRevealed, setQrRevealed] = useState(false);
 
   const isWaitlistTicket = ticketType?.toUpperCase() === "WAITLIST";
-
-  const onAddToGoogleWallet = async () => {
-    if (!ticketId || isLoadingGoogleWallet) return;
-    setIsLoadingGoogleWallet(true);
-    try {
-      const res = await fetch("/api/tickets/google-wallet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: ticketId }),
-      });
-      const data = (await res.json()) as { url?: string };
-
-      if (data.url) {
-        // This redirects the user to the Google Wallet save screen
-        setIsLoadingGoogleWallet(false);
-        window.open(data.url, "_blank");
-      }
-    } catch (err) {
-      console.error("Failed to load pass", err);
-      setIsLoadingGoogleWallet(false);
-    }
-  };
 
   const onAddToAppleWallet = () => {
     if (!ticketId || isLoadingAppleWallet) return;
@@ -174,6 +155,7 @@ export default function TicketSection({
             waitlistChance={waitlistChance}
             priorityText={priorityText}
             hideTicketingDate={hideTicketingDate}
+            referralsEnabled={referralsEnabled}
           />
         ) : (
           <div className={glassPanel + " p-4 sm:p-5"}>
@@ -190,6 +172,7 @@ export default function TicketSection({
               waitlistChance={waitlistChance}
               priorityText={priorityText}
               hideTicketingDate={hideTicketingDate}
+              referralsEnabled={referralsEnabled}
             />
           </div>
         )
@@ -272,30 +255,26 @@ export default function TicketSection({
                     </div>
                   )}
                 </button>
-                {/* <button
-                  onClick={onAddToGoogleWallet}
-                  disabled={isLoadingGoogleWallet}
-                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.97]"
-                >
-                  <Image
-                    src="/images/enUS_add_to_google_wallet_add-wallet-badge.png"
-                    alt="Add to Google Wallet"
-                    width={140}
-                    height={44}
-                    className={`h-11 w-auto ${isLoadingGoogleWallet ? "opacity-50" : ""}`}
-                  />
-                  {isLoadingGoogleWallet && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    </div>
-                  )}
-                </button> */}
               </div>
 
             </div>
           )}
         </>
       )}
+
+      {hasTicket && referralsEnabled && userEmail && (() => {
+        const code = generateReferralCode(userEmail);
+        if (!code) return null;
+        return (
+          <div className={glassPanel + " overflow-hidden"}>
+            <ReferralShare
+              referralCode={code}
+              route={eventRoute}
+              eventId={eventId}
+            />
+          </div>
+        );
+      })()}
 
       {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
         <NoticeBanner

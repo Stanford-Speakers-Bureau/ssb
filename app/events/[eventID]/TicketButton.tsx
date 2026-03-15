@@ -44,6 +44,9 @@ export default function TicketButton(props: TicketButtonProps) {
           waitlistChance={actions.waitlistChance}
           handleJoinWaitlist={actions.handleJoinWaitlist}
           message={actions.message}
+          referralsEnabled={actions.referralsEnabled}
+          referralCode={actions.referralCode}
+          handleReferralCodeChange={actions.handleReferralCodeChange}
         />
       );
     }
@@ -95,6 +98,10 @@ export default function TicketButton(props: TicketButtonProps) {
           noBagsConfirmation={actions.noBagsConfirmation}
           setNoBagsConfirmation={actions.setNoBagsConfirmation}
           handleConfirmNoBags={actions.handleConfirmNoBags}
+          referralsEnabled={actions.referralsEnabled}
+          referralCode={actions.referralCode}
+          referralWarning={actions.referralWarning}
+          handleReferralCodeChange={actions.handleReferralCodeChange}
         />
       )}
       {actions.hasTicket && (

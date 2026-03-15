@@ -299,6 +299,7 @@ export default async function EventPage({ params }: PageProps) {
                 initialIsNotified={isNotified}
                 waitlistChance={event.waitlist_chance}
                 priorityText={event.priority}
+                referralsEnabled={event.referrals_enabled}
               />
             </div>
           </div>

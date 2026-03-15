@@ -18,7 +18,10 @@ export type TicketButtonProps = {
   waitlistChance?: string | null;
   priorityText?: string | null;
   hideTicketingDate?: boolean;
+  referralsEnabled?: boolean;
 };
+
+const REFERRAL_KEY = "referral";
 
 export const TICKET_MESSAGES = {
   SUCCESS: "Ticket created successfully!",
@@ -48,6 +51,7 @@ export default function useTicketActions({
   waitlistChance = null,
   priorityText = null,
   hideTicketingDate = false,
+  referralsEnabled = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -210,7 +214,7 @@ export default function useTicketActions({
 
       // Get referral from input or session storage
       let referral: string | null = null;
-      const referralKey = `referral`;
+      const referralKey = REFERRAL_KEY;
       if (referralCode.trim()) {
         referral = referralCode.trim();
         sessionStorage.setItem(referralKey, referral);
@@ -362,13 +366,12 @@ export default function useTicketActions({
         return;
       }
 
-      const url = hasTicket ? "/api/tickets" : "/api/tickets";
       const method = hasTicket ? "DELETE" : "POST";
 
       // Get referral from input or session storage if creating a ticket
       let referral: string | null = null;
       if (!hasTicket) {
-        const referralKey = `referral`;
+        const referralKey = REFERRAL_KEY;
         // Use input value if provided, otherwise check session storage
         if (referralCode.trim()) {
           referral = referralCode.trim();
@@ -385,7 +388,7 @@ export default function useTicketActions({
         requestBody.referral = referral;
       }
 
-      const response = await fetch(url, {
+      const response = await fetch("/api/tickets", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -417,7 +420,7 @@ export default function useTicketActions({
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
           // Clear referral from session storage after successful ticket creation
-          const referralKey = `referral`;
+          const referralKey = REFERRAL_KEY;
           sessionStorage.removeItem(referralKey);
         }
         // Dispatch event to update ticket count and ticket status
@@ -582,7 +585,7 @@ export default function useTicketActions({
 
   // Track referral parameters from URL and store in session storage
   useEffect(() => {
-    const referralKey = `referral`;
+    const referralKey = REFERRAL_KEY;
     const url = new URL(window.location.href);
     const urlReferralCode = url.searchParams.get("referral_code");
 
@@ -767,7 +770,7 @@ export default function useTicketActions({
   const handleReferralCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setReferralCode(value);
-    const referralKey = `referral`;
+    const referralKey = REFERRAL_KEY;
     if (value.trim()) {
       sessionStorage.setItem(referralKey, value.trim());
     } else {
@@ -813,7 +816,6 @@ export default function useTicketActions({
     isLiveEvent,
     referralCode,
     referralWarning,
-    isValidatingReferral,
     isOnWaitlist,
     waitlistPosition,
     showCancelModal,
@@ -838,6 +840,7 @@ export default function useTicketActions({
     waitlistChance,
     priorityText,
     hideTicketingDate,
+    referralsEnabled,
 
     // Computed
     hasEventStarted,

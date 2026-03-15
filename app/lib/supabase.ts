@@ -40,6 +40,7 @@ export type Event = {
   livestream?: string | null;
   priority?: string | null;
   hide_ticketing_date?: boolean;
+  referrals_enabled?: boolean;
 };
 
 /**
@@ -68,6 +69,7 @@ export function serializeEvent(e: DBEvent): Event {
     livestream: e.livestream ?? null,
     priority: e.priority ?? null,
     hide_ticketing_date: e.hideTicketingDate ?? false,
+    referrals_enabled: e.referralsEnabled ?? false,
   };
 }
 
