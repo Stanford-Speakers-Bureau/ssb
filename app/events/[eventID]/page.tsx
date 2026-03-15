@@ -130,7 +130,6 @@ export default async function EventPage({ params }: PageProps) {
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
-  const showProhibitedItems = Boolean(hasTicket || ticketStatus.isOnWaitlist || (event.start_time_date && new Date(event.start_time_date) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)));
 
   // Check if public tickets are sold out
   const isSoldOut = !(await isEventUnderCapacity(event.id));
@@ -258,7 +257,7 @@ export default async function EventPage({ params }: PageProps) {
               </a>
             )}
             {/* Prohibited items */}
-            <ProhibitedItems initialShow={showProhibitedItems} />
+            <ProhibitedItems />
           </div>
 
           {/* Right column – ticket section (sticky on desktop) */}

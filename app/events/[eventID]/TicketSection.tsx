@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
 import Image from "next/image";
@@ -52,6 +53,9 @@ export default function TicketSection({
 
   const [isLoadingGoogleWallet, setIsLoadingGoogleWallet] = useState(false);
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
+  const [qrRevealed, setQrRevealed] = useState(false);
+
+  const isWaitlistTicket = ticketType?.toUpperCase() === "WAITLIST";
 
   const onAddToGoogleWallet = async () => {
     if (!ticketId || isLoadingGoogleWallet) return;
@@ -212,7 +216,13 @@ export default function TicketSection({
             </div>
           )}
           {ticketId && (
-            <div className={`${glassPanel} p-5 sm:p-6 flex flex-col items-center`}>
+            <div className={`${isWaitlistTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+
+              {isWaitlistTicket && (
+                <div className="mb-3 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/25">
+                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Waitlist Ticket</p>
+                </div>
+              )}
 
               {ticketName && (
                 <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-200 font-medium text-center mb-4">
@@ -220,14 +230,37 @@ export default function TicketSection({
                   <span className="text-zinc-900 dark:text-white font-semibold">{ticketName}</span>
                 </p>
               )}
-              <TicketQRCode
-                ticketId={ticketId}
-                size={190}
-                compact
-                ticketType={ticketType}
-                attendeeName={ticketName}
-                eventStartTime={eventStartTime ?? doorsOpen}
-              />
+
+              <div className="relative">
+                <TicketQRCode
+                  ticketId={ticketId}
+                  size={190}
+                  compact
+                  ticketType={ticketType}
+                  attendeeName={ticketName}
+                  eventStartTime={eventStartTime ?? doorsOpen}
+                />
+
+                {/* Waitlist ticket overlay — tap to reveal */}
+                <AnimatePresence>
+                  {isWaitlistTicket && !qrRevealed && (
+                    <motion.button
+                      initial={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      onClick={() => setQrRevealed(true)}
+                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-lg cursor-pointer"
+                    >
+                      <svg className="w-10 h-10 text-zinc-400 dark:text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
+                      </svg>
+                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal QR code</p>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
                 <button
                   onClick={onAddToAppleWallet}

@@ -1,33 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
-
-type ProhibitedItemsProps = {
-  initialShow: boolean;
-};
-
-export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
-  const [show, setShow] = useState(initialShow);
-
-  useEffect(() => {
-    const handleTicketChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        hasTicket: boolean;
-        ticketId: string | null;
-      }>;
-      if (customEvent.detail) {
-        setShow(customEvent.detail.hasTicket);
-      }
-    };
-
-    window.addEventListener("ticketChanged", handleTicketChange);
-    return () => {
-      window.removeEventListener("ticketChanged", handleTicketChange);
-    };
-  }, []);
-
-  if (!show) return null;
-
+export default function ProhibitedItems() {
   return (
     <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5 space-y-5">
       <section>
