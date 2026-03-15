@@ -1,6 +1,8 @@
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { sanitizeSchema } from "@/app/lib/sanitize";
 import InfoPills from "./InfoPills";
 
 type HeroSectionProps = {
@@ -72,7 +74,7 @@ export default function HeroSection({
         </h1>
         {tagline && (
           <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc dark:prose-invert prose-p:m-0 prose-a:text-red-500 dark:prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{tagline}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{tagline}</ReactMarkdown>
           </div>
         )}
 

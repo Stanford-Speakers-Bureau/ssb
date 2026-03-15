@@ -12,6 +12,8 @@ import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { sanitizeSchema } from "@/app/lib/sanitize";
 import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
@@ -238,7 +240,7 @@ export default async function EventPage({ params }: PageProps) {
             {event.desc && (
               <div className="rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 p-5 sm:p-6">
                 <div className="prose prose-sm prose-zinc dark:prose-invert prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-[1.75] prose-a:text-red-600 dark:prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>{event.desc}</ReactMarkdown>
+                  <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{event.desc}</ReactMarkdown>
                 </div>
               </div>
             )}
@@ -278,7 +280,7 @@ export default async function EventPage({ params }: PageProps) {
                   icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
                 >
                   <div className="prose prose-sm prose-blue dark:prose-invert prose-p:m-0 prose-a:underline max-w-none">
-                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>{event.priority}</ReactMarkdown>
+                    <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{event.priority}</ReactMarkdown>
                   </div>
                 </NoticeBanner>
               )}

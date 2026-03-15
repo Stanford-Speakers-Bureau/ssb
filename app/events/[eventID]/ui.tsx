@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { sanitizeSchema } from "@/app/lib/sanitize";
 
 // ─── Design token constants ───
 
@@ -157,7 +159,7 @@ export function PriorityBanner({ priorityText }: { priorityText: string }) {
       }
     >
       <div className="prose prose-sm prose-amber dark:prose-invert prose-p:m-0 prose-a:underline max-w-none">
-        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{priorityText}</ReactMarkdown>
+        <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{priorityText}</ReactMarkdown>
       </div>
     </NoticeBanner>
   );

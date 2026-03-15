@@ -6,6 +6,8 @@ import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { sanitizeSchema } from "@/app/lib/sanitize";
 
 export type UpcomingSpeakerCardProps = {
   name?: string;
@@ -371,7 +373,7 @@ function RevealedCard({
           )}
           {showHeader && (
             <div className="mt-2 text-lg text-zinc-300 italic leading-relaxed prose prose-lg prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-              <ReactMarkdown rehypePlugins={[rehypeRaw]}>{header}</ReactMarkdown>
+              <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
             </div>
           )}
           {metaPills && (
@@ -391,7 +393,7 @@ function RevealedCard({
         )}
         {showHeader && (
           <div className="mt-1.5 text-sm sm:text-base text-zinc-400 italic leading-relaxed prose prose-sm sm:prose-base prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{header}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
           </div>
         )}
         {metaPills && (
