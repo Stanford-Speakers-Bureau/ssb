@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
 import Image from "next/image";
+import { glassPanel } from "./ui";
 
 type TicketSectionProps = {
   eventId: string;
@@ -19,6 +20,8 @@ type TicketSectionProps = {
   isSoldOut?: boolean;
   initialIsNotified?: boolean;
   waitlistChance?: string | null;
+  priorityText?: string | null;
+  hideTicketingDate?: boolean;
 };
 
 export default function TicketSection({
@@ -35,6 +38,8 @@ export default function TicketSection({
   isSoldOut = false,
   initialIsNotified = false,
   waitlistChance = null,
+  priorityText = null,
+  hideTicketingDate = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -139,22 +144,19 @@ export default function TicketSection({
       ? true
       : new Date() >= ticketingOpensAt;
 
-  const glassPanel =
-    "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 shadow-lg";
-
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
   const showTicketPanel =
     hasTicket ||
     isTicketingOpen ||
     isSoldOut ||
-    (!isTicketingOpen && hasValidTicketingOpensAt);
+    (!isTicketingOpen && (hasValidTicketingOpensAt || hideTicketingDate));
 
   return (
     <div className="event-ticket-section flex flex-col gap-5">
       {/* Ticket button (or ticketing-opens message when not yet open) */}
       {showTicketPanel && (
-        <div className={glassPanel + " p-4 sm:p-5"}>
+        hasTicket ? (
           <TicketButton
             eventId={eventId}
             initialHasTicket={hasTicket}
@@ -166,32 +168,27 @@ export default function TicketSection({
             initialIsNotified={initialIsNotified}
             isLoggedIn={userEmail != null}
             waitlistChance={waitlistChance}
+            priorityText={priorityText}
+            hideTicketingDate={hideTicketingDate}
           />
-        </div>
-      )}
-
-      {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
-        <div className={`${glassPanel} p-4 sm:p-5`}>
-          <div className="inline-flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3.5 py-2 w-full justify-center sm:justify-start">
-            <svg
-              className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-              />
-            </svg>
-            <p className="text-xs sm:text-sm text-red-700 dark:text-red-200 font-medium">
-              For security reasons, this ticket is not transferable. A photo ID
-              is required for entry.
-            </p>
+        ) : (
+          <div className={glassPanel + " p-4 sm:p-5"}>
+            <TicketButton
+              eventId={eventId}
+              initialHasTicket={hasTicket}
+              eventStartTime={eventStartTime}
+              doorsOpen={doorsOpen}
+              isSoldOut={isSoldOut}
+              isTicketingOpen={isTicketingOpen}
+              ticketingOpensAt={ticketingDate}
+              initialIsNotified={initialIsNotified}
+              isLoggedIn={userEmail != null}
+              waitlistChance={waitlistChance}
+              priorityText={priorityText}
+              hideTicketingDate={hideTicketingDate}
+            />
           </div>
-        </div>
+        )
       )}
 
       {/* Ticket details when user has a ticket */}
@@ -269,11 +266,34 @@ export default function TicketSection({
                   )}
                 </button> */}
               </div>
+
             </div>
           )}
         </>
       )}
 
+      {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
+        <div className="rounded-xl bg-red-50 dark:bg-red-500/[0.06] border border-red-200 dark:border-red-500/20 p-4 sm:p-5">
+        <div className="flex items-start gap-2">
+          <svg
+            className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
+          </svg>
+          <p className="text-xs sm:text-sm text-red-700 dark:text-red-200 font-medium">
+            This ticket is not transferable. A photo ID will be required for entry.
+          </p>
+        </div>
+        </div>
+      )}
 
     </div>
   );

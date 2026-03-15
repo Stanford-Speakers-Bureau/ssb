@@ -1,11 +1,11 @@
 -- Seed data for local Supabase development
 
 -- Insert test events
-INSERT INTO public.events (id, name, capacity, venue, reserved, venue_link, release_date, ticketing_date, banner, start_time_date, doors_open, "desc", img, route, tagline, tickets, live, scanned, scanned_count, latitude, longitude, address, img_version, livestream)
+INSERT INTO public.events (id, name, capacity, venue, reserved, venue_link, release_date, ticketing_date, start_time_date, doors_open, "desc", img, route, tagline, tickets, live, scanned, scanned_count, latitude, longitude, address, img_version, livestream)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Test Speaker: Jane Doe', 100, 'Memorial Auditorium', 10, 'https://maps.google.com', NOW() - INTERVAL '7 days', NOW() - INTERVAL '5 days', true, NOW() + INTERVAL '14 days', NOW() + INTERVAL '14 days' - INTERVAL '30 minutes', 'An exciting talk about technology and innovation.', NULL, 'jane-doe', 'Innovation & Beyond', 0, false, 0, 0, 37.4275, -122.1697, '551 Serra Mall, Stanford, CA 94305', 1, false),
-  ('00000000-0000-0000-0000-000000000002', 'Past Speaker: John Smith', 200, 'Dinkelspiel Auditorium', 20, 'https://maps.google.com', NOW() - INTERVAL '30 days', NOW() - INTERVAL '28 days', false, NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days' - INTERVAL '30 minutes', 'A retrospective on AI in education.', NULL, 'john-smith', 'AI & Education', 50, false, 30, 30, 37.4265, -122.1645, '471 Lagunita Dr, Stanford, CA 94305', 1, false),
-  ('00000000-0000-0000-0000-000000000003', 'Mystery Speaker', 150, 'Bing Concert Hall', 15, 'https://maps.google.com', NOW() + INTERVAL '7 days', NOW() + INTERVAL '9 days', false, NOW() + INTERVAL '30 days', NOW() + INTERVAL '30 days' - INTERVAL '30 minutes', 'Mystery event - stay tuned!', NULL, 'mystery-event', NULL, 0, false, 0, 0, 37.4321, -122.1660, '327 Lasuen St, Stanford, CA 94305', 1, false);
+  ('00000000-0000-0000-0000-000000000001', 'Test Speaker: Jane Doe', 100, 'Memorial Auditorium', 10, 'https://maps.google.com', NOW() - INTERVAL '7 days', NOW() - INTERVAL '5 days', NOW() + INTERVAL '14 days', NOW() + INTERVAL '14 days' - INTERVAL '30 minutes', 'An exciting talk about technology and innovation.', NULL, 'jane-doe', 'Innovation & Beyond', 0, false, 0, 0, 37.4275, -122.1697, '551 Serra Mall, Stanford, CA 94305', 1, NULL),
+  ('00000000-0000-0000-0000-000000000002', 'Past Speaker: John Smith', 200, 'Dinkelspiel Auditorium', 20, 'https://maps.google.com', NOW() - INTERVAL '30 days', NOW() - INTERVAL '28 days', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days' - INTERVAL '30 minutes', 'A retrospective on AI in education.', NULL, 'john-smith', 'AI & Education', 50, false, 30, 30, 37.4265, -122.1645, '471 Lagunita Dr, Stanford, CA 94305', 1, NULL),
+  ('00000000-0000-0000-0000-000000000003', 'Mystery Speaker', 150, 'Bing Concert Hall', 15, 'https://maps.google.com', NOW() + INTERVAL '7 days', NOW() + INTERVAL '9 days', NOW() + INTERVAL '30 days', NOW() + INTERVAL '30 days' - INTERVAL '30 minutes', 'Mystery event - stay tuned!', NULL, 'mystery-event', NULL, 0, false, 0, 0, 37.4321, -122.1660, '327 Lasuen St, Stanford, CA 94305', 1, NULL);
 
 -- Insert test tickets for past event
 INSERT INTO public.tickets (id, email, event_id, type, name, scanned)
@@ -38,7 +38,8 @@ INSERT INTO public.roles (email, roles)
 VALUES
   ('admin@stanford.edu', 'admin'),
   ('scanner@stanford.edu', 'scanner'),
-  ('both@stanford.edu', 'admin,scanner');
+  ('both@stanford.edu', 'admin,scanner'),
+  ('anishan@stanford.edu', 'admin,scanner');
 
 -- Insert test referrals
 INSERT INTO public.referrals (event_id, referral_code, count)
