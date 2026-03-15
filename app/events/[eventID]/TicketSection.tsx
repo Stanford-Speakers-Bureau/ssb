@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
 import Image from "next/image";
-import { glassPanel } from "./ui";
+import { glassPanel, NoticeBanner } from "./ui";
 
 type TicketSectionProps = {
   eventId: string;
@@ -199,21 +199,13 @@ export default function TicketSection({
       {hasTicket && (
         <>
           {ticketType?.toUpperCase() === "VIP" && (
-            <div className="rounded-xl bg-amber-50 dark:bg-zinc-900/50 border border-amber-200 dark:border-amber-400/25 shadow-lg p-4 sm:p-5">
-              <div className="inline-flex items-center gap-2 rounded-lg bg-amber-100 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/25 px-3.5 py-2 w-full justify-center sm:justify-start">
-                <svg
-                  className="w-4 h-4 text-amber-400 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
-                </svg>
-                <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-100 font-medium">
-                  We&apos;ve reserved a seat for you in the front few rows. Please
-                  use the VIP entrance when you arrive at the venue.
-                </p>
-              </div>
-            </div>
+            <NoticeBanner
+              color="amber"
+              icon={<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" /></svg>}
+            >
+              We&apos;ve reserved a seat for you in the front few rows. Please
+              use the VIP entrance when you arrive at the venue.
+            </NoticeBanner>
           )}
           {ticketId && (
             <div className={`${isWaitlistTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
@@ -306,26 +298,12 @@ export default function TicketSection({
       )}
 
       {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
-        <div className="rounded-xl bg-red-50 dark:bg-red-500/[0.06] border border-red-200 dark:border-red-500/20 p-4 sm:p-5">
-        <div className="flex items-start gap-2">
-          <svg
-            className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-            />
-          </svg>
-          <p className="text-xs sm:text-sm text-red-700 dark:text-red-200 font-medium">
-            This ticket is not transferable. A photo ID will be required for entry.
-          </p>
-        </div>
-        </div>
+        <NoticeBanner
+          color="red"
+          icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>}
+        >
+          This ticket is not transferable. A photo ID will be required for entry.
+        </NoticeBanner>
       )}
 
     </div>

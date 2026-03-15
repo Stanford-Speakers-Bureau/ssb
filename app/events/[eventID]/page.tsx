@@ -16,6 +16,7 @@ import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
 import LivestreamBanner from "./LivestreamBanner";
+import { NoticeBanner } from "./ui";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;
@@ -272,16 +273,14 @@ export default async function EventPage({ params }: PageProps) {
               )}
 
               {event.priority && (
-                <div className="rounded-xl bg-blue-50 dark:bg-blue-500/[0.06] border border-blue-200 dark:border-blue-500/20 p-4 sm:p-5">
-                  <div className="flex items-start gap-2">
-                    <svg className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                    </svg>
-                    <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-200 font-medium prose prose-sm prose-blue dark:prose-invert prose-p:m-0 prose-p:text-blue-700 dark:prose-p:text-blue-200 prose-a:text-blue-600 dark:prose-a:text-blue-300 prose-a:underline prose-strong:text-blue-800 dark:prose-strong:text-blue-100 max-w-none">
-                      <ReactMarkdown rehypePlugins={[rehypeRaw]}>{event.priority}</ReactMarkdown>
-                    </div>
+                <NoticeBanner
+                  color="blue"
+                  icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
+                >
+                  <div className="prose prose-sm prose-blue dark:prose-invert prose-p:m-0 prose-a:underline max-w-none">
+                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>{event.priority}</ReactMarkdown>
                   </div>
-                </div>
+                </NoticeBanner>
               )}
 
               <TicketSection
