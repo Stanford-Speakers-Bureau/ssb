@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton, FeedbackMessage, ConfirmationModal } from "../ui";
+import { PriorityBanner, RedButton, FeedbackMessage, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
 type WaitlistTicketCTAProps = {
@@ -87,25 +87,7 @@ export default function WaitlistTicketCTA({
         onConfirm={handleConfirmNoBags}
         confirmDisabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
       >
-        <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
-          Type &quot;no bags&quot; below to confirm you understand:
-        </p>
-        <input
-          type="text"
-          value={noBagsConfirmation}
-          onChange={(e) => setNoBagsConfirmation(e.target.value)}
-          placeholder="Type 'no bags' to confirm"
-          className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
-          onKeyDown={(e) => {
-            if (
-              e.key === "Enter" &&
-              noBagsConfirmation.toLowerCase().trim() === "no bags"
-            ) {
-              handleConfirmNoBags();
-            }
-          }}
-          autoFocus
-        />
+        <NoBagsModalChildren value={noBagsConfirmation} onChange={setNoBagsConfirmation} onConfirm={handleConfirmNoBags} />
       </ConfirmationModal>
     </div>
   );

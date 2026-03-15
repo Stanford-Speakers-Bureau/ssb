@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton, Spinner, FeedbackMessage } from "../ui";
+import { PriorityBanner, RedButton, FeedbackMessage } from "../ui";
 
 type JoinWaitlistProps = {
   isLoggedIn: boolean;

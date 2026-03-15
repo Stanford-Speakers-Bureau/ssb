@@ -14,11 +14,8 @@ export const glassPanel =
 export const redButtonBase =
   "rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
-export const secondaryButtonBase =
+const secondaryButtonBase =
   "rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed";
-
-export const pillBase =
-  "inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/[0.06] dark:bg-white/[0.08] backdrop-blur-md border border-black/[0.1] dark:border-white/[0.1] px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-zinc-900/90 dark:text-white/90 font-medium";
 
 // ─── Spinner ───
 
@@ -114,44 +111,6 @@ export function RedButton({
   );
 }
 
-// ─── SecondaryButton ───
-
-export function SecondaryButton({
-  onClick,
-  disabled,
-  loading,
-  loadingText,
-  children,
-  className,
-}: {
-  onClick: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  loadingText?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const isDisabled = disabled || loading;
-  return (
-    <motion.button
-      whileHover={isDisabled ? {} : { scale: 1.02 }}
-      whileTap={isDisabled ? {} : { scale: 0.98 }}
-      onClick={onClick}
-      disabled={isDisabled}
-      className={`${secondaryButtonBase} w-full ${className ?? ""}`}
-    >
-      {loading ? (
-        <span className="inline-flex items-center justify-center gap-2">
-          <Spinner className="border-zinc-300 border-t-zinc-600" />
-          {loadingText}
-        </span>
-      ) : (
-        children
-      )}
-    </motion.button>
-  );
-}
-
 // ─── NoticeBanner ───
 
 const noticeBannerColors = {
@@ -201,6 +160,39 @@ export function PriorityBanner({ priorityText }: { priorityText: string }) {
         <ReactMarkdown rehypePlugins={[rehypeRaw]}>{priorityText}</ReactMarkdown>
       </div>
     </NoticeBanner>
+  );
+}
+
+// ─── NoBagsModalChildren ───
+
+export function NoBagsModalChildren({
+  value,
+  onChange,
+  onConfirm,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <>
+      <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+        Type &quot;no bags&quot; below to confirm you understand:
+      </p>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Type 'no bags' to confirm"
+        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && value.toLowerCase().trim() === "no bags") {
+            onConfirm();
+          }
+        }}
+        autoFocus
+      />
+    </>
   );
 }
 
@@ -259,7 +251,7 @@ export function ConfirmationModal({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onClose}
-                className={`flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold ${secondaryButtonBase}`}
+                className={`flex-1 ${secondaryButtonBase}`}
               >
                 {cancelLabel}
               </motion.button>
@@ -268,7 +260,7 @@ export function ConfirmationModal({
                 whileTap={{ scale: 0.98 }}
                 onClick={onConfirm}
                 disabled={confirmDisabled}
-                className="flex-1 px-4 py-2.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] rounded-lg transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`flex-1 ${redButtonBase}`}
               >
                 {confirmLabel}
               </motion.button>
