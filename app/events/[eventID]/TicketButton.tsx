@@ -25,12 +25,7 @@ export default function TicketButton(props: TicketButtonProps) {
           isLoggedIn={actions.isLoggedIn}
           priorityText={actions.priorityText}
           isLoading={actions.isLoading}
-          handleWaitlistTicketClick={actions.handleWaitlistTicketClick}
-          showNoBagsModal={actions.showNoBagsModal}
-          setShowNoBagsModal={actions.setShowNoBagsModal}
-          noBagsConfirmation={actions.noBagsConfirmation}
-          setNoBagsConfirmation={actions.setNoBagsConfirmation}
-          handleConfirmNoBags={actions.handleConfirmNoBags}
+          processWaitlistTicketRequest={actions.processWaitlistTicketRequest}
         />
       );
     } else if (!actions.isOnWaitlist) {
@@ -86,12 +81,7 @@ export default function TicketButton(props: TicketButtonProps) {
             isLoading={actions.isLoading}
             isButtonDisabled={actions.isButtonDisabled}
             isSalesDisabled={actions.isSalesDisabled}
-            handleTicketClick={actions.handleTicketClick}
-            showNoBagsModal={actions.showNoBagsModal}
-            setShowNoBagsModal={actions.setShowNoBagsModal}
-            noBagsConfirmation={actions.noBagsConfirmation}
-            setNoBagsConfirmation={actions.setNoBagsConfirmation}
-            handleConfirmNoBags={actions.handleConfirmNoBags}
+            processTicketRequest={actions.processTicketRequest}
             referralsEnabled={actions.referralsEnabled}
             referralCode={actions.referralCode}
             referralWarning={actions.referralWarning}

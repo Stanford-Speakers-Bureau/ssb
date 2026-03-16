@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { PriorityBanner, RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
@@ -7,25 +8,26 @@ type WaitlistTicketCTAProps = {
   isLoggedIn: boolean;
   priorityText: string | null;
   isLoading: boolean;
-  handleWaitlistTicketClick: () => void;
-  showNoBagsModal: boolean;
-  setShowNoBagsModal: (v: boolean) => void;
-  noBagsConfirmation: string;
-  setNoBagsConfirmation: (v: string) => void;
-  handleConfirmNoBags: () => void;
+  processWaitlistTicketRequest: () => void;
 };
 
 export default function WaitlistTicketCTA({
   isLoggedIn,
   priorityText,
   isLoading,
-  handleWaitlistTicketClick,
-  showNoBagsModal,
-  setShowNoBagsModal,
-  noBagsConfirmation,
-  setNoBagsConfirmation,
-  handleConfirmNoBags,
+  processWaitlistTicketRequest,
 }: WaitlistTicketCTAProps) {
+  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
+  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
+
+  const handleConfirmNoBags = () => {
+    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
+      setShowNoBagsModal(false);
+      setNoBagsConfirmation("");
+      processWaitlistTicketRequest();
+    }
+  };
+
   return (
     <div>
       {!isLoggedIn && priorityText && (
@@ -65,7 +67,10 @@ export default function WaitlistTicketCTA({
 
       {/* CTA Button */}
       <RedButton
-        onClick={handleWaitlistTicketClick}
+        onClick={() => {
+          setShowNoBagsModal(true);
+          setNoBagsConfirmation("");
+        }}
         disabled={isLoading}
         loading={isLoading}
         loadingText={TICKET_MESSAGES.CREATING}

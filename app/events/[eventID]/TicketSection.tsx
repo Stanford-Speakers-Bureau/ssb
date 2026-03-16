@@ -74,57 +74,26 @@ export default function TicketSection({
   };
 
   useEffect(() => {
-    const handleTicketChange = async (event: Event) => {
-      // When ticket changes, update state from event detail
+    const handleTicketChange = (event: Event) => {
       const customEvent = event as CustomEvent<{
         hasTicket: boolean;
         ticketId: string | null;
         ticketName?: string | null;
+        ticketType?: string | null;
       }>;
       if (customEvent.detail) {
         setHasTicket(customEvent.detail.hasTicket);
         setTicketId(customEvent.detail.ticketId);
         setTicketName(customEvent.detail.ticketName ?? null);
-
-        // Fetch ticket type (and name if not in event) if we have a ticket ID
-        if (customEvent.detail.ticketId) {
-          try {
-            const response = await fetch(`/api/tickets`);
-            if (response.ok) {
-              const data = (await response.json()) as {
-                tickets?: {
-                  id: string;
-                  event_id: string;
-                  type?: string;
-                  name?: string | null;
-                }[];
-              };
-              const ticket = data.tickets?.find(
-                (t: { id: string; event_id: string }) =>
-                  t.id === customEvent.detail.ticketId &&
-                  t.event_id === eventId,
-              );
-              if (ticket) {
-                setTicketType(ticket.type || null);
-                if (ticket.name != null) setTicketName(ticket.name);
-              }
-            }
-          } catch (error) {
-            console.error("Error fetching ticket type:", error);
-          }
-        } else {
-          setTicketType(null);
-        }
+        setTicketType(customEvent.detail.ticketType ?? null);
       }
     };
 
-    // Listen to ticket changes from TicketButton
     window.addEventListener("ticketChanged", handleTicketChange);
-
     return () => {
       window.removeEventListener("ticketChanged", handleTicketChange);
     };
-  }, [eventId]);
+  }, []);
 
   const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
   const isTicketingOpen =
@@ -144,27 +113,29 @@ export default function TicketSection({
     isSoldOut ||
     (!isTicketingOpen && (hasValidTicketingOpensAt || hideTicketingDate));
 
+  const ticketButtonProps = {
+    eventId,
+    initialHasTicket: hasTicket,
+    eventStartTime,
+    doorsOpen,
+    isSoldOut,
+    isTicketingOpen,
+    ticketingOpensAt: ticketingDate,
+    initialIsNotified,
+    isLoggedIn: userEmail != null,
+    waitlistChance,
+    priorityText,
+    hideTicketingDate,
+    referralsEnabled,
+    initialIsScanned,
+  };
+
   return (
     <div className="event-ticket-section flex flex-col gap-5">
       {/* Ticket button (get ticket / waitlist / ticketing-opens when no ticket) */}
       {showTicketPanel && !hasTicket && (
         <div className={glassPanel + " p-4 sm:p-5"}>
-          <TicketButton
-            eventId={eventId}
-            initialHasTicket={hasTicket}
-            eventStartTime={eventStartTime}
-            doorsOpen={doorsOpen}
-            isSoldOut={isSoldOut}
-            isTicketingOpen={isTicketingOpen}
-            ticketingOpensAt={ticketingDate}
-            initialIsNotified={initialIsNotified}
-            isLoggedIn={userEmail != null}
-            waitlistChance={waitlistChance}
-            priorityText={priorityText}
-            hideTicketingDate={hideTicketingDate}
-            referralsEnabled={referralsEnabled}
-            initialIsScanned={initialIsScanned}
-          />
+          <TicketButton {...ticketButtonProps} />
         </div>
       )}
 
@@ -303,24 +274,7 @@ export default function TicketSection({
       )}
 
       {/* Cancel ticket button — at bottom of column */}
-      {hasTicket && (
-        <TicketButton
-          eventId={eventId}
-          initialHasTicket={hasTicket}
-          eventStartTime={eventStartTime}
-          doorsOpen={doorsOpen}
-          isSoldOut={isSoldOut}
-          isTicketingOpen={isTicketingOpen}
-          ticketingOpensAt={ticketingDate}
-          initialIsNotified={initialIsNotified}
-          isLoggedIn={userEmail != null}
-          waitlistChance={waitlistChance}
-          priorityText={priorityText}
-          hideTicketingDate={hideTicketingDate}
-          referralsEnabled={referralsEnabled}
-          initialIsScanned={initialIsScanned}
-        />
-      )}
+      {hasTicket && <TicketButton {...ticketButtonProps} />}
 
     </div>
   );

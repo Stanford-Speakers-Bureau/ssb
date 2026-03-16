@@ -50,7 +50,7 @@ export default function TicketingOpens({
       )}
 
       <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-4">
-        {hideTicketingDate ? "Sign up to be notified when tickets are available." : "Ticketing date is subject to change. Sign up to be notified when ticketing opens."}
+        {hideTicketingDate ? "Sign up to be notified when tickets are available." : "Date is subject to change. Sign up to be notified when ticketing opens."}
       </p>
 
       {/* Notify button */}

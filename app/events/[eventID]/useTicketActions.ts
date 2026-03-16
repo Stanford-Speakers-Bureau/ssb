@@ -58,10 +58,8 @@ export default function useTicketActions({
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [isLiveEvent, setIsLiveEvent] = useState(false);
   const [referralCode, setReferralCode] = useState<string>("");
   const [referralWarning, setReferralWarning] = useState<string | null>(null);
-  const [isValidatingReferral, setIsValidatingReferral] = useState(false);
   const autoTicketProcessed = useRef(false);
   const autoNotifyProcessed = useRef(false);
   const autoWaitlistProcessed = useRef(false);
@@ -79,17 +77,9 @@ export default function useTicketActions({
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
 
-  // No bags policy modal states
-  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
-  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
-  const [noBagsIntent, setNoBagsIntent] = useState<
-    "ticket" | "waitlist_ticket"
-  >("ticket");
-
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
   const [isLoadingNotify, setIsLoadingNotify] = useState(false);
-  const [notifyMessage, setNotifyMessage] = useState<string | null>(null);
 
   const ticketingOpensAt = ticketingOpensAtProp
     ? new Date(ticketingOpensAtProp)
@@ -108,7 +98,6 @@ export default function useTicketActions({
   const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
     setIsLoadingNotify(true);
-    setNotifyMessage(null);
     let redirecting = false;
     try {
       const response = await fetch("/api/notify", {
@@ -126,10 +115,8 @@ export default function useTicketActions({
       const data = (await response.json()) as { error?: string };
       if (response.ok) {
         setIsNotified(true);
-        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.SUCCESS);
       } else if (response.status === 409) {
         setIsNotified(true);
-        setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
       } else {
         setMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
       }
@@ -303,17 +290,6 @@ export default function useTicketActions({
     }
   }, [eventId]);
 
-  const checkLiveEvent = useCallback(async () => {
-    try {
-      const response = await fetch("/api/events/live");
-      const data = (await response.json()) as { liveEvent?: { id: string }[] };
-      setIsLiveEvent(data.liveEvent?.[0]?.id == eventId || false);
-    } catch (error) {
-      console.error("Error checking live event:", error);
-      setIsLiveEvent(false);
-    }
-  }, [eventId]);
-
   // Handle cancelling a ticket
   const handleCancelTicket = useCallback(async () => {
     setIsLoading(true);
@@ -321,8 +297,6 @@ export default function useTicketActions({
     setShowCancelTicketModal(false);
 
     try {
-      await checkLiveEvent();
-
       const response = await fetch("/api/tickets", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -340,7 +314,7 @@ export default function useTicketActions({
         // Dispatch event to update ticket status
         window.dispatchEvent(
           new CustomEvent("ticketChanged", {
-            detail: { hasTicket: false, ticketId: null, ticketName: null },
+            detail: { hasTicket: false, ticketId: null, ticketName: null, ticketType: null },
           }),
         );
       } else {
@@ -351,7 +325,7 @@ export default function useTicketActions({
     } finally {
       setIsLoading(false);
     }
-  }, [eventId, checkLiveEvent]);
+  }, [eventId]);
 
   // Actual ticket creation/cancellation logic
   const processTicketRequest = useCallback(async () => {
@@ -360,8 +334,6 @@ export default function useTicketActions({
     let redirecting = false;
 
     try {
-      await checkLiveEvent();
-
       // If there's a referral warning, don't proceed
       if (referralWarning) {
         setIsLoading(false);
@@ -432,23 +404,19 @@ export default function useTicketActions({
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
               ticketName: !hasTicket ? (data.ticketName ?? null) : null,
+              ticketType: null,
             },
           }),
         );
       } else {
-        const errorMessage = data.error || TICKET_MESSAGES.ERROR_GENERIC;
-        setMessage(errorMessage);
-        // If it's a live event error, update the live event state
-        if (errorMessage === TICKET_MESSAGES.ERROR_LIVE_EVENT) {
-          setIsLiveEvent(true);
-        }
+        setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch {
       setMessage(TICKET_MESSAGES.ERROR_GENERIC);
     } finally {
       if (!redirecting) setIsLoading(false);
     }
-  }, [checkLiveEvent, eventId, hasTicket, referralCode, referralWarning]);
+  }, [eventId, hasTicket, referralCode, referralWarning]);
 
   // Waitlist ticket creation: issued when sold out and within 2 hours of event
   const processWaitlistTicketRequest = useCallback(async () => {
@@ -488,6 +456,7 @@ export default function useTicketActions({
               hasTicket: true,
               ticketId: data.ticketId || null,
               ticketName: data.ticketName ?? null,
+              ticketType: "WAITLIST",
             },
           }),
         );
@@ -501,44 +470,6 @@ export default function useTicketActions({
     }
   }, [eventId]);
 
-  // Handle ticket click - show no bags modal first if creating ticket
-  const handleTicketClick = useCallback(() => {
-    if (!hasTicket) {
-      // Show no bags policy modal before creating ticket
-      setNoBagsIntent("ticket");
-      setShowNoBagsModal(true);
-      setNoBagsConfirmation("");
-    } else {
-      // For cancelling, proceed directly
-      void processTicketRequest();
-    }
-  }, [hasTicket, processTicketRequest]);
-
-  // Handle waitlist ticket click - show no bags modal first
-  const handleWaitlistTicketClick = useCallback(() => {
-    setNoBagsIntent("waitlist_ticket");
-    setShowNoBagsModal(true);
-    setNoBagsConfirmation("");
-  }, []);
-
-  // Handle confirming no bags policy
-  const handleConfirmNoBags = useCallback(() => {
-    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
-      setShowNoBagsModal(false);
-      setNoBagsConfirmation("");
-      if (noBagsIntent === "waitlist_ticket") {
-        void processWaitlistTicketRequest();
-      } else {
-        void processTicketRequest();
-      }
-    }
-  }, [
-    noBagsConfirmation,
-    noBagsIntent,
-    processTicketRequest,
-    processWaitlistTicketRequest,
-  ]);
-
   // Validate referral code
   const validateReferralCode = useCallback(
     async (code: string) => {
@@ -547,7 +478,6 @@ export default function useTicketActions({
         return;
       }
 
-      setIsValidatingReferral(true);
       try {
         const response = await fetch("/api/referrals", {
           method: "POST",
@@ -578,8 +508,6 @@ export default function useTicketActions({
         console.error("Error validating referral code:", error);
         // Don't show error on validation failure, just clear warning
         setReferralWarning(null);
-      } finally {
-        setIsValidatingReferral(false);
       }
     },
     [eventId],
@@ -708,8 +636,8 @@ export default function useTicketActions({
 
     autoTicketProcessed.current = true;
     sessionStorage.removeItem(autoTicketKey);
-    void handleTicketClick();
-  }, [eventId, handleTicketClick, hasTicket, isEventLongOver, isTicketingOpen]);
+    void processTicketRequest();
+  }, [eventId, processTicketRequest, hasTicket, isEventLongOver, isTicketingOpen]);
 
   // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
   // Skip if event is sold out (user should join waitlist instead) or ticketing is already open
@@ -757,8 +685,8 @@ export default function useTicketActions({
 
     autoWaitlistTicketProcessed.current = true;
     sessionStorage.removeItem(autoWaitlistTicketKey);
-    void handleWaitlistTicketClick();
-  }, [eventId, handleWaitlistTicketClick, hasTicket]);
+    void processWaitlistTicketRequest();
+  }, [eventId, processWaitlistTicketRequest, hasTicket]);
 
   // Cleanup validation timeout on unmount
   useEffect(() => {
@@ -795,11 +723,9 @@ export default function useTicketActions({
     }
   };
 
-  const isCancelDisabled = hasTicket && (initialIsScanned || isEventLongOver);
   const isSalesDisabled = isEventLongOver && !hasTicket;
   const isButtonDisabled =
     isLoading ||
-    isCancelDisabled ||
     isSalesDisabled ||
     (!!referralWarning && !hasTicket);
 
@@ -815,7 +741,6 @@ export default function useTicketActions({
     hasTicket,
     isLoading,
     message,
-    isLiveEvent,
     referralCode,
     referralWarning,
     isOnWaitlist,
@@ -827,13 +752,8 @@ export default function useTicketActions({
     isWaitlistPositionReady,
     showCancelTicketModal,
     setShowCancelTicketModal,
-    showNoBagsModal,
-    setShowNoBagsModal,
-    noBagsConfirmation,
-    setNoBagsConfirmation,
     isNotified,
     isLoadingNotify,
-    notifyMessage,
 
     // Props passed through
     initialIsScanned,
@@ -851,7 +771,6 @@ export default function useTicketActions({
     isWithinWaitlistCutoff,
     ticketingOpensAt,
     formatTicketingOpensAt,
-    isCancelDisabled,
     isSalesDisabled,
     isButtonDisabled,
     showTicketingOpensOnly,
@@ -859,12 +778,11 @@ export default function useTicketActions({
     // Handlers
     handleNotify,
     handleNotifyClick,
-    handleTicketClick,
+    processTicketRequest,
+    processWaitlistTicketRequest,
     handleJoinWaitlist,
     handleLeaveWaitlist,
     handleCancelTicket,
-    handleWaitlistTicketClick,
-    handleConfirmNoBags,
     handleReferralCodeChange,
   };
 }

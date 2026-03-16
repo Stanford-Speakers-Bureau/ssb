@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { RedButton, PriorityBanner, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
@@ -9,12 +10,7 @@ type GetTicketProps = {
   isLoading: boolean;
   isButtonDisabled: boolean;
   isSalesDisabled: boolean;
-  handleTicketClick: () => void;
-  showNoBagsModal: boolean;
-  setShowNoBagsModal: (v: boolean) => void;
-  noBagsConfirmation: string;
-  setNoBagsConfirmation: (v: string) => void;
-  handleConfirmNoBags: () => void;
+  processTicketRequest: () => void;
   referralsEnabled?: boolean;
   referralCode?: string;
   referralWarning?: string | null;
@@ -27,17 +23,23 @@ export default function GetTicket({
   isLoading,
   isButtonDisabled,
   isSalesDisabled,
-  handleTicketClick,
-  showNoBagsModal,
-  setShowNoBagsModal,
-  noBagsConfirmation,
-  setNoBagsConfirmation,
-  handleConfirmNoBags,
+  processTicketRequest,
   referralsEnabled = false,
   referralCode = "",
   referralWarning = null,
   handleReferralCodeChange,
 }: GetTicketProps) {
+  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
+  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
+
+  const handleConfirmNoBags = () => {
+    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
+      setShowNoBagsModal(false);
+      setNoBagsConfirmation("");
+      processTicketRequest();
+    }
+  };
+
   return (
     <>
       {!isLoggedIn && priorityText && (
@@ -65,7 +67,10 @@ export default function GetTicket({
       )}
 
       <RedButton
-        onClick={handleTicketClick}
+        onClick={() => {
+          setShowNoBagsModal(true);
+          setNoBagsConfirmation("");
+        }}
         disabled={isButtonDisabled}
         loading={isLoading}
         loadingText={TICKET_MESSAGES.CREATING}
