@@ -65,6 +65,11 @@ export default function TicketButton(props: TicketButtonProps) {
     );
   }
 
+  // Event is long over — show passed state even if tickets were still available
+  if (actions.isEventLongOver && !actions.hasTicket) {
+    return <EventPassed />;
+  }
+
   // Ticketing not open yet
   if (actions.showTicketingOpensOnly) {
     return (

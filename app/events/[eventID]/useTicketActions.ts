@@ -697,8 +697,8 @@ export default function useTicketActions({
       sessionStorage.removeItem(autoTicketKey);
       return;
     }
-    // Don't auto-create ticket if event has started
-    if (hasEventStarted) {
+    // Don't auto-create ticket if event has started or is long over
+    if (hasEventStarted || isEventLongOver) {
       sessionStorage.removeItem(autoTicketKey);
       setMessage(TICKET_MESSAGES.EVENT_PASSED);
       return;
@@ -707,7 +707,7 @@ export default function useTicketActions({
     autoTicketProcessed.current = true;
     sessionStorage.removeItem(autoTicketKey);
     void handleTicketClick();
-  }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isTicketingOpen]);
+  }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isEventLongOver, isTicketingOpen]);
 
   // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
   // Skip if event is sold out (user should join waitlist instead) or ticketing is already open
@@ -794,7 +794,7 @@ export default function useTicketActions({
   };
 
   const isCancelDisabled = hasTicket && (isLiveEvent || hasEventStarted);
-  const isSalesDisabled = hasEventStarted && !hasTicket;
+  const isSalesDisabled = isEventLongOver && !hasTicket;
   const isButtonDisabled =
     isLoading ||
     isCancelDisabled ||
