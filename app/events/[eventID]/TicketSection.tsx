@@ -8,6 +8,7 @@ import Image from "next/image";
 import { glassPanel, NoticeBanner } from "./ui";
 import ReferralShare from "./ReferralShare";
 import { generateReferralCode } from "@/app/lib/utils";
+import CountdownTimer from "./CountdownTimer";
 
 type TicketSectionProps = {
   eventId: string;
@@ -57,6 +58,7 @@ export default function TicketSection({
     initialTicketName,
   );
 
+  const [isScanned, setIsScanned] = useState(initialIsScanned);
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
@@ -95,15 +97,66 @@ export default function TicketSection({
     };
   }, []);
 
+  // Poll scan status every 5 seconds when user has an unscanned ticket
+  useEffect(() => {
+    if (!hasTicket || !ticketId || isScanned) return;
+
+    const checkScanStatus = async () => {
+      try {
+        const res = await fetch(
+          `/api/tickets/scan-status?ticket_id=${ticketId}`,
+        );
+        if (res.ok) {
+          const data: { scanned: boolean } = await res.json();
+          if (data.scanned) setIsScanned(true);
+        }
+      } catch {
+        // Silently ignore — will retry on next interval
+      }
+    };
+
+    const interval = setInterval(checkScanStatus, 5000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkScanStatus();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [hasTicket, ticketId, isScanned]);
+
   const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
-  const isTicketingOpen =
+
+  const [isTicketingOpen, setIsTicketingOpen] = useState(() =>
     !ticketingOpensAt || Number.isNaN(ticketingOpensAt.getTime())
       ? true
-      : new Date() >= ticketingOpensAt;
+      : new Date() >= ticketingOpensAt,
+  );
+
+  useEffect(() => {
+    if (isTicketingOpen || !ticketingOpensAt) return;
+    const ms = ticketingOpensAt.getTime() - Date.now();
+    if (ms <= 0) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    const timer = setTimeout(() => setIsTicketingOpen(true), ms);
+    return () => clearTimeout(timer);
+  }, [isTicketingOpen, ticketingOpensAt]);
 
   const isEventLongOver = eventStartTime
     ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
     : false;
+
+  const doorsOpenDate = doorsOpen ? new Date(doorsOpen) : null;
+  const [showDoorsCountdown, setShowDoorsCountdown] = useState(
+    () => !!doorsOpenDate && doorsOpenDate > new Date() && !isEventLongOver,
+  );
 
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
@@ -127,7 +180,7 @@ export default function TicketSection({
     priorityText,
     hideTicketingDate,
     referralsEnabled,
-    initialIsScanned,
+    initialIsScanned: isScanned,
   };
 
   return (
@@ -147,6 +200,16 @@ export default function TicketSection({
               <p className="text-sm font-medium text-white text-center">
                 This event is over. Thank you for attending!
               </p>
+            </div>
+          )}
+
+          {showDoorsCountdown && doorsOpenDate && (
+            <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
+              <CountdownTimer
+                targetDate={doorsOpenDate}
+                label="Doors open in"
+                onExpire={() => setShowDoorsCountdown(false)}
+              />
             </div>
           )}
 
@@ -206,7 +269,7 @@ export default function TicketSection({
 
                 {/* Scanned ticket overlay — tap to reveal */}
                 <AnimatePresence>
-                  {initialIsScanned && !scannedRevealed && (
+                  {isScanned && !scannedRevealed && (
                     <motion.button
                       initial={{ opacity: 1 }}
                       exit={{ opacity: 0 }}

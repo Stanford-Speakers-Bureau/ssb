@@ -2,6 +2,7 @@
 
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { Spinner, PriorityBanner } from "../ui";
+import CountdownTimer from "../CountdownTimer";
 
 type TicketingOpensProps = {
   isLoggedIn: boolean;
@@ -35,23 +36,26 @@ export default function TicketingOpens({
 
       {/* Date or "Coming Soon" */}
       {hideTicketingDate ? (
-        <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white mb-1">
-          Ticketing Opens Soon
-        </p>
+        <>
+          <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white mb-1">
+            Ticketing Opens Soon
+          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-4">
+            RSVP up to be notified when tickets are available.
+          </p>
+        </>
       ) : (
         <>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-medium mb-1">
-            Ticketing opens
-          </p>
-          <p className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white">
-            {formatTicketingOpensAt(ticketingOpensAt!)}
+          {ticketingOpensAt && (
+            <div className="mb-4">
+              <CountdownTimer targetDate={ticketingOpensAt} label="Ticketing opens in" />
+            </div>
+          )}
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-4">
+            {formatTicketingOpensAt(ticketingOpensAt!)} &middot; Date & time are subject to change.
           </p>
         </>
       )}
-
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-4">
-        {hideTicketingDate ? "Sign up to be notified when tickets are available." : "Date is subject to change. Sign up to be notified when ticketing opens."}
-      </p>
 
       {/* Notify button */}
       <button
@@ -72,10 +76,10 @@ export default function TicketingOpens({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            You&apos;ll be notified
+            You&apos;ll be notified when tickets are available!
           </span>
         ) : (
-          "Notify Me"
+          "Register Now!"
         )}
       </button>
 
