@@ -20,6 +20,7 @@ export type TicketButtonProps = {
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
+  standbyMode?: boolean;
 };
 
 const REFERRAL_KEY = "referral";
@@ -54,6 +55,7 @@ export default function useTicketActions({
   hideTicketingDate = false,
   referralsEnabled = false,
   initialIsScanned = false,
+  standbyMode = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,13 +144,8 @@ export default function useTicketActions({
     ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
     : false;
 
-  // Check if within 2-hour cutoff for waitlist (based on doors open time)
-  const twoHoursBeforeDoorsOpen = doorsOpen
-    ? new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000
-    : null;
-  const isWithinWaitlistCutoff = twoHoursBeforeDoorsOpen
-    ? new Date().getTime() >= twoHoursBeforeDoorsOpen
-    : false;
+  // Standby mode is controlled by admin toggle
+  const isStandbyMode = standbyMode;
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -428,7 +425,7 @@ export default function useTicketActions({
       const response = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_id: eventId, type: "WAITLIST" }),
+        body: JSON.stringify({ event_id: eventId, type: "STANDBY" }),
       });
 
       if (response.status === 401) {
@@ -456,7 +453,7 @@ export default function useTicketActions({
               hasTicket: true,
               ticketId: data.ticketId || null,
               ticketName: data.ticketName ?? null,
-              ticketType: "WAITLIST",
+              ticketType: "STANDBY",
             },
           }),
         );
@@ -768,7 +765,7 @@ export default function useTicketActions({
     // Computed
     hasEventStarted,
     isEventLongOver,
-    isWithinWaitlistCutoff,
+    isStandbyMode,
     ticketingOpensAt,
     formatTicketingOpensAt,
     isSalesDisabled,

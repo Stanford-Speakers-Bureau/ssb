@@ -40,6 +40,7 @@ export const events = pgTable("events", {
   priority: text("priority"),
   hideTicketingDate: boolean("hide_ticketing_date").notNull().default(false),
   waitlistChance: text("waitlist_chance").notNull().default("High"),
+  standbyEnabled: boolean("standby_enabled").notNull().default(false),
   referralsEnabled: boolean("referrals_enabled").notNull().default(false),
 });
 

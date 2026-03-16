@@ -1310,10 +1310,10 @@ async function generateWaitlistEmailHTML(
 
           ${gmailBlendStart}
             <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6; font-weight: 600;">
-              Important: The online waitlist closes 2 hours before the event.
+              Important: If the standby line opens, the online waitlist closes.
             </p>
             <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-              After that, please come to the venue for the in-person waitlist. We'll do our best to accommodate everyone!
+              When that happens, please come to the venue for the standby line. We'll do our best to accommodate everyone!
             </p>
           ${gmailBlendEnd}
         </div>
@@ -1371,7 +1371,7 @@ Event Details:
 - Date & Time: ${formattedDate}
 ${eventVenue ? `- Location: ${eventVenue}` : ""}
 
-Important: The online waitlist closes 2 hours before the event. After that, please come to the venue for the in-person waitlist.
+Important: If the standby line opens, the online waitlist closes. When that happens, please come to the venue for the standby line.
 
 We look forward to seeing you there!
 

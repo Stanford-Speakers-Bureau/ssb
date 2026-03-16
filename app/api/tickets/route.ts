@@ -4,7 +4,6 @@ import {
   updateReferralRecords,
   getAvailablePublicTickets,
   isEventUnderCapacity,
-  isWaitlistClosed,
 } from "@/app/lib/supabase";
 import {
   db,
@@ -207,6 +206,7 @@ export async function POST(req: Request) {
         releaseDate: true,
         ticketingDate: true,
         doorsOpen: true,
+        standbyEnabled: true,
       },
     });
 
@@ -247,15 +247,14 @@ export async function POST(req: Request) {
       }
     }
 
-    // --- WAITLIST TICKET: issued when sold out and within 2 hours of doors open ---
-    if (ticketType === "WAITLIST") {
-      // Verify we're within the 2-hour cutoff window
-      const doorsOpenStr = event.doorsOpen?.toISOString() ?? null;
-      if (!isWaitlistClosed(doorsOpenStr)) {
+    // --- STANDBY TICKET: issued when standby mode is enabled by admin ---
+    if (ticketType === "STANDBY") {
+      // Verify standby mode is enabled
+      if (!event.standbyEnabled) {
         return NextResponse.json(
           {
             error:
-              "Waitlist tickets are only available within 2 hours of the event.",
+              "Standby tickets are only available when standby mode is enabled.",
           },
           { status: 400 },
         );
@@ -292,7 +291,7 @@ export async function POST(req: Request) {
           eventId: event_id,
           email: user.email,
           name: nameForTicket,
-          type: "WAITLIST",
+          type: "STANDBY",
           referral: referral ?? null,
         })
         .returning({
@@ -331,7 +330,7 @@ export async function POST(req: Request) {
             name: nameForTicket,
             email: waitlistTicket.email,
             eventName: eventForEmail?.name || "Event",
-            ticketType: "WAITLIST",
+            ticketType: "STANDBY",
             eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
             eventRoute: eventForEmail?.route || null,
             ticketId: waitlistTicket.id,

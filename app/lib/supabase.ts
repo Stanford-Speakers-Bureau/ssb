@@ -41,6 +41,7 @@ export type Event = {
   priority?: string | null;
   hide_ticketing_date?: boolean;
   referrals_enabled?: boolean;
+  standby_enabled?: boolean;
 };
 
 /**
@@ -70,6 +71,7 @@ export function serializeEvent(e: DBEvent): Event {
     priority: e.priority ?? null,
     hide_ticketing_date: e.hideTicketingDate ?? false,
     referrals_enabled: e.referralsEnabled ?? false,
+    standby_enabled: e.standbyEnabled ?? false,
   };
 }
 
@@ -360,13 +362,3 @@ export async function getWaitlistCount(eventId: string) {
   return _getWaitlistCount(db, eventId);
 }
 
-/**
- * Check if waitlist is closed (within 2 hours of doors open)
- */
-export function isWaitlistClosed(doorsOpen: string | null): boolean {
-  if (!doorsOpen) return false;
-
-  const twoHoursBeforeDoorsOpen =
-    new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000;
-  return Date.now() >= twoHoursBeforeDoorsOpen;
-}

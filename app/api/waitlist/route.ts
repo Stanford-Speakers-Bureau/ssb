@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   createServerSupabaseClient,
   getAvailablePublicTickets,
-  isWaitlistClosed,
 } from "@/app/lib/supabase";
 import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
@@ -19,7 +18,7 @@ const WAITLIST_MESSAGES = {
   ERROR_ALREADY_ON_WAITLIST: "You're already on the waitlist for this event.",
   ERROR_NOT_ON_WAITLIST: "You're not on the waitlist for this event.",
   ERROR_WAITLIST_CLOSED:
-    "Waitlist is now closed. Please visit the venue for in-person waitlist.",
+    "Waitlist is now closed. Please visit the venue for the standby line.",
 } as const;
 
 export async function POST(req: Request) {
@@ -75,6 +74,7 @@ export async function POST(req: Request) {
         venue: true,
         venueLink: true,
         desc: true,
+        standbyEnabled: true,
       },
     });
 
@@ -85,8 +85,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if waitlist is closed (2 hours before doors open)
-    if (isWaitlistClosed(event.doorsOpen?.toISOString() ?? null)) {
+    // Block joining the online waitlist when standby mode is enabled
+    if (event.standbyEnabled) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
         { status: 400 },

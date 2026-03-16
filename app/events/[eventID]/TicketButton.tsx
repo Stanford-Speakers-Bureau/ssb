@@ -19,7 +19,7 @@ export default function TicketButton(props: TicketButtonProps) {
   if (actions.isSoldOut && !actions.hasTicket) {
     if (actions.isEventLongOver) {
       content = <EventPassed />;
-    } else if (actions.isWithinWaitlistCutoff) {
+    } else if (actions.isStandbyMode) {
       content = (
         <WaitlistTicketCTA
           isLoggedIn={actions.isLoggedIn}

@@ -28,6 +28,7 @@ type TicketSectionProps = {
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
+  standbyMode?: boolean;
 };
 
 export default function TicketSection({
@@ -48,6 +49,7 @@ export default function TicketSection({
   hideTicketingDate = false,
   referralsEnabled = false,
   initialIsScanned = false,
+  standbyMode = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -63,7 +65,7 @@ export default function TicketSection({
   const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
 
-  const isWaitlistTicket = ticketType?.toUpperCase() === "WAITLIST";
+  const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
 
   const onAddToAppleWallet = () => {
     if (!ticketId || isLoadingAppleWallet) return;
@@ -181,6 +183,7 @@ export default function TicketSection({
     hideTicketingDate,
     referralsEnabled,
     initialIsScanned: isScanned,
+    standbyMode,
   };
 
   return (
@@ -223,11 +226,11 @@ export default function TicketSection({
             </NoticeBanner>
           )}
           {ticketId && (
-            <div className={`${isWaitlistTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
 
-              {isWaitlistTicket && (
+              {isStandbyTicket && (
                 <div className="mb-3 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/25">
-                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Waitlist Ticket</p>
+                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Standby Ticket</p>
                 </div>
               )}
 
@@ -250,7 +253,7 @@ export default function TicketSection({
 
                 {/* Waitlist ticket overlay — tap to reveal */}
                 <AnimatePresence>
-                  {isWaitlistTicket && !qrRevealed && (
+                  {isStandbyTicket && !qrRevealed && (
                     <motion.button
                       initial={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -262,7 +265,7 @@ export default function TicketSection({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
                       </svg>
-                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal waitlist ticket</p>
+                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal standby ticket</p>
                     </motion.button>
                   )}
                 </AnimatePresence>
