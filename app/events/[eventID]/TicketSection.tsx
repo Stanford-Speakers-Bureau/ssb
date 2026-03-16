@@ -26,6 +26,7 @@ type TicketSectionProps = {
   priorityText?: string | null;
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
+  initialIsScanned?: boolean;
 };
 
 export default function TicketSection({
@@ -45,6 +46,7 @@ export default function TicketSection({
   priorityText = null,
   hideTicketingDate = false,
   referralsEnabled = false,
+  initialIsScanned = false,
 }: TicketSectionProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
@@ -57,6 +59,7 @@ export default function TicketSection({
 
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [qrRevealed, setQrRevealed] = useState(false);
+  const [scannedRevealed, setScannedRevealed] = useState(false);
 
   const isWaitlistTicket = ticketType?.toUpperCase() === "WAITLIST";
 
@@ -129,6 +132,10 @@ export default function TicketSection({
       ? true
       : new Date() >= ticketingOpensAt;
 
+  const isEventLongOver = eventStartTime
+    ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
+    : false;
+
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
   const showTicketPanel =
@@ -139,9 +146,9 @@ export default function TicketSection({
 
   return (
     <div className="event-ticket-section flex flex-col gap-5">
-      {/* Ticket button (or ticketing-opens message when not yet open) */}
-      {showTicketPanel && (
-        hasTicket ? (
+      {/* Ticket button (get ticket / waitlist / ticketing-opens when no ticket) */}
+      {showTicketPanel && !hasTicket && (
+        <div className={glassPanel + " p-4 sm:p-5"}>
           <TicketButton
             eventId={eventId}
             initialHasTicket={hasTicket}
@@ -156,31 +163,22 @@ export default function TicketSection({
             priorityText={priorityText}
             hideTicketingDate={hideTicketingDate}
             referralsEnabled={referralsEnabled}
+            initialIsScanned={initialIsScanned}
           />
-        ) : (
-          <div className={glassPanel + " p-4 sm:p-5"}>
-            <TicketButton
-              eventId={eventId}
-              initialHasTicket={hasTicket}
-              eventStartTime={eventStartTime}
-              doorsOpen={doorsOpen}
-              isSoldOut={isSoldOut}
-              isTicketingOpen={isTicketingOpen}
-              ticketingOpensAt={ticketingDate}
-              initialIsNotified={initialIsNotified}
-              isLoggedIn={userEmail != null}
-              waitlistChance={waitlistChance}
-              priorityText={priorityText}
-              hideTicketingDate={hideTicketingDate}
-              referralsEnabled={referralsEnabled}
-            />
-          </div>
-        )
+        </div>
       )}
 
       {/* Ticket details when user has a ticket */}
       {hasTicket && (
         <>
+          {isEventLongOver && (
+            <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
+              <p className="text-sm font-medium text-white text-center">
+                This event is over. Thank you for attending!
+              </p>
+            </div>
+          )}
+
           {ticketType?.toUpperCase() === "VIP" && (
             <NoticeBanner
               color="amber"
@@ -230,7 +228,26 @@ export default function TicketSection({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
                       </svg>
-                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal QR code</p>
+                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal waitlist ticket</p>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+
+                {/* Scanned ticket overlay — tap to reveal */}
+                <AnimatePresence>
+                  {initialIsScanned && !scannedRevealed && (
+                    <motion.button
+                      initial={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      onClick={() => setScannedRevealed(true)}
+                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-50 dark:bg-emerald-950 rounded-lg cursor-pointer"
+                    >
+                      <svg className="w-10 h-10 text-emerald-500 dark:text-emerald-400 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Ticket scanned</p>
+                      <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">Enjoy the event!</p>
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -283,6 +300,26 @@ export default function TicketSection({
         >
           This ticket is not transferable. A photo ID will be required for entry.
         </NoticeBanner>
+      )}
+
+      {/* Cancel ticket button — at bottom of column */}
+      {hasTicket && (
+        <TicketButton
+          eventId={eventId}
+          initialHasTicket={hasTicket}
+          eventStartTime={eventStartTime}
+          doorsOpen={doorsOpen}
+          isSoldOut={isSoldOut}
+          isTicketingOpen={isTicketingOpen}
+          ticketingOpensAt={ticketingDate}
+          initialIsNotified={initialIsNotified}
+          isLoggedIn={userEmail != null}
+          waitlistChance={waitlistChance}
+          priorityText={priorityText}
+          hideTicketingDate={hideTicketingDate}
+          referralsEnabled={referralsEnabled}
+          initialIsScanned={initialIsScanned}
+        />
       )}
 
     </div>

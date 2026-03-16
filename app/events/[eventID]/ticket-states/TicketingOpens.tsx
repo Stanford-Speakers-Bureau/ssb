@@ -1,7 +1,7 @@
 "use client";
 
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
-import { Spinner, PriorityBanner, FeedbackMessage } from "../ui";
+import { Spinner, PriorityBanner } from "../ui";
 
 type TicketingOpensProps = {
   isLoggedIn: boolean;
@@ -11,7 +11,6 @@ type TicketingOpensProps = {
   formatTicketingOpensAt: (date: Date) => string;
   isLoadingNotify: boolean;
   isNotified: boolean;
-  notifyMessage: string | null;
   handleNotifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
@@ -23,7 +22,6 @@ export default function TicketingOpens({
   formatTicketingOpensAt,
   isLoadingNotify,
   isNotified,
-  notifyMessage,
   handleNotifyClick,
 }: TicketingOpensProps) {
   return (
@@ -80,10 +78,6 @@ export default function TicketingOpens({
           "Notify Me"
         )}
       </button>
-
-      {notifyMessage && !isNotified && (
-        <FeedbackMessage message={notifyMessage} />
-      )}
 
       {/* Priority notice */}
       {!isLoggedIn && priorityText && (

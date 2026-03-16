@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton, FeedbackMessage, ConfirmationModal, NoBagsModalChildren } from "../ui";
+import { PriorityBanner, RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
 type WaitlistTicketCTAProps = {
@@ -8,7 +8,6 @@ type WaitlistTicketCTAProps = {
   priorityText: string | null;
   isLoading: boolean;
   handleWaitlistTicketClick: () => void;
-  message: string | null;
   showNoBagsModal: boolean;
   setShowNoBagsModal: (v: boolean) => void;
   noBagsConfirmation: string;
@@ -21,7 +20,6 @@ export default function WaitlistTicketCTA({
   priorityText,
   isLoading,
   handleWaitlistTicketClick,
-  message,
   showNoBagsModal,
   setShowNoBagsModal,
   noBagsConfirmation,
@@ -74,8 +72,6 @@ export default function WaitlistTicketCTA({
       >
         Get Standby Ticket
       </RedButton>
-
-      <FeedbackMessage message={message} />
 
       <ConfirmationModal
         open={showNoBagsModal}

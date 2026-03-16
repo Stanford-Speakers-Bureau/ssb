@@ -1,6 +1,7 @@
 "use client";
 
 import useTicketActions, { type TicketButtonProps } from "./useTicketActions";
+import { FeedbackMessage } from "./ui";
 import EventPassed from "./ticket-states/EventPassed";
 import WaitlistTicketCTA from "./ticket-states/WaitlistTicketCTA";
 import JoinWaitlist from "./ticket-states/JoinWaitlist";
@@ -12,18 +13,19 @@ import HasTicket from "./ticket-states/HasTicket";
 export default function TicketButton(props: TicketButtonProps) {
   const actions = useTicketActions(props);
 
+  let content: React.ReactNode;
+
   // WAITLIST UI: If sold out and user doesn't have a ticket
   if (actions.isSoldOut && !actions.hasTicket) {
-    if (actions.isEventLongOver) return <EventPassed />;
-
-    if (actions.isWithinWaitlistCutoff) {
-      return (
+    if (actions.isEventLongOver) {
+      content = <EventPassed />;
+    } else if (actions.isWithinWaitlistCutoff) {
+      content = (
         <WaitlistTicketCTA
           isLoggedIn={actions.isLoggedIn}
           priorityText={actions.priorityText}
           isLoading={actions.isLoading}
           handleWaitlistTicketClick={actions.handleWaitlistTicketClick}
-          message={actions.message}
           showNoBagsModal={actions.showNoBagsModal}
           setShowNoBagsModal={actions.setShowNoBagsModal}
           noBagsConfirmation={actions.noBagsConfirmation}
@@ -31,10 +33,8 @@ export default function TicketButton(props: TicketButtonProps) {
           handleConfirmNoBags={actions.handleConfirmNoBags}
         />
       );
-    }
-
-    if (!actions.isOnWaitlist) {
-      return (
+    } else if (!actions.isOnWaitlist) {
+      content = (
         <JoinWaitlist
           isLoggedIn={actions.isLoggedIn}
           priorityText={actions.priorityText}
@@ -43,36 +43,28 @@ export default function TicketButton(props: TicketButtonProps) {
           referralWarning={actions.referralWarning}
           waitlistChance={actions.waitlistChance}
           handleJoinWaitlist={actions.handleJoinWaitlist}
-          message={actions.message}
           referralsEnabled={actions.referralsEnabled}
           referralCode={actions.referralCode}
           handleReferralCodeChange={actions.handleReferralCodeChange}
         />
       );
+    } else {
+      content = (
+        <WaitlistPosition
+          isWaitlistPositionReady={actions.isWaitlistPositionReady}
+          waitlistPosition={actions.waitlistPosition}
+          waitlistChance={actions.waitlistChance}
+          isWaitlistLoading={actions.isWaitlistLoading}
+          showCancelModal={actions.showCancelModal}
+          setShowCancelModal={actions.setShowCancelModal}
+          handleLeaveWaitlist={actions.handleLeaveWaitlist}
+        />
+      );
     }
-
-    return (
-      <WaitlistPosition
-        isWaitlistPositionReady={actions.isWaitlistPositionReady}
-        waitlistPosition={actions.waitlistPosition}
-        waitlistChance={actions.waitlistChance}
-        isWaitlistLoading={actions.isWaitlistLoading}
-        showCancelModal={actions.showCancelModal}
-        setShowCancelModal={actions.setShowCancelModal}
-        handleLeaveWaitlist={actions.handleLeaveWaitlist}
-        message={actions.message}
-      />
-    );
-  }
-
-  // Event is long over — show passed state even if tickets were still available
-  if (actions.isEventLongOver && !actions.hasTicket) {
-    return <EventPassed />;
-  }
-
-  // Ticketing not open yet
-  if (actions.showTicketingOpensOnly) {
-    return (
+  } else if (actions.isEventLongOver && !actions.hasTicket) {
+    content = <EventPassed />;
+  } else if (actions.showTicketingOpensOnly) {
+    content = (
       <TicketingOpens
         isLoggedIn={actions.isLoggedIn}
         priorityText={actions.priorityText}
@@ -81,45 +73,49 @@ export default function TicketButton(props: TicketButtonProps) {
         formatTicketingOpensAt={actions.formatTicketingOpensAt}
         isLoadingNotify={actions.isLoadingNotify}
         isNotified={actions.isNotified}
-        notifyMessage={actions.notifyMessage}
         handleNotifyClick={actions.handleNotifyClick}
       />
+    );
+  } else {
+    content = (
+      <div>
+        {!actions.hasTicket && (
+          <GetTicket
+            isLoggedIn={actions.isLoggedIn}
+            priorityText={actions.priorityText}
+            isLoading={actions.isLoading}
+            isButtonDisabled={actions.isButtonDisabled}
+            isSalesDisabled={actions.isSalesDisabled}
+            handleTicketClick={actions.handleTicketClick}
+            showNoBagsModal={actions.showNoBagsModal}
+            setShowNoBagsModal={actions.setShowNoBagsModal}
+            noBagsConfirmation={actions.noBagsConfirmation}
+            setNoBagsConfirmation={actions.setNoBagsConfirmation}
+            handleConfirmNoBags={actions.handleConfirmNoBags}
+            referralsEnabled={actions.referralsEnabled}
+            referralCode={actions.referralCode}
+            referralWarning={actions.referralWarning}
+            handleReferralCodeChange={actions.handleReferralCodeChange}
+          />
+        )}
+        {actions.hasTicket && (
+          <HasTicket
+            isLoading={actions.isLoading}
+            isScanned={actions.initialIsScanned}
+            isEventLongOver={actions.isEventLongOver}
+            handleCancelTicket={actions.handleCancelTicket}
+            showCancelTicketModal={actions.showCancelTicketModal}
+            setShowCancelTicketModal={actions.setShowCancelTicketModal}
+          />
+        )}
+      </div>
     );
   }
 
   return (
-    <div>
-      {!actions.hasTicket && (
-        <GetTicket
-          isLoggedIn={actions.isLoggedIn}
-          priorityText={actions.priorityText}
-          isLoading={actions.isLoading}
-          isButtonDisabled={actions.isButtonDisabled}
-          isSalesDisabled={actions.isSalesDisabled}
-          handleTicketClick={actions.handleTicketClick}
-          message={actions.message}
-          showNoBagsModal={actions.showNoBagsModal}
-          setShowNoBagsModal={actions.setShowNoBagsModal}
-          noBagsConfirmation={actions.noBagsConfirmation}
-          setNoBagsConfirmation={actions.setNoBagsConfirmation}
-          handleConfirmNoBags={actions.handleConfirmNoBags}
-          referralsEnabled={actions.referralsEnabled}
-          referralCode={actions.referralCode}
-          referralWarning={actions.referralWarning}
-          handleReferralCodeChange={actions.handleReferralCodeChange}
-        />
-      )}
-      {actions.hasTicket && (
-        <HasTicket
-          isLoading={actions.isLoading}
-          isCancelDisabled={actions.isCancelDisabled}
-          hasEventStarted={actions.hasEventStarted}
-          handleCancelTicket={actions.handleCancelTicket}
-          showCancelTicketModal={actions.showCancelTicketModal}
-          setShowCancelTicketModal={actions.setShowCancelTicketModal}
-          message={actions.message}
-        />
-      )}
-    </div>
+    <>
+      {content}
+      <FeedbackMessage message={actions.message} />
+    </>
   );
 }

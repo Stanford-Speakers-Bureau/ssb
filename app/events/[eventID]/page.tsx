@@ -62,6 +62,7 @@ async function getUserTicketStatus(eventId: string): Promise<{
   userEmail: string | null;
   ticketType: string | null;
   ticketName: string | null;
+  ticketScanned: boolean;
   isOnWaitlist: boolean;
 }> {
   try {
@@ -71,12 +72,12 @@ async function getUserTicketStatus(eventId: string): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
+      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, ticketScanned: false, isOnWaitlist: false };
 
     const [ticket, waitlistEntry] = await Promise.all([
       db.query.tickets.findFirst({
         where: and(eq(tickets.eventId, eventId), eq(tickets.email, user.email)),
-        columns: { id: true, type: true, name: true },
+        columns: { id: true, type: true, name: true, scanned: true },
       }),
       db.query.waitlist.findFirst({
         where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
@@ -89,10 +90,11 @@ async function getUserTicketStatus(eventId: string): Promise<{
       userEmail: user.email,
       ticketType: ticket?.type ?? null,
       ticketName: ticket?.name ?? null,
+      ticketScanned: ticket?.scanned ?? false,
       isOnWaitlist: !!waitlistEntry,
     };
   } catch {
-    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, isOnWaitlist: false };
+    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, ticketScanned: false, isOnWaitlist: false };
   }
 }
 
@@ -291,6 +293,7 @@ export default async function EventPage({ params }: PageProps) {
                 initialTicketId={ticketId}
                 initialTicketType={ticketType}
                 initialTicketName={ticketStatus.ticketName}
+                initialIsScanned={ticketStatus.ticketScanned}
                 userEmail={ticketStatus.userEmail}
                 eventRoute={event.route || eventID}
                 eventStartTime={event.start_time_date}

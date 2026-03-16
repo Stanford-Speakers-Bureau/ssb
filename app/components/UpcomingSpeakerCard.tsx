@@ -145,6 +145,8 @@ export default function UpcomingSpeakerCard({
     return <MysteryCard
       showDate={showDate}
       dateText={dateText}
+      showDoorsOpen={showDoorsOpen}
+      doorsOpenText={doorsOpenText}
       showEventTime={showEventTime}
       eventTimeText={eventTimeText}
       showLocation={showLocation}
@@ -424,6 +426,8 @@ function RevealedCard({
 function MysteryCard({
   showDate,
   dateText,
+  showDoorsOpen,
+  doorsOpenText,
   showEventTime,
   eventTimeText,
   showLocation,
@@ -438,6 +442,8 @@ function MysteryCard({
 }: {
   showDate: boolean;
   dateText: string;
+  showDoorsOpen: boolean;
+  doorsOpenText: string;
   showEventTime: boolean;
   eventTimeText: string;
   showLocation: boolean;
@@ -481,6 +487,12 @@ function MysteryCard({
             <span className={PILL_CLASS}>
               <CalendarIcon />
               {dateText}
+            </span>
+          )}
+          {showDoorsOpen && (
+            <span className={PILL_CLASS}>
+              <DoorIcon />
+              {doorsOpenText}
             </span>
           )}
           {showEventTime && (

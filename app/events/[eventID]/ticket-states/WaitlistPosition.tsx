@@ -1,6 +1,6 @@
 "use client";
 
-import { ConfirmationModal, FeedbackMessage } from "../ui";
+import { ConfirmationModal } from "../ui";
 
 type WaitlistPositionProps = {
   isWaitlistPositionReady: boolean;
@@ -10,7 +10,6 @@ type WaitlistPositionProps = {
   showCancelModal: boolean;
   setShowCancelModal: (v: boolean) => void;
   handleLeaveWaitlist: () => void;
-  message: string | null;
 };
 
 export default function WaitlistPosition({
@@ -21,7 +20,6 @@ export default function WaitlistPosition({
   showCancelModal,
   setShowCancelModal,
   handleLeaveWaitlist,
-  message,
 }: WaitlistPositionProps) {
   return (
     <div>
@@ -128,8 +126,6 @@ export default function WaitlistPosition({
           <div className="h-3.5 w-3/4 rounded bg-zinc-200 dark:bg-white/[0.06] animate-pulse" />
         </>
       )}
-
-      <FeedbackMessage message={message} />
 
       <ConfirmationModal
         open={showCancelModal}

@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton, FeedbackMessage } from "../ui";
+import { PriorityBanner, RedButton } from "../ui";
 
 type JoinWaitlistProps = {
   isLoggedIn: boolean;
@@ -10,7 +10,6 @@ type JoinWaitlistProps = {
   referralWarning: string | null;
   waitlistChance: string | null;
   handleJoinWaitlist: () => void;
-  message: string | null;
   referralsEnabled?: boolean;
   referralCode?: string;
   handleReferralCodeChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -24,7 +23,6 @@ export default function JoinWaitlist({
   referralWarning,
   waitlistChance,
   handleJoinWaitlist,
-  message,
   referralsEnabled = false,
   referralCode = "",
   handleReferralCodeChange,
@@ -125,7 +123,6 @@ export default function JoinWaitlist({
         </>
       )}
 
-      <FeedbackMessage message={message} />
     </div>
   );
 }

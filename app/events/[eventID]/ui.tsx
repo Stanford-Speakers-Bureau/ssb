@@ -216,8 +216,8 @@ export function ConfirmationModal({
   title: string;
   description: string;
   cancelLabel: string;
-  confirmLabel: string;
-  onConfirm: () => void;
+  confirmLabel?: string;
+  onConfirm?: () => void;
   confirmDisabled?: boolean;
   children?: React.ReactNode;
 }) {
@@ -257,15 +257,17 @@ export function ConfirmationModal({
               >
                 {cancelLabel}
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onConfirm}
-                disabled={confirmDisabled}
-                className={`flex-1 ${redButtonBase}`}
-              >
-                {confirmLabel}
-              </motion.button>
+              {confirmLabel && onConfirm && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onConfirm}
+                  disabled={confirmDisabled}
+                  className={`flex-1 ${redButtonBase}`}
+                >
+                  {confirmLabel}
+                </motion.button>
+              )}
             </div>
           </motion.div>
         </motion.div>

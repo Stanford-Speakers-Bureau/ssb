@@ -1,6 +1,6 @@
 "use client";
 
-import { RedButton, PriorityBanner, FeedbackMessage, ConfirmationModal, NoBagsModalChildren } from "../ui";
+import { RedButton, PriorityBanner, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
 type GetTicketProps = {
@@ -10,7 +10,6 @@ type GetTicketProps = {
   isButtonDisabled: boolean;
   isSalesDisabled: boolean;
   handleTicketClick: () => void;
-  message: string | null;
   showNoBagsModal: boolean;
   setShowNoBagsModal: (v: boolean) => void;
   noBagsConfirmation: string;
@@ -29,7 +28,6 @@ export default function GetTicket({
   isButtonDisabled,
   isSalesDisabled,
   handleTicketClick,
-  message,
   showNoBagsModal,
   setShowNoBagsModal,
   noBagsConfirmation,
@@ -82,8 +80,6 @@ export default function GetTicket({
           </p>
         </div>
       )}
-
-      {!isSalesDisabled && <FeedbackMessage message={message} />}
 
       <ConfirmationModal
         open={showNoBagsModal}

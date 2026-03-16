@@ -19,6 +19,7 @@ export type TicketButtonProps = {
   priorityText?: string | null;
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
+  initialIsScanned?: boolean;
 };
 
 const REFERRAL_KEY = "referral";
@@ -52,6 +53,7 @@ export default function useTicketActions({
   priorityText = null,
   hideTicketingDate = false,
   referralsEnabled = false,
+  initialIsScanned = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,11 +131,11 @@ export default function useTicketActions({
         setIsNotified(true);
         setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
       } else {
-        setNotifyMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+        setMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
       console.error("Error signing up for notifications:", error);
-      setNotifyMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
+      setMessage(TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
@@ -697,8 +699,8 @@ export default function useTicketActions({
       sessionStorage.removeItem(autoTicketKey);
       return;
     }
-    // Don't auto-create ticket if event has started or is long over
-    if (hasEventStarted || isEventLongOver) {
+    // Don't auto-create ticket if event is long over
+    if (isEventLongOver) {
       sessionStorage.removeItem(autoTicketKey);
       setMessage(TICKET_MESSAGES.EVENT_PASSED);
       return;
@@ -707,7 +709,7 @@ export default function useTicketActions({
     autoTicketProcessed.current = true;
     sessionStorage.removeItem(autoTicketKey);
     void handleTicketClick();
-  }, [eventId, handleTicketClick, hasTicket, hasEventStarted, isEventLongOver, isTicketingOpen]);
+  }, [eventId, handleTicketClick, hasTicket, isEventLongOver, isTicketingOpen]);
 
   // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
   // Skip if event is sold out (user should join waitlist instead) or ticketing is already open
@@ -793,7 +795,7 @@ export default function useTicketActions({
     }
   };
 
-  const isCancelDisabled = hasTicket && (isLiveEvent || hasEventStarted);
+  const isCancelDisabled = hasTicket && (initialIsScanned || isEventLongOver);
   const isSalesDisabled = isEventLongOver && !hasTicket;
   const isButtonDisabled =
     isLoading ||
@@ -834,6 +836,7 @@ export default function useTicketActions({
     notifyMessage,
 
     // Props passed through
+    initialIsScanned,
     isLoggedIn,
     isSoldOut,
     isTicketingOpen,

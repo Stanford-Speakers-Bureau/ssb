@@ -238,7 +238,8 @@ export async function POST(req: Request) {
 
     if (event.startTimeDate) {
       const now = new Date();
-      if (now >= event.startTimeDate) {
+      const eventLongOver = now.getTime() >= event.startTimeDate.getTime() + 6 * 60 * 60 * 1000;
+      if (eventLongOver) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
           { status: 400 },
@@ -557,22 +558,15 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if event is currently live or has already started/ended
+    // Check if event is long over (6 hours past start)
     const eventRow = await db.query.events.findFirst({
       where: eq(events.id, event_id),
-      columns: { id: true, live: true, startTimeDate: true },
+      columns: { id: true, startTimeDate: true },
     });
-
-    if (eventRow?.live) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_LIVE_EVENT },
-        { status: 400 },
-      );
-    }
 
     if (
       eventRow?.startTimeDate &&
-      new Date() >= new Date(eventRow.startTimeDate)
+      new Date().getTime() >= new Date(eventRow.startTimeDate).getTime() + 6 * 60 * 60 * 1000
     ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
@@ -583,8 +577,15 @@ export async function DELETE(req: Request) {
     // Check if user has a ticket for this event
     const existingTicket = await db.query.tickets.findFirst({
       where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { id: true },
+      columns: { id: true, scanned: true },
     });
+
+    if (existingTicket?.scanned) {
+      return NextResponse.json(
+        { error: "Cannot cancel a ticket that has already been scanned." },
+        { status: 400 },
+      );
+    }
 
     if (!existingTicket) {
       return NextResponse.json(
