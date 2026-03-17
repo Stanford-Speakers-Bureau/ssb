@@ -65,7 +65,7 @@ export default function useTicketActions({
   const autoTicketProcessed = useRef(false);
   const autoNotifyProcessed = useRef(false);
   const autoWaitlistProcessed = useRef(false);
-  const autoWaitlistTicketProcessed = useRef(false);
+  const autoStandbyTicketProcessed = useRef(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Waitlist states
@@ -415,8 +415,8 @@ export default function useTicketActions({
     }
   }, [eventId, hasTicket, referralCode, referralWarning]);
 
-  // Waitlist ticket creation: issued when sold out and within 2 hours of event
-  const processWaitlistTicketRequest = useCallback(async () => {
+  // Standby ticket creation: issued when sold out and within 2 hours of event
+  const processStandbyTicketRequest = useCallback(async () => {
     setIsLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -431,7 +431,7 @@ export default function useTicketActions({
       if (response.status === 401) {
         redirecting = true;
         const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?waitlist_ticket=true`;
+        const redirectUrl = `${currentPath}?standby_ticket=true`;
         window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
@@ -564,9 +564,9 @@ export default function useTicketActions({
       url.searchParams.delete("waitlist");
       changed = true;
     }
-    if (url.searchParams.get("waitlist_ticket") === "true") {
-      sessionStorage.setItem(`auto_waitlist_ticket_pending:${eventId}`, "1");
-      url.searchParams.delete("waitlist_ticket");
+    if (url.searchParams.get("standby_ticket") === "true") {
+      sessionStorage.setItem(`auto_standby_ticket_pending:${eventId}`, "1");
+      url.searchParams.delete("standby_ticket");
       changed = true;
     }
 
@@ -669,21 +669,21 @@ export default function useTicketActions({
     void handleJoinWaitlist();
   }, [eventId, handleJoinWaitlist, isOnWaitlist, hasTicket]);
 
-  // Auto-create waitlist ticket after redirect from authentication
+  // Auto-create standby ticket after redirect from authentication
   useEffect(() => {
-    const autoWaitlistTicketKey = `auto_waitlist_ticket_pending:${eventId}`;
-    const pending = sessionStorage.getItem(autoWaitlistTicketKey) === "1";
+    const autoStandbyTicketKey = `auto_standby_ticket_pending:${eventId}`;
+    const pending = sessionStorage.getItem(autoStandbyTicketKey) === "1";
     if (!pending) return;
-    if (autoWaitlistTicketProcessed.current) return;
+    if (autoStandbyTicketProcessed.current) return;
     if (hasTicket) {
-      sessionStorage.removeItem(autoWaitlistTicketKey);
+      sessionStorage.removeItem(autoStandbyTicketKey);
       return;
     }
 
-    autoWaitlistTicketProcessed.current = true;
-    sessionStorage.removeItem(autoWaitlistTicketKey);
-    void processWaitlistTicketRequest();
-  }, [eventId, processWaitlistTicketRequest, hasTicket]);
+    autoStandbyTicketProcessed.current = true;
+    sessionStorage.removeItem(autoStandbyTicketKey);
+    void processStandbyTicketRequest();
+  }, [eventId, processStandbyTicketRequest, hasTicket]);
 
   // Cleanup validation timeout on unmount
   useEffect(() => {
@@ -776,7 +776,7 @@ export default function useTicketActions({
     handleNotify,
     handleNotifyClick,
     processTicketRequest,
-    processWaitlistTicketRequest,
+    processStandbyTicketRequest,
     handleJoinWaitlist,
     handleLeaveWaitlist,
     handleCancelTicket,

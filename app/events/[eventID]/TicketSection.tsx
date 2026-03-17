@@ -251,7 +251,7 @@ export default function TicketSection({
                   eventStartTime={eventStartTime ?? doorsOpen}
                 />
 
-                {/* Waitlist ticket overlay — tap to reveal */}
+                {/* Standby ticket overlay — tap to reveal */}
                 <AnimatePresence>
                   {isStandbyTicket && !qrRevealed && (
                     <motion.button

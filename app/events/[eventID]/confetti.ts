@@ -120,7 +120,7 @@ export function fireFullConfetti() {
   });
 }
 
-/** Single center-burst confetti — used on waitlist ticket creation. */
+/** Single center-burst confetti — used on standby ticket creation. */
 export function fireSimpleConfetti() {
   void import("canvas-confetti").then(({ default: confetti }) => {
     const fire = confetti.create(undefined, {

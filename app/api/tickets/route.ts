@@ -285,7 +285,7 @@ export async function POST(req: Request) {
       }
 
       // Insert directly, bypassing the capacity-checking stored procedure
-      const [waitlistTicket] = await db
+      const [standbyTicket] = await db
         .insert(tickets)
         .values({
           eventId: event_id,
@@ -303,9 +303,9 @@ export async function POST(req: Request) {
         });
 
       // Get event details for email
-      const eventForEmail = waitlistTicket?.eventId
+      const eventForEmail = standbyTicket?.eventId
         ? await db.query.events.findFirst({
-            where: eq(events.id, waitlistTicket.eventId),
+            where: eq(events.id, standbyTicket.eventId),
             columns: {
               id: true,
               name: true,
@@ -324,23 +324,23 @@ export async function POST(req: Request) {
       }
 
       // Send ticket confirmation email
-      if (waitlistTicket) {
+      if (standbyTicket) {
         try {
           await sendTicketEmail({
             name: nameForTicket,
-            email: waitlistTicket.email,
+            email: standbyTicket.email,
             eventName: eventForEmail?.name || "Event",
             ticketType: "STANDBY",
             eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
             eventRoute: eventForEmail?.route || null,
-            ticketId: waitlistTicket.id,
+            ticketId: standbyTicket.id,
             eventVenue: eventForEmail?.venue || null,
             eventVenueLink: eventForEmail?.venueLink || null,
             eventDescription: eventForEmail?.desc || null,
             doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
           });
         } catch (emailError) {
-          console.error("Waitlist ticket email error:", emailError);
+          console.error("Standby ticket email error:", emailError);
           return NextResponse.json(
             {
               error:
@@ -355,8 +355,8 @@ export async function POST(req: Request) {
         {
           success: true,
           message: TICKET_MESSAGES.SUCCESS,
-          ticketId: waitlistTicket?.id ?? null,
-          ticketName: waitlistTicket?.name ?? nameForTicket ?? null,
+          ticketId: standbyTicket?.id ?? null,
+          ticketName: standbyTicket?.name ?? nameForTicket ?? null,
         },
         { status: 200 },
       );

@@ -3,7 +3,7 @@
 import useTicketActions, { type TicketButtonProps } from "./useTicketActions";
 import { FeedbackMessage } from "./ui";
 import EventPassed from "./ticket-states/EventPassed";
-import WaitlistTicketCTA from "./ticket-states/WaitlistTicketCTA";
+import StandbyTicketCTA from "./ticket-states/StandbyTicketCTA";
 import JoinWaitlist from "./ticket-states/JoinWaitlist";
 import WaitlistPosition from "./ticket-states/WaitlistPosition";
 import TicketingOpens from "./ticket-states/TicketingOpens";
@@ -21,11 +21,11 @@ export default function TicketButton(props: TicketButtonProps) {
       content = <EventPassed />;
     } else if (actions.isStandbyMode) {
       content = (
-        <WaitlistTicketCTA
+        <StandbyTicketCTA
           isLoggedIn={actions.isLoggedIn}
           priorityText={actions.priorityText}
           isLoading={actions.isLoading}
-          processWaitlistTicketRequest={actions.processWaitlistTicketRequest}
+          processStandbyTicketRequest={actions.processStandbyTicketRequest}
         />
       );
     } else if (!actions.isOnWaitlist) {

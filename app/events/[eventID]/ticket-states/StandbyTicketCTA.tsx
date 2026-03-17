@@ -4,19 +4,19 @@ import { useState } from "react";
 import { PriorityBanner, RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 
-type WaitlistTicketCTAProps = {
+type StandbyTicketCTAProps = {
   isLoggedIn: boolean;
   priorityText: string | null;
   isLoading: boolean;
-  processWaitlistTicketRequest: () => void;
+  processStandbyTicketRequest: () => void;
 };
 
-export default function WaitlistTicketCTA({
+export default function StandbyTicketCTA({
   isLoggedIn,
   priorityText,
   isLoading,
-  processWaitlistTicketRequest,
-}: WaitlistTicketCTAProps) {
+  processStandbyTicketRequest,
+}: StandbyTicketCTAProps) {
   const [showNoBagsModal, setShowNoBagsModal] = useState(false);
   const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
 
@@ -24,7 +24,7 @@ export default function WaitlistTicketCTA({
     if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
       setShowNoBagsModal(false);
       setNoBagsConfirmation("");
-      processWaitlistTicketRequest();
+      processStandbyTicketRequest();
     }
   };
 
