@@ -73,7 +73,7 @@ export default function ProhibitedItems() {
           <li>No photography or recording, aside from pre-approved media.</li>
         </ul>
       </section>
-      <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above condition and any others set by Stanford University.</p>
+      <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above conditions and any others set by Stanford University.</p>
     </div>
   );
 }
