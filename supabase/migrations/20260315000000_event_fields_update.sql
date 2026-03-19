@@ -1,6 +1,7 @@
 ALTER TABLE "public"."events" DROP COLUMN IF EXISTS "banner";
+ALTER TABLE "public"."events" DROP COLUMN IF EXISTS "waitlist";
 
-ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "waitlist" boolean NOT NULL DEFAULT false;
+ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "standby_enabled" boolean NOT NULL DEFAULT false;
 
 ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "priority" text;
 
@@ -13,4 +14,3 @@ ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "referrals_enabled" boole
 
 UPDATE "public"."tickets" SET type = 'STANDBY' WHERE type = 'WAITLIST';
 
-ALTER TABLE events RENAME COLUMN waitlist TO standby_enabled;
