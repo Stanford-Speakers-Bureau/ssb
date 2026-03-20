@@ -13,7 +13,7 @@ export const sanitizeSchema: SanitizeOptions = {
     a: [
       ...(defaultSchema.attributes?.a ?? []),
       ["target", "_blank"],
-      ["rel", "noopener", "noreferrer"],
+      ["rel", "noopener", "noreferrer", "noopener noreferrer"],
     ],
   },
   tagNames: [
