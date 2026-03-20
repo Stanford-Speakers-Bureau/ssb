@@ -140,7 +140,9 @@ export function NoticeBanner({
     <div className={`rounded-xl border p-4 sm:p-5 ${noticeBannerColors[color]}`}>
       <div className="flex items-start gap-2">
         <span className={`shrink-0 mt-0.5 ${noticeBannerIconColors[color]}`}>{icon}</span>
-        <p className="text-xs sm:text-sm font-medium">{children}</p>
+        <div className="min-w-0 flex-1 text-xs sm:text-sm font-medium leading-relaxed">
+          {children}
+        </div>
       </div>
     </div>
   );

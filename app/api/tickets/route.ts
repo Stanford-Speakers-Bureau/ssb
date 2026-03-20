@@ -5,6 +5,7 @@ import {
   getAvailablePublicTickets,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { isEventOver } from "@/app/lib/eventTime";
 import {
   db,
   eq,
@@ -37,9 +38,15 @@ const TICKET_MESSAGES = {
     "Ticket sales have ended. This event has already started.",
   ERROR_TICKETING_NOT_OPEN:
     "Ticketing is not open yet for this event. Please check back later.",
+  ERROR_STANDBY_ONLY:
+    "The standby line is open. Standard tickets are no longer available online.",
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
 } as const;
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "";
+}
 
 export async function GET(req: Request) {
   try {
@@ -203,6 +210,7 @@ export async function POST(req: Request) {
       where: eq(events.id, event_id),
       columns: {
         startTimeDate: true,
+        endTimeDate: true,
         releaseDate: true,
         ticketingDate: true,
         doorsOpen: true,
@@ -236,15 +244,11 @@ export async function POST(req: Request) {
       }
     }
 
-    if (event.startTimeDate) {
-      const now = new Date();
-      const eventLongOver = now.getTime() >= event.startTimeDate.getTime() + 6 * 60 * 60 * 1000;
-      if (eventLongOver) {
-        return NextResponse.json(
-          { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
-          { status: 400 },
-        );
-      }
+    if (isEventOver({ endTime: event.endTimeDate, startTime: event.startTimeDate })) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
+        { status: 400 },
+      );
     }
 
     // --- STANDBY TICKET: issued when standby mode is enabled by admin ---
@@ -276,6 +280,14 @@ export async function POST(req: Request) {
         );
       }
 
+      const existingWaitlistEntry = await db.query.waitlist.findFirst({
+        where: and(
+          eq(waitlist.eventId, event_id),
+          eq(waitlist.email, user.email),
+        ),
+        columns: { id: true, referral: true },
+      });
+
       const nameForTicket = userName?.trim();
       if (!nameForTicket) {
         return NextResponse.json(
@@ -292,7 +304,7 @@ export async function POST(req: Request) {
           email: user.email,
           name: nameForTicket,
           type: "STANDBY",
-          referral: referral ?? null,
+          referral: referral ?? existingWaitlistEntry?.referral ?? null,
         })
         .returning({
           id: tickets.id,
@@ -311,6 +323,7 @@ export async function POST(req: Request) {
               name: true,
               route: true,
               startTimeDate: true,
+              endTimeDate: true,
               venue: true,
               venueLink: true,
               desc: true,
@@ -319,7 +332,15 @@ export async function POST(req: Request) {
           })
         : null;
 
-      if (referral) {
+      if (existingWaitlistEntry) {
+        try {
+          await db.delete(waitlist).where(eq(waitlist.id, existingWaitlistEntry.id));
+        } catch (waitlistDeleteError) {
+          console.error("Standby waitlist cleanup error:", waitlistDeleteError);
+        }
+      }
+
+      if (referral || existingWaitlistEntry?.referral) {
         await updateReferralRecords(event_id, user.email);
       }
 
@@ -332,6 +353,7 @@ export async function POST(req: Request) {
             eventName: eventForEmail?.name || "Event",
             ticketType: "STANDBY",
             eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
+            eventEndTime: eventForEmail?.endTimeDate?.toISOString() || null,
             eventRoute: eventForEmail?.route || null,
             ticketId: standbyTicket.id,
             eventVenue: eventForEmail?.venue || null,
@@ -359,6 +381,13 @@ export async function POST(req: Request) {
           ticketName: standbyTicket?.name ?? nameForTicket ?? null,
         },
         { status: 200 },
+      );
+    }
+
+    if (event.standbyEnabled) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_STANDBY_ONLY },
+        { status: 400 },
       );
     }
 
@@ -396,9 +425,9 @@ export async function POST(req: Request) {
     }
 
     // Call stored procedure via raw SQL (atomic ticket creation with FOR UPDATE locking)
-    let rpcData: any;
+    let rpcData: unknown = null;
     try {
-      const result = await db.execute<{ create_ticket_with_name: any }>(sql`
+      const result = await db.execute<{ create_ticket_with_name: unknown }>(sql`
         SELECT create_ticket_with_name(
           ${event_id}::uuid,
           ${referral},
@@ -407,8 +436,8 @@ export async function POST(req: Request) {
         )
       `);
       rpcData = result[0]?.create_ticket_with_name ?? null;
-    } catch (rpcError: any) {
-      const msg = (rpcError.message || "").toLowerCase();
+    } catch (rpcError: unknown) {
+      const msg = getErrorMessage(rpcError).toLowerCase();
       if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Ticket RPC missing:", rpcError);
         return NextResponse.json(
@@ -461,6 +490,7 @@ export async function POST(req: Request) {
             name: true,
             route: true,
             startTimeDate: true,
+            endTimeDate: true,
             venue: true,
             venueLink: true,
             desc: true,
@@ -481,6 +511,7 @@ export async function POST(req: Request) {
           eventName: ticket.event?.name || "Event",
           ticketType: ticket.type || "STANDARD",
           eventStartTime: ticket.event?.startTimeDate?.toISOString() || null,
+          eventEndTime: ticket.event?.endTimeDate?.toISOString() || null,
           eventRoute: ticket.event?.route || null,
           ticketId: ticket.id,
           eventVenue: ticket.event?.venue || null,
@@ -557,16 +588,13 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if event is long over (6 hours past start)
+    // Check if event is over
     const eventRow = await db.query.events.findFirst({
       where: eq(events.id, event_id),
-      columns: { id: true, startTimeDate: true },
+      columns: { id: true, startTimeDate: true, endTimeDate: true, standbyEnabled: true },
     });
 
-    if (
-      eventRow?.startTimeDate &&
-      new Date().getTime() >= new Date(eventRow.startTimeDate).getTime() + 6 * 60 * 60 * 1000
-    ) {
+    if (isEventOver({ endTime: eventRow?.endTimeDate, startTime: eventRow?.startTimeDate })) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
@@ -596,87 +624,94 @@ export async function DELETE(req: Request) {
     // Delete the ticket
     await db.delete(tickets).where(eq(tickets.id, existingTicket.id));
 
-    // Pull the top person off the waitlist (if any) only if under capacity
-    const topWaitlistEntry = await db.query.waitlist.findFirst({
-      where: eq(waitlist.eventId, event_id),
-      orderBy: (waitlist, { asc }) => [asc(waitlist.position)],
-      columns: { email: true, referral: true, eventId: true, name: true },
-    });
+    // Once standby mode is open, freed spots should be handled by the in-person standby line.
+    if (!eventRow?.standbyEnabled) {
+      // Pull the top person off the waitlist (if any) only if under capacity
+      const topWaitlistEntry = await db.query.waitlist.findFirst({
+        where: eq(waitlist.eventId, event_id),
+        orderBy: (waitlist, { asc }) => [asc(waitlist.position)],
+        columns: { email: true, referral: true, eventId: true, name: true },
+      });
 
-    if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
-      // Create ticket for the waitlist person (transfer name from waitlist)
-      const [newTicket] = await db
-        .insert(tickets)
-        .values({
-          eventId: topWaitlistEntry.eventId,
-          email: topWaitlistEntry.email,
-          name: topWaitlistEntry.name ?? null,
-          type: "STANDARD",
-        })
-        .returning({
-          id: tickets.id,
-          email: tickets.email,
-          type: tickets.type,
-          eventId: tickets.eventId,
-        });
-
-      // Get event details for email
-      const eventForEmail = newTicket.eventId
-        ? await db.query.events.findFirst({
-            where: eq(events.id, newTicket.eventId),
-            columns: {
-              id: true,
-              name: true,
-              route: true,
-              startTimeDate: true,
-              venue: true,
-              venueLink: true,
-              desc: true,
-              doorsOpen: true,
-            },
-          })
-        : null;
-
-      // Remove them from the waitlist
-      await db
-        .delete(waitlist)
-        .where(
-          and(
-            eq(waitlist.email, topWaitlistEntry.email),
-            eq(waitlist.eventId, event_id),
-          ),
-        );
-
-      // Update referral records if they had a referral code
-      if (topWaitlistEntry.referral) {
-        await updateReferralRecords(event_id, topWaitlistEntry.email);
-      }
-
-      // Send ticket email to the waitlist person
-      if (newTicket) {
-        try {
-          await sendTicketEmail({
-            email: newTicket.email,
+      if (topWaitlistEntry && (await isEventUnderCapacity(event_id))) {
+        // Create ticket for the waitlist person (transfer name from waitlist)
+        const [newTicket] = await db
+          .insert(tickets)
+          .values({
+            eventId: topWaitlistEntry.eventId,
+            email: topWaitlistEntry.email,
             name: topWaitlistEntry.name ?? null,
-            eventName: eventForEmail?.name || "Event",
-            ticketType: newTicket.type || "STANDARD",
-            eventStartTime: eventForEmail?.startTimeDate?.toISOString() || null,
-            eventRoute: eventForEmail?.route || null,
-            ticketId: newTicket.id,
-            eventVenue: eventForEmail?.venue || null,
-            eventVenueLink: eventForEmail?.venueLink || null,
-            eventDescription: eventForEmail?.desc || null,
-            doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
+            type: "STANDARD",
+          })
+          .returning({
+            id: tickets.id,
+            email: tickets.email,
+            type: tickets.type,
+            eventId: tickets.eventId,
           });
-          console.log(
-            `Ticket created for waitlist user ${topWaitlistEntry.email}`,
+
+        // Get event details for email
+        const eventForEmail = newTicket.eventId
+          ? await db.query.events.findFirst({
+              where: eq(events.id, newTicket.eventId),
+              columns: {
+                id: true,
+                name: true,
+                route: true,
+                startTimeDate: true,
+                endTimeDate: true,
+                venue: true,
+                venueLink: true,
+                desc: true,
+                doorsOpen: true,
+              },
+            })
+          : null;
+
+        // Remove them from the waitlist
+        await db
+          .delete(waitlist)
+          .where(
+            and(
+              eq(waitlist.email, topWaitlistEntry.email),
+              eq(waitlist.eventId, event_id),
+            ),
           );
-        } catch (emailError) {
-          console.error(
-            "Error sending ticket email to waitlist user:",
-            emailError,
-          );
-          // Don't fail the cancellation if email fails
+
+        // Update referral records if they had a referral code
+        if (topWaitlistEntry.referral) {
+          await updateReferralRecords(event_id, topWaitlistEntry.email);
+        }
+
+        // Send ticket email to the waitlist person
+        if (newTicket) {
+          try {
+            await sendTicketEmail({
+              email: newTicket.email,
+              name: topWaitlistEntry.name ?? null,
+              eventName: eventForEmail?.name || "Event",
+              ticketType: newTicket.type || "STANDARD",
+              eventStartTime:
+                eventForEmail?.startTimeDate?.toISOString() || null,
+              eventEndTime:
+                eventForEmail?.endTimeDate?.toISOString() || null,
+              eventRoute: eventForEmail?.route || null,
+              ticketId: newTicket.id,
+              eventVenue: eventForEmail?.venue || null,
+              eventVenueLink: eventForEmail?.venueLink || null,
+              eventDescription: eventForEmail?.desc || null,
+              doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
+            });
+            console.log(
+              `Ticket created for waitlist user ${topWaitlistEntry.email}`,
+            );
+          } catch (emailError) {
+            console.error(
+              "Error sending ticket email to waitlist user:",
+              emailError,
+            );
+            // Don't fail the cancellation if email fails
+          }
         }
       }
     }

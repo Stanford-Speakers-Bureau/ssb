@@ -20,7 +20,7 @@ export default async function Home() {
           isNotNull(events.route),
           sql`(${events.startTimeDate} AT TIME ZONE 'America/Los_Angeles')::date
               = (NOW() AT TIME ZONE 'America/Los_Angeles')::date`,
-          sql`NOW() < ${events.startTimeDate} + INTERVAL '2 hours'`
+          sql`NOW() < COALESCE(${events.endTimeDate}, ${events.startTimeDate} + INTERVAL '2 hours')`
         )
       )
       .limit(1);

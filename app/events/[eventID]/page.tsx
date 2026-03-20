@@ -9,6 +9,7 @@ import {
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
 import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
+import { getEventEndDate } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -148,6 +149,11 @@ export default async function EventPage({ params }: PageProps) {
   const signedImageUrl = event.img
     ? getImageProxyUrl(event.id, event.img_version)
     : null;
+  const eventEndDate = getEventEndDate({
+    endTime: event.end_time_date,
+    startTime: event.start_time_date,
+    fallbackDurationMs: 2 * 60 * 60 * 1000,
+  });
 
   // Pre-compute the calendar URL once
   const calendarUrl = event.start_time_date
@@ -155,6 +161,7 @@ export default async function EventPage({ params }: PageProps) {
       name: event.name,
       desc: event.desc || undefined,
       start_time_date: event.start_time_date,
+      end_time_date: event.end_time_date,
       venue: event.venue || undefined,
       venue_link: event.venue_link || undefined,
       route: event.route || undefined,
@@ -169,9 +176,7 @@ export default async function EventPage({ params }: PageProps) {
       name: event.name,
       ...(event.desc && { description: event.desc }),
       ...(event.start_time_date && { startDate: event.start_time_date }),
-      ...(event.start_time_date && {
-        endDate: new Date(new Date(event.start_time_date).getTime() + 2 * 60 * 60 * 1000).toISOString(),
-      }),
+      ...(eventEndDate && { endDate: eventEndDate.toISOString() }),
       ...(event.doors_open && { doorTime: event.doors_open }),
       location: {
         "@type": "Place",
@@ -297,6 +302,7 @@ export default async function EventPage({ params }: PageProps) {
                 userEmail={ticketStatus.userEmail}
                 eventRoute={event.route || eventID}
                 eventStartTime={event.start_time_date}
+                eventEndTime={event.end_time_date}
                 doorsOpen={event.doors_open}
                 isSoldOut={isSoldOut}
                 ticketingDate={process.env.LOCAL_TICKETING_ENABLED === "true" ? null : (event.ticketing_date ?? event.release_date)}

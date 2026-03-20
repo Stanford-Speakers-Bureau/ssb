@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
+import { isEventOver } from "@/app/lib/eventTime";
 import { fireFullConfetti, fireSimpleConfetti } from "./confetti";
 
 export type TicketButtonProps = {
@@ -9,6 +10,7 @@ export type TicketButtonProps = {
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
   eventStartTime?: string | null;
+  eventEndTime?: string | null;
   doorsOpen?: string | null;
   isSoldOut?: boolean;
   isTicketingOpen?: boolean;
@@ -44,7 +46,7 @@ export default function useTicketActions({
   eventId,
   initialHasTicket = false,
   eventStartTime = null,
-  doorsOpen = null,
+  eventEndTime = null,
   isSoldOut = false,
   isTicketingOpen = true,
   ticketingOpensAt: ticketingOpensAtProp = null,
@@ -140,9 +142,10 @@ export default function useTicketActions({
     ? new Date() >= new Date(eventStartTime)
     : false;
 
-  const isEventLongOver = eventStartTime
-    ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
-    : false;
+  const isEventLongOver = isEventOver({
+    endTime: eventEndTime,
+    startTime: eventStartTime,
+  });
 
   // Standby mode is controlled by admin toggle
   const isStandbyMode = standbyMode;
@@ -317,7 +320,7 @@ export default function useTicketActions({
       } else {
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
-    } catch (error) {
+    } catch {
       setMessage(TICKET_MESSAGES.ERROR_GENERIC);
     } finally {
       setIsLoading(false);
@@ -577,7 +580,7 @@ export default function useTicketActions({
         `${url.pathname}${url.search}${url.hash}`,
       );
     }
-  }, [eventId]);
+  }, [eventId, isSoldOut, isTicketingOpen]);
 
   // Handle cancel_ticket query parameter from email links
   useEffect(() => {

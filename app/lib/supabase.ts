@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { db, eq, and, gte, events, roles, referrals } from "@ssb/db";
+import { db, eq, gte, events, roles, referrals } from "@ssb/db";
 import type { InferSelectModel } from "@ssb/db";
 import {
   getTicketCounts as _getTicketCounts,
@@ -33,6 +33,7 @@ export type Event = {
   release_date: string | null;
   ticketing_date?: string | null;
   start_time_date: string | null;
+  end_time_date: string | null;
   doors_open: string | null;
   route: string | null;
   img_version?: number | null;
@@ -63,6 +64,7 @@ export function serializeEvent(e: DBEvent): Event {
     release_date: e.releaseDate?.toISOString() ?? null,
     ticketing_date: e.ticketingDate?.toISOString() ?? null,
     start_time_date: e.startTimeDate?.toISOString() ?? null,
+    end_time_date: e.endTimeDate?.toISOString() ?? null,
     doors_open: e.doorsOpen?.toISOString() ?? null,
     route: e.route,
     img_version: e.imgVersion,
@@ -361,4 +363,3 @@ export async function getUserWaitlistStatus(eventId: string, userEmail: string) 
 export async function getWaitlistCount(eventId: string) {
   return _getWaitlistCount(db, eventId);
 }
-

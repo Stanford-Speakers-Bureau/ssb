@@ -20,12 +20,14 @@ export function generateGoogleCalendarUrl(event: {
   name?: string | null;
   desc?: string | null;
   start_time_date?: string | null;
+  end_time_date?: string | null;
   venue?: string | null;
   venue_link?: string | null;
   route?: string | null;
   // Ticket email fields (alternative to event fields)
   eventName?: string | null;
   eventStartTime?: string | null;
+  eventEndTime?: string | null;
   eventRoute?: string | null;
   eventVenue?: string | null;
   eventDescription?: string | null;
@@ -36,6 +38,7 @@ export function generateGoogleCalendarUrl(event: {
   // Support both event.start_time_date (for event pages) and eventStartTime (for ticket emails)
   const startTime = event.start_time_date || event.eventStartTime;
   if (!startTime) return "";
+  const endTime = event.end_time_date || event.eventEndTime;
 
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
@@ -45,7 +48,9 @@ export function generateGoogleCalendarUrl(event: {
   const eventUrl = route ? `${baseUrl}/events/${route}` : baseUrl;
 
   const startDate = new Date(startTime);
-  const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90 minutes default
+  const endDate = endTime
+    ? new Date(endTime)
+    : new Date(startDate.getTime() + 90 * 60 * 1000);
 
   // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
   const formatGoogleDate = (date: Date) => {

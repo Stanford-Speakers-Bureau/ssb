@@ -22,6 +22,7 @@ export const events = pgTable("events", {
   venueLink: text("venue_link"),
   releaseDate: timestamp("release_date", { withTimezone: true }),
   startTimeDate: timestamp("start_time_date", { withTimezone: true }),
+  endTimeDate: timestamp("end_time_date", { withTimezone: true }),
   doorsOpen: timestamp("doors_open", { withTimezone: true }),
   desc: text("desc"),
   img: text("img"),

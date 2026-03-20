@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
 import Image from "next/image";
+import { isEventOver } from "@/app/lib/eventTime";
 import { glassPanel, NoticeBanner } from "./ui";
 import ReferralShare from "./ReferralShare";
 import { generateReferralCode } from "@/app/lib/utils";
@@ -19,6 +20,7 @@ type TicketSectionProps = {
   userEmail: string | null;
   eventRoute: string;
   eventStartTime: string | null;
+  eventEndTime: string | null;
   doorsOpen: string | null;
   ticketingDate?: string | null;
   isSoldOut?: boolean;
@@ -40,6 +42,7 @@ export default function TicketSection({
   userEmail,
   eventRoute,
   eventStartTime,
+  eventEndTime,
   doorsOpen,
   ticketingDate = null,
   isSoldOut = false,
@@ -141,19 +144,18 @@ export default function TicketSection({
   );
 
   useEffect(() => {
-    if (isTicketingOpen || !ticketingOpensAt) return;
-    const ms = ticketingOpensAt.getTime() - Date.now();
-    if (ms <= 0) {
-      setIsTicketingOpen(true);
-      return;
-    }
+    if (isTicketingOpen || !ticketingDate) return;
+    const nextTicketingOpensAt = new Date(ticketingDate);
+    if (Number.isNaN(nextTicketingOpensAt.getTime())) return;
+    const ms = Math.max(nextTicketingOpensAt.getTime() - Date.now(), 0);
     const timer = setTimeout(() => setIsTicketingOpen(true), ms);
     return () => clearTimeout(timer);
-  }, [isTicketingOpen, ticketingOpensAt]);
+  }, [isTicketingOpen, ticketingDate]);
 
-  const isEventLongOver = eventStartTime
-    ? new Date().getTime() >= new Date(eventStartTime).getTime() + 6 * 60 * 60 * 1000
-    : false;
+  const isEventLongOver = isEventOver({
+    endTime: eventEndTime,
+    startTime: eventStartTime,
+  });
 
   const doorsOpenDate = doorsOpen ? new Date(doorsOpen) : null;
   const [showDoorsCountdown, setShowDoorsCountdown] = useState(
@@ -172,6 +174,7 @@ export default function TicketSection({
     eventId,
     initialHasTicket: hasTicket,
     eventStartTime,
+    eventEndTime,
     doorsOpen,
     isSoldOut,
     isTicketingOpen,

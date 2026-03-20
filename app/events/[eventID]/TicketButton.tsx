@@ -15,20 +15,19 @@ export default function TicketButton(props: TicketButtonProps) {
 
   let content: React.ReactNode;
 
-  // WAITLIST UI: If sold out and user doesn't have a ticket
-  if (actions.isSoldOut && !actions.hasTicket) {
-    if (actions.isEventLongOver) {
-      content = <EventPassed />;
-    } else if (actions.isStandbyMode) {
-      content = (
-        <StandbyTicketCTA
-          isLoggedIn={actions.isLoggedIn}
-          priorityText={actions.priorityText}
-          isLoading={actions.isLoading}
-          processStandbyTicketRequest={actions.processStandbyTicketRequest}
-        />
-      );
-    } else if (!actions.isOnWaitlist) {
+  if (!actions.hasTicket && actions.isEventLongOver) {
+    content = <EventPassed />;
+  } else if (!actions.hasTicket && actions.isStandbyMode) {
+    content = (
+      <StandbyTicketCTA
+        isLoggedIn={actions.isLoggedIn}
+        priorityText={actions.priorityText}
+        isLoading={actions.isLoading}
+        processStandbyTicketRequest={actions.processStandbyTicketRequest}
+      />
+    );
+  } else if (actions.isSoldOut && !actions.hasTicket) {
+    if (!actions.isOnWaitlist) {
       content = (
         <JoinWaitlist
           isLoggedIn={actions.isLoggedIn}
@@ -56,8 +55,6 @@ export default function TicketButton(props: TicketButtonProps) {
         />
       );
     }
-  } else if (actions.isEventLongOver && !actions.hasTicket) {
-    content = <EventPassed />;
   } else if (actions.showTicketingOpensOnly) {
     content = (
       <TicketingOpens
