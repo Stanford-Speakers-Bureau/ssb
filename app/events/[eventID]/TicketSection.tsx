@@ -92,7 +92,9 @@ export default function TicketSection({
         setHasTicket(customEvent.detail.hasTicket);
         setTicketId(customEvent.detail.ticketId);
         setTicketName(customEvent.detail.ticketName ?? null);
-        setTicketType(customEvent.detail.ticketType ?? null);
+        if ("ticketType" in customEvent.detail) {
+          setTicketType(customEvent.detail.ticketType ?? null);
+        }
       }
     };
 
@@ -203,7 +205,7 @@ export default function TicketSection({
         <>
           {isEventLongOver && (
             <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
-              <p className="text-sm font-medium text-white text-center">
+              <p className="text-sm font-medium text-zinc-900 dark:text-white text-center">
                 This event is over. Thank you for attending!
               </p>
             </div>

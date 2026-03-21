@@ -380,6 +380,7 @@ export default function useTicketActions({
       const data = (await response.json()) as {
         ticketId?: string;
         ticketName?: string | null;
+        ticketType?: string | null;
         error?: string;
       };
 
@@ -404,7 +405,7 @@ export default function useTicketActions({
               hasTicket: !hasTicket,
               ticketId: !hasTicket ? data.ticketId || null : null,
               ticketName: !hasTicket ? (data.ticketName ?? null) : null,
-              ticketType: null,
+              ticketType: !hasTicket ? (data.ticketType ?? null) : null,
             },
           }),
         );
@@ -442,6 +443,7 @@ export default function useTicketActions({
       const data = (await response.json()) as {
         ticketId?: string;
         ticketName?: string | null;
+        ticketType?: string | null;
         error?: string;
       };
 
@@ -456,7 +458,7 @@ export default function useTicketActions({
               hasTicket: true,
               ticketId: data.ticketId || null,
               ticketName: data.ticketName ?? null,
-              ticketType: "STANDBY",
+              ticketType: data.ticketType ?? "STANDBY",
             },
           }),
         );

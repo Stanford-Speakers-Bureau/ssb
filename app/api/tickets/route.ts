@@ -33,9 +33,9 @@ const TICKET_MESSAGES = {
   ERROR_CAPACITY_EXCEEDED: "This event is at full capacity.",
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   ERROR_EVENT_STARTED_OR_ENDED:
-    "Cannot cancel tickets after the event has started.",
+    "Cannot cancel tickets after the event has ended.",
   ERROR_EVENT_STARTED:
-    "Ticket sales have ended. This event has already started.",
+    "Ticket sales have ended. This event is over.",
   ERROR_TICKETING_NOT_OPEN:
     "Ticketing is not open yet for this event. Please check back later.",
   ERROR_STANDBY_ONLY:
@@ -379,6 +379,7 @@ export async function POST(req: Request) {
           message: TICKET_MESSAGES.SUCCESS,
           ticketId: standbyTicket?.id ?? null,
           ticketName: standbyTicket?.name ?? nameForTicket ?? null,
+          ticketType: standbyTicket?.type || "STANDBY",
         },
         { status: 200 },
       );
@@ -537,6 +538,7 @@ export async function POST(req: Request) {
         message: TICKET_MESSAGES.SUCCESS,
         ticketId: ticket?.id ?? null,
         ticketName: ticket?.name ?? nameForTicket ?? null,
+        ticketType: ticket?.type || "STANDARD",
         data: rpcData ?? null,
       },
       { status: 200 },

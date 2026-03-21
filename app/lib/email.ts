@@ -329,9 +329,16 @@ function generateICalContent(data: TicketEmailData): string {
     : null;
 
   const startDate = new Date(data.eventStartTime);
-  const endDate = data.eventEndTime
-    ? new Date(data.eventEndTime)
-    : new Date(startDate.getTime() + 90 * 60 * 1000);
+  if (Number.isNaN(startDate.getTime())) return "";
+
+  const defaultEndDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+  let endDate = defaultEndDate;
+  if (data.eventEndTime) {
+    const parsedEndDate = new Date(data.eventEndTime);
+    if (!Number.isNaN(parsedEndDate.getTime())) {
+      endDate = parsedEndDate;
+    }
+  }
 
   const title = `Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`;
   const location = data.eventVenue || "";

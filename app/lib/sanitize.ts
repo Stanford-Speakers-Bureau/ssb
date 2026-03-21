@@ -10,11 +10,6 @@ export const sanitizeSchema: SanitizeOptions = {
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
-    a: [
-      ...(defaultSchema.attributes?.a ?? []),
-      ["target", "_blank"],
-      ["rel", "noopener", "noreferrer", "noopener noreferrer"],
-    ],
   },
   tagNames: [
     "a", "b", "blockquote", "br", "code", "em", "h1", "h2", "h3", "h4",

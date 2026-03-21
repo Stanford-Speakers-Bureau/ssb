@@ -48,9 +48,16 @@ export function generateGoogleCalendarUrl(event: {
   const eventUrl = route ? `${baseUrl}/events/${route}` : baseUrl;
 
   const startDate = new Date(startTime);
-  const endDate = endTime
-    ? new Date(endTime)
-    : new Date(startDate.getTime() + 90 * 60 * 1000);
+  if (Number.isNaN(startDate.getTime())) return "";
+
+  const defaultEndDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+  let endDate = defaultEndDate;
+  if (endTime) {
+    const parsedEndDate = new Date(endTime);
+    if (!Number.isNaN(parsedEndDate.getTime())) {
+      endDate = parsedEndDate;
+    }
+  }
 
   // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
   const formatGoogleDate = (date: Date) => {
