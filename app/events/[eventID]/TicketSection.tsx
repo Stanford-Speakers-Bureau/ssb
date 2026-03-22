@@ -63,7 +63,7 @@ export default function TicketSection({
     initialTicketName,
   );
 
-  const [isScanned, setIsScanned] = useState(initialIsScanned);
+  const isScanned = initialIsScanned;
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
@@ -103,39 +103,6 @@ export default function TicketSection({
       window.removeEventListener("ticketChanged", handleTicketChange);
     };
   }, []);
-
-  // Poll scan status every 5 seconds when user has an unscanned ticket
-  useEffect(() => {
-    if (!hasTicket || !ticketId || isScanned) return;
-
-    const checkScanStatus = async () => {
-      try {
-        const res = await fetch(
-          `/api/tickets/scan-status?ticket_id=${ticketId}`,
-        );
-        if (res.ok) {
-          const data: { scanned: boolean } = await res.json();
-          if (data.scanned) setIsScanned(true);
-        }
-      } catch {
-        // Silently ignore — will retry on next interval
-      }
-    };
-
-    const interval = setInterval(checkScanStatus, 5000);
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        checkScanStatus();
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [hasTicket, ticketId, isScanned]);
 
   const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
 
