@@ -39,7 +39,7 @@ export default function InfoPills({
             <path d="M10 12v.01" />
             <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4.742-1.186A1 1 0 0 1 13 4.56z" />
           </svg>
-          Doors open at {formatTime(doorsOpen)}
+          Doors open {formatTime(doorsOpen)}
         </Pill>
       )}
       {startTimeDate && (
@@ -47,7 +47,7 @@ export default function InfoPills({
           <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Doors close at {formatTime(startTimeDate)}
+          Doors close {formatTime(startTimeDate)}
         </Pill>
       )}
       {venue && (
