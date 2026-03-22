@@ -198,7 +198,10 @@ export default function TicketSection({
             </NoticeBanner>
           )}
           {ticketId && (
-            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-amber-300/50 dark:border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+              {isStandbyTicket && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/40 to-amber-400/0" />
+              )}
 
               {isStandbyTicket && (
                 <div className="mb-3 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/25">
@@ -288,6 +291,9 @@ export default function TicketSection({
         </>
       )}
 
+      {/* Cancel ticket button — right after ticket card */}
+      {hasTicket && <TicketButton {...ticketButtonProps} />}
+
       {hasTicket && referralsEnabled && userEmail && (() => {
         const code = generateReferralCode(userEmail);
         if (!code) return null;
@@ -310,9 +316,6 @@ export default function TicketSection({
           This ticket is not transferable. A photo ID will be required for entry.
         </NoticeBanner>
       )}
-
-      {/* Cancel ticket button — at bottom of column */}
-      {hasTicket && <TicketButton {...ticketButtonProps} />}
 
     </div>
   );

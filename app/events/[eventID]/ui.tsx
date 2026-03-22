@@ -119,12 +119,14 @@ const noticeBannerColors = {
   red: "bg-red-50 dark:bg-red-500/[0.06] border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-200",
   amber: "bg-amber-50 dark:bg-amber-500/[0.06] border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-200",
   blue: "bg-blue-50 dark:bg-blue-500/[0.06] border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-200",
+  zinc: "bg-zinc-50 dark:bg-zinc-500/[0.06] border-zinc-200 dark:border-zinc-500/20 text-zinc-700 dark:text-zinc-200",
 } as const;
 
 const noticeBannerIconColors = {
   red: "text-red-500 dark:text-red-400",
   amber: "text-amber-500 dark:text-amber-400",
   blue: "text-blue-500 dark:text-blue-400",
+  zinc: "text-zinc-500 dark:text-zinc-400",
 } as const;
 
 export function NoticeBanner({
