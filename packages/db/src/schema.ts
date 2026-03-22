@@ -26,6 +26,7 @@ export const events = pgTable("events", {
   doorsOpen: timestamp("doors_open", { withTimezone: true }),
   desc: text("desc"),
   img: text("img"),
+  mobileImg: text("mobile_img"),
   route: text("route"),
   tagline: text("tagline"),
   tickets: bigint("tickets", { mode: "number" }).notNull().default(0),

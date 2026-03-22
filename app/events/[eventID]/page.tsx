@@ -43,7 +43,9 @@ export async function generateMetadata({
   }
 
   const description = event.desc || event.tagline || "Get tickets for this Stanford Speakers Bureau event.";
-  const imageUrl = event.img ? getImageProxyUrl(event.id, event.img_version) : undefined;
+  const imageUrl = (event.img || event.mobile_img)
+    ? getImageProxyUrl(event.id, event.img_version)
+    : undefined;
 
   return {
     title: event.name,
@@ -145,9 +147,12 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  // Get the proxy URL for the event image
-  const signedImageUrl = event.img
+  // Get the proxy URL for the event images
+  const signedImageUrl = (event.img || event.mobile_img)
     ? getImageProxyUrl(event.id, event.img_version)
+    : null;
+  const mobileSignedImageUrl = (event.img || event.mobile_img)
+    ? getImageProxyUrl(event.id, event.img_version, "mobile")
     : null;
   const eventEndDate = getEventEndDate({
     endTime: event.end_time_date,
@@ -231,6 +236,7 @@ export default async function EventPage({ params }: PageProps) {
         name={event.name}
         tagline={event.tagline}
         signedImageUrl={signedImageUrl}
+        mobileSignedImageUrl={mobileSignedImageUrl}
         startTimeDate={event.start_time_date}
         doorsOpen={event.doors_open}
         venue={event.venue}

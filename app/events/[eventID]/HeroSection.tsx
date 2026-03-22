@@ -1,4 +1,3 @@
-import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -9,6 +8,7 @@ type HeroSectionProps = {
   name: string | null;
   tagline: string | null;
   signedImageUrl: string | null;
+  mobileSignedImageUrl: string | null;
   startTimeDate: string | null;
   doorsOpen: string | null;
   venue: string | null;
@@ -19,6 +19,7 @@ export default function HeroSection({
   name,
   tagline,
   signedImageUrl,
+  mobileSignedImageUrl,
   startTimeDate,
   doorsOpen,
   venue,
@@ -29,16 +30,18 @@ export default function HeroSection({
       {/* Speaker image – contained to hero only */}
       {signedImageUrl && (
         <div className="relative aspect-[3/2] sm:absolute sm:inset-0 sm:aspect-auto bg-zinc-200 dark:bg-zinc-800">
-          <Image
-            src={signedImageUrl}
-            alt={name || "Event"}
-            fill
-            className="object-cover"
-            priority
-            quality={90}
-            sizes="100vw"
-            unoptimized
-          />
+          <picture className="absolute inset-0 block h-full w-full">
+            {mobileSignedImageUrl && (
+              <source media="(max-width: 639px)" srcSet={mobileSignedImageUrl} />
+            )}
+            <img
+              src={signedImageUrl}
+              alt={name || "Event"}
+              className="h-full w-full object-cover"
+              loading="eager"
+              fetchPriority="high"
+            />
+          </picture>
           {/* Top fade for nav contrast */}
           <div
             className="absolute inset-0 pointer-events-none"

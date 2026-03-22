@@ -25,6 +25,7 @@ export type Event = {
   desc: string | null;
   tagline: string | null;
   img: string | null;
+  mobile_img: string | null;
   capacity: number;
   tickets?: number | null;
   venue: string | null;
@@ -56,6 +57,7 @@ export function serializeEvent(e: DBEvent): Event {
     desc: e.desc,
     tagline: e.tagline,
     img: e.img,
+    mobile_img: e.mobileImg,
     capacity: e.capacity,
     tickets: e.tickets,
     venue: e.venue,
@@ -306,9 +308,14 @@ export async function getEventById(id: string): Promise<Event | null> {
 export function getImageProxyUrl(
   eventId: string,
   imgVersion?: number | null,
+  variant: "default" | "mobile" = "default",
 ): string {
   const version = imgVersion || 1;
-  return `/api/images/${eventId}?v=${version}`;
+  const searchParams = new URLSearchParams({ v: version.toString() });
+  if (variant === "mobile") {
+    searchParams.set("variant", "mobile");
+  }
+  return `/api/images/${eventId}?${searchParams.toString()}`;
 }
 
 /**

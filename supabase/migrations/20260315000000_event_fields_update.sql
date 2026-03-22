@@ -20,3 +20,5 @@ ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "referrals_enabled" boole
 UPDATE "public"."tickets" SET type = 'STANDBY' WHERE type = 'WAITLIST';
 
 ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "end_time_date" timestamp with time zone;
+
+ALTER TABLE "public"."events" ADD COLUMN IF NOT EXISTS "mobile_img" text;
