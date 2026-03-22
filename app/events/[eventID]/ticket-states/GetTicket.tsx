@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { RedButton, PriorityBanner, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
+import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
+import ReferralCodeInput from "./ReferralCodeInput";
 
 type GetTicketProps = {
   isLoggedIn: boolean;
@@ -29,16 +30,7 @@ export default function GetTicket({
   referralWarning = null,
   handleReferralCodeChange,
 }: GetTicketProps) {
-  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
-  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
-
-  const handleConfirmNoBags = () => {
-    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
-      setShowNoBagsModal(false);
-      setNoBagsConfirmation("");
-      processTicketRequest();
-    }
-  };
+  const noBags = useNoBagsConfirmation(processTicketRequest);
 
   return (
     <>
@@ -49,28 +41,15 @@ export default function GetTicket({
       )}
 
       {referralsEnabled && (
-        <div className="mb-4">
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
-            Referral Code (optional)
-          </label>
-          <input
-            type="text"
-            value={referralCode}
-            onChange={handleReferralCodeChange}
-            placeholder="Enter referral code"
-            className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/40"
-          />
-          {referralWarning && (
-            <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">{referralWarning}</p>
-          )}
-        </div>
+        <ReferralCodeInput
+          code={referralCode}
+          onChange={handleReferralCodeChange}
+          warning={referralWarning}
+        />
       )}
 
       <RedButton
-        onClick={() => {
-          setShowNoBagsModal(true);
-          setNoBagsConfirmation("");
-        }}
+        onClick={noBags.openModal}
         disabled={isButtonDisabled}
         loading={isLoading}
         loadingText={TICKET_MESSAGES.CREATING}
@@ -87,16 +66,16 @@ export default function GetTicket({
       )}
 
       <ConfirmationModal
-        open={showNoBagsModal}
-        onClose={() => setShowNoBagsModal(false)}
+        open={noBags.showModal}
+        onClose={() => noBags.setShowModal(false)}
         title="No Bags Policy"
         description="This event has a strict no bags policy. You will be turned away at the entrance with any form of a bag or purse."
         cancelLabel="Cancel"
         confirmLabel="Proceed"
-        onConfirm={handleConfirmNoBags}
-        confirmDisabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+        onConfirm={noBags.handleConfirmNoBags}
+        confirmDisabled={noBags.isConfirmDisabled}
       >
-        <NoBagsModalChildren value={noBagsConfirmation} onChange={setNoBagsConfirmation} onConfirm={handleConfirmNoBags} />
+        <NoBagsModalChildren value={noBags.noBagsConfirmation} onChange={noBags.setNoBagsConfirmation} onConfirm={noBags.handleConfirmNoBags} />
       </ConfirmationModal>
     </>
   );

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { PriorityBanner, RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
+import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
 
 type StandbyTicketCTAProps = {
   isLoggedIn: boolean;
@@ -17,16 +17,7 @@ export default function StandbyTicketCTA({
   isLoading,
   processStandbyTicketRequest,
 }: StandbyTicketCTAProps) {
-  const [showNoBagsModal, setShowNoBagsModal] = useState(false);
-  const [noBagsConfirmation, setNoBagsConfirmation] = useState("");
-
-  const handleConfirmNoBags = () => {
-    if (noBagsConfirmation.toLowerCase().trim() === "no bags") {
-      setShowNoBagsModal(false);
-      setNoBagsConfirmation("");
-      processStandbyTicketRequest();
-    }
-  };
+  const noBags = useNoBagsConfirmation(processStandbyTicketRequest);
 
   return (
     <div>
@@ -67,10 +58,7 @@ export default function StandbyTicketCTA({
 
       {/* CTA Button */}
       <RedButton
-        onClick={() => {
-          setShowNoBagsModal(true);
-          setNoBagsConfirmation("");
-        }}
+        onClick={noBags.openModal}
         disabled={isLoading}
         loading={isLoading}
         loadingText={TICKET_MESSAGES.CREATING}
@@ -79,16 +67,16 @@ export default function StandbyTicketCTA({
       </RedButton>
 
       <ConfirmationModal
-        open={showNoBagsModal}
-        onClose={() => setShowNoBagsModal(false)}
+        open={noBags.showModal}
+        onClose={() => noBags.setShowModal(false)}
         title="No Bags Policy"
         description="This event has a strict no bags policy. You will be turned away at the entrance with any form of a bag or purse."
         cancelLabel="Cancel"
         confirmLabel="Proceed"
-        onConfirm={handleConfirmNoBags}
-        confirmDisabled={noBagsConfirmation.toLowerCase().trim() !== "no bags"}
+        onConfirm={noBags.handleConfirmNoBags}
+        confirmDisabled={noBags.isConfirmDisabled}
       >
-        <NoBagsModalChildren value={noBagsConfirmation} onChange={setNoBagsConfirmation} onConfirm={handleConfirmNoBags} />
+        <NoBagsModalChildren value={noBags.noBagsConfirmation} onChange={noBags.setNoBagsConfirmation} onConfirm={noBags.handleConfirmNoBags} />
       </ConfirmationModal>
     </div>
   );

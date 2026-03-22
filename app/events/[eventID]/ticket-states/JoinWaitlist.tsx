@@ -1,6 +1,7 @@
 "use client";
 
 import { PriorityBanner, RedButton } from "../ui";
+import ReferralCodeInput from "./ReferralCodeInput";
 
 type JoinWaitlistProps = {
   isLoggedIn: boolean;
@@ -81,7 +82,7 @@ export default function JoinWaitlist({
           <p className="text-sm font-medium text-zinc-400 text-center mb-5">We recommend doing both to maximize your chances.</p>
 
           {/* High chance indicator */}
-          {(waitlistChance === "high" || waitlistChance === "High") && (
+          {waitlistChance?.toLowerCase() === "high" && (
             <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/[0.06] border border-emerald-200/60 dark:border-emerald-500/15">
               <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
@@ -94,21 +95,11 @@ export default function JoinWaitlist({
 
           {/* Referral code input */}
           {referralsEnabled && (
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
-                Referral Code (optional)
-              </label>
-              <input
-                type="text"
-                value={referralCode}
-                onChange={handleReferralCodeChange}
-                placeholder="Enter referral code"
-                className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/40"
-              />
-              {referralWarning && (
-                <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">{referralWarning}</p>
-              )}
-            </div>
+            <ReferralCodeInput
+              code={referralCode}
+              onChange={handleReferralCodeChange}
+              warning={referralWarning}
+            />
           )}
 
           {/* CTA Button */}

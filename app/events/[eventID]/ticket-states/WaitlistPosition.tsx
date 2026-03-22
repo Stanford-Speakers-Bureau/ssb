@@ -82,7 +82,7 @@ export default function WaitlistPosition({
 
           {/* Bottom section - chance + info */}
           <div className="space-y-3">
-            {(waitlistChance === "High" || waitlistChance === "high") && (
+            {waitlistChance?.toLowerCase() === "high" && (
               <div className="flex items-center gap-2.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-center">
                   <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
