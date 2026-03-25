@@ -20,6 +20,7 @@ export default function ProhibitedItems() {
         </h3>
         <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>Bags, including small purse</li>
+          <li>Electronic devices larger than a cell phone</li>
           <li>Food or drink, including water bottles</li>
           <li>Signs, flags, banners, or flyers of any kind</li>
           <li>Chairs of any kind (ADA seating will be provided on-site)</li>
