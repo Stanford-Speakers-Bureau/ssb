@@ -157,7 +157,6 @@ export default async function EventPage({ params }: PageProps) {
   const eventEndDate = getEventEndDate({
     endTime: event.end_time_date,
     startTime: event.start_time_date,
-    fallbackDurationMs: 2 * 60 * 60 * 1000,
   });
 
   // Pre-compute the calendar URL once

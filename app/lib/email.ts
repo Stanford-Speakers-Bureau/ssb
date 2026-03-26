@@ -1,6 +1,7 @@
 import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
 import {
+  CALENDAR_DEFAULT_DURATION_MS,
   IMPORTANT_NOTICE_ITEMS,
   PACIFIC_TIMEZONE,
   REFERRAL_MESSAGE,
@@ -331,7 +332,7 @@ function generateICalContent(data: TicketEmailData): string {
   const startDate = new Date(data.eventStartTime);
   if (Number.isNaN(startDate.getTime())) return "";
 
-  const defaultEndDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
   let endDate = defaultEndDate;
   if (data.eventEndTime) {
     const parsedEndDate = new Date(data.eventEndTime);

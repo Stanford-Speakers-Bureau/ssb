@@ -1,4 +1,4 @@
-const DEFAULT_EVENT_END_FALLBACK_MS = 6 * 60 * 60 * 1000;
+import { EVENT_END_FALLBACK_MS } from "./constants";
 
 function parseEventDate(value: string | Date | null | undefined): Date | null {
   if (!value) return null;
@@ -12,7 +12,7 @@ function parseEventDate(value: string | Date | null | undefined): Date | null {
 export function getEventEndDate({
   endTime,
   startTime,
-  fallbackDurationMs = DEFAULT_EVENT_END_FALLBACK_MS,
+  fallbackDurationMs = EVENT_END_FALLBACK_MS,
 }: {
   endTime?: string | Date | null;
   startTime?: string | Date | null;

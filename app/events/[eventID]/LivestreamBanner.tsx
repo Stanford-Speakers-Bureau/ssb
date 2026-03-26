@@ -1,3 +1,5 @@
+import { LIVESTREAM_STARTS_SOON_MS } from "@/app/lib/constants";
+
 function getTimeUntil(dateString: string): string | null {
   const now = Date.now();
   const target = new Date(dateString).getTime();
@@ -25,7 +27,7 @@ export default function LivestreamBanner({
 }: LivestreamBannerProps) {
   const showLinks =
     eventStartTime &&
-    new Date(eventStartTime).getTime() - Date.now() <= 2 * 60 * 60 * 1000;
+    new Date(eventStartTime).getTime() - Date.now() <= LIVESTREAM_STARTS_SOON_MS;
 
   if (showLinks) {
     return (

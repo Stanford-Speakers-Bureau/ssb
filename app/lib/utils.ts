@@ -1,3 +1,5 @@
+import { CALENDAR_DEFAULT_DURATION_MS } from "./constants";
+
 /**
  * Generate a referral code from a user's email address.
  * Takes the part before the "@" symbol.
@@ -50,7 +52,7 @@ export function generateGoogleCalendarUrl(event: {
   const startDate = new Date(startTime);
   if (Number.isNaN(startDate.getTime())) return "";
 
-  const defaultEndDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
   let endDate = defaultEndDate;
   if (endTime) {
     const parsedEndDate = new Date(endTime);
