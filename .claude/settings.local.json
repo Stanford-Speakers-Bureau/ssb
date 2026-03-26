@@ -16,7 +16,8 @@
       "WebFetch(domain:developers.google.com)",
       "Bash(git diff:*)",
       "Read(//Users/michaelyu/Developer/WebStorm/ssb-db/**)",
-      "Bash(find /Users/michaelyu/Developer/WebStorm/ssb-db -name *.sql)"
+      "Bash(find /Users/michaelyu/Developer/WebStorm/ssb-db -name *.sql)",
+      "Bash(grep:*)"
     ]
   }
 }

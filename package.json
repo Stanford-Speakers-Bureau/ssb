@@ -13,6 +13,7 @@
     "start": "next start",
     "u": "bunx npm-check-updates -u && bun install",
     "lint": "eslint",
+    "seed": "supabase db reset",
     "prettier": "prettier --write ."
   },
   "dependencies": {
