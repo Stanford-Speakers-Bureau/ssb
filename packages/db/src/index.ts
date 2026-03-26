@@ -20,8 +20,10 @@ function getHyperdriveConnectionString(): string | null {
 function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
   const client = postgres(connectionString, {
     prepare: false,
-    max: hyperdrive ? 5 : 10,
+    max: hyperdrive ? 5 : 3,
     connect_timeout: 10,
+    idle_timeout: 20,
+    max_lifetime: 60 * 5,
   });
   return drizzle(client, { schema });
 }
@@ -30,6 +32,7 @@ function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
 // - In Cloudflare Workers: uses the Hyperdrive connection string from the worker context.
 //   Hyperdrive manages the actual DB connection pool, so a fresh client per access is fine.
 // - Elsewhere (local/SSR): uses DATABASE_URL with a singleton.
+let loggedFallback = false;
 export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
   get(_, prop) {
     const hyperdriveConnStr = getHyperdriveConnectionString();
@@ -37,8 +40,11 @@ export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
       const requestDb = createDb(hyperdriveConnStr, true);
       return (requestDb as unknown as Record<string | symbol, unknown>)[prop];
     }
-    console.error("[db] Hyperdrive context not found, falling back to DATABASE_URL");
     if (!globalForDb.db) {
+      if (!loggedFallback) {
+        console.error("[db] Hyperdrive context not found, falling back to DATABASE_URL");
+        loggedFallback = true;
+      }
       globalForDb.db = createDb(process.env.DATABASE_URL!);
     }
     return (globalForDb.db as unknown as Record<string | symbol, unknown>)[prop];

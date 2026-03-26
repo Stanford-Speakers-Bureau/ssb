@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { db, eq, and, gte, events, roles, referrals } from "@ssb/db";
+import { db, eq, gte, events, roles, referrals } from "@ssb/db";
 import type { InferSelectModel } from "@ssb/db";
 import {
   getTicketCounts as _getTicketCounts,
@@ -25,6 +25,7 @@ export type Event = {
   desc: string | null;
   tagline: string | null;
   img: string | null;
+  mobile_img: string | null;
   capacity: number;
   tickets?: number | null;
   venue: string | null;
@@ -32,13 +33,17 @@ export type Event = {
   venue_link: string | null;
   release_date: string | null;
   ticketing_date?: string | null;
-  banner: boolean | null;
   start_time_date: string | null;
+  end_time_date: string | null;
   doors_open: string | null;
   route: string | null;
   img_version?: number | null;
   waitlist_chance?: string | null;
-  livestream?: boolean | null;
+  livestream?: string | null;
+  priority?: string | null;
+  hide_ticketing_date?: boolean;
+  referrals_enabled?: boolean;
+  standby_enabled?: boolean;
 };
 
 /**
@@ -52,6 +57,7 @@ export function serializeEvent(e: DBEvent): Event {
     desc: e.desc,
     tagline: e.tagline,
     img: e.img,
+    mobile_img: e.mobileImg,
     capacity: e.capacity,
     tickets: e.tickets,
     venue: e.venue,
@@ -59,13 +65,17 @@ export function serializeEvent(e: DBEvent): Event {
     venue_link: e.venueLink,
     release_date: e.releaseDate?.toISOString() ?? null,
     ticketing_date: e.ticketingDate?.toISOString() ?? null,
-    banner: e.banner,
     start_time_date: e.startTimeDate?.toISOString() ?? null,
+    end_time_date: e.endTimeDate?.toISOString() ?? null,
     doors_open: e.doorsOpen?.toISOString() ?? null,
     route: e.route,
     img_version: e.imgVersion,
     waitlist_chance: e.waitlistChance ?? null,
     livestream: e.livestream ?? null,
+    priority: e.priority ?? null,
+    hide_ticketing_date: e.hideTicketingDate ?? false,
+    referrals_enabled: e.referralsEnabled ?? false,
+    standby_enabled: e.standbyEnabled ?? false,
   };
 }
 
@@ -298,9 +308,14 @@ export async function getEventById(id: string): Promise<Event | null> {
 export function getImageProxyUrl(
   eventId: string,
   imgVersion?: number | null,
+  variant: "default" | "mobile" = "default",
 ): string {
   const version = imgVersion || 1;
-  return `/api/images/${eventId}?v=${version}`;
+  const searchParams = new URLSearchParams({ v: version.toString() });
+  if (variant === "mobile") {
+    searchParams.set("variant", "mobile");
+  }
+  return `/api/images/${eventId}?${searchParams.toString()}`;
 }
 
 /**
@@ -354,15 +369,4 @@ export async function getUserWaitlistStatus(eventId: string, userEmail: string) 
 
 export async function getWaitlistCount(eventId: string) {
   return _getWaitlistCount(db, eventId);
-}
-
-/**
- * Check if waitlist is closed (within 2 hours of doors open)
- */
-export function isWaitlistClosed(doorsOpen: string | null): boolean {
-  if (!doorsOpen) return false;
-
-  const twoHoursBeforeDoorsOpen =
-    new Date(doorsOpen).getTime() - 2 * 60 * 60 * 1000;
-  return Date.now() >= twoHoursBeforeDoorsOpen;
 }

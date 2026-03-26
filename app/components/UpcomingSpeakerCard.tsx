@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { sanitizeSchema } from "@/app/lib/sanitize";
+import CountdownTimer from "@/app/events/[eventID]/CountdownTimer";
 
 export type UpcomingSpeakerCardProps = {
   name?: string;
@@ -23,6 +28,7 @@ export type UpcomingSpeakerCardProps = {
   appleCalendarUrl?: string; // Apple Calendar URL (ICS data URL)
   eventId?: string; // Event ID for notify signup
   isAlreadyNotified?: boolean; // Whether user is signed up for notifications
+  eventDateRaw?: string | null; // Raw ISO date for countdown timer
   capacity?: number | null; // Event capacity
   ticketsSold?: number | null; // Number of tickets sold
   reserved?: number | null; // Reserved seats
@@ -47,6 +53,7 @@ export default function UpcomingSpeakerCard({
   mystery = false,
   eventId = "",
   isAlreadyNotified = false,
+  eventDateRaw = null,
   capacity = null,
   ticketsSold = null,
   reserved = null,
@@ -141,6 +148,8 @@ export default function UpcomingSpeakerCard({
     return <MysteryCard
       showDate={showDate}
       dateText={dateText}
+      showDoorsOpen={showDoorsOpen}
+      doorsOpenText={doorsOpenText}
       showEventTime={showEventTime}
       eventTimeText={eventTimeText}
       showLocation={showLocation}
@@ -152,6 +161,7 @@ export default function UpcomingSpeakerCard({
       notifyStatus={notifyStatus}
       notifyMessage={notifyMessage}
       handleNotifyClick={handleNotifyClick}
+      eventDateRaw={eventDateRaw}
     />;
   }
 
@@ -368,9 +378,9 @@ function RevealedCard({
             </h2>
           )}
           {showHeader && (
-            <p className="mt-2 text-lg text-zinc-300 italic leading-relaxed">
-              {header}
-            </p>
+            <div className="mt-2 text-lg text-zinc-300 italic leading-relaxed prose prose-lg prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
+              <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
+            </div>
           )}
           {metaPills && (
             <div className="mt-5 flex flex-wrap gap-2.5">
@@ -388,9 +398,9 @@ function RevealedCard({
           </h2>
         )}
         {showHeader && (
-          <p className="mt-1.5 text-sm sm:text-base text-zinc-400 italic leading-relaxed">
-            {header}
-          </p>
+          <div className="mt-1.5 text-sm sm:text-base text-zinc-400 italic leading-relaxed prose prose-sm sm:prose-base prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
+            <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
+          </div>
         )}
         {metaPills && (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -420,6 +430,8 @@ function RevealedCard({
 function MysteryCard({
   showDate,
   dateText,
+  showDoorsOpen,
+  doorsOpenText,
   showEventTime,
   eventTimeText,
   showLocation,
@@ -431,9 +443,12 @@ function MysteryCard({
   notifyStatus,
   notifyMessage,
   handleNotifyClick,
+  eventDateRaw,
 }: {
   showDate: boolean;
   dateText: string;
+  showDoorsOpen: boolean;
+  doorsOpenText: string;
   showEventTime: boolean;
   eventTimeText: string;
   showLocation: boolean;
@@ -445,7 +460,11 @@ function MysteryCard({
   notifyStatus: "idle" | "loading" | "success" | "error";
   notifyMessage: string;
   handleNotifyClick: () => void;
+  eventDateRaw: string | null;
 }) {
+  const countdownDate = eventDateRaw ? new Date(eventDateRaw) : null;
+  const showCountdown =
+    countdownDate && !Number.isNaN(countdownDate.getTime()) && countdownDate > new Date();
   return (
     <div className="relative rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden text-center">
       {/* Blurred mystery background */}
@@ -467,9 +486,15 @@ function MysteryCard({
           ?
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-semibold text-zinc-300 mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold text-zinc-300 mb-6">
           Speaker — To Be Announced
         </h2>
+
+        {showCountdown && countdownDate && (
+          <div className="mb-6">
+            <CountdownTimer targetDate={countdownDate} />
+          </div>
+        )}
 
         {/* Compact metadata pills */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
@@ -477,6 +502,12 @@ function MysteryCard({
             <span className={PILL_CLASS}>
               <CalendarIcon />
               {dateText}
+            </span>
+          )}
+          {showDoorsOpen && (
+            <span className={PILL_CLASS}>
+              <DoorIcon />
+              {doorsOpenText}
             </span>
           )}
           {showEventTime && (

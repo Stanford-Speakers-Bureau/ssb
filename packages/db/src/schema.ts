@@ -21,11 +21,12 @@ export const events = pgTable("events", {
   reserved: bigint("reserved", { mode: "number" }).notNull().default(0),
   venueLink: text("venue_link"),
   releaseDate: timestamp("release_date", { withTimezone: true }),
-  banner: boolean("banner"),
   startTimeDate: timestamp("start_time_date", { withTimezone: true }),
+  endTimeDate: timestamp("end_time_date", { withTimezone: true }),
   doorsOpen: timestamp("doors_open", { withTimezone: true }),
   desc: text("desc"),
   img: text("img"),
+  mobileImg: text("mobile_img"),
   route: text("route"),
   tagline: text("tagline"),
   tickets: bigint("tickets", { mode: "number" }).notNull().default(0),
@@ -36,9 +37,13 @@ export const events = pgTable("events", {
   address: text("address").notNull().default(""),
   imgVersion: bigint("img_version", { mode: "number" }).notNull().default(1),
   ticketingDate: timestamp("ticketing_date", { withTimezone: true }),
-  livestream: boolean("livestream").default(false),
+  livestream: text("livestream"),
   title: text("title"),
+  priority: text("priority"),
+  hideTicketingDate: boolean("hide_ticketing_date").notNull().default(false),
   waitlistChance: text("waitlist_chance").notNull().default("High"),
+  standbyEnabled: boolean("standby_enabled").notNull().default(false),
+  referralsEnabled: boolean("referrals_enabled").notNull().default(false),
 });
 
 // ── Tickets ─────────────────────────────────────────────────────────────────

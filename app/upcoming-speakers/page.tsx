@@ -50,7 +50,7 @@ async function getTicketCount(eventId: string): Promise<number> {
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   const bufferDate = new Date();
-  bufferDate.setDate(bufferDate.getDate() - 1);
+  bufferDate.setDate(bufferDate.getDate() - 2);
 
   const rawEvents = await db.query.events.findMany({
     where: gte(events.startTimeDate, bufferDate),
@@ -70,10 +70,10 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
 
       return {
         id: event.id,
-        start_time_date: event.start_time_date,
+        start_time_date: isMystery ? null : event.start_time_date,
         doors_open: event.doors_open,
-        venue: event.venue,
-        venue_link: event.venue_link,
+        venue: isMystery ? null : event.venue,
+        venue_link: isMystery ? null : event.venue_link,
         name: isMystery ? null : event.name,
         desc: isMystery ? null : event.desc,
         tagline: isMystery ? null : event.tagline,
@@ -143,14 +143,14 @@ export default async function UpcomingSpeakers() {
                       ? "Speaker — To Be Announced"
                       : event.tagline || ""
                   }
-                  dateText={formatEventDate(event.start_time_date)}
+                  dateText={formatEventDate(event.isMystery ? event.doors_open : event.start_time_date)}
                   doorsOpenText={
                     event.doors_open
                       ? `Doors open ${formatTime(event.doors_open)}`
                       : ""
                   }
                   eventTimeText={
-                    event.start_time_date
+                    !event.isMystery && event.start_time_date
                       ? `Starts at ${formatTime(event.start_time_date)}`
                       : ""
                   }
@@ -164,6 +164,7 @@ export default async function UpcomingSpeakers() {
                   ctaHref={event.isMystery ? "" : `/events/${event.route}`}
                   ctaText={event.isMystery ? "" : "Get Tickets"}
                   mystery={event.isMystery}
+                  eventDateRaw={event.isMystery ? event.doors_open : null}
                   eventId={event.id}
                   isAlreadyNotified={userNotifications.has(event.id)}
                   capacity={event.capacity}

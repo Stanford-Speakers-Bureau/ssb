@@ -1,33 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
-
-type ProhibitedItemsProps = {
-  initialShow: boolean;
-};
-
-export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
-  const [show, setShow] = useState(initialShow);
-
-  useEffect(() => {
-    const handleTicketChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        hasTicket: boolean;
-        ticketId: string | null;
-      }>;
-      if (customEvent.detail) {
-        setShow(customEvent.detail.hasTicket);
-      }
-    };
-
-    window.addEventListener("ticketChanged", handleTicketChange);
-    return () => {
-      window.removeEventListener("ticketChanged", handleTicketChange);
-    };
-  }, []);
-
-  if (!show) return null;
-
+export default function ProhibitedItems() {
   return (
     <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5 space-y-5">
       <section>
@@ -48,7 +19,8 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
           Prohibited items
         </h3>
         <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
-          <li>Bags larger than a clutch purse (4.5" x 6.5")</li>
+          <li>Bags, including small purse</li>
+          <li>Electronic devices larger than a cell phone</li>
           <li>Food or drink, including water bottles</li>
           <li>Signs, flags, banners, or flyers of any kind</li>
           <li>Chairs of any kind (ADA seating will be provided on-site)</li>
@@ -100,10 +72,9 @@ export default function ProhibitedItems({ initialShow }: ProhibitedItemsProps) {
         <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>Attendees may be photographed or recorded.</li>
           <li>No photography or recording, aside from pre-approved media.</li>
-          <li>Media requests must be made by 5pm PST on Tuesday, February 17th by emailing <a href="mailto:tickets@stanfordspeakersbureau.com" className="text-amber-500 dark:text-amber-100/90 underline underline-offset-2 decoration-amber-300 dark:decoration-amber-600 hover:text-amber-900 dark:hover:text-amber-300 transition-colors">tickets@stanfordspeakersbureau.com</a>.</li>
         </ul>
       </section>
-      <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above condition and any others set by Stanford University.</p>
+      <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above conditions and any others set by Stanford University.</p>
     </div>
   );
 }

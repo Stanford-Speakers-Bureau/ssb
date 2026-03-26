@@ -1,6 +1,7 @@
 import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
 import {
+  CALENDAR_DEFAULT_DURATION_MS,
   IMPORTANT_NOTICE_ITEMS,
   PACIFIC_TIMEZONE,
   REFERRAL_MESSAGE,
@@ -248,6 +249,7 @@ type TicketEmailData = {
   eventName: string;
   ticketType: string;
   eventStartTime: string | null;
+  eventEndTime?: string | null;
   eventRoute: string | null;
   ticketId: string;
   eventVenue?: string | null;
@@ -328,8 +330,16 @@ function generateICalContent(data: TicketEmailData): string {
     : null;
 
   const startDate = new Date(data.eventStartTime);
-  // Default to 90 minutes duration
-  const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+  if (Number.isNaN(startDate.getTime())) return "";
+
+  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
+  let endDate = defaultEndDate;
+  if (data.eventEndTime) {
+    const parsedEndDate = new Date(data.eventEndTime);
+    if (!Number.isNaN(parsedEndDate.getTime())) {
+      endDate = parsedEndDate;
+    }
+  }
 
   const title = `Stanford Speakers Bureau: ${data.eventName || "Speaker Event"}`;
   const location = data.eventVenue || "";
@@ -462,6 +472,7 @@ async function generateTicketEmailHTML(
   const googleCalendarUrl = generateGoogleCalendarUrl({
     eventName: data.eventName,
     eventStartTime: data.eventStartTime,
+    eventEndTime: data.eventEndTime,
     eventRoute: data.eventRoute,
     eventVenue: data.eventVenue,
     eventDescription: data.eventDescription,
@@ -1310,10 +1321,10 @@ async function generateWaitlistEmailHTML(
 
           ${gmailBlendStart}
             <p style="margin: 0 0 16px 0; color: #f4f4f5; font-size: 16px; line-height: 1.6; font-weight: 600;">
-              Important: The online waitlist closes 2 hours before the event.
+              Important: If the standby line opens, the online waitlist closes.
             </p>
             <p style="margin: 0 0 24px 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-              After that, please come to the venue for the in-person waitlist. We'll do our best to accommodate everyone!
+              When that happens, please come to the venue for the standby line. We'll do our best to accommodate everyone!
             </p>
           ${gmailBlendEnd}
         </div>
@@ -1371,7 +1382,7 @@ Event Details:
 - Date & Time: ${formattedDate}
 ${eventVenue ? `- Location: ${eventVenue}` : ""}
 
-Important: The online waitlist closes 2 hours before the event. After that, please come to the venue for the in-person waitlist.
+Important: If the standby line opens, the online waitlist closes. When that happens, please come to the venue for the standby line.
 
 We look forward to seeing you there!
 

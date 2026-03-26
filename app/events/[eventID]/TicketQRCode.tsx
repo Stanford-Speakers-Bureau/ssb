@@ -21,8 +21,11 @@ export default function TicketQRCode({
   attendeeName = null,
   eventStartTime = null,
 }: TicketQRCodeProps) {
-  const isVIP = ticketType?.toLowerCase().trim() === "vip";
-  const isExternal = ticketType?.toLowerCase().trim() === "external";
+  const normalizedType = ticketType?.toLowerCase().trim();
+  const isVIP = normalizedType === "vip";
+  const isExternal = normalizedType === "external";
+  const isStandby = normalizedType === "standby";
+  const showArriveEarly = !isVIP && !isStandby;
 
   return (
     <div className="flex flex-col items-center">
@@ -70,9 +73,11 @@ export default function TicketQRCode({
         </div>
       )}
       <p className="mt-2 text-xs sm:text-sm text-zinc-300 text-center">
-        {attendeeName && eventStartTime ? (
+        {isStandby ? (
+          "Standby tickets do not guarantee entry. Arrive early for the best chance of admission."
+        ) : attendeeName && eventStartTime ? (
           <>
-            Ticket valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> on <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { month: "long", day: "numeric" })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>. We recommend arriving early to avoid long lines!
+            Ticket valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> on <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { month: "long", day: "numeric" })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>.{showArriveEarly && <><br />We recommend arriving early to avoid long lines!</>}
           </>
         ) : (
           "Show this QR code at the event entrance"

@@ -45,3 +45,13 @@ export const IMPORTANT_NOTICE_ITEMS = [
 ] as const;
 
 export const REFERRAL_MESSAGE = "Refer 10 people to earn a front row seat!";
+
+// Time constants
+/** Fallback event duration when no explicit end time is set. */
+export const EVENT_END_FALLBACK_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+/** Default duration used when generating calendar invites with no explicit end time. */
+export const CALENDAR_DEFAULT_DURATION_MS = 90 * 60 * 1000; // 90 minutes
+
+/** How far before an event start the livestream link becomes visible. */
+export const LIVESTREAM_STARTS_SOON_MS = 2 * 60 * 60 * 1000; // 2 hours

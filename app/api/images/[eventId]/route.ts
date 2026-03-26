@@ -23,9 +23,12 @@ export async function GET(
   // Get version from query param for cache key
   const url = new URL(request.url);
   const requestedVersion = url.searchParams.get("v") || "1";
+  const requestedVariant = url.searchParams.get("variant") === "mobile"
+    ? "mobile"
+    : "default";
 
-  // R2 cache key: images/{eventId}/v{version}
-  const r2Key = `images/${eventId}/v${requestedVersion}`;
+  // R2 cache key: images/{eventId}/{variant}/v{version}
+  const r2Key = `images/${eventId}/${requestedVariant}/v${requestedVersion}`;
 
   // Get R2 bucket from Cloudflare context
   const { env } = getCloudflareContext();
@@ -42,7 +45,7 @@ export async function GET(
           headers: {
             "Content-Type": contentType,
             ...CACHE_HEADERS,
-            ETag: `"${eventId}-v${requestedVersion}"`,
+            ETag: `"${eventId}-${requestedVariant}-v${requestedVersion}"`,
             "X-Cache": "HIT",
             "X-Cache-Source": "R2",
           },
@@ -66,7 +69,11 @@ export async function GET(
 
   // Get event from database
   const event = await getEventById(eventId);
-  if (!event || !event.img) {
+  const imageName = requestedVariant === "mobile"
+    ? event?.mobile_img || event?.img
+    : event?.img || event?.mobile_img;
+
+  if (!event || !imageName) {
     return new NextResponse("Not found", { status: 404 });
   }
 
@@ -79,7 +86,7 @@ export async function GET(
   const supabase = getSupabaseClient();
   const { data: signedData, error: signedError } = await supabase.storage
     .from("speakers")
-    .createSignedUrl(event.img, 60);
+    .createSignedUrl(imageName, 60);
 
   if (signedError || !signedData?.signedUrl) {
     return new NextResponse("Image not found", { status: 404 });
@@ -114,7 +121,7 @@ export async function GET(
     headers: {
       "Content-Type": contentType,
       ...CACHE_HEADERS,
-      ETag: `"${eventId}-v${requestedVersion}"`,
+      ETag: `"${eventId}-${requestedVariant}-v${requestedVersion}"`,
       "X-Cache": "MISS",
       "X-Cache-Source": "R2",
     },

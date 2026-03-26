@@ -1,4 +1,4 @@
-import { eq, and, ne, count, lt } from "drizzle-orm";
+import { eq, and, ne, count } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/postgres-js";
 import type * as schema from "./schema";
 import { tickets, events, waitlist } from "./schema";
@@ -15,24 +15,36 @@ export async function getTicketCounts(
 ): Promise<{
   vipCount: number;
   publicCount: number;
+  standbyCount: number;
   totalCount: number;
 }> {
-  const [[vipResult], [publicResult]] = await Promise.all([
+  const [[vipResult], [publicResult], [standbyResult]] = await Promise.all([
     db.select({ count: count() })
       .from(tickets)
       .where(and(eq(tickets.eventId, eventId), eq(tickets.type, "VIP"))),
     db.select({ count: count() })
       .from(tickets)
-      .where(and(eq(tickets.eventId, eventId), ne(tickets.type, "VIP"))),
+      .where(
+        and(
+          eq(tickets.eventId, eventId),
+          ne(tickets.type, "VIP"),
+          ne(tickets.type, "STANDBY"),
+        ),
+      ),
+    db.select({ count: count() })
+      .from(tickets)
+      .where(and(eq(tickets.eventId, eventId), eq(tickets.type, "STANDBY"))),
   ]);
 
   const vipCount = vipResult?.count ?? 0;
   const publicCount = publicResult?.count ?? 0;
+  const standbyCount = standbyResult?.count ?? 0;
 
   return {
     vipCount,
     publicCount,
-    totalCount: vipCount + publicCount,
+    standbyCount,
+    totalCount: vipCount + publicCount + standbyCount,
   };
 }
 
@@ -47,12 +59,14 @@ export async function getAvailablePublicTickets(
   publicSold: number;
   maxPublic: number;
   vipCount: number;
+  standbyCount: number;
+  standbyEnabled: boolean;
   totalCapacity: number;
   reserved: number;
 }> {
   const event = await db.query.events.findFirst({
     where: eq(events.id, eventId),
-    columns: { capacity: true, reserved: true },
+    columns: { capacity: true, reserved: true, standbyEnabled: true },
   });
 
   if (!event || !event.capacity) {
@@ -61,6 +75,8 @@ export async function getAvailablePublicTickets(
       publicSold: 0,
       maxPublic: 0,
       vipCount: 0,
+      standbyCount: 0,
+      standbyEnabled: false,
       totalCapacity: 0,
       reserved: 0,
     };
@@ -68,8 +84,9 @@ export async function getAvailablePublicTickets(
 
   const capacity = event.capacity;
   const reserved = event.reserved ?? 0;
+  const standbyEnabled = event.standbyEnabled ?? false;
 
-  const { vipCount, publicCount } = await getTicketCounts(db, eventId);
+  const { vipCount, publicCount, standbyCount } = await getTicketCounts(db, eventId);
 
   let maxPublic: number;
   if (vipCount <= reserved) {
@@ -79,13 +96,17 @@ export async function getAvailablePublicTickets(
   }
 
   maxPublic = Math.max(0, maxPublic);
-  const available = Math.max(0, maxPublic - publicCount);
+  const available = standbyEnabled
+    ? 0
+    : Math.max(0, maxPublic - publicCount);
 
   return {
     available,
     publicSold: publicCount,
     maxPublic,
     vipCount,
+    standbyCount,
+    standbyEnabled,
     totalCapacity: capacity,
     reserved,
   };
