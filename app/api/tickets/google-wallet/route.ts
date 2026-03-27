@@ -18,7 +18,7 @@ type TicketWalletData = {
   eventLink: string;
   eventLat: number;
   eventLng: number;
-  eventAddress: string | null;
+  eventAddress: string;
   start_time_date: string;
 };
 
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
       eventLat: Number(event.latitude),
       eventLng: Number(event.longitude),
-      eventAddress: event.address ?? null,
+      eventAddress: event.address ?? "",
       start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 
@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
       eventLat: Number(event.latitude),
       eventLng: Number(event.longitude),
-      eventAddress: event.address ?? null,
+      eventAddress: event.address ?? "",
       start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 

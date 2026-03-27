@@ -140,6 +140,11 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION "public"."create_ticket_with_name"(uuid, text, text, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "public"."create_ticket_with_name"(uuid, text, text, text) FROM "anon";
+REVOKE ALL ON FUNCTION "public"."create_ticket_with_name"(uuid, text, text, text) FROM "authenticated";
+GRANT EXECUTE ON FUNCTION "public"."create_ticket_with_name"(uuid, text, text, text) TO "service_role";
+
 CREATE OR REPLACE FUNCTION "public"."join_waitlist_with_name"(
   "p_event_id" uuid,
   "p_referral" text DEFAULT NULL,
@@ -161,9 +166,15 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  PERFORM 1 FROM waitlist
-  WHERE event_id = p_event_id
+  PERFORM 1 FROM events
+  WHERE id = p_event_id
   FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION USING
+      ERRCODE = 'P0001',
+      MESSAGE = 'event_not_found: Event does not exist';
+  END IF;
 
   SELECT id INTO v_existing_entry
   FROM waitlist
@@ -200,6 +211,11 @@ BEGIN
   );
 END;
 $$;
+
+REVOKE ALL ON FUNCTION "public"."join_waitlist_with_name"(uuid, text, text, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "public"."join_waitlist_with_name"(uuid, text, text, text) FROM "anon";
+REVOKE ALL ON FUNCTION "public"."join_waitlist_with_name"(uuid, text, text, text) FROM "authenticated";
+GRANT EXECUTE ON FUNCTION "public"."join_waitlist_with_name"(uuid, text, text, text) TO "service_role";
 
 CREATE OR REPLACE FUNCTION "public"."leave_waitlist"(
   "p_event_id" uuid,
@@ -248,3 +264,8 @@ BEGIN
   );
 END;
 $$;
+
+REVOKE ALL ON FUNCTION "public"."leave_waitlist"(uuid, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "public"."leave_waitlist"(uuid, text) FROM "anon";
+REVOKE ALL ON FUNCTION "public"."leave_waitlist"(uuid, text) FROM "authenticated";
+GRANT EXECUTE ON FUNCTION "public"."leave_waitlist"(uuid, text) TO "service_role";

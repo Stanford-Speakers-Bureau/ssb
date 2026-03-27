@@ -25,9 +25,24 @@ function getCookieDomain(): string | undefined {
   return undefined;
 }
 
+function getSessionPassword(): string {
+  const secret = process.env.SESSION_SECRET;
+
+  if (secret) {
+    return secret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "SESSION_SECRET environment variable must be set in production for secure session encryption.",
+    );
+  }
+
+  return "dev-secret-change-me-in-production-1234";
+}
+
 const sessionOptions: SessionOptions = {
-  password:
-    process.env.SESSION_SECRET || "dev-secret-change-me-in-production-1234",
+  password: getSessionPassword(),
   cookieName: process.env.SESSION_COOKIE_NAME || "ssb_session",
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
