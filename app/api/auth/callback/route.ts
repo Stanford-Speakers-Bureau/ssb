@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
-import { getSession } from "@/app/lib/session";
-import { isValidRedirect } from "@/app/lib/security";
+import { getRedirectForRelayState, getSession } from "@/app/lib/session";
 
 export async function POST(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -12,10 +11,12 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const samlResponse = formData.get("SAMLResponse");
     const relayState = formData.get("RelayState");
-    const redirectTo =
-      typeof relayState === "string" && isValidRedirect(relayState)
-        ? relayState
-        : "/upcoming-speakers";
+    const session = await getSession();
+    const redirectTo = getRedirectForRelayState(
+      session.loginState,
+      relayState,
+      "/upcoming-speakers",
+    );
 
     if (typeof samlResponse !== "string" || !samlResponse) {
       const redirectUrl = new URL(redirectTo, baseUrl);
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
       eduPersonScopedAffiliation: attrs.eduPersonScopedAffiliation,
     });
 
-    const session = await getSession();
+    delete session.loginState;
     session.user = user;
     await session.save();
     await upsertUserProfile(user);

@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 
@@ -11,6 +12,12 @@ export interface SessionUser {
 
 export interface SessionData {
   user?: SessionUser;
+  loginState?: LoginState;
+}
+
+export interface LoginState {
+  nonce: string;
+  redirectTo: string;
 }
 
 function getCookieDomain(): string | undefined {
@@ -57,4 +64,27 @@ const sessionOptions: SessionOptions = {
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
   return getIronSession<SessionData>(cookieStore, sessionOptions);
+}
+
+export function createLoginState(redirectTo: string): LoginState {
+  return {
+    nonce: randomUUID(),
+    redirectTo,
+  };
+}
+
+export function getRedirectForRelayState(
+  loginState: LoginState | undefined,
+  relayState: FormDataEntryValue | null,
+  fallbackRedirect: string,
+): string {
+  if (typeof relayState !== "string") {
+    return fallbackRedirect;
+  }
+
+  if (!loginState || relayState !== loginState.nonce) {
+    return fallbackRedirect;
+  }
+
+  return loginState.redirectTo;
 }

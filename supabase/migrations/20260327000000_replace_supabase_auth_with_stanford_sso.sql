@@ -56,6 +56,7 @@ CREATE OR REPLACE FUNCTION "public"."create_ticket_with_name"(
   "p_email" text DEFAULT NULL
 ) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_catalog
 AS $$
 DECLARE
   v_user_email TEXT;
@@ -152,6 +153,7 @@ CREATE OR REPLACE FUNCTION "public"."join_waitlist_with_name"(
   "p_email" text DEFAULT NULL
 ) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_catalog
 AS $$
 DECLARE
   v_user_email TEXT;
@@ -222,6 +224,7 @@ CREATE OR REPLACE FUNCTION "public"."leave_waitlist"(
   "p_email" text DEFAULT NULL
 ) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_catalog
 AS $$
 DECLARE
   v_user_email TEXT;

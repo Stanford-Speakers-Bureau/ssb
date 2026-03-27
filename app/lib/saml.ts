@@ -63,6 +63,23 @@ function stripPemHeaders(pem: string): string {
     .replace(/\s/g, "");
 }
 
+function normalizeCertificatePem(certificate: string): string {
+  const trimmed = certificate.trim().replace(/\\n/g, "\n");
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (trimmed.includes("-----BEGIN CERTIFICATE-----")) {
+    return trimmed;
+  }
+
+  const base64Body = trimmed.replace(/\s/g, "");
+  const wrappedBody = base64Body.match(/.{1,64}/g)?.join("\n") ?? base64Body;
+
+  return `-----BEGIN CERTIFICATE-----\n${wrappedBody}\n-----END CERTIFICATE-----`;
+}
+
 export function createSamlClient(request?: Request) {
   const baseUrl = getBaseUrl(request);
   const issuer = process.env.SAML_SP_ENTITY_ID || baseUrl;
@@ -71,7 +88,7 @@ export function createSamlClient(request?: Request) {
     entryPoint: "https://login.stanford.edu/idp/profile/SAML2/Redirect/SSO",
     issuer,
     callbackUrl: `${baseUrl}/api/auth/callback`,
-    idpCert: STANFORD_IDP_CERT,
+    idpCert: normalizeCertificatePem(STANFORD_IDP_CERT),
     privateKey: getPrivateKey(),
     decryptionPvk: getPrivateKey(),
     signatureAlgorithm: "sha256",
