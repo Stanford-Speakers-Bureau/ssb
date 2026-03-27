@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export const runtime = "experimental-edge";
-
 // Maximum allowed request body size (1MB)
 const MAX_CONTENT_LENGTH = 1024 * 1024;
 
@@ -52,7 +50,7 @@ function isValidOrigin(request: NextRequest): boolean {
 /**
  * Proxy to enforce security policies on API routes
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
