@@ -94,6 +94,8 @@ export function createSamlClient(request?: Request) {
     signatureAlgorithm: "sha256",
     identifierFormat: "urn:oasis:names:tc:SAML:2.0:nameid-format:transient",
     wantAssertionsSigned: true,
+    wantAuthnResponseSigned: true,
+    maxAssertionAgeMs: 300_000, // 5 minutes
     acceptedClockSkewMs: 5000,
     logoutUrl: "https://login.stanford.edu/idp/profile/Logout",
   });
@@ -117,15 +119,15 @@ export function mapSamlAttributes(
 ): StanfordSamlAttributes {
   const uid = getSingleValue(
     (profile["urn:oid:0.9.2342.19200300.100.1.1"] as MultiValue) ||
-      (profile.uid as MultiValue),
+    (profile.uid as MultiValue),
   );
   const displayName = getSingleValue(
     (profile["urn:oid:2.16.840.1.113730.3.1.241"] as MultiValue) ||
-      (profile.displayName as MultiValue),
+    (profile.displayName as MultiValue),
   );
   const email = getSingleValue(
     (profile["urn:oid:0.9.2342.19200300.100.1.3"] as MultiValue) ||
-      (profile.mail as MultiValue),
+    (profile.mail as MultiValue),
   );
 
   return {
@@ -134,11 +136,11 @@ export function mapSamlAttributes(
     email,
     eduPersonAffiliation: getArrayValue(
       (profile["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"] as MultiValue) ||
-        (profile.eduPersonAffiliation as MultiValue),
+      (profile.eduPersonAffiliation as MultiValue),
     ),
     eduPersonScopedAffiliation: getArrayValue(
       (profile["urn:oid:1.3.6.1.4.1.5923.1.1.1.9"] as MultiValue) ||
-        (profile.eduPersonScopedAffiliation as MultiValue),
+      (profile.eduPersonScopedAffiliation as MultiValue),
     ),
   };
 }
