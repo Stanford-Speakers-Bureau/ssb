@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import {
-  createServerSupabaseClient,
   updateReferralRecords,
   getAvailablePublicTickets,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { isEventOver } from "@/app/lib/eventTime";
 import {
   db,
@@ -80,13 +80,9 @@ export async function GET(req: Request) {
     }
 
     // 3. Handle User Request (Get My Tickets)
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: "Not authenticated. Please sign in." },
         { status: 401 },
@@ -151,17 +147,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    // Extract name from Google OAuth metadata (required for create_ticket_with_name)
-    const userName: string | null =
-      user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+    const user = await getSessionUser();
+    const userName: string | null = user?.displayName || null;
 
     // --- USER CREATE TICKET ---
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },
@@ -554,13 +544,9 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },

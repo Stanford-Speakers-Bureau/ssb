@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  createServerSupabaseClient,
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { sendWaitlistEmail } from "@/app/lib/email";
@@ -21,15 +21,20 @@ const WAITLIST_MESSAGES = {
     "Waitlist is now closed. Please visit the venue for the standby line.",
 } as const;
 
+type JoinWaitlistRpcResult = {
+  position: number;
+  total: number;
+};
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "";
+}
+
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },
@@ -118,8 +123,7 @@ export async function POST(req: Request) {
     // Derive name from body override or OAuth metadata
     const waitlistName =
       nameFromBody?.trim() ||
-      user?.user_metadata?.full_name ||
-      user?.user_metadata?.name ||
+      user.displayName ||
       null;
 
     if (!waitlistName) {
@@ -130,9 +134,9 @@ export async function POST(req: Request) {
     }
 
     // Use stored procedure to atomically join waitlist (prevents position collisions)
-    let rpcData: any;
+    let rpcData: JoinWaitlistRpcResult | null = null;
     try {
-      const result = await db.execute<{ join_waitlist_with_name: any }>(sql`
+      const result = await db.execute<{ join_waitlist_with_name: JoinWaitlistRpcResult }>(sql`
         SELECT join_waitlist_with_name(
           ${event_id}::uuid,
           ${referral || null},
@@ -141,8 +145,8 @@ export async function POST(req: Request) {
         )
       `);
       rpcData = result[0]?.join_waitlist_with_name;
-    } catch (rpcError: any) {
-      const msg = (rpcError.message || "").toLowerCase();
+    } catch (rpcError: unknown) {
+      const msg = getErrorMessage(rpcError).toLowerCase();
       if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Waitlist RPC missing:", rpcError);
         return NextResponse.json(
@@ -167,10 +171,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const { position: nextPosition } = rpcData as {
-      position: number;
-      total: number;
-    };
+    const nextPosition = rpcData?.position;
+
+    if (!nextPosition) {
+      return NextResponse.json(
+        { error: WAITLIST_MESSAGES.ERROR_GENERIC },
+        { status: 500 },
+      );
+    }
 
     // Calculate actual position (same logic as GET handler)
     // This ensures the email shows the same position as the UI
@@ -216,13 +224,9 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },
@@ -250,8 +254,8 @@ export async function DELETE(req: Request) {
       await db.execute(sql`
         SELECT leave_waitlist(${event_id}::uuid, ${user.email})
       `);
-    } catch (rpcError: any) {
-      const msg = (rpcError.message || "").toLowerCase();
+    } catch (rpcError: unknown) {
+      const msg = getErrorMessage(rpcError).toLowerCase();
       if (msg.includes("does not exist") && msg.includes("function")) {
         console.error("Waitlist RPC missing:", rpcError);
         return NextResponse.json(
@@ -294,13 +298,9 @@ export async function DELETE(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/app/lib/supabase";
+import { clearSession } from "@/app/lib/auth";
 import { isValidRedirect } from "@/app/lib/security";
 
 export async function GET(req: Request) {
@@ -9,15 +9,7 @@ export async function GET(req: Request) {
 
   const safeRedirect = isValidRedirect(redirectTo) ? redirectTo : "/";
 
-  const supabase = await createServerSupabaseClient();
-
-  // Sign out with global scope to clear all sessions
-  const { error } = await supabase.auth.signOut({ scope: "global" });
-
-  if (error) {
-    console.error("Sign out error:", error);
-    // Still redirect even on error to ensure user can navigate
-  }
+  await clearSession();
 
   return NextResponse.redirect(new URL(safeRedirect, baseUrl));
 }

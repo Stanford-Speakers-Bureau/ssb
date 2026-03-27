@@ -5,9 +5,9 @@ import {
   getEventByRoute,
   isEventMystery,
   getImageProxyUrl,
-  createServerSupabaseClient,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
 import { getEventEndDate } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
@@ -69,10 +69,7 @@ async function getUserTicketStatus(eventId: string): Promise<{
   isOnWaitlist: boolean;
 }> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
     if (!user?.email)
       return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, ticketScanned: false, isOnWaitlist: false };
@@ -103,10 +100,7 @@ async function getUserTicketStatus(eventId: string): Promise<{
 
 async function getUserNotificationStatus(eventId: string): Promise<boolean> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
     if (!user?.email) return false;
 

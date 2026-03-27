@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  createServerSupabaseClient,
   getSignedImageUrl,
 } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { getAppleWalletPass } from "@/app/lib/wallet";
 import { db, eq, and, tickets } from "@ssb/db";
 
@@ -19,19 +19,15 @@ type TicketWalletData = {
   eventLink: string;
   eventLat: number;
   eventLng: number;
-  eventAddress: number;
+  eventAddress: string | null;
 };
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
-      const redirectUrl = new URL("/api/auth/google", req.url);
+    if (!user?.email) {
+      const redirectUrl = new URL("/api/auth/login", req.url);
       console.log(redirectUrl);
 
       redirectUrl.searchParams.set(
@@ -107,7 +103,7 @@ export async function GET(req: NextRequest) {
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
       eventLat: Number(event.latitude),
       eventLng: Number(event.longitude),
-      eventAddress: event.address as any,
+      eventAddress: event.address ?? null,
       start_time_date: event.startTimeDate?.toISOString() ?? "",
     };
 

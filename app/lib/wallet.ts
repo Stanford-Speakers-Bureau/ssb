@@ -15,7 +15,7 @@ type TicketWalletData = {
   eventLink: string;
   eventLat: number;
   eventLng: number;
-  eventAddress: number;
+  eventAddress: string | null;
   start_time_date: string;
 };
 

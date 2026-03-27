@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  verifyAdminOrScannerRequest,
-  getTicketCounts,
-} from "@/app/lib/supabase";
+import { getTicketCounts } from "@/app/lib/supabase";
+import { verifyAdminOrScannerRequest } from "@/app/lib/auth";
 import { db, eq, events } from "@ssb/db";
 
 /**

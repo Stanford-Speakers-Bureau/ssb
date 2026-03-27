@@ -7,7 +7,11 @@ export const runtime = "experimental-edge";
 const MAX_CONTENT_LENGTH = 1024 * 1024;
 
 // Routes that don't require origin validation (OAuth callbacks, etc.)
-const ORIGIN_EXEMPT_ROUTES = ["/api/auth/google"];
+const ORIGIN_EXEMPT_ROUTES = [
+  "/api/auth/login",
+  "/api/auth/callback",
+  "/api/auth/metadata",
+];
 
 /**
  * Get allowed origins for CSRF validation
@@ -75,15 +79,17 @@ export async function middleware(request: NextRequest) {
   // Validate Content-Type for requests with body
   if (["POST", "PUT", "PATCH"].includes(method)) {
     const contentType = request.headers.get("content-type");
+    const isSamlCallback = pathname.startsWith("/api/auth/callback");
 
     if (
       !contentType?.includes("application/json") &&
-      !contentType?.includes("multipart/form-data")
+      !contentType?.includes("multipart/form-data") &&
+      !(isSamlCallback && contentType?.includes("application/x-www-form-urlencoded"))
     ) {
       return NextResponse.json(
         {
           error:
-            "Invalid content type. Expected application/json or multipart/form-data",
+            "Invalid content type. Expected application/json, multipart/form-data, or form-encoded SSO callback data",
         },
         { status: 400 },
       );

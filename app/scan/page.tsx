@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { verifyAdminOrScannerRequest } from "@/app/lib/supabase";
+import { verifyAdminOrScannerRequest } from "@/app/lib/auth";
 import ScanClient from "./ScanClient";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function ScannerPage() {
 
   if (!auth.authorized) {
     if (auth.error === "Not authenticated") {
-      redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/scan")}`);
+      redirect(`/api/auth/login?redirect_to=${encodeURIComponent("/scan")}`);
     }
 
     redirect(`/`);

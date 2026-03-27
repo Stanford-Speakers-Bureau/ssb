@@ -1,12 +1,32 @@
 import { NextResponse } from "next/server";
 import {
   verifyAdminOrScannerRequest,
-  createServerSupabaseClient,
-  getSupabaseClient,
-} from "@/app/lib/supabase";
+  getDisplayNameForEmail,
+  getSessionUser,
+} from "@/app/lib/auth";
 import { db, eq, and, events, tickets } from "@ssb/db";
 import { isValidEmail } from "@/app/lib/validation";
 import { sendVIPScanNotification } from "@/app/lib/email";
+
+async function resolveTicketUserName(
+  email: string | null,
+  name: string | null,
+): Promise<string | null> {
+  if (name) {
+    return name;
+  }
+
+  if (!email) {
+    return null;
+  }
+
+  try {
+    return await getDisplayNameForEmail(email);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -33,19 +53,9 @@ export async function POST(req: Request) {
     }
 
     // Get scanner's user information
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user: scannerUser },
-    } = await supabase.auth.getUser();
+    const scannerUser = await getSessionUser();
     const scannerEmail = scannerUser?.email || null;
-    let scannerName: string | null = null;
-    if (scannerUser?.user_metadata) {
-      scannerName =
-        scannerUser.user_metadata.full_name ||
-        scannerUser.user_metadata.name ||
-        scannerUser.user_metadata.display_name ||
-        null;
-    }
+    const scannerName = scannerUser?.displayName || null;
 
     // Check if there's a live event
     const liveEvent = await db.query.events.findFirst({
@@ -129,27 +139,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get user name from ticket record, fall back to auth metadata for pre-migration tickets
-    let userName: string | null = ticket.name || null;
-    if (!userName && ticket.email) {
-      try {
-        const adminClient = getSupabaseClient();
-        const { data: usersList, error: authError } =
-          await adminClient.auth.admin.listUsers();
-        if (!authError && usersList?.users) {
-          const user = usersList.users.find((u) => u.email === ticket!.email);
-          if (user?.user_metadata) {
-            userName =
-              user.user_metadata.full_name ||
-              user.user_metadata.name ||
-              user.user_metadata.display_name ||
-              null;
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-      }
-    }
+    const userName = await resolveTicketUserName(ticket.email, ticket.name);
 
     // If already scanned, return that status
     if (ticket.scanned) {
@@ -310,27 +300,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // Get user name from ticket record, fall back to auth metadata for pre-migration tickets
-    let userName: string | null = ticket.name || null;
-    if (!userName && ticket.email) {
-      try {
-        const adminClient = getSupabaseClient();
-        const { data: usersList, error: authError } =
-          await adminClient.auth.admin.listUsers();
-        if (!authError && usersList?.users) {
-          const user = usersList.users.find((u) => u.email === ticket.email);
-          if (user?.user_metadata) {
-            userName =
-              user.user_metadata.full_name ||
-              user.user_metadata.name ||
-              user.user_metadata.display_name ||
-              null;
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-      }
-    }
+    const userName = await resolveTicketUserName(ticket.email, ticket.name);
 
     // Return ticket status
     if (ticket.scanned) {

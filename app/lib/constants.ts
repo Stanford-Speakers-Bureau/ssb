@@ -6,7 +6,7 @@ export const NOTIFY_MESSAGES = {
   ERROR_GENERIC: "Something went wrong. Please try again.",
   ERROR_MISSING_SPEAKER_ID: "Missing required field: speaker_id",
   ERROR_EVENT_NOT_FOUND: "Event not found",
-  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Stanford.",
 } as const;
 
 // Ticketing notification messages (notify when ticketing opens)
@@ -23,7 +23,7 @@ export const SUGGEST_MESSAGES = {
   ERROR_GENERIC: "Something went wrong. Please try again.",
   ERROR_MISSING_SPEAKER: "Please enter a speaker name.",
   ERROR_TOO_LONG: "Speaker name must be 500 characters or less.",
-  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Stanford.",
   ERROR_BANNED: "You have been banned from making suggestions.",
 } as const;
 

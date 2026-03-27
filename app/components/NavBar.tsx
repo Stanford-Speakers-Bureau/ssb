@@ -156,7 +156,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   </Link>
                 ) : (
                   <Link
-                    href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
+                    href={`/api/auth/login?redirect_to=${encodeURIComponent(pathname)}`}
                     className={linkClasses}
                   >
                     Sign In
@@ -284,7 +284,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                       </Link>
                     ) : (
                       <Link
-                        href={`/api/auth/google?redirect_to=${encodeURIComponent(pathname)}`}
+                        href={`/api/auth/login?redirect_to=${encodeURIComponent(pathname)}`}
                         className={mobileLinkClasses}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}

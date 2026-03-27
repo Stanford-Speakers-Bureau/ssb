@@ -7,7 +7,8 @@ Custom designed ticketing system to allow for referral tracking and more powerfu
 - AWS simple email service
 - Hosted on Cloudflare Workers using Open Next
 - Cloudflare R2 for image caching
-- Supabase Auth + DB
+- Stanford SSO + first-party sessions
+- Supabase DB + storage
 - Upstash Redis for rate limiting
 
 ## Development
@@ -21,6 +22,12 @@ SUPABASE_URL
 SUPABASE_KEY
 SUPABASE_KEY_PUBLIC
 NEXT_PUBLIC_BASE_URL
+SESSION_SECRET
+SESSION_COOKIE_NAME
+SESSION_COOKIE_DOMAIN
+SAML_SP_ENTITY_ID
+SP_PRIVATE_KEY
+SP_PUBLIC_CERT
 UPSTASH_REDIS_REST_URL
 SES_FROM_EMAIL
 UPSTASH_REDIS_REST_TOKEN
@@ -48,6 +55,12 @@ these must be set in your `wrangler.jsonc` or `wrangler.toml`
 ```
 SUPABASE_URL
 NEXT_PUBLIC_BASE_URL
+SESSION_SECRET
+SESSION_COOKIE_NAME
+SESSION_COOKIE_DOMAIN
+SAML_SP_ENTITY_ID
+SP_PRIVATE_KEY
+SP_PUBLIC_CERT
 UPSTASH_REDIS_REST_URL
 SES_FROM_EMAIL
 AWS_REGION
@@ -57,10 +70,13 @@ AWS_REGION
 
 ### Authenticating Locally
 
-whitelist:
+Stanford SPDB should allow the local web app service provider metadata and callback:
 
 ```
-http://localhost:3000/callback/auth*
+http://localhost:3000/api/auth/metadata
+http://localhost:3000/api/auth/callback
 ```
 
-@ https://supabase.com/dashboard/project/qxevtucghgjbewpwntry/auth/url-configuration
+Use the same `SESSION_SECRET` and `SESSION_COOKIE_NAME` in `web` and `admin`.
+On localhost, leave `SESSION_COOKIE_DOMAIN` unset so the shared `localhost` cookie
+works across ports.

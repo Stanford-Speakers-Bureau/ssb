@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getSessionUser();
   return NextResponse.json({ authenticated: !!user });
 }

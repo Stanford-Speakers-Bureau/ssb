@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createServerSupabaseClient,
-} from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, referrals } from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { checkRateLimit, referralValidateRatelimit } from "@/app/lib/ratelimit";
@@ -16,13 +14,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get("eventId") || searchParams.get("event_id");
 
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -62,13 +56,9 @@ export async function GET(req: Request) {
  */
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
