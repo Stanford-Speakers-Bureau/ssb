@@ -24,6 +24,7 @@ type SanitizedEvent = {
   id: string;
   start_time_date: string | null;
   doors_open: string | null;
+  release_date: string | null;
   venue: string | null;
   venue_link: string | null;
   name: string | null;
@@ -72,6 +73,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         id: event.id,
         start_time_date: isMystery ? null : event.start_time_date,
         doors_open: event.doors_open,
+        release_date: event.release_date,
         venue: isMystery ? null : event.venue,
         venue_link: isMystery ? null : event.venue_link,
         name: isMystery ? null : event.name,
@@ -164,7 +166,7 @@ export default async function UpcomingSpeakers() {
                   ctaHref={event.isMystery ? "" : `/events/${event.route}`}
                   ctaText={event.isMystery ? "" : "Get Tickets"}
                   mystery={event.isMystery}
-                  eventDateRaw={event.isMystery ? event.doors_open : null}
+                  eventDateRaw={event.isMystery ? event.release_date : null}
                   eventId={event.id}
                   isAlreadyNotified={userNotifications.has(event.id)}
                   capacity={event.capacity}
