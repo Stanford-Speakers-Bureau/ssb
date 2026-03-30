@@ -69,9 +69,9 @@ function isValidOrigin(request: NextRequest): boolean {
 }
 
 /**
- * Proxy to enforce security policies on API routes
+ * Middleware to enforce security policies on API routes
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
