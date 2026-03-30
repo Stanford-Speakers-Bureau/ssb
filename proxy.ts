@@ -1,13 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export const runtime = "experimental-edge";
-
 // Maximum allowed request body size (1MB)
 const MAX_CONTENT_LENGTH = 1024 * 1024;
 
 // Routes that don't require origin validation (OAuth callbacks, etc.)
-const ORIGIN_EXEMPT_ROUTES = ["/api/auth/google"];
+const ORIGIN_EXEMPT_ROUTES = [
+  "/api/auth/login",
+  "/api/auth/callback",
+  "/api/auth/metadata",
+];
 
 /**
  * Get allowed origins for CSRF validation
@@ -16,14 +18,29 @@ function getAllowedOrigins(request: NextRequest): string[] {
   const host = request.headers.get("host") || "";
   const isProduction = process.env.NODE_ENV === "production";
 
-  const origins = [`https://${host}`];
+  const origins = host ? [`https://${host}`] : [];
 
   // Only allow localhost in development
   if (!isProduction) {
-    origins.push(process.env.NEXT_PUBLIC_ROOT_URL ?? "http://localhost:3000");
+    origins.push(
+      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
+      ...(host ? [`http://${host}`] : []),
+    );
   }
 
   return origins;
+}
+
+function normalizeOrigin(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -39,16 +56,22 @@ function isValidOrigin(request: NextRequest): boolean {
   // Allow requests without origin/referer (same-origin requests, curl, etc.)
   if (!requestOrigin) return true;
 
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+  if (!normalizedRequestOrigin) {
+    return false;
+  }
+
   const allowedOrigins = getAllowedOrigins(request);
-  return allowedOrigins.some((allowed) =>
-    requestOrigin.startsWith(allowed.replace(/\/$/, "")),
-  );
+  return allowedOrigins
+    .map((allowed) => normalizeOrigin(allowed))
+    .filter((allowed): allowed is string => Boolean(allowed))
+    .includes(normalizedRequestOrigin);
 }
 
 /**
  * Proxy to enforce security policies on API routes
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
@@ -75,15 +98,17 @@ export async function middleware(request: NextRequest) {
   // Validate Content-Type for requests with body
   if (["POST", "PUT", "PATCH"].includes(method)) {
     const contentType = request.headers.get("content-type");
+    const isSamlCallback = pathname.startsWith("/api/auth/callback");
 
     if (
       !contentType?.includes("application/json") &&
-      !contentType?.includes("multipart/form-data")
+      !contentType?.includes("multipart/form-data") &&
+      !(isSamlCallback && contentType?.includes("application/x-www-form-urlencoded"))
     ) {
       return NextResponse.json(
         {
           error:
-            "Invalid content type. Expected application/json or multipart/form-data",
+            "Invalid content type. Expected application/json, multipart/form-data, or form-encoded SSO callback data",
         },
         { status: 400 },
       );

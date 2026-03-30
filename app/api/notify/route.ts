@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createServerSupabaseClient,
-} from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, events, notify } from "@ssb/db";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { notifyRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
@@ -48,15 +46,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = await createServerSupabaseClient();
+    const user = await getSessionUser();
 
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },

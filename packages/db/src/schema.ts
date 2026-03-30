@@ -168,6 +168,23 @@ export const roles = pgTable("roles", {
   roles: text("roles"),
 });
 
+// ── User Profiles ────────────────────────────────────────────────────────────
+export const userProfiles = pgTable(
+  "user_profiles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSignInAt: timestamp("last_sign_in_at", { withTimezone: true }).notNull().defaultNow(),
+    email: text("email").notNull(),
+    uid: text("uid"),
+    displayName: text("display_name").notNull(),
+    eduPersonAffiliation: text("edu_person_affiliation").array().notNull().default([]),
+    eduPersonScopedAffiliation: text("edu_person_scoped_affiliation").array().notNull().default([]),
+  },
+  (t) => [uniqueIndex("user_profiles_email_unique").on(t.email)],
+);
+
 // ── Relations ───────────────────────────────────────────────────────────────
 
 export const eventsRelations = relations(events, ({ many }) => ({

@@ -122,7 +122,7 @@ export default function UpcomingSpeakerCard({
       });
 
       if (response.status === 401) {
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(`/upcoming-speakers?notify=${eventId}`)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(`/upcoming-speakers?notify=${eventId}`)}`;
         return;
       }
 

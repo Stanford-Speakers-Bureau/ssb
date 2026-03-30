@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createServerSupabaseClient,
-} from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, suggest, votes } from "@ssb/db";
 import { voteRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
@@ -12,21 +10,16 @@ export const VOTE_MESSAGES = {
   ALREADY_VOTED: "You've already voted for this speaker.",
   NOT_VOTED: "You haven't voted for this speaker.",
   ERROR_GENERIC: "Something went wrong. Please try again.",
-  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Google.",
+  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Stanford.",
   ERROR_MISSING_SPEAKER_ID: "Missing required field: speaker_id",
   ERROR_SPEAKER_NOT_FOUND: "Speaker suggestion not found.",
 } as const;
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getSessionUser();
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },
@@ -106,14 +99,9 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getSessionUser();
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: VOTE_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },

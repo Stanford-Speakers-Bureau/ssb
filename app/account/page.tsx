@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  createServerSupabaseClient,
-  formatEventDate,
-  formatTime,
-} from "@/app/lib/supabase";
+import { formatEventDate, formatTime } from "@/app/lib/supabase";
+import { getSessionUser, getUserProfileByEmail } from "@/app/lib/auth";
 import { db, eq, tickets } from "@ssb/db";
 import SignOutButton from "./SignOutButton";
 
@@ -28,15 +25,18 @@ interface Ticket {
   } | null;
 }
 
+function formatAffiliationLabel(affiliation: string): string {
+  return affiliation
+    .split(/[_-]/g)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 async function getUserTickets(): Promise<Ticket[]> {
-  const supabase = await createServerSupabaseClient();
+  const user = await getSessionUser();
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user?.email) {
+  if (!user?.email) {
     return [];
   }
 
@@ -68,16 +68,17 @@ async function getUserTickets(): Promise<Ticket[]> {
 }
 
 export default async function AccountPage() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   // Redirect to sign in if not authenticated
   if (!user?.email) {
-    redirect(`/api/auth/google?redirect_to=${encodeURIComponent("/account")}`);
+    redirect(`/api/auth/login?redirect_to=${encodeURIComponent("/account")}`);
   }
 
+  const userProfile = await getUserProfileByEmail(user.email);
+  const affiliations = userProfile?.eduPersonAffiliation?.length
+    ? userProfile.eduPersonAffiliation
+    : user.eduPersonAffiliation;
   const tickets = await getUserTickets();
 
   return (
@@ -91,6 +92,28 @@ export default async function AccountPage() {
             <p className="text-zinc-600 dark:text-zinc-400">
               Manage your tickets and account settings
             </p>
+          </div>
+
+          <div className="mb-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+              Stanford Affiliation
+            </p>
+            {affiliations.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {affiliations.map((affiliation) => (
+                  <span
+                    key={affiliation}
+                    className="rounded-full bg-[#A80D0C]/10 px-3 py-1 text-sm font-medium text-[#A80D0C] dark:bg-[#A80D0C]/20 dark:text-red-200"
+                  >
+                    {formatAffiliationLabel(affiliation)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Stanford SSO did not provide an affiliation for your account.
+              </p>
+            )}
           </div>
 
           <div className="mb-6">

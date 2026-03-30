@@ -1,12 +1,6 @@
-export const ALLOWED_REDIRECTS = [
+const ALLOWED_API_REDIRECT_PREFIXES = [
   "/api/tickets/apple-wallet",
   "/api/tickets/google-wallet",
-  "/upcoming-speakers",
-  "/events", // Also covers /events/[eventid] paths (e.g., /events/mark-rober)
-  "/suggest",
-  "/account",
-  "/scan",
-  "/",
 ];
 
 export function isValidRedirect(path: string): boolean {
@@ -14,15 +8,14 @@ export function isValidRedirect(path: string): boolean {
   if (!path.startsWith("/")) return false;
   // Prevent protocol-relative URLs (//evil.com)
   if (path.startsWith("//")) return false;
+  // Prevent redirects to auth API routes (avoids loops through auth endpoints)
+  if (path === "/api/auth" || path.startsWith("/api/auth/")) return false;
+  // Allow-list post-auth wallet routes
+  if (ALLOWED_API_REDIRECT_PREFIXES.some((prefix) => path.startsWith(prefix))) {
+    return true;
+  }
+  // Disallow other API routes by default
+  if (path.startsWith("/api/")) return false;
 
-  // Allow root path
-  if (path === "/") return true;
-
-  // Check if path starts with an allowed prefix
-  return ALLOWED_REDIRECTS.some(
-    (allowed) =>
-      path === allowed ||
-      path.startsWith(allowed + "?") ||
-      path.startsWith(allowed + "/"),
-  );
+  return true;
 }

@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createServerSupabaseClient,
-} from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, suggest, votes, roles } from "@ssb/db";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, suggestRatelimit } from "@/app/lib/ratelimit";
@@ -37,15 +35,9 @@ function toTitleCase(input: string): string {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getSessionUser();
 
-    // Get current user - this verifies the session token server-side
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user?.email) {
+    if (!user?.email) {
       return NextResponse.json(
         { error: SUGGEST_MESSAGES.ERROR_NOT_AUTHENTICATED },
         { status: 401 },

@@ -113,7 +113,7 @@ export default function useTicketActions({
         redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?notify=true`;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
       const data = (await response.json()) as { error?: string };
@@ -225,11 +225,11 @@ export default function useTicketActions({
       });
 
       if (response.status === 401) {
-        // Not authenticated, redirect to Google sign-in
+        // Not authenticated, redirect to Stanford sign-in
         redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?waitlist=true`;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
 
@@ -369,11 +369,11 @@ export default function useTicketActions({
       });
 
       if (response.status === 401) {
-        // Not authenticated, redirect to Google sign-in with auto_ticket flag
+        // Not authenticated, redirect to Stanford sign-in with auto_ticket flag
         redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?ticket=true`;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
 
@@ -436,7 +436,7 @@ export default function useTicketActions({
         redirecting = true;
         const currentPath = window.location.pathname;
         const redirectUrl = `${currentPath}?standby_ticket=true`;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
 
@@ -596,7 +596,7 @@ export default function useTicketActions({
           window.location.pathname +
           window.location.search +
           window.location.hash;
-        window.location.href = `/api/auth/google?redirect_to=${encodeURIComponent(currentUrl)}`;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(currentUrl)}`;
         return;
       }
 

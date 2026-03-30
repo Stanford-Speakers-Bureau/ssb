@@ -4,13 +4,13 @@ import UpcomingSpeakerCard from "@/app/components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
 import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import {
-  createServerSupabaseClient,
   formatEventDate,
   formatTime,
   getImageProxyUrl,
   isEventMystery,
   serializeEvent,
 } from "@/app/lib/supabase";
+import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, gte, count as dbCount, events, tickets, notify } from "@ssb/db";
 
 
@@ -94,10 +94,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
 
 async function getUserNotifications(): Promise<Set<string>> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser();
 
     if (!user?.email) return new Set();
 
