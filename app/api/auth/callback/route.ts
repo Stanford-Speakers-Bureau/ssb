@@ -1,27 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
-import { getRedirectForRelayState, getSession } from "@/app/lib/session";
+import { consumeLoginState, getSession } from "@/app/lib/session";
+
+function buildFailureRedirect(
+  baseUrl: string,
+  redirectTo: string,
+  description?: string,
+) {
+  const redirectUrl = new URL(redirectTo, baseUrl);
+  redirectUrl.searchParams.set("error", "auth_failed");
+
+  if (description) {
+    redirectUrl.searchParams.set("error_description", description);
+  }
+
+  return NextResponse.redirect(redirectUrl, 303);
+}
 
 export async function POST(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const baseUrl = requestUrl.origin;
+  let redirectTo = "/upcoming-speakers";
 
   try {
     const formData = await request.formData();
     const samlResponse = formData.get("SAMLResponse");
     const relayState = formData.get("RelayState");
-    const session = await getSession();
-    const redirectTo = getRedirectForRelayState(
-      session.loginState,
-      relayState,
-      "/upcoming-speakers",
-    );
+    const loginState = await consumeLoginState(relayState);
+    redirectTo = loginState?.redirectTo || "/upcoming-speakers";
+
+    if (!loginState) {
+      return buildFailureRedirect(baseUrl, redirectTo, "invalid_login_state");
+    }
 
     if (typeof samlResponse !== "string" || !samlResponse) {
-      const redirectUrl = new URL(redirectTo, baseUrl);
-      redirectUrl.searchParams.set("error", "auth_failed");
-      return NextResponse.redirect(redirectUrl, 303);
+      return buildFailureRedirect(baseUrl, redirectTo);
     }
 
     const { profile } = await createSamlClient(request).validatePostResponseAsync({
@@ -29,18 +43,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!profile) {
-      const redirectUrl = new URL(redirectTo, baseUrl);
-      redirectUrl.searchParams.set("error", "auth_failed");
-      return NextResponse.redirect(redirectUrl, 303);
+      return buildFailureRedirect(baseUrl, redirectTo);
     }
 
     const attrs = mapSamlAttributes(profile as Record<string, unknown>);
 
     if (!attrs.email || !attrs.displayName) {
-      const redirectUrl = new URL(redirectTo, baseUrl);
-      redirectUrl.searchParams.set("error", "auth_failed");
-      redirectUrl.searchParams.set("error_description", "missing_profile_data");
-      return NextResponse.redirect(redirectUrl, 303);
+      return buildFailureRedirect(baseUrl, redirectTo, "missing_profile_data");
     }
 
     const user = createSessionUser({
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
       eduPersonScopedAffiliation: attrs.eduPersonScopedAffiliation,
     });
 
-    delete session.loginState;
+    const session = await getSession();
     session.user = user;
     await session.save();
     await upsertUserProfile(user);
@@ -59,8 +68,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectTo, baseUrl), 303);
   } catch (error) {
     console.error("Stanford SSO callback error:", error);
-    const redirectUrl = new URL("/upcoming-speakers", baseUrl);
-    redirectUrl.searchParams.set("error", "auth_failed");
-    return NextResponse.redirect(redirectUrl, 303);
+    return buildFailureRedirect(baseUrl, redirectTo);
   }
 }

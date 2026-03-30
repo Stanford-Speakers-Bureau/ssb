@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSamlClient } from "@/app/lib/saml";
 import { isValidRedirect } from "@/app/lib/security";
-import { createLoginState, getSession } from "@/app/lib/session";
+import { createLoginState, storeLoginState } from "@/app/lib/session";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -12,10 +12,8 @@ export async function GET(req: Request) {
     : "/upcoming-speakers";
 
   try {
-    const session = await getSession();
     const loginState = createLoginState(redirectTo);
-    session.loginState = loginState;
-    await session.save();
+    await storeLoginState(loginState);
 
     const url = await createSamlClient(req).getAuthorizeUrlAsync(
       loginState.nonce,
