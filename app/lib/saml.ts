@@ -1,4 +1,11 @@
-import { SAML } from "@node-saml/node-saml";
+import { SAML, ValidateInResponseTo } from "@node-saml/node-saml";
+import type { CacheProvider } from "@node-saml/node-saml/lib/types";
+import {
+  SAML_REQUEST_STATE_TTL_MS,
+  getSamlRequestId,
+  removeSamlRequestId,
+  saveSamlRequestId,
+} from "./session";
 
 const DEFAULT_BASE_URL = "http://localhost:3000";
 
@@ -80,6 +87,14 @@ function normalizeCertificatePem(certificate: string): string {
   return `-----BEGIN CERTIFICATE-----\n${wrappedBody}\n-----END CERTIFICATE-----`;
 }
 
+function createSamlRequestCacheProvider(): CacheProvider {
+  return {
+    saveAsync: saveSamlRequestId,
+    getAsync: getSamlRequestId,
+    removeAsync: removeSamlRequestId,
+  };
+}
+
 export function createSamlClient(request?: Request) {
   const baseUrl = getBaseUrl(request);
   const issuer = process.env.SAML_SP_ENTITY_ID || baseUrl;
@@ -97,6 +112,9 @@ export function createSamlClient(request?: Request) {
     wantAuthnResponseSigned: true,
     maxAssertionAgeMs: 300_000, // 5 minutes
     acceptedClockSkewMs: 5000,
+    validateInResponseTo: ValidateInResponseTo.always,
+    requestIdExpirationPeriodMs: SAML_REQUEST_STATE_TTL_MS,
+    cacheProvider: createSamlRequestCacheProvider(),
     logoutUrl: "https://login.stanford.edu/idp/profile/Logout",
   });
 }

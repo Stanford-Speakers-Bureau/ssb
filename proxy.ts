@@ -18,14 +18,29 @@ function getAllowedOrigins(request: NextRequest): string[] {
   const host = request.headers.get("host") || "";
   const isProduction = process.env.NODE_ENV === "production";
 
-  const origins = [`https://${host}`];
+  const origins = host ? [`https://${host}`] : [];
 
   // Only allow localhost in development
   if (!isProduction) {
-    origins.push(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000");
+    origins.push(
+      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
+      ...(host ? [`http://${host}`] : []),
+    );
   }
 
   return origins;
+}
+
+function normalizeOrigin(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -41,10 +56,16 @@ function isValidOrigin(request: NextRequest): boolean {
   // Allow requests without origin/referer (same-origin requests, curl, etc.)
   if (!requestOrigin) return true;
 
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+  if (!normalizedRequestOrigin) {
+    return false;
+  }
+
   const allowedOrigins = getAllowedOrigins(request);
-  return allowedOrigins.some((allowed) =>
-    requestOrigin.startsWith(allowed.replace(/\/$/, "")),
-  );
+  return allowedOrigins
+    .map((allowed) => normalizeOrigin(allowed))
+    .filter((allowed): allowed is string => Boolean(allowed))
+    .includes(normalizedRequestOrigin);
 }
 
 /**
