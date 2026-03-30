@@ -58,8 +58,10 @@
 	"vars": {
 		"SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
 		"NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
+		"SESSION_COOKIE_NAME": "ssb_session",
+		"SAML_SP_ENTITY_ID": "https://stanfordspeakersbureau.com",
 		"UPSTASH_REDIS_REST_URL": "https://concrete-vervet-23231.upstash.io",
-		"AWS_REGION": "us-east-2",
+		"AWS_REGION": "us-east-2"
 	},
 	"hyperdrive": [
 		{
