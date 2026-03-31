@@ -33,7 +33,7 @@ export function generateEventTitle(name: string | null): string {
  * Generate a clean meta description for an event, truncated to ~155 chars.
  */
 export function generateEventDescription(event: Pick<Event, "name" | "tagline" | "desc" | "venue">): string {
-  if (event.tagline) return truncate(event.tagline, 155);
+  if (event.tagline) return truncate(stripMarkdown(event.tagline), 155);
   if (event.desc) return truncate(stripMarkdown(event.desc), 155);
   const venue = event.venue ? ` at ${event.venue}` : "";
   return `Get free tickets to see ${event.name || "this event"}${venue}. Presented by Stanford Speakers Bureau.`;

@@ -9,9 +9,10 @@ const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export default async function Image() {
   const event = await getClosestUpcomingEvent();
+  const hasEventImage = !!(event?.img || event?.mobile_img);
 
-  // Always use a speaker image — fall back to a static one if no upcoming event
-  const imageUrl = event?.id
+  // Use the upcoming event art when available, otherwise fall back to a static speaker image.
+  const imageUrl = event?.id && hasEventImage
     ? `${baseURL}/api/images/${event.id}?v=${event.img_version || 1}`
     : `${baseURL}/speakers/jojo-siwa.jpg`;
   const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
@@ -28,7 +29,6 @@ export default async function Image() {
         }}
       >
         {/* Background speaker image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt=""
@@ -55,7 +55,6 @@ export default async function Image() {
         />
 
         {/* SSB Logo - top left */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoUrl}
           alt=""
