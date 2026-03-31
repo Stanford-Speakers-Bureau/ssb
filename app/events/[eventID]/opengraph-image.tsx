@@ -26,7 +26,6 @@ export default async function Image({ params }: { params: Promise<{ eventID: str
             gap: 24,
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`${baseURL}/wallet/logo_text2x.png`}
             alt=""
@@ -41,7 +40,10 @@ export default async function Image({ params }: { params: Promise<{ eventID: str
     );
   }
 
-  const imageUrl = `${baseURL}/api/images/${event.id}?v=${event.img_version || 1}`;
+  const hasEventImage = !!(event.img || event.mobile_img);
+  const imageUrl = hasEventImage
+    ? `${baseURL}/api/images/${event.id}?v=${event.img_version || 1}`
+    : null;
   const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
   const dateStr = formatEventDate(event.start_time_date);
 
@@ -53,37 +55,42 @@ export default async function Image({ params }: { params: Promise<{ eventID: str
           width: "100%",
           height: "100%",
           position: "relative",
+          background: hasEventImage
+            ? "#0a0a0a"
+            : "linear-gradient(135deg, #1f2937 0%, #0a0a0a 100%)",
         }}
       >
-        {/* Background speaker image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl}
-          alt=""
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+        {imageUrl && (
+          <>
+            {/* Background speaker image */}
+            <img
+              src={imageUrl}
+              alt=""
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
 
-        {/* Dark gradient overlay */}
-        <div
-          style={{
-            display: "flex",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.85) 100%)",
-          }}
-        />
+            {/* Dark gradient overlay */}
+            <div
+              style={{
+                display: "flex",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.85) 100%)",
+              }}
+            />
+          </>
+        )}
 
         {/* SSB Logo - top left */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoUrl}
           alt=""

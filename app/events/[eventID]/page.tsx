@@ -46,6 +46,7 @@ export async function generateMetadata({
   const title = generateEventTitle(event.name);
   const description = generateEventDescription(event);
   const eventUrl = `/events/${event.route || eventID}`;
+  const ogImageUrl = `${eventUrl}/opengraph-image`;
 
   return {
     title,
@@ -55,11 +56,20 @@ export async function generateMetadata({
       description,
       type: "website",
       url: `${baseURL}${eventUrl}`,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [ogImageUrl],
     },
     alternates: {
       canonical: eventUrl,
