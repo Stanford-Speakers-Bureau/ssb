@@ -138,7 +138,10 @@ export const notify = pgTable(
       .notNull()
       .references(() => events.id, { onDelete: "cascade", onUpdate: "cascade" }),
   },
-  (t) => [index("notify_speaker_id_idx").on(t.speakerId)],
+  (t) => [
+    uniqueIndex("notify_email_speaker_unique").on(t.email, t.speakerId),
+    index("notify_speaker_id_idx").on(t.speakerId),
+  ],
 );
 
 // ── Referrals ───────────────────────────────────────────────────────────────

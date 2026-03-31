@@ -101,6 +101,14 @@ export default function useTicketActions({
 
   const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
+
+    if (!isLoggedIn) {
+      const currentPath = window.location.pathname;
+      const redirectUrl = `${currentPath}?notify=true`;
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      return;
+    }
+
     setIsLoadingNotify(true);
     let redirecting = false;
     try {
@@ -130,7 +138,7 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
-  }, [eventId, isLoadingNotify, isNotified]);
+  }, [eventId, isLoadingNotify, isLoggedIn, isNotified]);
 
   const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

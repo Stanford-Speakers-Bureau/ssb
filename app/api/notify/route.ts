@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, events, notify } from "@ssb/db";
+import { db, notify } from "@ssb/db";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
-import { notifyRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
 
 export async function POST(req: Request) {
   try {
+    const user = await getSessionUser();
+
+    if (!user?.email) {
+      return NextResponse.json(
+        { error: NOTIFY_MESSAGES.ERROR_NOT_AUTHENTICATED },
+        { status: 401 },
+      );
+    }
+
     // Parse request body with error handling
     let body;
     try {
@@ -33,53 +41,27 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify event exists
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, speaker_id),
-      columns: { id: true },
-    });
+    const insertedRows = await db.insert(notify)
+      .values({ email: user.email, speakerId: speaker_id })
+      .onConflictDoNothing()
+      .returning({ id: notify.id });
 
-    if (!event) {
+    return NextResponse.json(
+      {
+        success: true,
+        alreadySignedUp: insertedRows.length === 0,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    if ((error as { code?: string }).code === "23503") {
       return NextResponse.json(
         { error: NOTIFY_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
       );
     }
 
-    const user = await getSessionUser();
-
-    if (!user?.email) {
-      return NextResponse.json(
-        { error: NOTIFY_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 },
-      );
-    }
-
-    // Rate limit by user email
-    const rateLimitResponse = await checkRateLimit(
-      notifyRatelimit,
-      `notify:${user.email}`,
-    );
-    if (rateLimitResponse) return rateLimitResponse;
-
-    // Check if notification signup already exists
-    const existingNotify = await db.query.notify.findFirst({
-      where: and(eq(notify.email, user.email), eq(notify.speakerId, speaker_id)),
-      columns: { id: true },
-    });
-
-    if (existingNotify) {
-      return NextResponse.json(
-        { error: NOTIFY_MESSAGES.ALREADY_SIGNED_UP },
-        { status: 409 },
-      );
-    }
-
-    // Insert notification signup
-    await db.insert(notify).values({ email: user.email, speakerId: speaker_id });
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch {
+    console.error("Error signing up for notifications:", error);
     return NextResponse.json(
       { error: NOTIFY_MESSAGES.ERROR_GENERIC },
       { status: 500 },

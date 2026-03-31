@@ -60,19 +60,31 @@ export async function generateMetadata({
   };
 }
 
-async function getUserTicketStatus(eventId: string): Promise<{
+async function getViewerEventState(
+  eventId: string,
+  shouldCheckNotify: boolean,
+): Promise<{
   ticketId: string | null;
   userEmail: string | null;
   ticketType: string | null;
   ticketName: string | null;
   ticketScanned: boolean;
   isOnWaitlist: boolean;
+  isNotified: boolean;
 }> {
   try {
     const user = await getSessionUser();
 
     if (!user?.email)
-      return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, ticketScanned: false, isOnWaitlist: false };
+      return {
+        ticketId: null,
+        userEmail: null,
+        ticketType: null,
+        ticketName: null,
+        ticketScanned: false,
+        isOnWaitlist: false,
+        isNotified: false,
+      };
 
     const [ticket, waitlistEntry] = await Promise.all([
       db.query.tickets.findFirst({
@@ -85,6 +97,17 @@ async function getUserTicketStatus(eventId: string): Promise<{
       }),
     ]);
 
+    let isNotified = false;
+
+    if (shouldCheckNotify && !ticket?.id) {
+      const notifyEntry = await db.query.notify.findFirst({
+        where: and(eq(notify.email, user.email), eq(notify.speakerId, eventId)),
+        columns: { id: true },
+      });
+
+      isNotified = !!notifyEntry;
+    }
+
     return {
       ticketId: ticket?.id ?? null,
       userEmail: user.email,
@@ -92,26 +115,18 @@ async function getUserTicketStatus(eventId: string): Promise<{
       ticketName: ticket?.name ?? null,
       ticketScanned: ticket?.scanned ?? false,
       isOnWaitlist: !!waitlistEntry,
+      isNotified,
     };
   } catch {
-    return { ticketId: null, userEmail: null, ticketType: null, ticketName: null, ticketScanned: false, isOnWaitlist: false };
-  }
-}
-
-async function getUserNotificationStatus(eventId: string): Promise<boolean> {
-  try {
-    const user = await getSessionUser();
-
-    if (!user?.email) return false;
-
-    const entry = await db.query.notify.findFirst({
-      where: and(eq(notify.email, user.email), eq(notify.speakerId, eventId)),
-      columns: { id: true },
-    });
-
-    return !!entry;
-  } catch {
-    return false;
+    return {
+      ticketId: null,
+      userEmail: null,
+      ticketType: null,
+      ticketName: null,
+      ticketScanned: false,
+      isOnWaitlist: false,
+      isNotified: false,
+    };
   }
 }
 
@@ -124,10 +139,17 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/upcoming-speakers");
   }
 
-  const [ticketStatus, isNotified] = await Promise.all([
-    getUserTicketStatus(event.id),
-    getUserNotificationStatus(event.id),
-  ]);
+  const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
+    ? null
+    : (event.ticketing_date ?? event.release_date);
+  const shouldCheckNotify = (() => {
+    if (!ticketingDate) return false;
+
+    const ticketingOpensAt = new Date(ticketingDate);
+    return !Number.isNaN(ticketingOpensAt.getTime()) && ticketingOpensAt > new Date();
+  })();
+
+  const ticketStatus = await getViewerEventState(event.id, shouldCheckNotify);
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
@@ -304,9 +326,9 @@ export default async function EventPage({ params }: PageProps) {
                 eventEndTime={event.end_time_date}
                 doorsOpen={event.doors_open}
                 isSoldOut={isSoldOut}
-                ticketingDate={process.env.LOCAL_TICKETING_ENABLED === "true" ? null : (event.ticketing_date ?? event.release_date)}
+                ticketingDate={ticketingDate}
                 hideTicketingDate={event.hide_ticketing_date}
-                initialIsNotified={isNotified}
+                initialIsNotified={ticketStatus.isNotified}
                 waitlistChance={event.waitlist_chance}
                 priorityText={event.priority}
                 referralsEnabled={event.referrals_enabled}
