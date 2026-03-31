@@ -6,8 +6,6 @@ import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
 import ReferralCodeInput from "./ReferralCodeInput";
 
 type GetTicketProps = {
-  isLoggedIn: boolean;
-  priorityText: string | null;
   isLoading: boolean;
   isButtonDisabled: boolean;
   isSalesDisabled: boolean;
@@ -19,8 +17,6 @@ type GetTicketProps = {
 };
 
 export default function GetTicket({
-  isLoggedIn,
-  priorityText,
   isLoading,
   isButtonDisabled,
   isSalesDisabled,

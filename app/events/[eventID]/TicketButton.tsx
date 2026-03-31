@@ -20,8 +20,6 @@ export default function TicketButton(props: TicketButtonProps) {
   } else if (!actions.hasTicket && actions.isStandbyMode) {
     content = (
       <StandbyTicketCTA
-        isLoggedIn={actions.isLoggedIn}
-        priorityText={actions.priorityText}
         isLoading={actions.isLoading}
         processStandbyTicketRequest={actions.processStandbyTicketRequest}
       />
@@ -30,8 +28,6 @@ export default function TicketButton(props: TicketButtonProps) {
     if (!actions.isOnWaitlist) {
       content = (
         <JoinWaitlist
-          isLoggedIn={actions.isLoggedIn}
-          priorityText={actions.priorityText}
           isWaitlistStatusLoading={actions.isWaitlistStatusLoading}
           isWaitlistLoading={actions.isWaitlistLoading}
           referralWarning={actions.referralWarning}
@@ -58,8 +54,6 @@ export default function TicketButton(props: TicketButtonProps) {
   } else if (actions.showTicketingOpensOnly) {
     content = (
       <TicketingOpens
-        isLoggedIn={actions.isLoggedIn}
-        priorityText={actions.priorityText}
         hideTicketingDate={actions.hideTicketingDate}
         ticketingOpensAt={actions.ticketingOpensAt}
         formatTicketingOpensAt={actions.formatTicketingOpensAt}
@@ -73,8 +67,6 @@ export default function TicketButton(props: TicketButtonProps) {
       <div>
         {!actions.hasTicket && (
           <GetTicket
-            isLoggedIn={actions.isLoggedIn}
-            priorityText={actions.priorityText}
             isLoading={actions.isLoading}
             isButtonDisabled={actions.isButtonDisabled}
             isSalesDisabled={actions.isSalesDisabled}

@@ -5,15 +5,11 @@ import { TICKET_MESSAGES } from "../useTicketActions";
 import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
 
 type StandbyTicketCTAProps = {
-  isLoggedIn: boolean;
-  priorityText: string | null;
   isLoading: boolean;
   processStandbyTicketRequest: () => void;
 };
 
 export default function StandbyTicketCTA({
-  isLoggedIn,
-  priorityText,
   isLoading,
   processStandbyTicketRequest,
 }: StandbyTicketCTAProps) {

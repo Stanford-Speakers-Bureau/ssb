@@ -26,7 +26,6 @@ type TicketSectionProps = {
   isSoldOut?: boolean;
   initialIsNotified?: boolean;
   waitlistChance?: string | null;
-  priorityText?: string | null;
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
@@ -48,7 +47,6 @@ export default function TicketSection({
   isSoldOut = false,
   initialIsNotified = false,
   waitlistChance = null,
-  priorityText = null,
   hideTicketingDate = false,
   referralsEnabled = false,
   initialIsScanned = false,
@@ -151,7 +149,6 @@ export default function TicketSection({
     initialIsNotified,
     isLoggedIn: userEmail != null,
     waitlistChance,
-    priorityText,
     hideTicketingDate,
     referralsEnabled,
     initialIsScanned: isScanned,

@@ -133,14 +133,18 @@ export default function UpcomingSpeakerCard({
         return;
       }
 
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as {
+        alreadySignedUp?: boolean;
+        error?: string;
+      };
 
       if (response.ok) {
         setNotifyStatus("success");
-        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
-      } else if (response.status === 409) {
-        setNotifyStatus("success");
-        setNotifyMessage(NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+        setNotifyMessage(
+          data.alreadySignedUp
+            ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP
+            : NOTIFY_MESSAGES.SUCCESS,
+        );
       } else {
         setNotifyStatus("error");
         setNotifyMessage(data.error || "Something went wrong");

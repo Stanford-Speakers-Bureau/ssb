@@ -332,7 +332,6 @@ export default async function EventPage({ params }: PageProps) {
                 hideTicketingDate={event.hide_ticketing_date}
                 initialIsNotified={ticketStatus.isNotified}
                 waitlistChance={event.waitlist_chance}
-                priorityText={event.priority}
                 referralsEnabled={event.referrals_enabled}
                 standbyMode={event.standby_enabled}
               />
