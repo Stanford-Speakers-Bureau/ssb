@@ -7,6 +7,7 @@ import {
   getImageProxyUrl,
   isEventUnderCapacity,
 } from "@/app/lib/supabase";
+import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
 import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
 import { getEventEndDate } from "@/app/lib/eventTime";
@@ -42,20 +43,26 @@ export async function generateMetadata({
     };
   }
 
-  const description = event.desc || event.tagline || "Get tickets for this Stanford Speakers Bureau event.";
-  const imageUrl = (event.img || event.mobile_img)
-    ? getImageProxyUrl(event.id, event.img_version)
-    : undefined;
+  const title = generateEventTitle(event.name);
+  const description = generateEventDescription(event);
+  const eventUrl = `/events/${event.route || eventID}`;
 
   return {
-    title: event.name,
+    title,
     description,
     openGraph: {
-      title: event.name || "Event",
+      title,
       description,
-      ...(imageUrl && {
-        images: [{ url: imageUrl }],
-      }),
+      type: "website",
+      url: `${baseURL}${eventUrl}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    alternates: {
+      canonical: eventUrl,
     },
   };
 }
@@ -194,7 +201,7 @@ export default async function EventPage({ params }: PageProps) {
       "@context": "https://schema.org",
       "@type": "Event",
       name: event.name,
-      ...(event.desc && { description: event.desc }),
+      ...(event.desc && { description: stripMarkdown(event.desc) }),
       ...(event.start_time_date && { startDate: event.start_time_date }),
       ...(eventEndDate && { endDate: eventEndDate.toISOString() }),
       ...(event.doors_open && { doorTime: event.doors_open }),
@@ -232,7 +239,7 @@ export default async function EventPage({ params }: PageProps) {
         availability: isSoldOut
           ? "https://schema.org/SoldOut"
           : "https://schema.org/InStock",
-        validFrom: event.ticketing_date || event.release_date || event.start_time_date || new Date().toISOString(),
+        validFrom: (!event.hide_ticketing_date && event.ticketing_date) || event.release_date || event.start_time_date || new Date().toISOString(),
         url: `${baseURL}/events/${event.route || eventID}`,
       },
     }
