@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
+import { RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
 
@@ -21,11 +21,6 @@ export default function StandbyTicketCTA({
 
   return (
     <div>
-      {!isLoggedIn && priorityText && (
-        <div className="mb-4">
-          <PriorityBanner priorityText={priorityText} />
-        </div>
-      )}
 
       {/* Live badge */}
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 mb-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { PriorityBanner, RedButton } from "../ui";
+import { RedButton } from "../ui";
 import ReferralCodeInput from "./ReferralCodeInput";
 
 type JoinWaitlistProps = {

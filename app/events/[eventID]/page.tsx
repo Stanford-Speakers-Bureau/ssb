@@ -287,8 +287,10 @@ export default async function EventPage({ params }: PageProps) {
                 Add to Google Calendar
               </a>
             )}
-            {/* Prohibited items */}
-            <ProhibitedItems />
+            {/* Prohibited items – only shown once ticketing is open */}
+            {(!ticketingDate || new Date(ticketingDate) <= new Date()) && (
+              <ProhibitedItems />
+            )}
           </div>
 
           {/* Right column – ticket section (sticky on desktop) */}

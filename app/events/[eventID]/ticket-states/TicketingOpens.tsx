@@ -1,7 +1,7 @@
 "use client";
 
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
-import { Spinner, PriorityBanner } from "../ui";
+import { Spinner } from "../ui";
 import CountdownTimer from "../CountdownTimer";
 
 type TicketingOpensProps = {
@@ -83,12 +83,6 @@ export default function TicketingOpens({
         )}
       </button>
 
-      {/* Priority notice */}
-      {!isLoggedIn && priorityText && (
-        <div className="mt-4 w-full">
-          <PriorityBanner priorityText={priorityText} />
-        </div>
-      )}
     </div>
   );
 }
