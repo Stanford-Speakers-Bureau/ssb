@@ -1,11 +1,9 @@
 "use client";
 
-import { PriorityBanner, RedButton } from "../ui";
+import { RedButton } from "../ui";
 import ReferralCodeInput from "./ReferralCodeInput";
 
 type JoinWaitlistProps = {
-  isLoggedIn: boolean;
-  priorityText: string | null;
   isWaitlistStatusLoading: boolean;
   isWaitlistLoading: boolean;
   referralWarning: string | null;
@@ -17,8 +15,6 @@ type JoinWaitlistProps = {
 };
 
 export default function JoinWaitlist({
-  isLoggedIn,
-  priorityText,
   isWaitlistStatusLoading,
   isWaitlistLoading,
   referralWarning,

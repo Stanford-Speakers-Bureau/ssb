@@ -25,6 +25,15 @@ interface LoginFlowData {
   samlRequestIds?: Record<string, string>;
 }
 
+interface InMemoryLoginFlowData {
+  loginStates: LoginState[];
+  samlRequestIds: Record<string, string>;
+}
+
+declare global {
+  var __ssbLoginFlowStores: Map<string, InMemoryLoginFlowData> | undefined;
+}
+
 function getCookieDomain(): string | undefined {
   if (process.env.SESSION_COOKIE_DOMAIN) {
     return process.env.SESSION_COOKIE_DOMAIN;
@@ -68,6 +77,12 @@ function isSecureCookieEnabled(): boolean {
     process.env.NODE_ENV === "production" ||
     process.env.SESSION_COOKIE_SECURE === "true"
   );
+}
+
+function shouldUseInMemoryLoginFlowStore(): boolean {
+  // Stanford sends the ACS request as a cross-site POST, and browsers do not
+  // send lax cookies on that request over insecure local HTTP.
+  return !isSecureCookieEnabled();
 }
 
 function getSessionPassword(): string {
@@ -123,6 +138,24 @@ async function getLoginFlowSession(): Promise<IronSession<LoginFlowData>> {
   return getIronSession<LoginFlowData>(cookieStore, loginFlowSessionOptions);
 }
 
+function getInMemoryLoginFlowStores(): Map<string, InMemoryLoginFlowData> {
+  globalThis.__ssbLoginFlowStores ??= new Map();
+  return globalThis.__ssbLoginFlowStores;
+}
+
+function readInMemoryLoginFlowStore(): InMemoryLoginFlowData {
+  const existingStore = getInMemoryLoginFlowStores().get(getLoginFlowCookieName());
+
+  if (existingStore) {
+    return existingStore;
+  }
+
+  return {
+    loginStates: [],
+    samlRequestIds: {},
+  };
+}
+
 function pruneLoginStates(loginStates: LoginState[] | undefined): LoginState[] {
   const now = Date.now();
 
@@ -170,6 +203,24 @@ async function persistLoginFlowSession(
   await session.save();
 }
 
+function persistInMemoryLoginFlowStore(store: InMemoryLoginFlowData): void {
+  const nextStore: InMemoryLoginFlowData = {
+    loginStates: pruneLoginStates(store.loginStates),
+    samlRequestIds: pruneSamlRequestIds(store.samlRequestIds),
+  };
+  const hasLoginStates = nextStore.loginStates.length > 0;
+  const hasSamlRequestIds = Object.keys(nextStore.samlRequestIds).length > 0;
+  const stores = getInMemoryLoginFlowStores();
+  const storeKey = getLoginFlowCookieName();
+
+  if (!hasLoginStates && !hasSamlRequestIds) {
+    stores.delete(storeKey);
+    return;
+  }
+
+  stores.set(storeKey, nextStore);
+}
+
 export function createLoginState(redirectTo: string): LoginState {
   return {
     nonce: randomUUID(),
@@ -179,6 +230,19 @@ export function createLoginState(redirectTo: string): LoginState {
 }
 
 export async function storeLoginState(loginState: LoginState): Promise<void> {
+  if (shouldUseInMemoryLoginFlowStore()) {
+    const store = readInMemoryLoginFlowStore();
+    const existingStates = pruneLoginStates(store.loginStates).filter(
+      (state) => state.nonce !== loginState.nonce,
+    );
+
+    persistInMemoryLoginFlowStore({
+      loginStates: [loginState, ...existingStates].slice(0, 5),
+      samlRequestIds: store.samlRequestIds,
+    });
+    return;
+  }
+
   const session = await getLoginFlowSession();
   const existingStates = pruneLoginStates(session.loginStates).filter(
     (state) => state.nonce !== loginState.nonce,
@@ -191,6 +255,37 @@ export async function storeLoginState(loginState: LoginState): Promise<void> {
 export async function consumeLoginState(
   relayState: FormDataEntryValue | null,
 ): Promise<LoginState | null> {
+  if (shouldUseInMemoryLoginFlowStore()) {
+    const store = readInMemoryLoginFlowStore();
+    const loginStates = pruneLoginStates(store.loginStates);
+
+    let matchedState: LoginState | null = null;
+    if (typeof relayState === "string" && relayState) {
+      const nextStates: LoginState[] = [];
+
+      for (const state of loginStates) {
+        if (!matchedState && state.nonce === relayState) {
+          matchedState = state;
+          continue;
+        }
+
+        nextStates.push(state);
+      }
+
+      persistInMemoryLoginFlowStore({
+        loginStates: nextStates,
+        samlRequestIds: store.samlRequestIds,
+      });
+    } else {
+      persistInMemoryLoginFlowStore({
+        loginStates,
+        samlRequestIds: store.samlRequestIds,
+      });
+    }
+
+    return matchedState;
+  }
+
   const session = await getLoginFlowSession();
   const loginStates = pruneLoginStates(session.loginStates);
 
@@ -220,6 +315,22 @@ export async function saveSamlRequestId(
   requestId: string,
   value: string,
 ): Promise<{ value: string; createdAt: number } | null> {
+  if (shouldUseInMemoryLoginFlowStore()) {
+    const store = readInMemoryLoginFlowStore();
+    const samlRequestIds = pruneSamlRequestIds(store.samlRequestIds);
+
+    samlRequestIds[requestId] = value;
+    persistInMemoryLoginFlowStore({
+      loginStates: store.loginStates,
+      samlRequestIds,
+    });
+
+    return {
+      value,
+      createdAt: parseSamlRequestCreatedAt(value) || Date.now(),
+    };
+  }
+
   const session = await getLoginFlowSession();
   const samlRequestIds = pruneSamlRequestIds(session.samlRequestIds);
 
@@ -234,6 +345,19 @@ export async function saveSamlRequestId(
 }
 
 export async function getSamlRequestId(requestId: string): Promise<string | null> {
+  if (shouldUseInMemoryLoginFlowStore()) {
+    const store = readInMemoryLoginFlowStore();
+    const samlRequestIds = pruneSamlRequestIds(store.samlRequestIds);
+    const value = samlRequestIds[requestId] || null;
+
+    persistInMemoryLoginFlowStore({
+      loginStates: store.loginStates,
+      samlRequestIds,
+    });
+
+    return value;
+  }
+
   const session = await getLoginFlowSession();
   const samlRequestIds = pruneSamlRequestIds(session.samlRequestIds);
   const value = samlRequestIds[requestId] || null;
@@ -249,6 +373,20 @@ export async function removeSamlRequestId(
 ): Promise<string | null> {
   if (!requestId) {
     return null;
+  }
+
+  if (shouldUseInMemoryLoginFlowStore()) {
+    const store = readInMemoryLoginFlowStore();
+    const samlRequestIds = pruneSamlRequestIds(store.samlRequestIds);
+    const value = samlRequestIds[requestId] || null;
+
+    delete samlRequestIds[requestId];
+    persistInMemoryLoginFlowStore({
+      loginStates: store.loginStates,
+      samlRequestIds,
+    });
+
+    return value;
   }
 
   const session = await getLoginFlowSession();

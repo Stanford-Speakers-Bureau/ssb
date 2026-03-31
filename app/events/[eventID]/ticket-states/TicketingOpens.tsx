@@ -1,12 +1,10 @@
 "use client";
 
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
-import { Spinner, PriorityBanner } from "../ui";
+import { Spinner } from "../ui";
 import CountdownTimer from "../CountdownTimer";
 
 type TicketingOpensProps = {
-  isLoggedIn: boolean;
-  priorityText: string | null;
   hideTicketingDate: boolean;
   ticketingOpensAt: Date | null;
   formatTicketingOpensAt: (date: Date) => string;
@@ -16,8 +14,6 @@ type TicketingOpensProps = {
 };
 
 export default function TicketingOpens({
-  isLoggedIn,
-  priorityText,
   hideTicketingDate,
   ticketingOpensAt,
   formatTicketingOpensAt,
@@ -83,12 +79,6 @@ export default function TicketingOpens({
         )}
       </button>
 
-      {/* Priority notice */}
-      {!isLoggedIn && priorityText && (
-        <div className="mt-4 w-full">
-          <PriorityBanner priorityText={priorityText} />
-        </div>
-      )}
     </div>
   );
 }

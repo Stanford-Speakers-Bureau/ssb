@@ -18,7 +18,6 @@ export type TicketButtonProps = {
   initialIsNotified?: boolean;
   isLoggedIn?: boolean;
   waitlistChance?: string | null;
-  priorityText?: string | null;
   hideTicketingDate?: boolean;
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
@@ -53,7 +52,6 @@ export default function useTicketActions({
   initialIsNotified = false,
   isLoggedIn = false,
   waitlistChance = null,
-  priorityText = null,
   hideTicketingDate = false,
   referralsEnabled = false,
   initialIsScanned = false,
@@ -101,6 +99,14 @@ export default function useTicketActions({
 
   const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
+
+    if (!isLoggedIn) {
+      const currentPath = window.location.pathname;
+      const redirectUrl = `${currentPath}?notify=true`;
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      return;
+    }
+
     setIsLoadingNotify(true);
     let redirecting = false;
     try {
@@ -116,11 +122,15 @@ export default function useTicketActions({
         window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as {
+        alreadySignedUp?: boolean;
+        error?: string;
+      };
       if (response.ok) {
         setIsNotified(true);
-      } else if (response.status === 409) {
-        setIsNotified(true);
+        if (data.alreadySignedUp) {
+          setMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+        }
       } else {
         setMessage(data.error || TICKETING_NOTIFY_MESSAGES.ERROR_GENERIC);
       }
@@ -130,7 +140,7 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
-  }, [eventId, isLoadingNotify, isNotified]);
+  }, [eventId, isLoadingNotify, isLoggedIn, isNotified]);
 
   const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -763,7 +773,6 @@ export default function useTicketActions({
     isSoldOut,
     isTicketingOpen,
     waitlistChance,
-    priorityText,
     hideTicketingDate,
     referralsEnabled,
 

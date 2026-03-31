@@ -92,27 +92,41 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
   );
 }
 
-async function getUserNotifications(): Promise<Set<string>> {
+async function getUserNotificationState(): Promise<{
+  isLoggedIn: boolean;
+  notifications: Set<string>;
+}> {
   try {
     const user = await getSessionUser();
 
-    if (!user?.email) return new Set();
+    if (!user?.email) {
+      return {
+        isLoggedIn: false,
+        notifications: new Set(),
+      };
+    }
 
     const notifications = await db.query.notify.findMany({
       where: eq(notify.email, user.email),
       columns: { speakerId: true },
     });
 
-    return new Set(notifications.map((n) => n.speakerId));
+    return {
+      isLoggedIn: true,
+      notifications: new Set(notifications.map((n) => n.speakerId)),
+    };
   } catch {
-    return new Set();
+    return {
+      isLoggedIn: false,
+      notifications: new Set(),
+    };
   }
 }
 
 export default async function UpcomingSpeakers() {
-  const [events, userNotifications] = await Promise.all([
+  const [events, userNotificationState] = await Promise.all([
     getUpcomingEvents(),
-    getUserNotifications(),
+    getUserNotificationState(),
   ]);
 
   return (
@@ -165,7 +179,8 @@ export default async function UpcomingSpeakers() {
                   mystery={event.isMystery}
                   eventDateRaw={event.isMystery ? event.release_date : null}
                   eventId={event.id}
-                  isAlreadyNotified={userNotifications.has(event.id)}
+                  isAlreadyNotified={userNotificationState.notifications.has(event.id)}
+                  isLoggedIn={userNotificationState.isLoggedIn}
                   capacity={event.capacity}
                   ticketsSold={event.ticketsSold}
                   reserved={event.reserved}

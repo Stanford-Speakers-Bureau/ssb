@@ -1,13 +1,11 @@
 "use client";
 
-import { RedButton, PriorityBanner, ConfirmationModal, NoBagsModalChildren } from "../ui";
+import { RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
 import ReferralCodeInput from "./ReferralCodeInput";
 
 type GetTicketProps = {
-  isLoggedIn: boolean;
-  priorityText: string | null;
   isLoading: boolean;
   isButtonDisabled: boolean;
   isSalesDisabled: boolean;
@@ -19,8 +17,6 @@ type GetTicketProps = {
 };
 
 export default function GetTicket({
-  isLoggedIn,
-  priorityText,
   isLoading,
   isButtonDisabled,
   isSalesDisabled,
@@ -34,11 +30,6 @@ export default function GetTicket({
 
   return (
     <>
-      {!isLoggedIn && priorityText && (
-        <div className="mb-4">
-          <PriorityBanner priorityText={priorityText} />
-        </div>
-      )}
 
       {referralsEnabled && (
         <ReferralCodeInput

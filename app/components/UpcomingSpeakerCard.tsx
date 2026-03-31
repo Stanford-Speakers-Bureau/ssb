@@ -28,6 +28,7 @@ export type UpcomingSpeakerCardProps = {
   appleCalendarUrl?: string; // Apple Calendar URL (ICS data URL)
   eventId?: string; // Event ID for notify signup
   isAlreadyNotified?: boolean; // Whether user is signed up for notifications
+  isLoggedIn?: boolean; // Whether the current viewer is signed in
   eventDateRaw?: string | null; // Raw ISO date for countdown timer
   capacity?: number | null; // Event capacity
   ticketsSold?: number | null; // Number of tickets sold
@@ -53,6 +54,7 @@ export default function UpcomingSpeakerCard({
   mystery = false,
   eventId = "",
   isAlreadyNotified = false,
+  isLoggedIn = false,
   eventDateRaw = null,
   capacity = null,
   ticketsSold = null,
@@ -112,6 +114,11 @@ export default function UpcomingSpeakerCard({
   }, [isAlreadyNotified, notifyStatus]);
 
   const handleNotifyClick = async () => {
+    if (!isLoggedIn) {
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(`/upcoming-speakers?notify=${eventId}`)}`;
+      return;
+    }
+
     setNotifyStatus("loading");
 
     try {
@@ -126,14 +133,18 @@ export default function UpcomingSpeakerCard({
         return;
       }
 
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as {
+        alreadySignedUp?: boolean;
+        error?: string;
+      };
 
       if (response.ok) {
         setNotifyStatus("success");
-        setNotifyMessage(NOTIFY_MESSAGES.SUCCESS);
-      } else if (response.status === 409) {
-        setNotifyStatus("success");
-        setNotifyMessage(NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
+        setNotifyMessage(
+          data.alreadySignedUp
+            ? NOTIFY_MESSAGES.ALREADY_SIGNED_UP
+            : NOTIFY_MESSAGES.SUCCESS,
+        );
       } else {
         setNotifyStatus("error");
         setNotifyMessage(data.error || "Something went wrong");
