@@ -32,9 +32,11 @@ export async function GET(req: Request) {
     const ticketingDate = closestEvent?.ticketing_date
       ? new Date(closestEvent.ticketing_date)
       : null;
+    const hideTicketingDate = closestEvent?.hide_ticketing_date === true;
     const isBeforeTicketing =
       process.env.LOCAL_TICKETING_ENABLED !== "true" &&
       !isMystery &&
+      !hideTicketingDate &&
       ticketingDate &&
       !Number.isNaN(ticketingDate.getTime()) &&
       now < ticketingDate;
