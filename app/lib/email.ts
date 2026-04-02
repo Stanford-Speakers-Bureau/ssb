@@ -552,7 +552,6 @@ function buildInfoPills(data: {
  */
 function buildImportantNotice(
   extraItems?: string[],
-  eventPageUrl?: string | null,
 ): string {
   const allItems = [
     ...IMPORTANT_NOTICE_ITEMS.map(
@@ -569,12 +568,6 @@ function buildImportantNotice(
     })
     .join("\n");
 
-  const termsLine = eventPageUrl
-    ? `<div style="margin: -8px 0 0 0; color: #f4f4f5; font-size: 14px; line-height: 1.6;">
-        <a href="${eventPageUrl}" style="color: #fbbf24; text-decoration: underline;">See full event details &rarr;</a>
-      </div>`
-    : "";
-
   return `
     <div class="important-box" style="background-color: #A80D0C; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
       ${gmailBlendStart}
@@ -583,16 +576,12 @@ function buildImportantNotice(
           ${itemsHTML}
         </div>
       ${gmailBlendEnd}
-    </div>${termsLine}`;
+    </div>`;
 }
 
 /** Generates plain text "Important" notice */
-function buildImportantNoticeText(eventPageUrl?: string | null): string {
-  const base = `BEFORE YOU ARRIVE:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
-  if (eventPageUrl) {
-    return `${base}\n\nSee full event details: ${eventPageUrl}`;
-  }
-  return base;
+function buildImportantNoticeText(): string {
+  return `BEFORE YOU ARRIVE:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
 }
 
 /** Builds the event details card with label/value rows */
@@ -1054,7 +1043,7 @@ async function generateTicketEmailHTML(
   const contentSections: string[] = [];
 
   // Important notice
-  contentSections.push(buildImportantNotice(undefined, eventUrl));
+  contentSections.push(buildImportantNotice(undefined));
 
   // VIP welcome
   if (isVIP) {
@@ -1158,7 +1147,7 @@ ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Typ
 - Ticket ID: ${ticketId}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
-${buildImportantNoticeText(eventUrl)}
+${buildImportantNoticeText()}
 
 Can't make it? Please cancel so someone else can attend.
 
