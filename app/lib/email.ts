@@ -493,7 +493,7 @@ function buildHeroCard(data: {
     </tr>`;
 }
 
-/** Builds the info pills row (date, doors open, doors close, location) */
+/** Builds the info pills row (date, doors open, venue) */
 function buildInfoPills(data: {
   eventStartTime?: string | null;
   doorsOpenTime?: string | null;
@@ -519,17 +519,6 @@ function buildInfoPills(data: {
         <table role="presentation" cellspacing="0" cellpadding="0"><tr>
           <td class="pill" style="background-color: #2a2a2e; border: 1px solid #3f3f46; border-radius: 50px; padding: 5px 12px; font-size: 13px; color: #e4e4e7; font-weight: 500; white-space: nowrap;">
             <span style="color: #f87171; font-size: 13px; vertical-align: middle;">&#128682;</span>&nbsp;Doors open ${formatPillTime(data.doorsOpenTime)}
-          </td>
-        </tr></table>
-      </td>`);
-  }
-
-  if (data.eventStartTime) {
-    pills.push(`
-      <td style="padding: 0 6px 6px 0;">
-        <table role="presentation" cellspacing="0" cellpadding="0"><tr>
-          <td class="pill" style="background-color: #2a2a2e; border: 1px solid #3f3f46; border-radius: 50px; padding: 5px 12px; font-size: 13px; color: #e4e4e7; font-weight: 500; white-space: nowrap;">
-            <span style="color: #f87171; font-size: 13px; vertical-align: middle;">&#128336;</span>&nbsp;Doors close ${formatPillTime(data.eventStartTime)}
           </td>
         </tr></table>
       </td>`);
