@@ -204,6 +204,7 @@ export async function POST(req: Request) {
         eventId: event.id,
         imgVersion: event.imgVersion,
         eventTagline: event.tagline,
+        doorsOpenTime: event.doorsOpen?.toISOString() ?? null,
       });
     } catch (emailError) {
       console.error("Waitlist email error:", emailError);

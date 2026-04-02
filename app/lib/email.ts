@@ -962,8 +962,7 @@ async function generateTicketEmailHTML(
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
 
-  const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDate = formatFullDateTime(doorsOpenTime || eventStartTime);
 
   const referralCode = generateReferralCode(data.email);
   const referralUrl =
@@ -1005,7 +1004,6 @@ async function generateTicketEmailHTML(
   if (data.name) detailRows.push({ label: "Name:", value: data.name });
   detailRows.push({ label: "Event:", value: eventName || "Event" });
   detailRows.push({ label: "Date & Time:", value: formattedDate });
-  if (formattedDoorsOpen) detailRows.push({ label: "Doors Open:", value: formattedDoorsOpen });
   if (eventVenue) {
     detailRows.push({
       label: "Location:",
@@ -1124,8 +1122,7 @@ async function generateTicketEmailHTML(
 function generateTicketEmailText(data: TicketEmailData): string {
   const { eventName, ticketType, eventStartTime, eventRoute, ticketId, doorsOpenTime } = data;
 
-  const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDate = formatFullDateTime(doorsOpenTime || eventStartTime);
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
   const cancelTicketUrl = ticketId ? `${baseUrl}/cancel/${ticketId}` : null;
@@ -1143,7 +1140,7 @@ Your ticket is confirmed — we can't wait to see you!
 ${ticketType?.toUpperCase() === "VIP" ? "Use the VIP entrance when you arrive — we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
-${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
+- Ticket Type: ${ticketType || "STANDARD"}
 - Ticket ID: ${ticketId}
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
@@ -1274,19 +1271,21 @@ type WaitlistEmailData = {
   eventId?: string | null;
   imgVersion?: number | null;
   eventTagline?: string | null;
+  doorsOpenTime?: string | null;
 };
 
 async function generateWaitlistEmailHTML(
   data: WaitlistEmailData,
 ): Promise<string> {
-  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } = data;
+  const { eventName, position, eventStartTime, eventVenue, eventVenueLink, doorsOpenTime } = data;
 
-  const formattedDate = formatFullDateTime(eventStartTime);
+  const formattedDate = formatFullDateTime(doorsOpenTime || eventStartTime);
 
   const heroCard = buildHeroCard({
     eventName,
     eventTagline: data.eventTagline,
     eventStartTime,
+    doorsOpenTime,
     eventVenue,
     eventVenueLink,
     eventId: data.eventId,
@@ -1351,8 +1350,8 @@ async function generateWaitlistEmailHTML(
 }
 
 function generateWaitlistEmailText(data: WaitlistEmailData): string {
-  const { eventName, position, eventStartTime, eventVenue } = data;
-  const formattedDate = formatFullDateTime(eventStartTime);
+  const { eventName, position, eventStartTime, eventVenue, doorsOpenTime } = data;
+  const formattedDate = formatFullDateTime(doorsOpenTime || eventStartTime);
 
   return `
 You're on the waitlist!
