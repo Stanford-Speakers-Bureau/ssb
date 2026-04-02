@@ -191,6 +191,19 @@ function wrapToMimeLines(input: string, lineLength: number = 76): string {
   return chunks.join("\r\n");
 }
 
+function buildUtf8MimeBodyPart(
+  contentType: string,
+  content: string,
+): string[] {
+  return [
+    `Content-Type: ${contentType}; charset=UTF-8`,
+    `Content-Transfer-Encoding: base64`,
+    "",
+    wrapToMimeLines(Buffer.from(content, "utf-8").toString("base64")),
+    "",
+  ];
+}
+
 // ============================================================================
 // Date / time formatting helpers (matching the web InfoPills format)
 // ============================================================================
@@ -1204,11 +1217,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
     "",
     `--${altBoundary}`,
-    `Content-Type: text/plain; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    textContent,
-    "",
+    ...buildUtf8MimeBodyPart("text/plain", textContent),
   );
 
   if (qrBuffer) {
@@ -1219,11 +1228,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
       `Content-Type: multipart/related; boundary="${relBoundary}"`,
       "",
       `--${relBoundary}`,
-      `Content-Type: text/html; charset=UTF-8`,
-      `Content-Transfer-Encoding: 7bit`,
-      "",
-      htmlContent,
-      "",
+      ...buildUtf8MimeBodyPart("text/html", htmlContent),
       `--${relBoundary}`,
       `Content-Type: image/png; name="ticket-qr.png"`,
       `Content-Transfer-Encoding: base64`,
@@ -1238,11 +1243,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   } else {
     lines.push(
       `--${altBoundary}`,
-      `Content-Type: text/html; charset=UTF-8`,
-      `Content-Transfer-Encoding: 7bit`,
-      "",
-      htmlContent,
-      "",
+      ...buildUtf8MimeBodyPart("text/html", htmlContent),
     );
   }
 
@@ -1411,17 +1412,9 @@ export async function sendWaitlistEmail(
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
     `--${boundary}`,
-    `Content-Type: text/plain; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    textContent,
-    "",
+    ...buildUtf8MimeBodyPart("text/plain", textContent),
     `--${boundary}`,
-    `Content-Type: text/html; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    htmlContent,
-    "",
+    ...buildUtf8MimeBodyPart("text/html", htmlContent),
     `--${boundary}--`,
     "",
   );
@@ -1624,17 +1617,9 @@ export async function sendVIPScanNotification(
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
     `--${boundary}`,
-    `Content-Type: text/plain; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    textContent,
-    "",
+    ...buildUtf8MimeBodyPart("text/plain", textContent),
     `--${boundary}`,
-    `Content-Type: text/html; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    "",
-    htmlContent,
-    "",
+    ...buildUtf8MimeBodyPart("text/html", htmlContent),
     `--${boundary}--`,
     "",
   );
