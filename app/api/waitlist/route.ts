@@ -80,6 +80,8 @@ export async function POST(req: Request) {
         venueLink: true,
         desc: true,
         standbyEnabled: true,
+        tagline: true,
+        imgVersion: true,
       },
     });
 
@@ -199,6 +201,9 @@ export async function POST(req: Request) {
         eventVenue: event.venue,
         eventVenueLink: event.venueLink,
         eventDescription: event.desc,
+        eventId: event.id,
+        imgVersion: event.imgVersion,
+        eventTagline: event.tagline,
       });
     } catch (emailError) {
       console.error("Waitlist email error:", emailError);

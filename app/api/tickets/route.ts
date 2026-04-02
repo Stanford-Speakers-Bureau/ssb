@@ -318,6 +318,8 @@ export async function POST(req: Request) {
               venueLink: true,
               desc: true,
               doorsOpen: true,
+              tagline: true,
+              imgVersion: true,
             },
           })
         : null;
@@ -350,6 +352,9 @@ export async function POST(req: Request) {
             eventVenueLink: eventForEmail?.venueLink || null,
             eventDescription: eventForEmail?.desc || null,
             doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
+            eventId: eventForEmail?.id || null,
+            imgVersion: eventForEmail?.imgVersion ?? null,
+            eventTagline: eventForEmail?.tagline || null,
           });
         } catch (emailError) {
           console.error("Standby ticket email error:", emailError);
@@ -486,6 +491,8 @@ export async function POST(req: Request) {
             venueLink: true,
             desc: true,
             doorsOpen: true,
+            tagline: true,
+            imgVersion: true,
           },
         },
       },
@@ -509,6 +516,9 @@ export async function POST(req: Request) {
           eventVenueLink: ticket.event?.venueLink || null,
           eventDescription: ticket.event?.desc || null,
           doorsOpenTime: ticket.event?.doorsOpen?.toISOString() || null,
+          eventId: ticket.event?.id || null,
+          imgVersion: ticket.event?.imgVersion ?? null,
+          eventTagline: ticket.event?.tagline || null,
         });
       } catch (emailError) {
         console.error("Email sending error:", emailError);
@@ -652,6 +662,8 @@ export async function DELETE(req: Request) {
                 venueLink: true,
                 desc: true,
                 doorsOpen: true,
+                tagline: true,
+                imgVersion: true,
               },
             })
           : null;
@@ -689,6 +701,9 @@ export async function DELETE(req: Request) {
               eventVenueLink: eventForEmail?.venueLink || null,
               eventDescription: eventForEmail?.desc || null,
               doorsOpenTime: eventForEmail?.doorsOpen?.toISOString() || null,
+              eventId: eventForEmail?.id || null,
+              imgVersion: eventForEmail?.imgVersion ?? null,
+              eventTagline: eventForEmail?.tagline || null,
             });
             console.log(
               `Ticket created for waitlist user ${topWaitlistEntry.email}`,

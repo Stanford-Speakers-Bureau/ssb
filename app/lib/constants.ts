@@ -39,9 +39,9 @@ export const BANNER_MESSAGES = {
 export const PACIFIC_TIMEZONE = "America/Los_Angeles";
 
 export const IMPORTANT_NOTICE_ITEMS = [
-  { emoji: "🎒", text: "No bags are allowed at the venue" },
-  { emoji: "❌", text: "Your ticket is not transferable" },
-  { emoji: "🪪", text: "A valid form of ID is required for entry" },
+  { emoji: "🎒", text: "No bags allowed" },
+  { emoji: "❌", text: "Ticket is non-transferable" },
+  { emoji: "🪪", text: "Bring a valid photo ID" },
 ] as const;
 
 export const REFERRAL_MESSAGE = "Refer 10 people to earn a front row seat!";
