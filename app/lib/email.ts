@@ -262,6 +262,15 @@ function formatFullDateTime(dateString: string | null): string {
   }).format(new Date(dateString));
 }
 
+/** Strip basic markdown to plain-ish HTML (bold, italic, links, line breaks) */
+function markdownToEmailHTML(md: string): string {
+  return md
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #A80D0C; text-decoration: underline;">$1</a>')
+    .replace(/\n/g, "<br>");
+}
+
 // ============================================================================
 // Gmail dark mode blend helpers
 // ============================================================================
@@ -474,7 +483,7 @@ function buildHeroCard(data: {
             ${gmailBlendEnd}
             ${data.eventTagline ? `
             ${gmailBlendStart}
-              <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 15px; line-height: 1.5;">${data.eventTagline}</p>
+              <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 15px; line-height: 1.5;">${markdownToEmailHTML(data.eventTagline)}</p>
             ${gmailBlendEnd}
             ` : ""}
             ${pills}
