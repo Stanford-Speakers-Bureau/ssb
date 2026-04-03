@@ -34,10 +34,10 @@ export default function TicketingOpens({
       {hideTicketingDate ? (
         <>
           <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white mb-1">
-            Ticketing Opens Soon
+            Ticketing Opens Soon!
           </p>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-4">
-            RSVP up to be notified when tickets are available.
+            RSVP to be notified when tickets are available. You will only know when tickets are available if you register.
           </p>
         </>
       ) : (
