@@ -37,7 +37,7 @@ export default function TicketingOpens({
             Ticketing Opens Soon!
           </p>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-4">
-            RSVP to be notified when tickets are available. You will only know when tickets are available if you register.
+            Register to be notified when tickets are available. You will only know when tickets are available if you register.
           </p>
         </>
       ) : (
