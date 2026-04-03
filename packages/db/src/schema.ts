@@ -188,6 +188,29 @@ export const userProfiles = pgTable(
   (t) => [uniqueIndex("user_profiles_email_unique").on(t.email)],
 );
 
+// ── Audit Logs ─────────────────────────────────────────────────────────────
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    action: text("action").notNull(),
+    actor: text("actor").notNull(),
+    source: text("source").notNull(),
+    eventId: uuid("event_id"),
+    eventName: text("event_name"),
+    targetEmail: text("target_email"),
+    metadata: text("metadata"),
+  },
+  (t) => [
+    index("audit_logs_created_at_idx").on(t.createdAt),
+    index("audit_logs_action_idx").on(t.action),
+    index("audit_logs_actor_idx").on(t.actor),
+    index("audit_logs_event_id_idx").on(t.eventId),
+    index("audit_logs_target_email_idx").on(t.targetEmail),
+  ],
+);
+
 // ── Relations ───────────────────────────────────────────────────────────────
 
 export const eventsRelations = relations(events, ({ many }) => ({

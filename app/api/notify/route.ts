@@ -3,6 +3,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { db, notify } from "@ssb/db";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { isValidUUID } from "@/app/lib/validation";
+import { logAuditEvent } from "@/app/lib/audit";
 
 export async function POST(req: Request) {
   try {
@@ -45,6 +46,15 @@ export async function POST(req: Request) {
       .values({ email: user.email, speakerId: speaker_id })
       .onConflictDoNothing()
       .returning({ id: notify.id });
+
+    if (insertedRows.length > 0) {
+      await logAuditEvent({
+        action: "notify.signup",
+        actor: user.email,
+        eventId: speaker_id,
+        targetEmail: user.email,
+      });
+    }
 
     return NextResponse.json(
       {
