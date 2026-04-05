@@ -18,6 +18,7 @@ import {
 } from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
+import { logAuditEvent } from "@/app/lib/audit";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { sendTicketEmail } from "@/app/lib/email";
 
@@ -368,6 +369,15 @@ export async function POST(req: Request) {
         }
       }
 
+      await logAuditEvent({
+        action: "ticket.get",
+        actor: user.email,
+        eventId: event_id,
+        eventName: eventForEmail?.name ?? null,
+        targetEmail: user.email,
+        metadata: { type: "STANDBY", ticketId: standbyTicket?.id },
+      });
+
       return NextResponse.json(
         {
           success: true,
@@ -532,6 +542,15 @@ export async function POST(req: Request) {
       }
     }
 
+    await logAuditEvent({
+      action: "ticket.get",
+      actor: user.email,
+      eventId: event_id,
+      eventName: ticket?.event?.name ?? null,
+      targetEmail: user.email,
+      metadata: { type: ticket?.type || "STANDARD", ticketId: ticket?.id },
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -589,7 +608,7 @@ export async function DELETE(req: Request) {
     // Check if event is over
     const eventRow = await db.query.events.findFirst({
       where: eq(events.id, event_id),
-      columns: { id: true, startTimeDate: true, endTimeDate: true, standbyEnabled: true },
+      columns: { id: true, name: true, startTimeDate: true, endTimeDate: true, standbyEnabled: true },
     });
 
     if (isEventOver({ endTime: eventRow?.endTimeDate, startTime: eventRow?.startTimeDate })) {
@@ -621,6 +640,15 @@ export async function DELETE(req: Request) {
 
     // Delete the ticket
     await db.delete(tickets).where(eq(tickets.id, existingTicket.id));
+
+    await logAuditEvent({
+      action: "ticket.cancel",
+      actor: user.email,
+      eventId: event_id,
+      eventName: eventRow?.name ?? null,
+      targetEmail: user.email,
+      metadata: { ticketId: existingTicket.id },
+    });
 
     // Once standby mode is open, freed spots should be handled by the in-person standby line.
     if (!eventRow?.standbyEnabled) {
