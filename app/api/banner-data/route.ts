@@ -66,9 +66,19 @@ export async function GET(req: Request) {
         ? `/events/${closestEvent.route}`
         : "/upcoming-speakers";
 
+    // For the popup phase: check if ticketing has actually opened (ignores hideTicketingDate).
+    // The banner uses isBeforeTicketing (which respects hideTicketingDate) for its own display,
+    // but the popup needs the real ticketing state to show the correct CTA.
+    const isActuallyBeforeTicketing =
+      process.env.LOCAL_TICKETING_ENABLED !== "true" &&
+      !isMystery &&
+      ticketingDate &&
+      !Number.isNaN(ticketingDate.getTime()) &&
+      now < ticketingDate;
+
     const phase = isMystery
       ? "mystery" as const
-      : isBeforeTicketing
+      : isActuallyBeforeTicketing
         ? "pre-ticketing" as const
         : "ticketing-open" as const;
 
