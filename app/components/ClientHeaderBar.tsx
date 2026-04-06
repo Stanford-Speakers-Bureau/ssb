@@ -4,12 +4,18 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import NavBar from "./NavBar";
 import BannerBar from "./BannerBar";
+import EventPopup from "./EventPopup";
 
 type BannerProps = {
   text: string;
   href: string;
   target?: string | number | Date | null;
   prefaceLabel: string;
+  eventId?: string | null;
+  imageUrl?: string | null;
+  phase?: "mystery" | "pre-ticketing" | "ticketing-open";
+  eventRoute?: string | null;
+  speakerName?: string | null;
 };
 
 type BannerData = {
@@ -60,17 +66,32 @@ export default function ClientHeaderBar() {
     return <NavBar banner={false} />;
   }
 
+  const bp = bannerData.bannerProps;
+
   return (
     <>
-      {bannerData.showBanner && bannerData.bannerProps && (
+      {bannerData.showBanner && bp && (
         <BannerBar
-          text={bannerData.bannerProps.text}
-          href={bannerData.bannerProps.href}
-          target={bannerData.bannerProps.target ?? undefined}
-          prefaceLabel={bannerData.bannerProps.prefaceLabel}
+          text={bp.text}
+          href={bp.href}
+          target={bp.target ?? undefined}
+          prefaceLabel={bp.prefaceLabel}
         />
       )}
       <NavBar banner={bannerData.showBanner} />
+      {bannerData.showBanner && bp?.eventId && bp.phase && (
+        <EventPopup
+          eventId={bp.eventId}
+          text={bp.text}
+          href={bp.href}
+          target={typeof bp.target === "string" ? bp.target : null}
+          prefaceLabel={bp.prefaceLabel}
+          phase={bp.phase}
+          imageUrl={bp.imageUrl ?? null}
+          speakerName={bp.speakerName ?? null}
+          eventRoute={bp.eventRoute ?? null}
+        />
+      )}
     </>
   );
 }

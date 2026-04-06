@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClosestUpcomingEvent } from "../../lib/supabase";
+import { getClosestUpcomingEvent, getImageProxyUrl } from "../../lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, bannerRatelimit } from "@/app/lib/ratelimit";
 
@@ -66,6 +66,12 @@ export async function GET(req: Request) {
         ? `/events/${closestEvent.route}`
         : "/upcoming-speakers";
 
+    const phase = isMystery
+      ? "mystery" as const
+      : isBeforeTicketing
+        ? "pre-ticketing" as const
+        : "ticketing-open" as const;
+
     return NextResponse.json({
       showBanner,
       bannerProps: {
@@ -73,6 +79,13 @@ export async function GET(req: Request) {
         href: bannerHref,
         prefaceLabel,
         target: countdownTarget || null,
+        eventId: closestEvent?.id ?? null,
+        imageUrl: !isMystery && closestEvent
+          ? getImageProxyUrl(closestEvent.id, closestEvent.img_version)
+          : null,
+        phase,
+        eventRoute: !isMystery && closestEvent?.route ? closestEvent.route : null,
+        speakerName: !isMystery && closestEvent?.name ? closestEvent.name : null,
       },
     });
   } catch {
