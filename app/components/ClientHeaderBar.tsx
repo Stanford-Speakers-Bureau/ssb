@@ -16,6 +16,8 @@ type BannerProps = {
   phase?: "mystery" | "pre-ticketing" | "ticketing-open";
   eventRoute?: string | null;
   speakerName?: string | null;
+  isLoggedIn?: boolean;
+  isNotified?: boolean;
 };
 
 type BannerData = {
@@ -89,6 +91,8 @@ export default function ClientHeaderBar() {
           phase={bp.phase}
           imageUrl={bp.imageUrl ?? null}
           speakerName={bp.speakerName ?? null}
+          isLoggedIn={bp.isLoggedIn ?? false}
+          isNotified={bp.isNotified ?? false}
         />
       )}
     </>
