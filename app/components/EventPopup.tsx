@@ -20,6 +20,8 @@ export type EventPopupProps = {
   phase: Phase;
   imageUrl: string | null;
   speakerName: string | null;
+  isLoggedIn: boolean;
+  isNotified: boolean;
 };
 
 // ─── Countdown helpers ───
@@ -174,6 +176,8 @@ export default function EventPopup({
   phase,
   imageUrl,
   speakerName,
+  isLoggedIn,
+  isNotified: initialIsNotified,
 }: EventPopupProps) {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
@@ -242,7 +246,6 @@ export default function EventPopup({
 
       if (res.ok) {
         setNotifyStatus("success");
-        setTimeout(dismiss, 1500);
       } else {
         setNotifyStatus("error");
       }
@@ -255,22 +258,27 @@ export default function EventPopup({
 
   const isMystery = phase === "mystery";
   const isTicketingOpen = phase === "ticketing-open";
+  const alreadyNotified = initialIsNotified || notifyStatus === "success";
 
   const headline = isMystery
     ? "A Mystery Speaker is Coming!"
     : speakerName || text;
 
   const subtitle = isMystery
-    ? "Be the first to find out who it is."
+    ? alreadyNotified
+      ? "You'll be notified when the speaker is announced."
+      : "Be the first to find out who it is."
     : isTicketingOpen
       ? "Tickets are available now!"
-      : "Free tickets dropping soon.";
+      : alreadyNotified
+        ? "You'll be notified when tickets drop."
+        : "Free tickets dropping soon.";
 
   const ctaLabel = isMystery
-    ? "Notify Me When Revealed"
+    ? alreadyNotified ? "View Event" : "Notify Me When Revealed"
     : isTicketingOpen
       ? "Get Tickets Now"
-      : "Notify Me When Tickets Drop";
+      : alreadyNotified ? "View Event" : "Notify Me When Tickets Drop";
 
   // ─── Render ───
 
@@ -401,18 +409,8 @@ export default function EventPopup({
                 transition={{ delay: 0.45, duration: 0.4 }}
                 className="w-full flex flex-col items-center gap-2.5"
               >
-                {notifyStatus === "success" ? (
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-sm py-3"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    You&apos;ll be notified!
-                  </motion.div>
-                ) : isTicketingOpen ? (
+                {isTicketingOpen || alreadyNotified ? (
+                  /* Already notified or ticketing open — link to event page */
                   <Link
                     href={href}
                     onClick={dismiss}
@@ -438,13 +436,20 @@ export default function EventPopup({
                       }}
                       className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
                     >
-                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                      </svg>
+                      {alreadyNotified && !isTicketingOpen ? (
+                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                        </svg>
+                      )}
                       {ctaLabel}
                     </motion.div>
                   </Link>
                 ) : (
+                  /* Not notified yet — show notify button */
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -490,14 +495,12 @@ export default function EventPopup({
                 )}
 
                 {/* Dismiss link */}
-                {notifyStatus !== "success" && (
-                  <button
-                    onClick={dismiss}
-                    className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors py-1"
-                  >
-                    Maybe later
-                  </button>
-                )}
+                <button
+                  onClick={dismiss}
+                  className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors py-1"
+                >
+                  Maybe later
+                </button>
               </motion.div>
             </div>
           </motion.div>

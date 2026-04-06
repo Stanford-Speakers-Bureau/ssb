@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getClosestUpcomingEvent, getImageProxyUrl } from "../../lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, bannerRatelimit } from "@/app/lib/ratelimit";
+import { getSessionUser } from "@/app/lib/auth";
+import { db, eq, and, notify } from "@ssb/db";
 
 export async function GET(req: Request) {
   // Rate limit by IP address
@@ -82,6 +84,28 @@ export async function GET(req: Request) {
         ? "pre-ticketing" as const
         : "ticketing-open" as const;
 
+    // Check if the user is already signed up for notifications
+    let isLoggedIn = false;
+    let isNotified = false;
+    try {
+      const user = await getSessionUser();
+      if (user?.email) {
+        isLoggedIn = true;
+        if (closestEvent) {
+          const row = await db.query.notify.findFirst({
+            where: and(
+              eq(notify.email, user.email),
+              eq(notify.speakerId, closestEvent.id),
+            ),
+            columns: { id: true },
+          });
+          isNotified = !!row;
+        }
+      }
+    } catch {
+      // Session/DB error — fail open, treat as not logged in
+    }
+
     return NextResponse.json({
       showBanner,
       bannerProps: {
@@ -96,6 +120,8 @@ export async function GET(req: Request) {
         phase,
         eventRoute: !isMystery && closestEvent?.route ? closestEvent.route : null,
         speakerName: !isMystery && closestEvent?.name ? closestEvent.name : null,
+        isLoggedIn,
+        isNotified,
       },
     });
   } catch {
