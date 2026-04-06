@@ -323,8 +323,9 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
       background-image: linear-gradient(#18181b, #18181c) !important;
     }
     u + .body .important-box {
-      background-color: #A80D0C !important;
-      background-image: linear-gradient(#A80D0C, #A80D0D) !important;
+      background-color: #18181b !important;
+      background-image: linear-gradient(#18181b, #18181c) !important;
+      border-color: #A80D0C !important;
     }
     u + .body .qr-code-wrapper {
       background-color: #A80D0C !important;
@@ -569,10 +570,10 @@ function buildImportantNotice(
     .join("\n");
 
   return `
-    <div class="important-box" style="background-color: #A80D0C; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
+    <div class="important-box" style="background-color: #18181b; border: 3px solid #A80D0C; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
       ${gmailBlendStart}
-        <h2 style="margin: 0 0 12px 0; color: #ffffff; font-size: 18px; font-weight: 700; text-transform: uppercase;"><b>Before You Arrive</b></h2>
-        <div style="color: #ffffff; font-size: 15px; line-height: 1.8;">
+        <h2 style="margin: 0 0 12px 0; color: #A80D0C; font-size: 18px; font-weight: 700; text-transform: uppercase;"><b>Before You Arrive</b></h2>
+        <div style="color: #f4f4f5; font-size: 15px; line-height: 1.8;">
           ${itemsHTML}
         </div>
       ${gmailBlendEnd}

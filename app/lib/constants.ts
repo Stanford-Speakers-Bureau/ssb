@@ -40,6 +40,7 @@ export const PACIFIC_TIMEZONE = "America/Los_Angeles";
 
 export const IMPORTANT_NOTICE_ITEMS = [
   { emoji: "🎒", text: "No bags allowed" },
+  { emoji: "📵", text: "No electronics larger than a cell phone" },
   { emoji: "❌", text: "Ticket is non-transferable" },
   { emoji: "🪪", text: "Bring a valid photo ID" },
 ] as const;
