@@ -89,7 +89,6 @@ export default function ClientHeaderBar() {
           phase={bp.phase}
           imageUrl={bp.imageUrl ?? null}
           speakerName={bp.speakerName ?? null}
-          eventRoute={bp.eventRoute ?? null}
         />
       )}
     </>

@@ -80,7 +80,7 @@ export async function GET(req: Request) {
         prefaceLabel,
         target: countdownTarget || null,
         eventId: closestEvent?.id ?? null,
-        imageUrl: !isMystery && closestEvent
+        imageUrl: !isMystery && closestEvent && (closestEvent.img || closestEvent.mobile_img)
           ? getImageProxyUrl(closestEvent.id, closestEvent.img_version)
           : null,
         phase,

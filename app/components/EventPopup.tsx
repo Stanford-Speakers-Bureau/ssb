@@ -20,7 +20,6 @@ export type EventPopupProps = {
   phase: Phase;
   imageUrl: string | null;
   speakerName: string | null;
-  eventRoute: string | null;
 };
 
 // ─── Countdown helpers ───
@@ -205,8 +204,8 @@ export default function EventPopup({
   useEffect(() => {
     if (visible && phase === "ticketing-open" && !confettiFiredRef.current) {
       confettiFiredRef.current = true;
-      // Small delay so the popup animates in first
-      setTimeout(fireConfetti, 400);
+      const id = setTimeout(fireConfetti, 400);
+      return () => clearTimeout(id);
     }
   }, [visible, phase]);
 
@@ -439,7 +438,7 @@ export default function EventPopup({
                       }}
                       className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
                     >
-                      <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
                       </svg>
                       {ctaLabel}
@@ -481,7 +480,7 @@ export default function EventPopup({
                       </>
                     ) : (
                       <>
-                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                         </svg>
                         {ctaLabel}
