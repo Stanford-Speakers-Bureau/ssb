@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, referrals } from "@ssb/db";
+import { db, eq, and, referrals, events } from "@ssb/db";
 import { generateReferralCode } from "@/app/lib/utils";
 import { checkRateLimit, referralValidateRatelimit } from "@/app/lib/ratelimit";
+import { validateReferralInput } from "@/app/lib/referrals";
 
 /**
  * GET /api/referrals
@@ -94,33 +95,35 @@ export async function POST(req: Request) {
       );
     }
 
-    const userReferralCode = generateReferralCode(user.email);
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, event_id),
+      columns: {
+        id: true,
+        referralsEnabled: true,
+      },
+    });
 
-    if (referral_code.trim().toLowerCase() === userReferralCode) {
+    if (!event) {
       return NextResponse.json(
-        {
-          valid: false,
-          reason: "self_referral",
-          message: "You cannot use your own referral code",
-        },
-        { status: 200 },
+        { error: "Event not found" },
+        { status: 404 },
       );
     }
 
-    const referral = await db.query.referrals.findFirst({
-      where: and(
-        eq(referrals.eventId, event_id),
-        eq(referrals.referralCode, referral_code.trim().toLowerCase()),
-      ),
-      columns: { id: true },
+    const validation = await validateReferralInput({
+      eventId: event_id,
+      referralCode: referral_code,
+      userEmail: user.email,
+      referralsEnabled: event.referralsEnabled,
+      disabledBehavior: "reject",
     });
 
-    if (!referral) {
+    if (!validation.ok) {
       return NextResponse.json(
         {
           valid: false,
-          reason: "invalid",
-          message: "Invalid referral code for this event",
+          reason: validation.reason,
+          message: validation.message,
         },
         { status: 200 },
       );

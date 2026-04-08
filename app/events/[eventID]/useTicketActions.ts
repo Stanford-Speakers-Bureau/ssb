@@ -78,6 +78,43 @@ function clearWaitlistCache(eventId: string): void {
   }
 }
 
+function getReferralStorageKey(eventId: string): string {
+  return `referral:${eventId}`;
+}
+
+function readStoredReferralCode(eventId: string): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    return window.sessionStorage.getItem(getReferralStorageKey(eventId));
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredReferralCode(eventId: string, referralCode: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.setItem(
+      getReferralStorageKey(eventId),
+      referralCode.trim(),
+    );
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
+function clearStoredReferralCode(eventId: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(getReferralStorageKey(eventId));
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
 async function fetchWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit = {},
@@ -116,8 +153,6 @@ export type TicketButtonProps = {
   initialIsScanned?: boolean;
   standbyMode?: boolean;
 };
-
-const REFERRAL_KEY = "referral";
 
 export const TICKET_MESSAGES = {
   SUCCESS: "Ticket confirmed! Check your email in a moment.",
@@ -220,9 +255,11 @@ export default function useTicketActions({
 
   const redirectToAuth = useCallback(
     (intent: "notify" | "waitlist" | "ticket" | "standby_ticket") => {
-      const currentPath = window.location.pathname;
-      const redirectUrl = `${currentPath}?${intent}=true`;
-      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      const redirectUrl = new URL(window.location.href);
+      redirectUrl.searchParams.set(intent, "true");
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(
+        redirectUrl.pathname + redirectUrl.search + redirectUrl.hash,
+      )}`;
     },
     [],
   );
@@ -524,12 +561,13 @@ export default function useTicketActions({
 
       // Get referral from input or session storage
       let referral: string | null = null;
-      const referralKey = REFERRAL_KEY;
-      if (referralCode.trim()) {
-        referral = referralCode.trim();
-        sessionStorage.setItem(referralKey, referral);
-      } else {
-        referral = sessionStorage.getItem(referralKey);
+      if (referralsEnabled) {
+        if (referralCode.trim()) {
+          referral = referralCode.trim();
+          writeStoredReferralCode(eventId, referral);
+        } else {
+          referral = readStoredReferralCode(eventId);
+        }
       }
 
       const requestBody: { event_id: string; referral?: string | null } = {
@@ -569,7 +607,7 @@ export default function useTicketActions({
         });
         setMessage("Successfully joined the waitlist!");
         if (referral) {
-          window.sessionStorage.removeItem(referralKey);
+          clearStoredReferralCode(eventId);
         }
         if (nextPosition === null) {
           void reconcileWaitlistStatus();
@@ -599,6 +637,7 @@ export default function useTicketActions({
   }, [
     eventId,
     isLoggedIn,
+    referralsEnabled,
     referralCode,
     referralWarning,
     reconcileWaitlistStatus,
@@ -724,13 +763,13 @@ export default function useTicketActions({
       // Get referral from input or session storage if creating a ticket
       let referral: string | null = null;
       if (!hasTicket) {
-        const referralKey = REFERRAL_KEY;
-        // Use input value if provided, otherwise check session storage
-        if (referralCode.trim()) {
-          referral = referralCode.trim();
-          sessionStorage.setItem(referralKey, referral);
-        } else {
-          referral = sessionStorage.getItem(referralKey);
+        if (referralsEnabled) {
+          if (referralCode.trim()) {
+            referral = referralCode.trim();
+            writeStoredReferralCode(eventId, referral);
+          } else {
+            referral = readStoredReferralCode(eventId);
+          }
         }
       }
 
@@ -769,8 +808,7 @@ export default function useTicketActions({
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
           // Clear referral from session storage after successful ticket creation
-          const referralKey = REFERRAL_KEY;
-          window.sessionStorage.removeItem(referralKey);
+          clearStoredReferralCode(eventId);
         }
         // Dispatch event to update ticket count and ticket status
         window.dispatchEvent(
@@ -809,6 +847,7 @@ export default function useTicketActions({
     eventId,
     hasTicket,
     isLoggedIn,
+    referralsEnabled,
     referralCode,
     referralWarning,
     reconcileTicketStatus,
@@ -885,6 +924,11 @@ export default function useTicketActions({
         return;
       }
 
+      if (!referralsEnabled) {
+        setReferralWarning(null);
+        return;
+      }
+
       if (!isLoggedIn) {
         setReferralWarning(null);
         return;
@@ -927,18 +971,34 @@ export default function useTicketActions({
         setReferralWarning(null);
       }
     },
-    [eventId, isLoggedIn],
+    [eventId, isLoggedIn, referralsEnabled],
   );
 
   // Track referral parameters from URL and store in session storage
   useEffect(() => {
-    const referralKey = REFERRAL_KEY;
     const url = new URL(window.location.href);
     const urlReferralCode = url.searchParams.get("referral_code");
 
+    if (!referralsEnabled) {
+      clearStoredReferralCode(eventId);
+      setReferralCode("");
+      setReferralWarning(null);
+
+      if (urlReferralCode) {
+        url.searchParams.delete("referral_code");
+        window.history.replaceState(
+          {},
+          "",
+          `${url.pathname}${url.search}${url.hash}`,
+        );
+      }
+
+      return;
+    }
+
     // If we have referral parameters, store the referral code in session storage and input
     if (urlReferralCode) {
-      sessionStorage.setItem(referralKey, urlReferralCode);
+      writeStoredReferralCode(eventId, urlReferralCode);
       setReferralCode(urlReferralCode);
       // Validate the referral code from URL
       void validateReferralCode(urlReferralCode);
@@ -951,13 +1011,16 @@ export default function useTicketActions({
       );
     } else {
       // Check if there's already a referral code in session storage
-      const storedReferral = sessionStorage.getItem(referralKey);
+      const storedReferral = readStoredReferralCode(eventId);
       if (storedReferral) {
         setReferralCode(storedReferral);
         void validateReferralCode(storedReferral);
+      } else {
+        setReferralCode("");
+        setReferralWarning(null);
       }
     }
-  }, [eventId, validateReferralCode]);
+  }, [eventId, referralsEnabled, validateReferralCode]);
 
   // Auto-action after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
@@ -1117,11 +1180,10 @@ export default function useTicketActions({
   const handleReferralCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setReferralCode(value);
-    const referralKey = REFERRAL_KEY;
-    if (value.trim()) {
-      sessionStorage.setItem(referralKey, value.trim());
+    if (referralsEnabled && value.trim()) {
+      writeStoredReferralCode(eventId, value);
     } else {
-      sessionStorage.removeItem(referralKey);
+      clearStoredReferralCode(eventId);
     }
 
     // Clear previous warning

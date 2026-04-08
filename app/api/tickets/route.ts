@@ -12,11 +12,8 @@ import {
   sql,
   events,
   tickets,
-  referrals,
   waitlist,
 } from "@ssb/db";
-import { generateReferralCode } from "@/app/lib/utils";
-import { cookies } from "next/headers";
 import { logAuditEvent } from "@/app/lib/audit";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { type TicketEmailData } from "@/app/lib/email";
@@ -25,6 +22,10 @@ import {
   enqueueEmailJob,
   processEmailJob,
 } from "@/app/lib/email-jobs";
+import {
+  sanitizeStoredReferral,
+  validateReferralInput,
+} from "@/app/lib/referrals";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Your ticket is confirmed. Check your email in a moment.",
@@ -326,14 +327,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get referral from request body first, then fall back to cookie if not provided
-    let referral: string | null = referralFromBody || null;
-    if (!referral) {
-      const cookieStore = await cookies();
-      referral = cookieStore.get("referral")?.value || null;
-    }
-    referral = referral?.trim().toLowerCase() || null;
-
     const event = await db.query.events.findFirst({
       where: eq(events.id, event_id),
       columns: {
@@ -351,6 +344,7 @@ export async function POST(req: Request) {
         standbyEnabled: true,
         tagline: true,
         imgVersion: true,
+        referralsEnabled: true,
       },
     });
 
@@ -360,6 +354,22 @@ export async function POST(req: Request) {
         { status: 404 },
       );
     }
+
+    const referralValidation = await validateReferralInput({
+      eventId: event_id,
+      referralCode: referralFromBody,
+      userEmail: user.email,
+      referralsEnabled: event.referralsEnabled,
+    });
+
+    if (!referralValidation.ok) {
+      return NextResponse.json(
+        { error: referralValidation.message },
+        { status: 400 },
+      );
+    }
+
+    const referral = referralValidation.referral;
 
     // Enforce ticketing open date:
     // - Prefer ticketing_date
@@ -408,6 +418,13 @@ export async function POST(req: Request) {
         columns: { referral: true },
       });
 
+      const waitlistReferral = await sanitizeStoredReferral({
+        eventId: event_id,
+        referralCode: existingWaitlistEntry?.referral,
+        userEmail: user.email,
+        referralsEnabled: event.referralsEnabled,
+      });
+
       const nameForTicket = userName?.trim();
       if (!nameForTicket) {
         return NextResponse.json(
@@ -424,7 +441,7 @@ export async function POST(req: Request) {
           email: user.email,
           name: nameForTicket,
           type: "STANDBY",
-          referral: referral ?? existingWaitlistEntry?.referral ?? null,
+          referral: referral ?? waitlistReferral ?? null,
         })
         .onConflictDoNothing({
           target: [tickets.eventId, tickets.email],
@@ -494,31 +511,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (referral) {
-      const userReferralCode = generateReferralCode(user.email);
-      if (referral.trim().toLowerCase() === userReferralCode) {
-        return NextResponse.json(
-          { error: "You cannot use your own referral code" },
-          { status: 400 },
-        );
-      }
-
-      const referralRecord = await db.query.referrals.findFirst({
-        where: and(
-          eq(referrals.eventId, event_id),
-          eq(referrals.referralCode, referral.trim().toLowerCase()),
-        ),
-        columns: { id: true },
-      });
-
-      if (!referralRecord) {
-        return NextResponse.json(
-          { error: "Invalid referral code for this event" },
-          { status: 400 },
-        );
-      }
-    }
-
     const nameForTicket = userName?.trim();
     if (!nameForTicket) {
       return NextResponse.json(
@@ -560,6 +552,18 @@ export async function POST(req: Request) {
       if (msg.includes("standby_only")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_STANDBY_ONLY },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("self_referral")) {
+        return NextResponse.json(
+          { error: "You cannot use your own referral code" },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("invalid_referral")) {
+        return NextResponse.json(
+          { error: "Invalid referral code for this event" },
           { status: 400 },
         );
       }

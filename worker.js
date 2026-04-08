@@ -11,20 +11,34 @@ async function getOpenNextWorker() {
   return openNextWorkerPromise;
 }
 
+function syncProcessEnvFromBindings(env) {
+  if (!env || typeof env !== "object") {
+    return;
+  }
+
+  for (const [key, value] of Object.entries(env)) {
+    if (typeof value === "string") {
+      process.env[key] = value;
+    }
+  }
+}
+
 export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from "./.open-next/worker.js";
 
-export default {
+const worker = {
   async fetch(request, env, ctx) {
-    const worker = await getOpenNextWorker();
+    const openNextWorker = await getOpenNextWorker();
 
-    if (!worker?.fetch) {
+    if (!openNextWorker?.fetch) {
       throw new Error("OpenNext worker does not export a fetch handler.");
     }
 
-    return worker.fetch(request, env, ctx);
+    return openNextWorker.fetch(request, env, ctx);
   },
 
-  async queue(batch) {
+  async queue(batch, env) {
+    syncProcessEnvFromBindings(env);
+
     await Promise.all(
       batch.messages.map(async (message) => {
         try {
@@ -43,3 +57,5 @@ export default {
     );
   },
 };
+
+export default worker;

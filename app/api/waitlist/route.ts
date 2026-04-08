@@ -8,6 +8,7 @@ import {
   enqueueEmailJob,
   processEmailJob,
 } from "@/app/lib/email-jobs";
+import { validateReferralInput } from "@/app/lib/referrals";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -108,6 +109,7 @@ export async function POST(req: Request) {
         standbyEnabled: true,
         tagline: true,
         imgVersion: true,
+        referralsEnabled: true,
       },
     });
 
@@ -131,7 +133,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const referral = referralFromBody?.trim().toLowerCase() || null;
+    const referralValidation = await validateReferralInput({
+      eventId: event_id,
+      referralCode: referralFromBody,
+      userEmail: user.email,
+      referralsEnabled: event.referralsEnabled,
+    });
+
+    if (!referralValidation.ok) {
+      return NextResponse.json(
+        { error: referralValidation.message },
+        { status: 400 },
+      );
+    }
+
+    const referral = referralValidation.referral;
 
     // Use stored procedure to atomically join waitlist (prevents position collisions)
     let rpcData: JoinWaitlistRpcResult | null = null;
@@ -166,6 +182,18 @@ export async function POST(req: Request) {
       if (msg.includes("already")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_ALREADY_ON_WAITLIST },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("self_referral")) {
+        return NextResponse.json(
+          { error: "You cannot use your own referral code" },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("invalid_referral")) {
+        return NextResponse.json(
+          { error: "Invalid referral code for this event" },
           { status: 400 },
         );
       }

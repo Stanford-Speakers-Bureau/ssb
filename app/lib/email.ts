@@ -13,10 +13,19 @@ import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 // on ios gmail to fix: https://www.hteumeuleu.com/2021/fixing-gmail-dark-mode-css-blend-modes/
 
 // AWS SES configuration
-const AWS_REGION = process.env.AWS_REGION || "us-east-1";
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 const SES_REQUEST_TIMEOUT_MS = 10_000;
+
+function getAwsSesConfig() {
+  return {
+    region: process.env.AWS_REGION || "us-east-1",
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+function getFromEmail(): string {
+  return process.env.SES_FROM_EMAIL || "tickets@stanfordspeakersbureau.com";
+}
 
 /**
  * AWS Signature Version 4 signing for SES API requests
@@ -28,7 +37,9 @@ async function signAWSRequest(
   body: string,
   headers: Record<string, string>,
 ): Promise<Record<string, string>> {
-  if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+  const { region, accessKeyId, secretAccessKey } = getAwsSesConfig();
+
+  if (!accessKeyId || !secretAccessKey) {
     throw new Error("AWS credentials not configured");
   }
 
@@ -72,7 +83,7 @@ async function signAWSRequest(
 
   // Create string to sign
   const algorithm = "AWS4-HMAC-SHA256";
-  const credentialScope = `${dateStamp}/${AWS_REGION}/${service}/aws4_request`;
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
   const stringToSign = [
     algorithm,
     amzDate,
@@ -82,15 +93,15 @@ async function signAWSRequest(
 
   // Calculate signature
   const signingKey = await getSignatureKey(
-    AWS_SECRET_ACCESS_KEY,
+    secretAccessKey,
     dateStamp,
-    AWS_REGION,
+    region,
     service,
   );
   const signature = await hmacHex(signingKey, stringToSign);
 
   // Create authorization header
-  const authorization = `${algorithm} Credential=${AWS_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+  const authorization = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
   return {
     ...headers,
@@ -149,7 +160,8 @@ async function getSignatureKey(
  * Send raw email via AWS SES REST API
  */
 async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
-  const endpoint = `https://email.${AWS_REGION}.amazonaws.com/v2/email/outbound-emails`;
+  const { region } = getAwsSesConfig();
+  const endpoint = `https://email.${region}.amazonaws.com/v2/email/outbound-emails`;
 
   const body = JSON.stringify({
     Content: {
@@ -184,9 +196,6 @@ async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
 
 // Toggle to enable/disable referral info in ticket emails
 const REFERRAL_ENABLED = false;
-
-const FROM_EMAIL =
-  process.env.SES_FROM_EMAIL || "tickets@stanfordspeakersbureau.com";
 
 // Wrap base64 (or any long) strings to 76-character lines for MIME compatibility
 function wrapToMimeLines(input: string, lineLength: number = 76): string {
@@ -766,7 +775,7 @@ function buildFooter(): string {
         ${gmailBlendStart}
           <p style="margin: 0 0 8px 0; color: #71717a; font-size: 12px;">Stanford Speakers Bureau</p>
           <p style="margin: 0; color: #71717a; font-size: 12px;">
-            For ADA accommodations or other questions, please email <a href="mailto:${FROM_EMAIL}" style="color: #a1a1aa; text-decoration: none;">${FROM_EMAIL}</a>
+            For ADA accommodations or other questions, please email <a href="mailto:${getFromEmail()}" style="color: #a1a1aa; text-decoration: none;">${getFromEmail()}</a>
           </p>
         ${gmailBlendEnd}
       </td>
@@ -1190,7 +1199,7 @@ ${REFERRAL_MESSAGE}
 ` : ""}
 
 Stanford Speakers Bureau
-For ADA accommodations or other questions, please email ${FROM_EMAIL}
+For ADA accommodations or other questions, please email ${getFromEmail()}
   `.trim();
 }
 
@@ -1225,7 +1234,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
 
   const lines: string[] = [];
   lines.push(
-    `From: ${FROM_EMAIL}`,
+    `From: ${getFromEmail()}`,
     `To: ${data.email}`,
     `Subject: ${subject}`,
     `MIME-Version: 1.0`,
@@ -1400,7 +1409,7 @@ ${eventVenue ? `- Location: ${eventVenue}` : ""}
 Heads up: If a standby line opens at the venue, the online waitlist closes. Come to the venue for a chance to get in!
 
 Stanford Speakers Bureau
-For ADA accommodations or other questions, please email ${FROM_EMAIL}
+For ADA accommodations or other questions, please email ${getFromEmail()}
   `.trim();
 }
 
@@ -1423,7 +1432,7 @@ export async function sendWaitlistEmail(
 
   const lines: string[] = [];
   lines.push(
-    `From: ${FROM_EMAIL}`,
+    `From: ${getFromEmail()}`,
     `To: ${data.email}`,
     `Subject: ${subject}`,
     `MIME-Version: 1.0`,
@@ -1628,7 +1637,7 @@ export async function sendVIPScanNotification(
 
   const lines: string[] = [];
   lines.push(
-    `From: ${FROM_EMAIL}`,
+    `From: ${getFromEmail()}`,
     `To: anish.anne@stanford.edu`,
     `Subject: ${subject}`,
     `MIME-Version: 1.0`,
