@@ -1,7 +1,8 @@
 import { after, NextResponse } from "next/server";
-import { getSessionUser } from "@/app/lib/auth";
+import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
+import { logAuditEvent } from "@/app/lib/audit";
 import { type WaitlistEmailData } from "@/app/lib/email";
 import {
   createWaitlistEmailJob,
@@ -22,7 +23,23 @@ const WAITLIST_MESSAGES = {
   ERROR_NOT_ON_WAITLIST: "You're not on the waitlist for this event.",
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
+  ERROR_FEE_WAIVER_INELIGIBLE:
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
 } as const;
+
+const FEE_WAIVER_ROLE = "fee_waiver";
+const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
+const ASSU_URL = "https://assu.stanford.edu";
+const ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
+
+function getFeeWaiverIneligiblePayload() {
+  return {
+    error: WAITLIST_MESSAGES.ERROR_FEE_WAIVER_INELIGIBLE,
+    code: FEE_WAIVER_INELIGIBLE_CODE,
+    assuUrl: ASSU_URL,
+    faqUrl: ASSU_FAQ_URL,
+  };
+}
 
 type JoinWaitlistRpcResult = {
   position: number;
@@ -54,6 +71,12 @@ async function queueWaitlistEmail(data: WaitlistEmailData) {
 
   scheduleAfterResponse("Waitlist email", async () => {
     await processEmailJob(createWaitlistEmailJob(data));
+  });
+}
+
+function queueAuditEvent(params: Parameters<typeof logAuditEvent>[0]) {
+  scheduleAfterResponse("Audit log", async () => {
+    await logAuditEvent(params);
   });
 }
 
@@ -117,6 +140,28 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
+      );
+    }
+
+    const userRoles = await getRoleNamesForEmail(user.email);
+    if (userRoles.includes(FEE_WAIVER_ROLE)) {
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "WAITLIST",
+          reason: FEE_WAIVER_ROLE,
+          assuUrl: ASSU_URL,
+          faqUrl: ASSU_FAQ_URL,
+        },
+      });
+
+      return NextResponse.json(
+        getFeeWaiverIneligiblePayload(),
+        { status: 403 },
       );
     }
 
@@ -209,6 +254,27 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
+      if (msg.includes("ineligible")) {
+        queueAuditEvent({
+          action: "ticket.ineligible",
+          actor: user.email,
+          eventId: event_id,
+          eventName: event.name ?? null,
+          targetEmail: user.email,
+          metadata: {
+            attemptedType: "WAITLIST",
+            reason: FEE_WAIVER_ROLE,
+            assuUrl: ASSU_URL,
+            faqUrl: ASSU_FAQ_URL,
+            source: "rpc",
+          },
+        });
+
+        return NextResponse.json(
+          getFeeWaiverIneligiblePayload(),
+          { status: 403 },
+        );
+      }
       if (msg.includes("event_not_found")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
@@ -233,17 +299,17 @@ export async function POST(req: Request) {
     }
 
     await queueWaitlistEmail({
-        email: user.email,
-        eventName: event.name || "Event",
-        position: waitlistPosition,
-        eventStartTime: event.startTimeDate?.toISOString() ?? null,
-        eventVenue: event.venue,
-        eventVenueLink: event.venueLink,
-        eventDescription: event.desc,
-        eventId: event.id,
-        imgVersion: event.imgVersion,
-        eventTagline: event.tagline,
-      });
+      email: user.email,
+      eventName: event.name || "Event",
+      position: waitlistPosition,
+      eventStartTime: event.startTimeDate?.toISOString() ?? null,
+      eventVenue: event.venue,
+      eventVenueLink: event.venueLink,
+      eventDescription: event.desc,
+      eventId: event.id,
+      imgVersion: event.imgVersion,
+      eventTagline: event.tagline,
+    });
 
     return NextResponse.json(
       {
@@ -403,12 +469,12 @@ export async function GET(req: Request) {
         event_id: e.eventId,
         events: e.event
           ? {
-              id: e.event.id,
-              name: e.event.name,
-              route: e.event.route,
-              start_time_date: e.event.startTimeDate?.toISOString() ?? null,
-              venue: e.event.venue,
-            }
+            id: e.event.id,
+            name: e.event.name,
+            route: e.event.route,
+            start_time_date: e.event.startTimeDate?.toISOString() ?? null,
+            venue: e.event.venue,
+          }
           : null,
       }));
 

@@ -3,7 +3,7 @@ import {
   updateReferralRecords,
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
-import { getSessionUser } from "@/app/lib/auth";
+import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { isEventOver } from "@/app/lib/eventTime";
 import {
   db,
@@ -48,7 +48,23 @@ const TICKET_MESSAGES = {
     "The standby line is open. Standard tickets are no longer available online.",
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
+  ERROR_FEE_WAIVER_INELIGIBLE:
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
 } as const;
+
+const FEE_WAIVER_ROLE = "fee_waiver";
+const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
+const ASSU_URL = "https://assu.stanford.edu";
+const ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
+
+function getFeeWaiverIneligiblePayload() {
+  return {
+    error: TICKET_MESSAGES.ERROR_FEE_WAIVER_INELIGIBLE,
+    code: FEE_WAIVER_INELIGIBLE_CODE,
+    assuUrl: ASSU_URL,
+    faqUrl: ASSU_FAQ_URL,
+  };
+}
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
@@ -259,12 +275,12 @@ export async function GET(req: Request) {
       name: t.name,
       events: t.event
         ? {
-            id: t.event.id,
-            name: t.event.name,
-            route: t.event.route,
-            start_time_date: t.event.startTimeDate?.toISOString() ?? null,
-            venue: t.event.venue,
-          }
+          id: t.event.id,
+          name: t.event.name,
+          route: t.event.route,
+          start_time_date: t.event.startTimeDate?.toISOString() ?? null,
+          venue: t.event.venue,
+        }
         : null,
     }));
 
@@ -352,6 +368,29 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
+      );
+    }
+
+    const userRoles = await getRoleNamesForEmail(user.email);
+    const isStandbyRequest = ticketType === "STANDBY";
+    if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "STANDARD",
+          reason: FEE_WAIVER_ROLE,
+          assuUrl: ASSU_URL,
+          faqUrl: ASSU_FAQ_URL,
+        },
+      });
+
+      return NextResponse.json(
+        getFeeWaiverIneligiblePayload(),
+        { status: 403 },
       );
     }
 
@@ -565,6 +604,27 @@ export async function POST(req: Request) {
         return NextResponse.json(
           { error: "Invalid referral code for this event" },
           { status: 400 },
+        );
+      }
+      if (msg.includes("ineligible")) {
+        queueAuditEvent({
+          action: "ticket.ineligible",
+          actor: user.email,
+          eventId: event_id,
+          eventName: event.name ?? null,
+          targetEmail: user.email,
+          metadata: {
+            attemptedType: "STANDARD",
+            reason: FEE_WAIVER_ROLE,
+            assuUrl: ASSU_URL,
+            faqUrl: ASSU_FAQ_URL,
+            source: "rpc",
+          },
+        });
+
+        return NextResponse.json(
+          getFeeWaiverIneligiblePayload(),
+          { status: 403 },
         );
       }
       if (msg.includes("already")) {

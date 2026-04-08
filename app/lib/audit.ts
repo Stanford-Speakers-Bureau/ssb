@@ -3,6 +3,7 @@ import { db, auditLogs } from "@ssb/db";
 type AuditAction =
   | "notify.signup"
   | "ticket.get"
+  | "ticket.ineligible"
   | "ticket.cancel";
 
 type AuditLogParams = {
