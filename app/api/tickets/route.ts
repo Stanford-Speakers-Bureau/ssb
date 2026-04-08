@@ -49,7 +49,7 @@ const TICKET_MESSAGES = {
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "You are ineligible for regular online tickets. Please contact ASSU for details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -275,12 +275,12 @@ export async function GET(req: Request) {
       name: t.name,
       events: t.event
         ? {
-            id: t.event.id,
-            name: t.event.name,
-            route: t.event.route,
-            start_time_date: t.event.startTimeDate?.toISOString() ?? null,
-            venue: t.event.venue,
-          }
+          id: t.event.id,
+          name: t.event.name,
+          route: t.event.route,
+          start_time_date: t.event.startTimeDate?.toISOString() ?? null,
+          venue: t.event.venue,
+        }
         : null,
     }));
 

@@ -17,7 +17,7 @@ const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
 const DEFAULT_ASSU_URL = "https://assu.stanford.edu";
 const DEFAULT_ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
 const DEFAULT_INELIGIBLE_MESSAGE =
-  "You are ineligible for regular online tickets. Please contact ASSU for details.";
+  "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.";
 
 type WaitlistStatusCache = {
   isOnWaitlist: boolean;
@@ -216,17 +216,17 @@ export default function useTicketActions({
   const hasSsrWaitlistState = isLoggedIn && isSoldOut && !initialHasTicket;
   const initialWaitlistState = hasSsrWaitlistState
     ? {
-        isOnWaitlist: initialIsOnWaitlist,
-        position: initialWaitlistPosition,
-        isReady: initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
-      }
+      isOnWaitlist: initialIsOnWaitlist,
+      position: initialWaitlistPosition,
+      isReady: initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
+    }
     : !isLoggedIn
       ? {
-          isOnWaitlist: false,
-          position: null,
-          isReady: false,
-        }
-    : {
+        isOnWaitlist: false,
+        position: null,
+        isReady: false,
+      }
+      : {
         isOnWaitlist: initialWaitlistCache?.isOnWaitlist ?? false,
         position: initialWaitlistCache?.position ?? null,
         isReady: !!initialWaitlistCache,
@@ -407,7 +407,7 @@ export default function useTicketActions({
         const response = await fetchWithTimeout(
           `/api/tickets?eventId=${encodeURIComponent(eventId)}`,
           {
-          method: "GET",
+            method: "GET",
           },
         );
         const data =
@@ -504,9 +504,9 @@ export default function useTicketActions({
       const lowered = message.toLowerCase();
       const autoClearMs =
         lowered.includes("processing") ||
-        lowered.includes("checking") ||
-        lowered.includes("waiting") ||
-        lowered.includes("longer than usual")
+          lowered.includes("checking") ||
+          lowered.includes("waiting") ||
+          lowered.includes("longer than usual")
           ? 10_000
           : 3_000;
       const timer = setTimeout(() => setMessage(null), autoClearMs);

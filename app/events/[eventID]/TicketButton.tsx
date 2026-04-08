@@ -97,7 +97,7 @@ export default function TicketButton(props: TicketButtonProps) {
       <ConfirmationModal
         open={actions.showIneligibleModal}
         onClose={actions.closeIneligibleModal}
-        title="Ticket Eligibility"
+        title="Student Activities Fee Waived"
         description={actions.ineligibleMessage}
         cancelLabel="Close"
       >

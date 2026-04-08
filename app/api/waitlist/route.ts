@@ -24,7 +24,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "You are ineligible for regular online tickets. Please contact ASSU for details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -299,17 +299,17 @@ export async function POST(req: Request) {
     }
 
     await queueWaitlistEmail({
-        email: user.email,
-        eventName: event.name || "Event",
-        position: waitlistPosition,
-        eventStartTime: event.startTimeDate?.toISOString() ?? null,
-        eventVenue: event.venue,
-        eventVenueLink: event.venueLink,
-        eventDescription: event.desc,
-        eventId: event.id,
-        imgVersion: event.imgVersion,
-        eventTagline: event.tagline,
-      });
+      email: user.email,
+      eventName: event.name || "Event",
+      position: waitlistPosition,
+      eventStartTime: event.startTimeDate?.toISOString() ?? null,
+      eventVenue: event.venue,
+      eventVenueLink: event.venueLink,
+      eventDescription: event.desc,
+      eventId: event.id,
+      imgVersion: event.imgVersion,
+      eventTagline: event.tagline,
+    });
 
     return NextResponse.json(
       {
@@ -469,12 +469,12 @@ export async function GET(req: Request) {
         event_id: e.eventId,
         events: e.event
           ? {
-              id: e.event.id,
-              name: e.event.name,
-              route: e.event.route,
-              start_time_date: e.event.startTimeDate?.toISOString() ?? null,
-              venue: e.event.venue,
-            }
+            id: e.event.id,
+            name: e.event.name,
+            route: e.event.route,
+            start_time_date: e.event.startTimeDate?.toISOString() ?? null,
+            venue: e.event.venue,
+          }
           : null,
       }));
 
