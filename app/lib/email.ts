@@ -786,7 +786,7 @@ function buildParagraph(text: string, opts?: { color?: string; fontSize?: string
 function buildCancelBanner(cancelTicketUrl: string): string {
   return `
     <tr>
-      <td align="center" style="padding: 12px 20px 0; background-color: #27272a;">
+      <td align="center" style="padding: 12px 20px 8px; background-color: #27272a;">
         <div style="max-width: 600px; margin: 0 auto;">
           <div style="background-color: #18181b; border: 2px solid #A80D0C; border-radius: 8px; padding: 14px 20px; text-align: center;">
             <p style="margin: 0; color: #d4d4d8; font-size: 14px; font-weight: 600; line-height: 1.5;">Can&rsquo;t make it? <a href="${cancelTicketUrl}" style="color: #A80D0C; text-decoration: underline; font-weight: 700;">Please cancel</a> so someone else can attend.</p>
