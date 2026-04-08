@@ -119,6 +119,7 @@ BEGIN
         SELECT 1
         FROM roles role_row
         WHERE lower(trim(role_row.email)) = lower(trim(w.email))
+          AND role_row.roles ILIKE '%fee_waiver%'
           AND EXISTS (
             SELECT 1
             FROM unnest(string_to_array(COALESCE(role_row.roles, ''), ',')) AS role_name(role_value)

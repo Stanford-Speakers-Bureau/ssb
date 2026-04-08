@@ -606,27 +606,6 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
-      if (msg.includes("ineligible")) {
-        queueAuditEvent({
-          action: "ticket.ineligible",
-          actor: user.email,
-          eventId: event_id,
-          eventName: event.name ?? null,
-          targetEmail: user.email,
-          metadata: {
-            attemptedType: "STANDARD",
-            reason: FEE_WAIVER_ROLE,
-            assuUrl: ASSU_URL,
-            faqUrl: ASSU_FAQ_URL,
-            source: "rpc",
-          },
-        });
-
-        return NextResponse.json(
-          getFeeWaiverIneligiblePayload(),
-          { status: 403 },
-        );
-      }
       if (msg.includes("already")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },

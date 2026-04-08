@@ -254,27 +254,6 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
-      if (msg.includes("ineligible")) {
-        queueAuditEvent({
-          action: "ticket.ineligible",
-          actor: user.email,
-          eventId: event_id,
-          eventName: event.name ?? null,
-          targetEmail: user.email,
-          metadata: {
-            attemptedType: "WAITLIST",
-            reason: FEE_WAIVER_ROLE,
-            assuUrl: ASSU_URL,
-            faqUrl: ASSU_FAQ_URL,
-            source: "rpc",
-          },
-        });
-
-        return NextResponse.json(
-          getFeeWaiverIneligiblePayload(),
-          { status: 403 },
-        );
-      }
       if (msg.includes("event_not_found")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },

@@ -19,7 +19,7 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function parseRoleNames(rawRoles: string | null | undefined): string[] {
+export function parseRoleNames(rawRoles: string | null | undefined): string[] {
   return (rawRoles ?? "")
     .split(",")
     .map((role) => role.trim().toLowerCase())
@@ -102,12 +102,12 @@ export async function getDisplayNameForEmail(email: string): Promise<string | nu
 }
 
 export async function getRoleNamesForEmail(email: string): Promise<string[]> {
-  const roleRecord = await db.query.roles.findFirst({
+  const roleRecords = await db.query.roles.findMany({
     where: eq(roles.email, normalizeEmail(email)),
     columns: { roles: true },
   });
 
-  return parseRoleNames(roleRecord?.roles);
+  return [...new Set(roleRecords.flatMap((roleRecord) => parseRoleNames(roleRecord.roles)))];
 }
 
 export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationResult> {
