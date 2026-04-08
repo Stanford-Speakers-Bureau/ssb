@@ -13,6 +13,11 @@ const REQUEST_TIMEOUT_MS = 12_000;
 const WAITLIST_CACHE_PREFIX = "waitlist_status";
 const PROCESSING_MESSAGE =
   "This is taking longer than usual. We are checking the result.";
+const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
+const DEFAULT_ASSU_URL = "https://assu.stanford.edu";
+const DEFAULT_ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
+const DEFAULT_INELIGIBLE_MESSAGE =
+  "You are ineligible for regular online tickets. Please contact ASSU for details.";
 
 type WaitlistStatusCache = {
   isOnWaitlist: boolean;
@@ -31,6 +36,13 @@ type WaitlistLookupResponse = {
   position?: number | null;
   total?: number;
   error?: string;
+};
+
+type FeeWaiverEligibilityResponse = {
+  error?: string;
+  code?: string;
+  assuUrl?: string;
+  faqUrl?: string;
 };
 
 function getWaitlistCacheKey(eventId: string): string {
@@ -234,6 +246,12 @@ export default function useTicketActions({
 
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
+  const [showIneligibleModal, setShowIneligibleModal] = useState(false);
+  const [ineligibleMessage, setIneligibleMessage] = useState(
+    DEFAULT_INELIGIBLE_MESSAGE,
+  );
+  const [ineligibleAssuUrl, setIneligibleAssuUrl] = useState(DEFAULT_ASSU_URL);
+  const [ineligibleFaqUrl, setIneligibleFaqUrl] = useState(DEFAULT_ASSU_FAQ_URL);
 
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
@@ -252,6 +270,26 @@ export default function useTicketActions({
       minute: "2-digit",
       hour12: true,
     }).format(date);
+
+  const showFeeWaiverIneligibleModal = useCallback(
+    (data: FeeWaiverEligibilityResponse | null | undefined) => {
+      const isFeeWaiverResponse =
+        data?.code === FEE_WAIVER_INELIGIBLE_CODE
+        || data?.error?.toLowerCase().includes("please contact assu");
+
+      if (!isFeeWaiverResponse) {
+        return false;
+      }
+
+      setMessage(null);
+      setIneligibleMessage(data?.error || DEFAULT_INELIGIBLE_MESSAGE);
+      setIneligibleAssuUrl(data?.assuUrl || DEFAULT_ASSU_URL);
+      setIneligibleFaqUrl(data?.faqUrl || DEFAULT_ASSU_FAQ_URL);
+      setShowIneligibleModal(true);
+      return true;
+    },
+    [],
+  );
 
   const redirectToAuth = useCallback(
     (intent: "notify" | "waitlist" | "ticket" | "standby_ticket") => {
@@ -593,6 +631,9 @@ export default function useTicketActions({
       const data = (await safeJson<{
         position?: number;
         error?: string;
+        code?: string;
+        assuUrl?: string;
+        faqUrl?: string;
       }>(response)) ?? {};
 
       if (response.ok) {
@@ -614,6 +655,9 @@ export default function useTicketActions({
         }
       } else {
         const errorMessage = data.error || "Failed to join waitlist";
+        if (showFeeWaiverIneligibleModal(data)) {
+          return;
+        }
         setMessage(errorMessage);
       }
     } catch (error) {
@@ -642,6 +686,7 @@ export default function useTicketActions({
     referralWarning,
     reconcileWaitlistStatus,
     redirectToAuth,
+    showFeeWaiverIneligibleModal,
   ]);
 
   // Handle leaving waitlist
@@ -793,7 +838,7 @@ export default function useTicketActions({
         return;
       }
 
-      const data = (await safeJson<TicketLookupResponse>(response)) ?? {};
+      const data = (await safeJson<TicketLookupResponse & FeeWaiverEligibilityResponse>(response)) ?? {};
 
       if (response.ok) {
         if (hasTicket) {
@@ -822,6 +867,9 @@ export default function useTicketActions({
           }),
         );
       } else {
+        if (showFeeWaiverIneligibleModal(data)) {
+          return;
+        }
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
@@ -852,6 +900,7 @@ export default function useTicketActions({
     referralWarning,
     reconcileTicketStatus,
     redirectToAuth,
+    showFeeWaiverIneligibleModal,
   ]);
 
   // Standby ticket creation: issued when sold out and within 2 hours of event
@@ -878,7 +927,7 @@ export default function useTicketActions({
         return;
       }
 
-      const data = (await safeJson<TicketLookupResponse>(response)) ?? {};
+      const data = (await safeJson<TicketLookupResponse & FeeWaiverEligibilityResponse>(response)) ?? {};
 
       if (response.ok) {
         setHasTicket(true);
@@ -897,6 +946,9 @@ export default function useTicketActions({
           }),
         );
       } else {
+        if (showFeeWaiverIneligibleModal(data)) {
+          return;
+        }
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
@@ -914,7 +966,13 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoading(false);
     }
-  }, [eventId, isLoggedIn, reconcileTicketStatus, redirectToAuth]);
+  }, [
+    eventId,
+    isLoggedIn,
+    reconcileTicketStatus,
+    redirectToAuth,
+    showFeeWaiverIneligibleModal,
+  ]);
 
   // Validate referral code
   const validateReferralCode = useCallback(
@@ -1231,6 +1289,10 @@ export default function useTicketActions({
     isWaitlistPositionReady,
     showCancelTicketModal,
     setShowCancelTicketModal,
+    showIneligibleModal,
+    ineligibleMessage,
+    ineligibleAssuUrl,
+    ineligibleFaqUrl,
     isNotified,
     isLoadingNotify,
 
@@ -1262,5 +1324,6 @@ export default function useTicketActions({
     handleLeaveWaitlist,
     handleCancelTicket,
     handleReferralCodeChange,
+    closeIneligibleModal: () => setShowIneligibleModal(false),
   };
 }

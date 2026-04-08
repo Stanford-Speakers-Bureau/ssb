@@ -19,6 +19,13 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+function parseRoleNames(rawRoles: string | null | undefined): string[] {
+  return (rawRoles ?? "")
+    .split(",")
+    .map((role) => role.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 function normalizeAffiliations(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim().toLowerCase()).filter(Boolean))];
 }
@@ -94,6 +101,15 @@ export async function getDisplayNameForEmail(email: string): Promise<string | nu
   return profile?.displayName || null;
 }
 
+export async function getRoleNamesForEmail(email: string): Promise<string[]> {
+  const roleRecord = await db.query.roles.findFirst({
+    where: eq(roles.email, normalizeEmail(email)),
+    columns: { roles: true },
+  });
+
+  return parseRoleNames(roleRecord?.roles);
+}
+
 export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationResult> {
   const user = await getSessionUser();
 
@@ -101,16 +117,7 @@ export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationRe
     return { authorized: false, error: "Not authenticated" };
   }
 
-  const roleRecord = await db.query.roles.findFirst({
-    where: eq(roles.email, user.email),
-    columns: { roles: true },
-  });
-
-  if (!roleRecord) {
-    return { authorized: false, error: "Not authorized" };
-  }
-
-  const userRoles = roleRecord.roles?.split(",") || [];
+  const userRoles = await getRoleNamesForEmail(user.email);
   const isAdmin = userRoles.includes("admin");
   const isScanner = userRoles.includes("scanner");
 
