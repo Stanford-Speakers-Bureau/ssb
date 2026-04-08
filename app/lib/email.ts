@@ -782,6 +782,20 @@ function buildParagraph(text: string, opts?: { color?: string; fontSize?: string
   return `${gmailBlendStart}<p style="margin: 0 0 ${marginBottom} 0; color: ${color}; font-size: ${fontSize}; font-weight: ${fontWeight}; line-height: 1.6;">${text}</p>${gmailBlendEnd}`;
 }
 
+/** Builds a prominent cancel-ticket banner shown at the very top of non-VIP/non-external emails */
+function buildCancelBanner(cancelTicketUrl: string): string {
+  return `
+    <tr>
+      <td align="center" style="padding: 12px 20px 0; background-color: #27272a;">
+        <div style="max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #18181b; border: 2px solid #A80D0C; border-radius: 8px; padding: 14px 20px; text-align: center;">
+            <p style="margin: 0; color: #d4d4d8; font-size: 14px; font-weight: 600; line-height: 1.5;">Can&rsquo;t make it? <a href="${cancelTicketUrl}" style="color: #A80D0C; text-decoration: underline; font-weight: 700;">Please cancel</a> so someone else can attend.</p>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+}
+
 // ============================================================================
 // iCalendar generation (unchanged)
 // ============================================================================
@@ -1047,6 +1061,10 @@ async function generateTicketEmailHTML(
     isExternal,
   });
 
+  const cancelBanner = !isVIP && !isExternal && cancelTicketUrl
+    ? buildCancelBanner(cancelTicketUrl)
+    : "";
+
   const contentSections: string[] = [];
 
   // Important notice
@@ -1062,12 +1080,14 @@ async function generateTicketEmailHTML(
   // Welcome message
   contentSections.push(buildParagraph("Your ticket is confirmed &mdash; we can't wait to see you!"));
 
-  // Cancel ticket message + button
-  contentSections.push(buildParagraph(
-    "Can't make it? Please cancel so someone else can attend.",
-  ));
-  if (cancelTicketUrl) {
-    contentSections.push(buildButton(cancelTicketUrl, "Cancel Ticket"));
+  // Cancel ticket message + button (VIP/External only — regular tickets use the top banner)
+  if (isVIP || isExternal) {
+    contentSections.push(buildParagraph(
+      "Can't make it? Please cancel so someone else can attend.",
+    ));
+    if (cancelTicketUrl) {
+      contentSections.push(buildButton(cancelTicketUrl, "Cancel Ticket"));
+    }
   }
 
   // Event details card
@@ -1110,6 +1130,7 @@ async function generateTicketEmailHTML(
   }
 
   const bodyContent = `
+    ${cancelBanner}
     ${heroCard}
     <!-- Content -->
     <tr>
@@ -1142,12 +1163,18 @@ function generateTicketEmailText(data: TicketEmailData): string {
       ? `${baseUrl}/events/${data.eventRoute}?referral_code=${referralCode}`
       : null;
 
+  const isVIP = ticketType?.toUpperCase() === "VIP";
+  const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const cancelLine = cancelTicketUrl
+    ? `Can't make it? Please cancel so someone else can attend.\nCancel Ticket: ${cancelTicketUrl}`
+    : "";
+
   return `
-${ticketType?.toUpperCase() === "VIP" ? "VIP Ticket Confirmed!" : ticketType?.toUpperCase() === "EXTERNAL" ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
+${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
 
 Your ticket is confirmed — we can't wait to see you!
 
-${ticketType?.toUpperCase() === "VIP" ? "Use the VIP entrance when you arrive — we've saved you a front-row seat.\n\n" : ""}Event Details:
+${isVIP ? "Use the VIP entrance when you arrive — we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
@@ -1155,11 +1182,8 @@ ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Typ
 ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 ${buildImportantNoticeText()}
-
-Can't make it? Please cancel so someone else can attend.
-
-${cancelTicketUrl ? `Cancel Ticket: ${cancelTicketUrl}` : ""}
-${REFERRAL_ENABLED && referralCode && !(ticketType.toUpperCase() == "VIP") && !(ticketType.toUpperCase() == "EXTERNAL") ? `
+${isVIP || isExternal ? `\n${cancelLine}` : ""}
+${REFERRAL_ENABLED && referralCode && !isVIP && !isExternal ? `
 - Your Referral Code: ${referralCode}
 ${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
 ${REFERRAL_MESSAGE}
