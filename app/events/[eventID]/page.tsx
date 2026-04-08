@@ -5,7 +5,7 @@ import {
   getEventByRoute,
   isEventMystery,
   getImageProxyUrl,
-  isEventUnderCapacity,
+  getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
 import { getSessionUser } from "@/app/lib/auth";
@@ -87,6 +87,7 @@ async function getViewerEventState(
   ticketName: string | null;
   ticketScanned: boolean;
   isOnWaitlist: boolean;
+  waitlistPosition: number | null;
   isNotified: boolean;
 }> {
   try {
@@ -100,6 +101,7 @@ async function getViewerEventState(
         ticketName: null,
         ticketScanned: false,
         isOnWaitlist: false,
+        waitlistPosition: null,
         isNotified: false,
       };
 
@@ -110,7 +112,7 @@ async function getViewerEventState(
       }),
       db.query.waitlist.findFirst({
         where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
-        columns: { id: true },
+        columns: { id: true, position: true },
       }),
     ]);
 
@@ -132,6 +134,7 @@ async function getViewerEventState(
       ticketName: ticket?.name ?? null,
       ticketScanned: ticket?.scanned ?? false,
       isOnWaitlist: !!waitlistEntry,
+      waitlistPosition: waitlistEntry?.position ?? null,
       isNotified,
     };
   } catch {
@@ -142,6 +145,7 @@ async function getViewerEventState(
       ticketName: null,
       ticketScanned: false,
       isOnWaitlist: false,
+      waitlistPosition: null,
       isNotified: false,
     };
   }
@@ -166,14 +170,17 @@ export default async function EventPage({ params }: PageProps) {
     return !Number.isNaN(ticketingOpensAt.getTime()) && ticketingOpensAt > new Date();
   })();
 
-  const ticketStatus = await getViewerEventState(event.id, shouldCheckNotify);
+  const [ticketStatus, ticketAvailability] = await Promise.all([
+    getViewerEventState(event.id, shouldCheckNotify),
+    getAvailablePublicTickets(event.id),
+  ]);
 
   const hasTicket = !!ticketStatus.ticketId;
   const ticketId = ticketStatus.ticketId;
   const ticketType = ticketStatus.ticketType;
 
   // Check if public tickets are sold out
-  const isSoldOut = !(await isEventUnderCapacity(event.id));
+  const isSoldOut = ticketAvailability.available <= 0;
 
   // If no event found or event is still a mystery, redirect to upcoming events
   if (isEventMystery(event) && !hasTicket) {
@@ -339,6 +346,8 @@ export default async function EventPage({ params }: PageProps) {
                 initialTicketType={ticketType}
                 initialTicketName={ticketStatus.ticketName}
                 initialIsScanned={ticketStatus.ticketScanned}
+                initialIsOnWaitlist={ticketStatus.isOnWaitlist}
+                initialWaitlistPosition={ticketStatus.waitlistPosition}
                 userEmail={ticketStatus.userEmail}
                 eventRoute={event.route || eventID}
                 eventStartTime={event.start_time_date}

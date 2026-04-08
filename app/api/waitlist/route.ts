@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
+import { db, eq, and, sql, count, events, tickets, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { sendWaitlistEmail } from "@/app/lib/email";
 
@@ -28,6 +28,19 @@ type JoinWaitlistRpcResult = {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
+}
+
+function scheduleAfterResponse(
+  label: string,
+  task: () => Promise<void>,
+) {
+  after(async () => {
+    try {
+      await task();
+    } catch (error) {
+      console.error(`${label} error:`, error);
+    }
+  });
 }
 
 export async function POST(req: Request) {
@@ -55,7 +68,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral, name: nameFromBody } = body as {
+    const { event_id, referral: referralFromBody, name: nameFromBody } = body as {
       event_id?: string;
       referral?: string;
       name?: string;
@@ -135,6 +148,8 @@ export async function POST(req: Request) {
       );
     }
 
+    const referral = referralFromBody?.trim().toLowerCase() || null;
+
     // Use stored procedure to atomically join waitlist (prevents position collisions)
     let rpcData: JoinWaitlistRpcResult | null = null;
     try {
@@ -173,30 +188,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const nextPosition = rpcData?.position;
+    const waitlistPosition = rpcData?.position ?? null;
 
-    if (!nextPosition) {
+    if (!waitlistPosition) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_GENERIC },
         { status: 500 },
       );
     }
 
-    // Calculate actual position (same logic as GET handler)
-    // This ensures the email shows the same position as the UI
-    const [aheadResult] = await db.select({ count: count() })
-      .from(waitlist)
-      .where(and(eq(waitlist.eventId, event_id), lt(waitlist.position, nextPosition)));
-
-    // User's actual position is count of people ahead + 1 (1-indexed)
-    const actualPosition = (aheadResult?.count ?? 0) + 1;
-
-    // Send email immediately
-    try {
+    scheduleAfterResponse("Waitlist email", async () => {
       await sendWaitlistEmail({
         email: user.email,
         eventName: event.name || "Event",
-        position: actualPosition,
+        position: waitlistPosition,
         eventStartTime: event.startTimeDate?.toISOString() ?? null,
         eventVenue: event.venue,
         eventVenueLink: event.venueLink,
@@ -205,16 +210,13 @@ export async function POST(req: Request) {
         imgVersion: event.imgVersion,
         eventTagline: event.tagline,
       });
-    } catch (emailError) {
-      console.error("Waitlist email error:", emailError);
-      // Don't fail the request if email fails
-    }
+    });
 
     return NextResponse.json(
       {
         success: true,
         message: WAITLIST_MESSAGES.SUCCESS,
-        position: actualPosition,
+        position: waitlistPosition,
       },
       { status: 200 },
     );
@@ -326,21 +328,10 @@ export async function GET(req: Request) {
         .from(waitlist)
         .where(eq(waitlist.eventId, eventId));
 
-      // Calculate actual position by counting how many people are ahead (have lower position numbers)
-      let actualPosition: number | null = null;
-      if (entry) {
-        const [aheadResult] = await db.select({ count: count() })
-          .from(waitlist)
-          .where(and(eq(waitlist.eventId, eventId), lt(waitlist.position, entry.position)));
-
-        // User's actual position is count of people ahead + 1 (1-indexed)
-        actualPosition = (aheadResult?.count ?? 0) + 1;
-      }
-
       return NextResponse.json(
         {
           isOnWaitlist: !!entry,
-          position: actualPosition,
+          position: entry?.position ?? null,
           total: totalResult?.count ?? 0,
         },
         { status: 200 },

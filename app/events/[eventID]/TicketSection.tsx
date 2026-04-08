@@ -17,6 +17,8 @@ type TicketSectionProps = {
   initialTicketId: string | null;
   initialTicketType: string | null;
   initialTicketName?: string | null;
+  initialIsOnWaitlist?: boolean;
+  initialWaitlistPosition?: number | null;
   userEmail: string | null;
   eventRoute: string;
   eventStartTime: string | null;
@@ -38,6 +40,8 @@ export default function TicketSection({
   initialTicketId,
   initialTicketType,
   initialTicketName = null,
+  initialIsOnWaitlist = false,
+  initialWaitlistPosition = null,
   userEmail,
   eventRoute,
   eventStartTime,
@@ -140,6 +144,8 @@ export default function TicketSection({
   const ticketButtonProps = {
     eventId,
     initialHasTicket: hasTicket,
+    initialIsOnWaitlist,
+    initialWaitlistPosition,
     eventStartTime,
     eventEndTime,
     doorsOpen,
