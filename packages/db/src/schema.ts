@@ -35,6 +35,15 @@ export const events = pgTable(
     route: text("route"),
     tagline: text("tagline"),
     tickets: bigint("tickets", { mode: "number" }).notNull().default(0),
+    publicTicketsSold: bigint("public_tickets_sold", { mode: "number" })
+      .notNull()
+      .default(0),
+    vipTicketsSold: bigint("vip_tickets_sold", { mode: "number" })
+      .notNull()
+      .default(0),
+    standbyTicketsSold: bigint("standby_tickets_sold", { mode: "number" })
+      .notNull()
+      .default(0),
     live: boolean("live").notNull().default(false),
     scanned: bigint("scanned", { mode: "number" }).notNull().default(0),
     latitude: numeric("latitude").notNull().default("0"),

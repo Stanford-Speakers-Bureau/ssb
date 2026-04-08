@@ -22,8 +22,12 @@ export async function fetchWithTimeout(
   const controller = new AbortController();
   let didTimeout = false;
 
+  if (init.signal?.aborted) {
+    controller.abort(init.signal.reason);
+  }
+
   const handleAbort = () => {
-    controller.abort();
+    controller.abort(init.signal?.reason);
   };
 
   init.signal?.addEventListener("abort", handleAbort, { once: true });

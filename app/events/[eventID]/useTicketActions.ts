@@ -218,13 +218,20 @@ export default function useTicketActions({
       hour12: true,
     }).format(date);
 
+  const redirectToAuth = useCallback(
+    (intent: "notify" | "waitlist" | "ticket" | "standby_ticket") => {
+      const currentPath = window.location.pathname;
+      const redirectUrl = `${currentPath}?${intent}=true`;
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+    },
+    [],
+  );
+
   const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
 
     if (!isLoggedIn) {
-      const currentPath = window.location.pathname;
-      const redirectUrl = `${currentPath}?notify=true`;
-      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      redirectToAuth("notify");
       return;
     }
 
@@ -238,9 +245,7 @@ export default function useTicketActions({
       });
       if (response.status === 401) {
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?notify=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("notify");
         return;
       }
       const data = (await safeJson<{
@@ -261,7 +266,7 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
-  }, [eventId, isLoadingNotify, isLoggedIn, isNotified]);
+  }, [eventId, isLoadingNotify, isLoggedIn, isNotified, redirectToAuth]);
 
   const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -501,6 +506,11 @@ export default function useTicketActions({
 
   // Handle joining waitlist
   const handleJoinWaitlist = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("waitlist");
+      return;
+    }
+
     setIsWaitlistLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -538,9 +548,7 @@ export default function useTicketActions({
       if (response.status === 401) {
         // Not authenticated, redirect to Stanford sign-in
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?waitlist=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("waitlist");
         return;
       }
 
@@ -588,7 +596,14 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsWaitlistLoading(false);
     }
-  }, [eventId, referralCode, referralWarning, reconcileWaitlistStatus]);
+  }, [
+    eventId,
+    isLoggedIn,
+    referralCode,
+    referralWarning,
+    reconcileWaitlistStatus,
+    redirectToAuth,
+  ]);
 
   // Handle leaving waitlist
   const handleLeaveWaitlist = useCallback(async () => {
@@ -688,6 +703,11 @@ export default function useTicketActions({
 
   // Actual ticket creation/cancellation logic
   const processTicketRequest = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("ticket");
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -730,9 +750,7 @@ export default function useTicketActions({
       if (response.status === 401) {
         // Not authenticated, redirect to Stanford sign-in with auto_ticket flag
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?ticket=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("ticket");
         return;
       }
 
@@ -790,13 +808,20 @@ export default function useTicketActions({
   }, [
     eventId,
     hasTicket,
+    isLoggedIn,
     referralCode,
     referralWarning,
     reconcileTicketStatus,
+    redirectToAuth,
   ]);
 
   // Standby ticket creation: issued when sold out and within 2 hours of event
   const processStandbyTicketRequest = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("standby_ticket");
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -810,9 +835,7 @@ export default function useTicketActions({
 
       if (response.status === 401) {
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?standby_ticket=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("standby_ticket");
         return;
       }
 
@@ -852,12 +875,17 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoading(false);
     }
-  }, [eventId, reconcileTicketStatus]);
+  }, [eventId, isLoggedIn, reconcileTicketStatus, redirectToAuth]);
 
   // Validate referral code
   const validateReferralCode = useCallback(
     async (code: string) => {
       if (!code.trim()) {
+        setReferralWarning(null);
+        return;
+      }
+
+      if (!isLoggedIn) {
         setReferralWarning(null);
         return;
       }
@@ -899,7 +927,7 @@ export default function useTicketActions({
         setReferralWarning(null);
       }
     },
-    [eventId],
+    [eventId, isLoggedIn],
   );
 
   // Track referral parameters from URL and store in session storage

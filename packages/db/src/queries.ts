@@ -1,7 +1,7 @@
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/postgres-js";
 import type * as schema from "./schema";
-import { tickets, events, waitlist } from "./schema";
+import { events, waitlist } from "./schema";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -18,20 +18,18 @@ export async function getTicketCounts(
   standbyCount: number;
   totalCount: number;
 }> {
-  const [ticketCounts] = await db.select({
-    vipCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') = 'VIP'), 0)::int`,
-    publicCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') <> 'VIP' and coalesce(${tickets.type}, 'STANDARD') <> 'STANDBY'), 0)::int`,
-    standbyCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') = 'STANDBY'), 0)::int`,
-  })
-    .from(tickets)
-    .where(eq(tickets.eventId, eventId));
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, eventId),
+    columns: {
+      publicTicketsSold: true,
+      vipTicketsSold: true,
+      standbyTicketsSold: true,
+    },
+  });
 
-  const vipCount = ticketCounts?.vipCount ?? 0;
-  const publicCount = ticketCounts?.publicCount ?? 0;
-  const standbyCount = ticketCounts?.standbyCount ?? 0;
+  const vipCount = event?.vipTicketsSold ?? 0;
+  const publicCount = event?.publicTicketsSold ?? 0;
+  const standbyCount = event?.standbyTicketsSold ?? 0;
 
   return {
     vipCount,
@@ -57,21 +55,17 @@ export async function getAvailablePublicTickets(
   totalCapacity: number;
   reserved: number;
 }> {
-  const [eventSummary] = await db.select({
-    capacity: events.capacity,
-    reserved: events.reserved,
-    standbyEnabled: events.standbyEnabled,
-    vipCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') = 'VIP'), 0)::int`,
-    publicCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') <> 'VIP' and coalesce(${tickets.type}, 'STANDARD') <> 'STANDBY'), 0)::int`,
-    standbyCount:
-      sql<number>`coalesce(count(${tickets.id}) filter (where coalesce(${tickets.type}, 'STANDARD') = 'STANDBY'), 0)::int`,
-  })
-    .from(events)
-    .leftJoin(tickets, eq(tickets.eventId, events.id))
-    .where(eq(events.id, eventId))
-    .groupBy(events.id);
+  const eventSummary = await db.query.events.findFirst({
+    where: eq(events.id, eventId),
+    columns: {
+      capacity: true,
+      reserved: true,
+      standbyEnabled: true,
+      publicTicketsSold: true,
+      vipTicketsSold: true,
+      standbyTicketsSold: true,
+    },
+  });
 
   if (!eventSummary || !eventSummary.capacity) {
     return {
@@ -89,9 +83,9 @@ export async function getAvailablePublicTickets(
   const capacity = eventSummary.capacity;
   const reserved = eventSummary.reserved ?? 0;
   const standbyEnabled = eventSummary.standbyEnabled ?? false;
-  const vipCount = eventSummary.vipCount ?? 0;
-  const publicCount = eventSummary.publicCount ?? 0;
-  const standbyCount = eventSummary.standbyCount ?? 0;
+  const vipCount = eventSummary.vipTicketsSold ?? 0;
+  const publicCount = eventSummary.publicTicketsSold ?? 0;
+  const standbyCount = eventSummary.standbyTicketsSold ?? 0;
 
   let maxPublic: number;
   if (vipCount <= reserved) {

@@ -1,3 +1,148 @@
+ALTER TABLE "public"."events"
+  ADD COLUMN IF NOT EXISTS "public_tickets_sold" bigint NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "vip_tickets_sold" bigint NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "standby_tickets_sold" bigint NOT NULL DEFAULT 0;
+
+UPDATE "public"."events" e
+SET
+  "public_tickets_sold" = COALESCE((
+    SELECT COUNT(*)::bigint
+    FROM "public"."tickets" t
+    WHERE t."event_id" = e."id"
+      AND COALESCE(t."type", 'STANDARD') <> 'VIP'
+      AND COALESCE(t."type", 'STANDARD') <> 'STANDBY'
+  ), 0),
+  "vip_tickets_sold" = COALESCE((
+    SELECT COUNT(*)::bigint
+    FROM "public"."tickets" t
+    WHERE t."event_id" = e."id"
+      AND COALESCE(t."type", 'STANDARD') = 'VIP'
+  ), 0),
+  "standby_tickets_sold" = COALESCE((
+    SELECT COUNT(*)::bigint
+    FROM "public"."tickets" t
+    WHERE t."event_id" = e."id"
+      AND COALESCE(t."type", 'STANDARD') = 'STANDBY'
+  ), 0);
+
+CREATE OR REPLACE FUNCTION "public"."adjust_event_ticket_type_counters"()
+RETURNS "trigger"
+LANGUAGE "plpgsql" SECURITY DEFINER
+SET "search_path" TO 'public'
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.event_id IS NOT NULL THEN
+      UPDATE public.events
+      SET
+        public_tickets_sold = COALESCE(public_tickets_sold, 0)
+          + CASE
+            WHEN COALESCE(NEW.type, 'STANDARD') <> 'VIP'
+              AND COALESCE(NEW.type, 'STANDARD') <> 'STANDBY'
+            THEN 1
+            ELSE 0
+          END,
+        vip_tickets_sold = COALESCE(vip_tickets_sold, 0)
+          + CASE WHEN COALESCE(NEW.type, 'STANDARD') = 'VIP' THEN 1 ELSE 0 END,
+        standby_tickets_sold = COALESCE(standby_tickets_sold, 0)
+          + CASE WHEN COALESCE(NEW.type, 'STANDARD') = 'STANDBY' THEN 1 ELSE 0 END
+      WHERE id = NEW.event_id;
+    END IF;
+
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.event_id IS NOT NULL THEN
+      UPDATE public.events
+      SET
+        public_tickets_sold = GREATEST(
+          COALESCE(public_tickets_sold, 0)
+            - CASE
+              WHEN COALESCE(OLD.type, 'STANDARD') <> 'VIP'
+                AND COALESCE(OLD.type, 'STANDARD') <> 'STANDBY'
+              THEN 1
+              ELSE 0
+            END,
+          0
+        ),
+        vip_tickets_sold = GREATEST(
+          COALESCE(vip_tickets_sold, 0)
+            - CASE WHEN COALESCE(OLD.type, 'STANDARD') = 'VIP' THEN 1 ELSE 0 END,
+          0
+        ),
+        standby_tickets_sold = GREATEST(
+          COALESCE(standby_tickets_sold, 0)
+            - CASE WHEN COALESCE(OLD.type, 'STANDARD') = 'STANDBY' THEN 1 ELSE 0 END,
+          0
+        )
+      WHERE id = OLD.event_id;
+    END IF;
+
+    RETURN OLD;
+  END IF;
+
+  IF OLD.event_id IS NOT DISTINCT FROM NEW.event_id
+    AND COALESCE(OLD.type, 'STANDARD') = COALESCE(NEW.type, 'STANDARD')
+  THEN
+    RETURN NEW;
+  END IF;
+
+  IF OLD.event_id IS NOT NULL THEN
+    UPDATE public.events
+    SET
+      public_tickets_sold = GREATEST(
+        COALESCE(public_tickets_sold, 0)
+          - CASE
+            WHEN COALESCE(OLD.type, 'STANDARD') <> 'VIP'
+              AND COALESCE(OLD.type, 'STANDARD') <> 'STANDBY'
+            THEN 1
+            ELSE 0
+          END,
+        0
+      ),
+      vip_tickets_sold = GREATEST(
+        COALESCE(vip_tickets_sold, 0)
+          - CASE WHEN COALESCE(OLD.type, 'STANDARD') = 'VIP' THEN 1 ELSE 0 END,
+        0
+      ),
+      standby_tickets_sold = GREATEST(
+        COALESCE(standby_tickets_sold, 0)
+          - CASE WHEN COALESCE(OLD.type, 'STANDARD') = 'STANDBY' THEN 1 ELSE 0 END,
+        0
+      )
+    WHERE id = OLD.event_id;
+  END IF;
+
+  IF NEW.event_id IS NOT NULL THEN
+    UPDATE public.events
+    SET
+      public_tickets_sold = COALESCE(public_tickets_sold, 0)
+        + CASE
+          WHEN COALESCE(NEW.type, 'STANDARD') <> 'VIP'
+            AND COALESCE(NEW.type, 'STANDARD') <> 'STANDBY'
+          THEN 1
+          ELSE 0
+        END,
+      vip_tickets_sold = COALESCE(vip_tickets_sold, 0)
+        + CASE WHEN COALESCE(NEW.type, 'STANDARD') = 'VIP' THEN 1 ELSE 0 END,
+      standby_tickets_sold = COALESCE(standby_tickets_sold, 0)
+        + CASE WHEN COALESCE(NEW.type, 'STANDARD') = 'STANDBY' THEN 1 ELSE 0 END
+    WHERE id = NEW.event_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS "ticket_type_counter_trigger" ON "public"."tickets";
+
+CREATE TRIGGER "ticket_type_counter_trigger"
+AFTER INSERT OR DELETE OR UPDATE OF "event_id", "type"
+ON "public"."tickets"
+FOR EACH ROW
+EXECUTE FUNCTION "public"."adjust_event_ticket_type_counters"();
+
 CREATE OR REPLACE FUNCTION "public"."create_ticket_with_name"(
   "p_event_id" uuid,
   "p_referral" text DEFAULT NULL,
@@ -28,8 +173,15 @@ BEGIN
   SELECT
     e.capacity,
     COALESCE(e.reserved, 0),
-    COALESCE(e.standby_enabled, false)
-  INTO v_event_capacity, v_event_reserved, v_standby_enabled
+    COALESCE(e.standby_enabled, false),
+    COALESCE(e.public_tickets_sold, 0),
+    COALESCE(e.vip_tickets_sold, 0)
+  INTO
+    v_event_capacity,
+    v_event_reserved,
+    v_standby_enabled,
+    v_public_tickets_sold,
+    v_vip_tickets_sold
   FROM events e
   WHERE e.id = p_event_id
   FOR UPDATE;
@@ -45,19 +197,6 @@ BEGIN
       ERRCODE = 'P0001',
       MESSAGE = 'standby_only: The standby line is open.';
   END IF;
-
-  SELECT COUNT(*)::BIGINT
-  INTO v_public_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') <> 'VIP'
-    AND COALESCE(type, 'STANDARD') <> 'STANDBY';
-
-  SELECT COUNT(*)::BIGINT
-  INTO v_vip_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') = 'VIP';
 
   IF v_vip_tickets_sold <= v_event_reserved THEN
     v_max_public_capacity := v_event_capacity - v_event_reserved;
@@ -137,8 +276,15 @@ BEGIN
   SELECT
     e.capacity,
     COALESCE(e.reserved, 0),
-    COALESCE(e.standby_enabled, false)
-  INTO v_event_capacity, v_event_reserved, v_standby_enabled
+    COALESCE(e.standby_enabled, false),
+    COALESCE(e.public_tickets_sold, 0),
+    COALESCE(e.vip_tickets_sold, 0)
+  INTO
+    v_event_capacity,
+    v_event_reserved,
+    v_standby_enabled,
+    v_public_tickets_sold,
+    v_vip_tickets_sold
   FROM events e
   WHERE e.id = p_event_id
   FOR UPDATE;
@@ -166,19 +312,6 @@ BEGIN
       ERRCODE = 'P0001',
       MESSAGE = 'already_has_ticket: You already have a ticket for this event';
   END IF;
-
-  SELECT COUNT(*)::BIGINT
-  INTO v_public_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') <> 'VIP'
-    AND COALESCE(type, 'STANDARD') <> 'STANDBY';
-
-  SELECT COUNT(*)::BIGINT
-  INTO v_vip_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') = 'VIP';
 
   IF v_vip_tickets_sold <= v_event_reserved THEN
     v_max_public_capacity := v_event_capacity - v_event_reserved;
@@ -318,18 +451,12 @@ BEGIN
     );
   END IF;
 
-  SELECT COUNT(*)::BIGINT
-  INTO v_public_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') <> 'VIP'
-    AND COALESCE(type, 'STANDARD') <> 'STANDBY';
-
-  SELECT COUNT(*)::BIGINT
-  INTO v_vip_tickets_sold
-  FROM tickets
-  WHERE event_id = p_event_id
-    AND COALESCE(type, 'STANDARD') = 'VIP';
+  SELECT
+    COALESCE(e.public_tickets_sold, 0),
+    COALESCE(e.vip_tickets_sold, 0)
+  INTO v_public_tickets_sold, v_vip_tickets_sold
+  FROM events e
+  WHERE e.id = p_event_id;
 
   IF v_vip_tickets_sold <= v_event_reserved THEN
     v_max_public_capacity := v_event_capacity - v_event_reserved;

@@ -454,9 +454,7 @@ export async function POST(req: Request) {
         }
       }
 
-      if (referral || existingWaitlistEntry?.referral) {
-        queueReferralRecordUpdate(event_id, user.email);
-      }
+      queueReferralRecordUpdate(event_id, user.email);
 
       await queueTicketEmail(
         buildTicketEmailPayload({
