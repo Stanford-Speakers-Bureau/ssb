@@ -24,6 +24,7 @@ export type Event = {
   tagline: string | null;
   img: string | null;
   mobile_img: string | null;
+  apple_wallet_img: string | null;
   capacity: number;
   tickets?: number | null;
   venue: string | null;
@@ -56,6 +57,7 @@ export function serializeEvent(e: DBEvent): Event {
     tagline: e.tagline,
     img: e.img,
     mobile_img: e.mobileImg,
+    apple_wallet_img: e.appleWalletImg,
     capacity: e.capacity,
     tickets: e.tickets,
     venue: e.venue,
