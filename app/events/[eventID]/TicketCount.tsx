@@ -38,6 +38,8 @@ export default function TicketCount({
   }, [eventId]);
 
   useEffect(() => {
+    fetchTicketCount();
+
     // Listen for custom event to refresh ticket count
     const handleTicketChange = () => {
       fetchTicketCount();

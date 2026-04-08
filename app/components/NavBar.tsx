@@ -86,7 +86,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   const logoClasses = isWhiteNavPage
     ? "text-xl font-bold text-white"

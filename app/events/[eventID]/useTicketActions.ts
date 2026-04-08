@@ -36,10 +36,6 @@ type WaitlistLookupResponse = {
   error?: string;
 };
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === "AbortError";
-}
-
 function getWaitlistCacheKey(eventId: string): string {
   return `${WAITLIST_CACHE_PREFIX}:${eventId}`;
 }
@@ -92,6 +88,12 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   let didTimeout = false;
+  const handleAbort = () => {
+    controller.abort();
+  };
+
+  init.signal?.addEventListener("abort", handleAbort, { once: true });
+
   const timeoutId = window.setTimeout(() => {
     didTimeout = true;
     controller.abort();
@@ -103,13 +105,14 @@ async function fetchWithTimeout(
       signal: controller.signal,
     });
   } catch (error) {
-    if (didTimeout || isAbortError(error)) {
+    if (didTimeout) {
       throw new RequestTimeoutError();
     }
 
     throw error;
   } finally {
     window.clearTimeout(timeoutId);
+    init.signal?.removeEventListener("abort", handleAbort);
   }
 }
 
@@ -410,7 +413,7 @@ export default function useTicketActions({
   );
 
   const reconcileWaitlistStatus = useCallback(
-    async (): Promise<boolean> => {
+    async (): Promise<WaitlistStatusCache | null> => {
       try {
         const response = await fetchWithTimeout(
           `/api/waitlist?eventId=${eventId}`,
@@ -432,13 +435,16 @@ export default function useTicketActions({
             isOnWaitlist: nextIsOnWaitlist,
             position: nextPosition,
           });
-          return true;
+          return {
+            isOnWaitlist: nextIsOnWaitlist,
+            position: nextPosition,
+          };
         }
       } catch (error) {
         console.error("Error reconciling waitlist status:", error);
       }
 
-      return false;
+      return null;
     },
     [eventId],
   );
@@ -599,7 +605,7 @@ export default function useTicketActions({
       if (error instanceof RequestTimeoutError) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileWaitlistStatus();
-        if (reconciled) {
+        if (reconciled?.isOnWaitlist) {
           setMessage("Successfully joined the waitlist!");
         } else {
           setMessage(
@@ -633,8 +639,11 @@ export default function useTicketActions({
       if (response.ok) {
         setIsOnWaitlist(false);
         setWaitlistPosition(null);
-        setIsWaitlistPositionReady(false);
-        clearWaitlistCache(eventId);
+        setIsWaitlistPositionReady(true);
+        writeWaitlistCache(eventId, {
+          isOnWaitlist: false,
+          position: null,
+        });
         setMessage("Successfully left the waitlist");
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
@@ -644,14 +653,14 @@ export default function useTicketActions({
       if (error instanceof RequestTimeoutError) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileWaitlistStatus();
-        if (reconciled) {
+        if (reconciled?.isOnWaitlist) {
           setMessage("You are still on the waitlist.");
-        } else {
-          clearWaitlistCache(eventId);
-          setIsOnWaitlist(false);
-          setWaitlistPosition(null);
-          setIsWaitlistPositionReady(false);
+        } else if (reconciled && !reconciled.isOnWaitlist) {
           setMessage("Successfully left the waitlist");
+        } else {
+          setMessage(
+            "Your request to leave the waitlist may still be processing. Please refresh or try again in a moment.",
+          );
         }
       } else {
         console.error("Error leaving waitlist:", error);

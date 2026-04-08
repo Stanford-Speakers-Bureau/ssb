@@ -39,10 +39,7 @@ export async function fetchWithTimeout(
       signal: controller.signal,
     });
   } catch (error) {
-    if (
-      didTimeout
-      || (error instanceof Error && error.name === "AbortError")
-    ) {
+    if (didTimeout) {
       throw new FetchTimeoutError(timeoutMs);
     }
 
