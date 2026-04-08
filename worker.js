@@ -1,15 +1,9 @@
 import { processEmailJob } from "./app/lib/email-jobs";
-
-const openNextWorkerPath = "./.open-next/worker.js";
-let openNextWorkerPromise;
-
-async function getOpenNextWorker() {
-  if (!openNextWorkerPromise) {
-    openNextWorkerPromise = import(openNextWorkerPath).then((mod) => mod.default);
-  }
-
-  return openNextWorkerPromise;
-}
+import openNextWorker, {
+  BucketCachePurge,
+  DOQueueHandler,
+  DOShardedTagCache,
+} from "./.open-next/worker.js";
 
 function syncProcessEnvFromBindings(env) {
   if (!env || typeof env !== "object") {
@@ -23,12 +17,10 @@ function syncProcessEnvFromBindings(env) {
   }
 }
 
-export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from "./.open-next/worker.js";
+export { DOQueueHandler, DOShardedTagCache, BucketCachePurge };
 
 const worker = {
   async fetch(request, env, ctx) {
-    const openNextWorker = await getOpenNextWorker();
-
     if (!openNextWorker?.fetch) {
       throw new Error("OpenNext worker does not export a fetch handler.");
     }
