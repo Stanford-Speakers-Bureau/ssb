@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getSignedImageUrl,
-} from "@/app/lib/supabase";
+import { getSignedImageUrl } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
 import { getAppleWalletPass } from "@/app/lib/wallet";
 import { db, eq, and, tickets } from "@ssb/db";
@@ -65,6 +63,7 @@ export async function GET(req: NextRequest) {
             startTimeDate: true,
             venue: true,
             img: true,
+            appleWalletImg: true,
             venueLink: true,
             route: true,
             latitude: true,
@@ -81,7 +80,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    const imgUrl = await getSignedImageUrl(event.img, 3600);
+    const imgUrl = await getSignedImageUrl(
+      event.appleWalletImg || event.img,
+      3600,
+    );
     if (!imgUrl) {
       return NextResponse.json(
         { error: "Failed to get event image" },

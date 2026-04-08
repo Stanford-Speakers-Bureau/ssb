@@ -27,6 +27,7 @@ export const events = pgTable("events", {
   desc: text("desc"),
   img: text("img"),
   mobileImg: text("mobile_img"),
+  appleWalletImg: text("apple_wallet_img"),
   route: text("route"),
   tagline: text("tagline"),
   tickets: bigint("tickets", { mode: "number" }).notNull().default(0),
