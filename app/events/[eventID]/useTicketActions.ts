@@ -3,19 +3,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { isEventOver } from "@/app/lib/eventTime";
+import {
+  fetchWithTimeout as sharedFetchWithTimeout,
+  isFetchTimeoutError,
+} from "@/app/lib/fetch";
 import { fireFullConfetti, fireSimpleConfetti } from "./confetti";
 
 const REQUEST_TIMEOUT_MS = 12_000;
 const WAITLIST_CACHE_PREFIX = "waitlist_status";
 const PROCESSING_MESSAGE =
   "This is taking longer than usual. We are checking the result.";
-
-class RequestTimeoutError extends Error {
-  constructor(message = "Request timed out") {
-    super(message);
-    this.name = "RequestTimeoutError";
-  }
-}
 
 type WaitlistStatusCache = {
   isOnWaitlist: boolean;
@@ -84,36 +81,8 @@ function clearWaitlistCache(eventId: string): void {
 async function fetchWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit = {},
-  timeoutMs: number = REQUEST_TIMEOUT_MS,
 ): Promise<Response> {
-  const controller = new AbortController();
-  let didTimeout = false;
-  const handleAbort = () => {
-    controller.abort();
-  };
-
-  init.signal?.addEventListener("abort", handleAbort, { once: true });
-
-  const timeoutId = window.setTimeout(() => {
-    didTimeout = true;
-    controller.abort();
-  }, timeoutMs);
-
-  try {
-    return await fetch(input, {
-      ...init,
-      signal: controller.signal,
-    });
-  } catch (error) {
-    if (didTimeout) {
-      throw new RequestTimeoutError();
-    }
-
-    throw error;
-  } finally {
-    window.clearTimeout(timeoutId);
-    init.signal?.removeEventListener("abort", handleAbort);
-  }
+  return sharedFetchWithTimeout(input, init, REQUEST_TIMEOUT_MS);
 }
 
 async function safeJson<T>(response: Response): Promise<T | null> {
@@ -602,7 +571,7 @@ export default function useTicketActions({
         setMessage(errorMessage);
       }
     } catch (error) {
-      if (error instanceof RequestTimeoutError) {
+      if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileWaitlistStatus();
         if (reconciled?.isOnWaitlist) {
@@ -650,7 +619,7 @@ export default function useTicketActions({
         setMessage(errorMessage);
       }
     } catch (error) {
-      if (error instanceof RequestTimeoutError) {
+      if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileWaitlistStatus();
         if (reconciled?.isOnWaitlist) {
@@ -701,7 +670,7 @@ export default function useTicketActions({
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
-      if (error instanceof RequestTimeoutError) {
+      if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileTicketStatus("cancelled");
         if (!reconciled) {
@@ -800,7 +769,7 @@ export default function useTicketActions({
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
-      if (error instanceof RequestTimeoutError) {
+      if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileTicketStatus(
           hasTicket ? "cancelled" : "created",
@@ -869,7 +838,7 @@ export default function useTicketActions({
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
-      if (error instanceof RequestTimeoutError) {
+      if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileTicketStatus("created");
         if (!reconciled) {
@@ -920,7 +889,7 @@ export default function useTicketActions({
           setReferralWarning(data.message || "Invalid referral code");
         }
       } catch (error) {
-        if (error instanceof RequestTimeoutError) {
+        if (isFetchTimeoutError(error)) {
           setReferralWarning(null);
           return;
         }
