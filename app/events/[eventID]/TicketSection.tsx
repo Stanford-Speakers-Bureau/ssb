@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import TicketButton from "./TicketButton";
 import TicketQRCode from "./TicketQRCode";
@@ -32,6 +33,19 @@ type TicketSectionProps = {
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
   standbyMode?: boolean;
+  requireTicketAccess?: boolean;
+};
+
+type ViewerEventStateResponse = {
+  authenticated?: boolean;
+  userEmail?: string | null;
+  ticketId?: string | null;
+  ticketType?: string | null;
+  ticketName?: string | null;
+  ticketScanned?: boolean;
+  isOnWaitlist?: boolean;
+  waitlistPosition?: number | null;
+  isNotified?: boolean;
 };
 
 export default function TicketSection({
@@ -55,7 +69,9 @@ export default function TicketSection({
   referralsEnabled = false,
   initialIsScanned = false,
   standbyMode = false,
+  requireTicketAccess = false,
 }: TicketSectionProps) {
+  const router = useRouter();
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
   const [ticketType, setTicketType] = useState<string | null>(
@@ -64,8 +80,17 @@ export default function TicketSection({
   const [ticketName, setTicketName] = useState<string | null>(
     initialTicketName,
   );
+  const [viewerUserEmail, setViewerUserEmail] = useState<string | null>(userEmail);
+  const [isOnWaitlist, setIsOnWaitlist] = useState(initialIsOnWaitlist);
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(
+    initialWaitlistPosition,
+  );
+  const [isNotified, setIsNotified] = useState(initialIsNotified);
+  const [isScanned, setIsScanned] = useState(initialIsScanned);
+  const [isViewerStateLoading, setIsViewerStateLoading] = useState(true);
+  const [viewerStateError, setViewerStateError] = useState<string | null>(null);
+  const [viewerStateRequestKey, setViewerStateRequestKey] = useState(0);
 
-  const isScanned = initialIsScanned;
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
@@ -94,6 +119,11 @@ export default function TicketSection({
         setHasTicket(customEvent.detail.hasTicket);
         setTicketId(customEvent.detail.ticketId);
         setTicketName(customEvent.detail.ticketName ?? null);
+        setIsScanned(false);
+        if (customEvent.detail.hasTicket) {
+          setIsOnWaitlist(false);
+          setWaitlistPosition(null);
+        }
         if ("ticketType" in customEvent.detail) {
           setTicketType(customEvent.detail.ticketType ?? null);
         }
@@ -105,6 +135,80 @@ export default function TicketSection({
       window.removeEventListener("ticketChanged", handleTicketChange);
     };
   }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadViewerState() {
+      setIsViewerStateLoading(true);
+      setViewerStateError(null);
+
+      try {
+        const response = await fetch(
+          `/api/events/viewer-state?eventId=${encodeURIComponent(eventId)}`,
+          {
+            cache: "no-store",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Viewer state request failed (${response.status})`);
+        }
+
+        const data = (await response.json()) as ViewerEventStateResponse;
+
+        if (ignore) return;
+
+        setViewerUserEmail(data.userEmail ?? null);
+        setHasTicket(!!data.ticketId);
+        setTicketId(data.ticketId ?? null);
+        setTicketType(data.ticketType ?? null);
+        setTicketName(data.ticketName ?? null);
+        setIsScanned(data.ticketScanned ?? false);
+        setIsOnWaitlist(!!data.isOnWaitlist);
+        setWaitlistPosition(
+          typeof data.waitlistPosition === "number"
+            ? data.waitlistPosition
+            : null,
+        );
+        setIsNotified(!!data.isNotified);
+      } catch (error) {
+        console.error("Failed to load viewer event state:", error);
+        if (!ignore) {
+          setViewerStateError(
+            "We couldn’t load your ticket status right now. Please try again.",
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setIsViewerStateLoading(false);
+        }
+      }
+    }
+
+    void loadViewerState();
+
+    return () => {
+      ignore = true;
+    };
+  }, [eventId, viewerStateRequestKey]);
+
+  useEffect(() => {
+    if (
+      requireTicketAccess
+      && !isViewerStateLoading
+      && !viewerStateError
+      && !hasTicket
+    ) {
+      router.replace("/upcoming-speakers");
+    }
+  }, [
+    hasTicket,
+    isViewerStateLoading,
+    requireTicketAccess,
+    router,
+    viewerStateError,
+  ]);
 
   const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
 
@@ -144,22 +248,66 @@ export default function TicketSection({
   const ticketButtonProps = {
     eventId,
     initialHasTicket: hasTicket,
-    initialIsOnWaitlist,
-    initialWaitlistPosition,
+    initialIsOnWaitlist: isOnWaitlist,
+    initialWaitlistPosition: waitlistPosition,
     eventStartTime,
     eventEndTime,
     doorsOpen,
     isSoldOut,
     isTicketingOpen,
     ticketingOpensAt: ticketingDate,
-    initialIsNotified,
-    isLoggedIn: userEmail != null,
+    initialIsNotified: isNotified,
+    isLoggedIn: viewerUserEmail != null,
     waitlistChance,
     hideTicketingDate,
     referralsEnabled,
     initialIsScanned: isScanned,
     standbyMode,
   };
+
+  if (isViewerStateLoading || (requireTicketAccess && !hasTicket)) {
+    return (
+      <div className="event-ticket-section flex flex-col gap-5">
+        <div className={glassPanel + " p-5 sm:p-6"}>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700 dark:border-zinc-700 dark:border-t-zinc-100" />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                {requireTicketAccess
+                  ? "Checking your ticket access..."
+                  : "Loading your ticket status..."}
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {requireTicketAccess
+                  ? "If you already have a ticket, we'll bring it up automatically."
+                  : "We're fetching your latest ticket, waitlist, and notification state."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewerStateError) {
+    return (
+      <div className="event-ticket-section flex flex-col gap-5">
+        <div className={glassPanel + " p-5 sm:p-6"}>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+              {viewerStateError}
+            </p>
+            <button
+              onClick={() => setViewerStateRequestKey((value) => value + 1)}
+              className="rounded-xl bg-[#A80D0C] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E0B0A]"
+            >
+              Retry status check
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="event-ticket-section flex flex-col gap-5">
@@ -297,8 +445,8 @@ export default function TicketSection({
       {/* Cancel ticket button — right after ticket card */}
       {hasTicket && <TicketButton {...ticketButtonProps} />}
 
-      {hasTicket && referralsEnabled && userEmail && (() => {
-        const code = generateReferralCode(userEmail);
+      {hasTicket && referralsEnabled && viewerUserEmail && (() => {
+        const code = generateReferralCode(viewerUserEmail);
         if (!code) return null;
         return (
           <div className={glassPanel + " overflow-hidden"}>
