@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"main": ".open-next/worker.js",
+	"main": "worker.js",
 	"name": "ssb",
 	"compatibility_date": "2025-12-16",
 	"compatibility_flags": [
@@ -19,6 +19,23 @@
 			"service": "ssb",
 		},
 	],
+	"queues": {
+		"producers": [
+			{
+				"queue": "ssb-email-jobs",
+				"binding": "EMAIL_JOBS_QUEUE",
+			},
+		],
+		"consumers": [
+			{
+				"queue": "ssb-email-jobs",
+				"max_batch_size": 10,
+				"max_batch_timeout": 5,
+				"max_retries": 10,
+				"dead_letter_queue": "ssb-email-jobs-dlq",
+			},
+		],
+	},
 	"r2_buckets": [
 		// Use R2 incremental cache
 		// See https://opennext.js.org/cloudflare/caching

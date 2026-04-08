@@ -6,6 +6,7 @@ import {
   PACIFIC_TIMEZONE,
   REFERRAL_MESSAGE,
 } from "./constants";
+import { fetchWithTimeout } from "./fetch";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // emails are so stupid
@@ -15,6 +16,7 @@ import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+const SES_REQUEST_TIMEOUT_MS = 10_000;
 
 /**
  * AWS Signature Version 4 signing for SES API requests
@@ -164,11 +166,15 @@ async function sendRawEmailViaSES(rawMessage: string): Promise<void> {
 
   const signedHeaders = await signAWSRequest("POST", endpoint, body, headers);
 
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: signedHeaders,
-    body,
-  });
+  const response = await fetchWithTimeout(
+    endpoint,
+    {
+      method: "POST",
+      headers: signedHeaders,
+      body,
+    },
+    SES_REQUEST_TIMEOUT_MS,
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -924,7 +930,7 @@ async function generateQRCodePngBuffer(
 // Ticket confirmation email
 // ============================================================================
 
-type TicketEmailData = {
+export type TicketEmailData = {
   email: string;
   name?: string | null;
   eventName: string;
@@ -1264,7 +1270,7 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
 // Waitlist confirmation email
 // ============================================================================
 
-type WaitlistEmailData = {
+export type WaitlistEmailData = {
   email: string;
   eventName: string;
   position: number;

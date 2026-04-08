@@ -19,7 +19,12 @@ import { generateReferralCode } from "@/app/lib/utils";
 import { cookies } from "next/headers";
 import { logAuditEvent } from "@/app/lib/audit";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { sendTicketEmail } from "@/app/lib/email";
+import { type TicketEmailData } from "@/app/lib/email";
+import {
+  createTicketEmailJob,
+  enqueueEmailJob,
+  processEmailJob,
+} from "@/app/lib/email-jobs";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Your ticket is confirmed. Check your email in a moment.",
@@ -55,6 +60,17 @@ type TicketCreationRpcResult = {
   event_id?: string | null;
 };
 
+type TicketCancellationRpcResult = {
+  success?: boolean;
+  cancelled_ticket_id?: string | null;
+  promoted?: boolean;
+  promoted_ticket_id?: string | null;
+  promoted_email?: string | null;
+  promoted_name?: string | null;
+  promoted_referral?: string | null;
+  promoted_ticket_type?: string | null;
+};
+
 type TicketEmailEventContext = {
   id: string;
   name: string | null;
@@ -82,9 +98,14 @@ function scheduleAfterResponse(
   });
 }
 
-function queueTicketEmail(params: Parameters<typeof sendTicketEmail>[0]) {
+async function queueTicketEmail(params: TicketEmailData) {
+  const queued = await enqueueEmailJob(createTicketEmailJob(params));
+  if (queued) {
+    return;
+  }
+
   scheduleAfterResponse("Ticket email", async () => {
-    await sendTicketEmail(params);
+    await processEmailJob(createTicketEmailJob(params));
   });
 }
 
@@ -384,7 +405,7 @@ export async function POST(req: Request) {
           eq(waitlist.eventId, event_id),
           eq(waitlist.email, user.email),
         ),
-        columns: { id: true, referral: true },
+        columns: { referral: true },
       });
 
       const nameForTicket = userName?.trim();
@@ -425,7 +446,9 @@ export async function POST(req: Request) {
 
       if (existingWaitlistEntry) {
         try {
-          await db.delete(waitlist).where(eq(waitlist.id, existingWaitlistEntry.id));
+          await db.execute(sql`
+            SELECT leave_waitlist(${event_id}::uuid, ${user.email})
+          `);
         } catch (waitlistDeleteError) {
           console.error("Standby waitlist cleanup error:", waitlistDeleteError);
         }
@@ -435,7 +458,7 @@ export async function POST(req: Request) {
         queueReferralRecordUpdate(event_id, user.email);
       }
 
-      queueTicketEmail(
+      await queueTicketEmail(
         buildTicketEmailPayload({
           event,
           ticketId: standbyTicket.id,
@@ -536,6 +559,12 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
+      if (msg.includes("standby_only")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_STANDBY_ONLY },
+          { status: 400 },
+        );
+      }
       if (msg.includes("already")) {
         return NextResponse.json(
           { error: TICKET_MESSAGES.ERROR_ALREADY_HAS_TICKET },
@@ -573,7 +602,7 @@ export async function POST(req: Request) {
     }
 
     queueReferralRecordUpdate(event_id, user.email);
-    queueTicketEmail(
+    await queueTicketEmail(
       buildTicketEmailPayload({
         event,
         ticketId,
@@ -671,28 +700,67 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if user has a ticket for this event
-    const existingTicket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { id: true, scanned: true },
-    });
-
-    if (existingTicket?.scanned) {
+    if (!eventRow) {
       return NextResponse.json(
-        { error: "Cannot cancel a ticket that has already been scanned." },
-        { status: 400 },
+        { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
+        { status: 404 },
       );
     }
 
-    if (!existingTicket) {
+    let rpcData: TicketCancellationRpcResult | null = null;
+    try {
+      const result = await db.execute<{
+        cancel_ticket_and_promote: TicketCancellationRpcResult;
+      }>(sql`
+        SELECT cancel_ticket_and_promote(${event_id}::uuid, ${user.email})
+      `);
+      rpcData = result[0]?.cancel_ticket_and_promote ?? null;
+    } catch (rpcError: unknown) {
+      const msg = getErrorMessage(rpcError).toLowerCase();
+      if (msg.includes("does not exist") && msg.includes("function")) {
+        console.error("Ticket cancellation RPC missing:", rpcError);
+        return NextResponse.json(
+          {
+            error:
+              "Ticket cancellation RPC is not installed in the database (cancel_ticket_and_promote).",
+          },
+          { status: 500 },
+        );
+      }
+      if (msg.includes("already_scanned")) {
+        return NextResponse.json(
+          { error: "Cannot cancel a ticket that has already been scanned." },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("event_not_found")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_EVENT_NOT_FOUND },
+          { status: 404 },
+        );
+      }
+      if (msg.includes("not_found")) {
+        return NextResponse.json(
+          { error: TICKET_MESSAGES.ERROR_NO_TICKET },
+          { status: 400 },
+        );
+      }
+
+      console.error("Ticket cancellation RPC error:", rpcError);
       return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_NO_TICKET },
-        { status: 400 },
+        { error: TICKET_MESSAGES.ERROR_GENERIC },
+        { status: 500 },
       );
     }
 
-    // Delete the ticket
-    await db.delete(tickets).where(eq(tickets.id, existingTicket.id));
+    const cancelledTicketId = rpcData?.cancelled_ticket_id ?? null;
+    if (!cancelledTicketId) {
+      console.error("Ticket cancellation RPC returned without a cancelled ticket id:", rpcData);
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_GENERIC },
+        { status: 500 },
+      );
+    }
 
     queueAuditEvent({
       action: "ticket.cancel",
@@ -700,63 +768,24 @@ export async function DELETE(req: Request) {
       eventId: event_id,
       eventName: eventRow?.name ?? null,
       targetEmail: user.email,
-      metadata: { ticketId: existingTicket.id },
+      metadata: { ticketId: cancelledTicketId },
     });
 
-    // Once standby mode is open, freed spots should be handled by the in-person standby line.
-    if (!eventRow?.standbyEnabled) {
-      const availability = await getAvailablePublicTickets(event_id);
-
-      // Pull the top person off the waitlist (if any) only if under capacity
-      const topWaitlistEntry = await db.query.waitlist.findFirst({
-        where: eq(waitlist.eventId, event_id),
-        orderBy: (waitlist, { asc }) => [asc(waitlist.position)],
-        columns: { id: true, email: true, referral: true, eventId: true, name: true },
-      });
-
-      if (topWaitlistEntry && availability.available > 0 && eventRow) {
-        // Create ticket for the waitlist person (transfer name from waitlist)
-        const [newTicket] = await db
-          .insert(tickets)
-          .values({
-            eventId: topWaitlistEntry.eventId,
-            email: topWaitlistEntry.email,
-            name: topWaitlistEntry.name ?? null,
-            type: "STANDARD",
-          })
-          .onConflictDoNothing({
-            target: [tickets.eventId, tickets.email],
-          })
-          .returning({
-            id: tickets.id,
-            email: tickets.email,
-            type: tickets.type,
-            eventId: tickets.eventId,
-          });
-
-        // Remove them from the waitlist
-        await db
-          .delete(waitlist)
-          .where(eq(waitlist.id, topWaitlistEntry.id));
-
-        // Update referral records if they had a referral code
-        if (topWaitlistEntry.referral) {
-          queueReferralRecordUpdate(event_id, topWaitlistEntry.email);
-        }
-
-        // Send ticket email to the waitlist person
-        if (newTicket) {
-          queueTicketEmail(
-            buildTicketEmailPayload({
-              event: eventRow,
-              ticketId: newTicket.id,
-              ticketType: newTicket.type || "STANDARD",
-              userEmail: newTicket.email,
-              userName: topWaitlistEntry.name ?? null,
-            }),
-          );
-        }
-      }
+    if (
+      rpcData?.promoted_ticket_id
+      && rpcData.promoted_email
+      && eventRow
+    ) {
+      queueReferralRecordUpdate(event_id, rpcData.promoted_email);
+      await queueTicketEmail(
+        buildTicketEmailPayload({
+          event: eventRow,
+          ticketId: rpcData.promoted_ticket_id,
+          ticketType: rpcData.promoted_ticket_type || "STANDARD",
+          userEmail: rpcData.promoted_email,
+          userName: rpcData.promoted_name ?? null,
+        }),
+      );
     }
 
     return NextResponse.json(

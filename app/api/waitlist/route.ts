@@ -1,11 +1,13 @@
 import { after, NextResponse } from "next/server";
-import {
-  getAvailablePublicTickets,
-} from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, sql, count, events, tickets, waitlist } from "@ssb/db";
+import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { sendWaitlistEmail } from "@/app/lib/email";
+import { type WaitlistEmailData } from "@/app/lib/email";
+import {
+  createWaitlistEmailJob,
+  enqueueEmailJob,
+  processEmailJob,
+} from "@/app/lib/email-jobs";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -40,6 +42,17 @@ function scheduleAfterResponse(
     } catch (error) {
       console.error(`${label} error:`, error);
     }
+  });
+}
+
+async function queueWaitlistEmail(data: WaitlistEmailData) {
+  const queued = await enqueueEmailJob(createWaitlistEmailJob(data));
+  if (queued) {
+    return;
+  }
+
+  scheduleAfterResponse("Waitlist email", async () => {
+    await processEmailJob(createWaitlistEmailJob(data));
   });
 }
 
@@ -105,36 +118,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Block joining the online waitlist when standby mode is enabled
-    if (event.standbyEnabled) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
-        { status: 400 },
-      );
-    }
-
-    // Check if event is sold out
-    const { available } = await getAvailablePublicTickets(event_id);
-    if (available > 0) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_NOT_SOLD_OUT },
-        { status: 400 },
-      );
-    }
-
-    // Check user doesn't already have a ticket
-    const existingTicket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { id: true },
-    });
-
-    if (existingTicket) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_ALREADY_HAS_TICKET },
-        { status: 400 },
-      );
-    }
-
     // Derive name from body override or OAuth metadata
     const waitlistName =
       nameFromBody?.trim() ||
@@ -174,10 +157,34 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
+      if (msg.includes("already_has_ticket")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_ALREADY_HAS_TICKET },
+          { status: 400 },
+        );
+      }
       if (msg.includes("already")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_ALREADY_ON_WAITLIST },
           { status: 400 },
+        );
+      }
+      if (msg.includes("not_sold_out")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_NOT_SOLD_OUT },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("waitlist_closed")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("event_not_found")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
+          { status: 404 },
         );
       }
 
@@ -197,8 +204,7 @@ export async function POST(req: Request) {
       );
     }
 
-    scheduleAfterResponse("Waitlist email", async () => {
-      await sendWaitlistEmail({
+    await queueWaitlistEmail({
         email: user.email,
         eventName: event.name || "Event",
         position: waitlistPosition,
@@ -210,7 +216,6 @@ export async function POST(req: Request) {
         imgVersion: event.imgVersion,
         eventTagline: event.tagline,
       });
-    });
 
     return NextResponse.json(
       {

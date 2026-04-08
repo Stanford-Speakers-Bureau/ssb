@@ -2,6 +2,7 @@ import { PKPass } from "passkit-generator";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import { SignJWT, importPKCS8 } from "jose";
 import { formatInTimeZone } from "date-fns-tz";
+import { fetchWithTimeout } from "./fetch";
 
 type TicketWalletData = {
   email: string;
@@ -18,6 +19,8 @@ type TicketWalletData = {
   eventAddress: string;
   start_time_date: string;
 };
+
+const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
 
 export async function getAppleWalletPass(
   image_buffer: Buffer,
@@ -40,12 +43,36 @@ export async function getAppleWalletPass(
     logo2xRes,
     logo3xRes,
   ] = await Promise.all([
-    fetch(`${baseUrl}/wallet/logo_text1x.png`),
-    fetch(`${baseUrl}/wallet/logo_text2x.png`),
-    fetch(`${baseUrl}/wallet/logo_text3x.png`),
-    fetch(`${baseUrl}/wallet/logo1x.png`),
-    fetch(`${baseUrl}/wallet/logo2x.png`),
-    fetch(`${baseUrl}/wallet/logo3x.png`),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo_text1x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo_text2x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo_text3x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo1x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo2x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
+    fetchWithTimeout(
+      `${baseUrl}/wallet/logo3x.png`,
+      {},
+      WALLET_ASSET_FETCH_TIMEOUT_MS,
+    ),
   ]);
 
   if (!logoText1xRes.ok || !logoText2xRes.ok || !logoText3xRes.ok)

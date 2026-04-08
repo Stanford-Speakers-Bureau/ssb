@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 type TicketCountProps = {
@@ -17,7 +17,7 @@ export default function TicketCount({
   const [publicSold, setPublicSold] = useState(initialPublicSold);
   const maxPublic = initialMaxPublic; // Already calculated server-side
 
-  const fetchTicketCount = () => {
+  const fetchTicketCount = useCallback(() => {
     fetch(`/api/tickets?count=true&event_id=${eventId}`)
       .then(
         (res) =>
@@ -35,12 +35,9 @@ export default function TicketCount({
       .catch((err) => {
         console.error("Failed to fetch ticket count:", err);
       });
-  };
+  }, [eventId]);
 
   useEffect(() => {
-    // Fetch initial count on mount
-    fetchTicketCount();
-
     // Listen for custom event to refresh ticket count
     const handleTicketChange = () => {
       fetchTicketCount();
@@ -51,7 +48,7 @@ export default function TicketCount({
     return () => {
       window.removeEventListener("ticketChanged", handleTicketChange);
     };
-  }, [eventId]);
+  }, [fetchTicketCount]);
 
   const ticketsLeft = Math.max(0, maxPublic - publicSold);
 

@@ -6,27 +6,87 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+const AUTH_CACHE_KEY = "ssb_nav_auth";
+const AUTH_CACHE_TTL_MS = 60_000;
+
+function readCachedAuthState(): boolean | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = window.sessionStorage.getItem(AUTH_CACHE_KEY);
+    if (!cached) return null;
+
+    const parsed = JSON.parse(cached) as {
+      authenticated?: boolean;
+      expiresAt?: number;
+    };
+
+    if (
+      typeof parsed.authenticated !== "boolean"
+      || typeof parsed.expiresAt !== "number"
+      || parsed.expiresAt <= Date.now()
+    ) {
+      window.sessionStorage.removeItem(AUTH_CACHE_KEY);
+      return null;
+    }
+
+    return parsed.authenticated;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedAuthState(authenticated: boolean) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.setItem(
+      AUTH_CACHE_KEY,
+      JSON.stringify({
+        authenticated,
+        expiresAt: Date.now() + AUTH_CACHE_TTL_MS,
+      }),
+    );
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
   const isWhiteNavPage = pathname === "/" || pathname === "/contact" || pathname.startsWith("/events/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
+    () => readCachedAuthState(),
+  );
 
   // Check authentication state
   useEffect(() => {
+    let cancelled = false;
+
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/session");
         const data = (await response.json()) as { authenticated: boolean };
-        setIsAuthenticated(data.authenticated);
+        if (!cancelled) {
+          setIsAuthenticated(data.authenticated);
+          writeCachedAuthState(data.authenticated);
+        }
       } catch (error) {
         console.error("Failed to check auth state:", error);
-        setIsAuthenticated(false);
+        if (!cancelled) {
+          setIsAuthenticated(false);
+          writeCachedAuthState(false);
+        }
       }
     };
 
-    checkAuth();
-  }, [pathname]);
+    void checkAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const logoClasses = isWhiteNavPage
     ? "text-xl font-bold text-white"
@@ -150,7 +210,14 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 whileTap={{ scale: 0.95 }}
                 className="ml-auto"
               >
-                {isAuthenticated == null || isAuthenticated ? (
+                {isAuthenticated === null ? (
+                  <span
+                    className={`${linkClasses} opacity-70 pointer-events-none`}
+                    aria-hidden="true"
+                  >
+                    Account
+                  </span>
+                ) : isAuthenticated ? (
                   <Link href="/account" className={linkClasses}>
                     Account
                   </Link>
