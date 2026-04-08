@@ -1,6 +1,7 @@
 "use client";
 
 import { RedButton } from "../ui";
+import { TICKET_MESSAGES } from "../useTicketActions";
 import ReferralCodeInput from "./ReferralCodeInput";
 
 type JoinWaitlistProps = {
@@ -28,6 +29,9 @@ export default function JoinWaitlist({
     <div>
       {isWaitlistStatusLoading ? (
         <>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-3">
+            Checking whether you are already on the waitlist...
+          </p>
           <div className="h-5 w-24 rounded-full bg-zinc-200 dark:bg-white/[0.06] animate-pulse mb-4" />
           <div className="h-4 w-64 max-w-full rounded bg-zinc-200 dark:bg-white/[0.06] animate-pulse mb-5" />
           <div className="grid grid-cols-2 gap-2.5 mb-5">
@@ -103,7 +107,7 @@ export default function JoinWaitlist({
             onClick={handleJoinWaitlist}
             disabled={isWaitlistLoading || !!referralWarning}
             loading={isWaitlistLoading}
-            loadingText="Joining..."
+            loadingText={TICKET_MESSAGES.JOINING_WAITLIST}
           >
             Join Online Waitlist
           </RedButton>

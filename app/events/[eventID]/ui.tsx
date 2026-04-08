@@ -39,8 +39,23 @@ export function FeedbackMessage({
 }) {
   if (typeof document === "undefined") return null;
 
+  const lowered = message?.toLowerCase() ?? "";
   const isSuccess =
-    message?.includes("Successfully") || message?.includes("successfully");
+    lowered.includes("successfully") ||
+    lowered.includes("created") ||
+    lowered.includes("cancelled") ||
+    lowered.includes("confirmed");
+  const isInfo =
+    lowered.includes("processing") ||
+    lowered.includes("checking") ||
+    lowered.includes("waiting") ||
+    lowered.includes("longer than usual") ||
+    lowered.includes("still be processing");
+  const toneClass = isSuccess
+    ? "bg-emerald-50/90 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/25 text-emerald-700 dark:text-emerald-300"
+    : isInfo
+      ? "bg-amber-50/90 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/25 text-amber-700 dark:text-amber-300"
+      : "bg-red-50/90 dark:bg-red-500/15 border-red-200 dark:border-red-500/25 text-red-700 dark:text-red-300";
 
   return createPortal(
     <AnimatePresence>
@@ -50,16 +65,21 @@ export function FeedbackMessage({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
-          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-xl shadow-lg backdrop-blur-xl border text-sm font-medium ${
-            isSuccess
-              ? "bg-emerald-50/90 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/25 text-emerald-700 dark:text-emerald-300"
-              : "bg-red-50/90 dark:bg-red-500/15 border-red-200 dark:border-red-500/25 text-red-700 dark:text-red-300"
-          }`}
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-xl shadow-lg backdrop-blur-xl border text-sm font-medium ${toneClass}`}
         >
           <span className="flex items-center gap-2">
             {isSuccess ? (
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : isInfo ? (
+              <svg className="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M12 2a10 10 0 1 0 10 10"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                />
               </svg>
             ) : (
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

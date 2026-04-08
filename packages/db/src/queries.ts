@@ -1,7 +1,7 @@
-import { eq, and, ne, count } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/postgres-js";
 import type * as schema from "./schema";
-import { tickets, events, waitlist } from "./schema";
+import { events, waitlist } from "./schema";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -18,27 +18,18 @@ export async function getTicketCounts(
   standbyCount: number;
   totalCount: number;
 }> {
-  const [[vipResult], [publicResult], [standbyResult]] = await Promise.all([
-    db.select({ count: count() })
-      .from(tickets)
-      .where(and(eq(tickets.eventId, eventId), eq(tickets.type, "VIP"))),
-    db.select({ count: count() })
-      .from(tickets)
-      .where(
-        and(
-          eq(tickets.eventId, eventId),
-          ne(tickets.type, "VIP"),
-          ne(tickets.type, "STANDBY"),
-        ),
-      ),
-    db.select({ count: count() })
-      .from(tickets)
-      .where(and(eq(tickets.eventId, eventId), eq(tickets.type, "STANDBY"))),
-  ]);
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, eventId),
+    columns: {
+      publicTicketsSold: true,
+      vipTicketsSold: true,
+      standbyTicketsSold: true,
+    },
+  });
 
-  const vipCount = vipResult?.count ?? 0;
-  const publicCount = publicResult?.count ?? 0;
-  const standbyCount = standbyResult?.count ?? 0;
+  const vipCount = event?.vipTicketsSold ?? 0;
+  const publicCount = event?.publicTicketsSold ?? 0;
+  const standbyCount = event?.standbyTicketsSold ?? 0;
 
   return {
     vipCount,
@@ -64,12 +55,19 @@ export async function getAvailablePublicTickets(
   totalCapacity: number;
   reserved: number;
 }> {
-  const event = await db.query.events.findFirst({
+  const eventSummary = await db.query.events.findFirst({
     where: eq(events.id, eventId),
-    columns: { capacity: true, reserved: true, standbyEnabled: true },
+    columns: {
+      capacity: true,
+      reserved: true,
+      standbyEnabled: true,
+      publicTicketsSold: true,
+      vipTicketsSold: true,
+      standbyTicketsSold: true,
+    },
   });
 
-  if (!event || !event.capacity) {
+  if (!eventSummary || !eventSummary.capacity) {
     return {
       available: 0,
       publicSold: 0,
@@ -82,11 +80,12 @@ export async function getAvailablePublicTickets(
     };
   }
 
-  const capacity = event.capacity;
-  const reserved = event.reserved ?? 0;
-  const standbyEnabled = event.standbyEnabled ?? false;
-
-  const { vipCount, publicCount, standbyCount } = await getTicketCounts(db, eventId);
+  const capacity = eventSummary.capacity;
+  const reserved = eventSummary.reserved ?? 0;
+  const standbyEnabled = eventSummary.standbyEnabled ?? false;
+  const vipCount = eventSummary.vipTicketsSold ?? 0;
+  const publicCount = eventSummary.publicTicketsSold ?? 0;
+  const standbyCount = eventSummary.standbyTicketsSold ?? 0;
 
   let maxPublic: number;
   if (vipCount <= reserved) {
@@ -119,15 +118,6 @@ export async function isEventUnderCapacity(
   db: Db,
   eventId: string,
 ): Promise<boolean> {
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, eventId),
-    columns: { capacity: true },
-  });
-
-  if (!event?.capacity) {
-    return true;
-  }
-
   const ticketInfo = await getAvailablePublicTickets(db, eventId);
   return ticketInfo.available > 0;
 }

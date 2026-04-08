@@ -34,6 +34,12 @@ export default function ClientHeaderBar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isScanRoute || isEventRoute) {
+      setBannerData(null);
+      setLoading(false);
+      return;
+    }
+
     async function fetchBannerData() {
       try {
         const response = await fetch("/api/banner-data");
@@ -48,12 +54,13 @@ export default function ClientHeaderBar() {
       }
     }
 
+    setLoading(true);
     fetchBannerData();
 
     // Refresh banner data every minute
     const interval = setInterval(fetchBannerData, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isEventRoute, isScanRoute]);
 
   if (isScanRoute) {
     return null;

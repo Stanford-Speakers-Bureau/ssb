@@ -260,7 +260,8 @@ export async function updateReferralRecords(
     const userReferralCode = generateReferralCode(userEmail);
 
     if (userReferralCode) {
-      await db.insert(referrals)
+      await db
+        .insert(referrals)
         .values({
           eventId,
           referralCode: userReferralCode,
@@ -286,7 +287,10 @@ export async function isEventUnderCapacity(eventId: string) {
   return _isEventUnderCapacity(db, eventId);
 }
 
-export async function getUserWaitlistStatus(eventId: string, userEmail: string) {
+export async function getUserWaitlistStatus(
+  eventId: string,
+  userEmail: string,
+) {
   return _getUserWaitlistStatus(db, eventId, userEmail);
 }
 

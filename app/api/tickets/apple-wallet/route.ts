@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
 import { getSignedImageUrl } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
 import { getAppleWalletPass } from "@/app/lib/wallet";
@@ -19,6 +20,8 @@ type TicketWalletData = {
   eventLng: number;
   eventAddress: string;
 };
+
+const APPLE_WALLET_IMAGE_FETCH_TIMEOUT_MS = 10_000;
 
 export async function GET(req: NextRequest) {
   try {
@@ -90,7 +93,31 @@ export async function GET(req: NextRequest) {
         { status: 500 },
       );
     }
-    const imgResponse = await fetch(imgUrl);
+    let imgResponse: Response;
+    try {
+      imgResponse = await fetchWithTimeout(
+        imgUrl,
+        {},
+        APPLE_WALLET_IMAGE_FETCH_TIMEOUT_MS,
+      );
+    } catch (error) {
+      if (isFetchTimeoutError(error)) {
+        return NextResponse.json(
+          { error: "Timed out while loading the event image" },
+          { status: 504 },
+        );
+      }
+
+      throw error;
+    }
+
+    if (!imgResponse.ok) {
+      return NextResponse.json(
+        { error: "Failed to load event image" },
+        { status: 502 },
+      );
+    }
+
     const imgBuffer = Buffer.from(await imgResponse.arrayBuffer());
 
     const ticketData: TicketWalletData = {

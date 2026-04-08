@@ -5,11 +5,9 @@ import {
   getEventByRoute,
   isEventMystery,
   getImageProxyUrl,
-  isEventUnderCapacity,
+  getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
-import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, tickets, waitlist, notify } from "@ssb/db";
 import { getEventEndDate } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -77,76 +75,6 @@ export async function generateMetadata({
   };
 }
 
-async function getViewerEventState(
-  eventId: string,
-  shouldCheckNotify: boolean,
-): Promise<{
-  ticketId: string | null;
-  userEmail: string | null;
-  ticketType: string | null;
-  ticketName: string | null;
-  ticketScanned: boolean;
-  isOnWaitlist: boolean;
-  isNotified: boolean;
-}> {
-  try {
-    const user = await getSessionUser();
-
-    if (!user?.email)
-      return {
-        ticketId: null,
-        userEmail: null,
-        ticketType: null,
-        ticketName: null,
-        ticketScanned: false,
-        isOnWaitlist: false,
-        isNotified: false,
-      };
-
-    const [ticket, waitlistEntry] = await Promise.all([
-      db.query.tickets.findFirst({
-        where: and(eq(tickets.eventId, eventId), eq(tickets.email, user.email)),
-        columns: { id: true, type: true, name: true, scanned: true },
-      }),
-      db.query.waitlist.findFirst({
-        where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
-        columns: { id: true },
-      }),
-    ]);
-
-    let isNotified = false;
-
-    if (shouldCheckNotify && !ticket?.id) {
-      const notifyEntry = await db.query.notify.findFirst({
-        where: and(eq(notify.email, user.email), eq(notify.speakerId, eventId)),
-        columns: { id: true },
-      });
-
-      isNotified = !!notifyEntry;
-    }
-
-    return {
-      ticketId: ticket?.id ?? null,
-      userEmail: user.email,
-      ticketType: ticket?.type ?? null,
-      ticketName: ticket?.name ?? null,
-      ticketScanned: ticket?.scanned ?? false,
-      isOnWaitlist: !!waitlistEntry,
-      isNotified,
-    };
-  } catch {
-    return {
-      ticketId: null,
-      userEmail: null,
-      ticketType: null,
-      ticketName: null,
-      ticketScanned: false,
-      isOnWaitlist: false,
-      isNotified: false,
-    };
-  }
-}
-
 export default async function EventPage({ params }: PageProps) {
   const { eventID } = await params;
 
@@ -159,26 +87,51 @@ export default async function EventPage({ params }: PageProps) {
   const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
     ? null
     : (event.ticketing_date ?? event.release_date);
-  const shouldCheckNotify = (() => {
-    if (!ticketingDate) return false;
+  const isMysteryEvent = isEventMystery(event);
 
-    const ticketingOpensAt = new Date(ticketingDate);
-    return !Number.isNaN(ticketingOpensAt.getTime()) && ticketingOpensAt > new Date();
-  })();
+  if (isMysteryEvent) {
+    return (
+      <div className="relative flex min-h-screen flex-col bg-white font-sans dark:bg-zinc-950">
+        <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
+          <div className="flex flex-col gap-5">
+            <NoticeBanner
+              color="blue"
+              icon={<svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
+            >
+              This event is not public yet. If you already have a ticket, we&apos;ll load it below.
+            </NoticeBanner>
 
-  const ticketStatus = await getViewerEventState(event.id, shouldCheckNotify);
-
-  const hasTicket = !!ticketStatus.ticketId;
-  const ticketId = ticketStatus.ticketId;
-  const ticketType = ticketStatus.ticketType;
-
-  // Check if public tickets are sold out
-  const isSoldOut = !(await isEventUnderCapacity(event.id));
-
-  // If no event found or event is still a mystery, redirect to upcoming events
-  if (isEventMystery(event) && !hasTicket) {
-    redirect("/upcoming-speakers");
+            <TicketSection
+              eventId={event.id}
+              initialHasTicket={false}
+              initialTicketId={null}
+              initialTicketType={null}
+              initialTicketName={null}
+              initialIsScanned={false}
+              initialIsOnWaitlist={false}
+              initialWaitlistPosition={null}
+              userEmail={null}
+              eventRoute={event.route || eventID}
+              eventStartTime={event.start_time_date}
+              eventEndTime={event.end_time_date}
+              doorsOpen={event.doors_open}
+              isSoldOut={false}
+              ticketingDate={ticketingDate}
+              hideTicketingDate={event.hide_ticketing_date}
+              initialIsNotified={false}
+              waitlistChance={event.waitlist_chance}
+              referralsEnabled={event.referrals_enabled}
+              standbyMode={event.standby_enabled}
+              requireTicketAccess
+            />
+          </div>
+        </main>
+      </div>
+    );
   }
+
+  const ticketAvailability = await getAvailablePublicTickets(event.id);
+  const isSoldOut = ticketAvailability.available <= 0;
 
   // Get the proxy URL for the event images
   const signedImageUrl = (event.img || event.mobile_img)
@@ -334,12 +287,14 @@ export default async function EventPage({ params }: PageProps) {
 
               <TicketSection
                 eventId={event.id}
-                initialHasTicket={hasTicket}
-                initialTicketId={ticketId}
-                initialTicketType={ticketType}
-                initialTicketName={ticketStatus.ticketName}
-                initialIsScanned={ticketStatus.ticketScanned}
-                userEmail={ticketStatus.userEmail}
+                initialHasTicket={false}
+                initialTicketId={null}
+                initialTicketType={null}
+                initialTicketName={null}
+                initialIsScanned={false}
+                initialIsOnWaitlist={false}
+                initialWaitlistPosition={null}
+                userEmail={null}
                 eventRoute={event.route || eventID}
                 eventStartTime={event.start_time_date}
                 eventEndTime={event.end_time_date}
@@ -347,7 +302,7 @@ export default async function EventPage({ params }: PageProps) {
                 isSoldOut={isSoldOut}
                 ticketingDate={ticketingDate}
                 hideTicketingDate={event.hide_ticketing_date}
-                initialIsNotified={ticketStatus.isNotified}
+                initialIsNotified={false}
                 waitlistChance={event.waitlist_chance}
                 referralsEnabled={event.referrals_enabled}
                 standbyMode={event.standby_enabled}

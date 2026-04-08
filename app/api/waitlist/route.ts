@@ -1,11 +1,14 @@
-import { NextResponse } from "next/server";
-import {
-  getAvailablePublicTickets,
-} from "@/app/lib/supabase";
+import { after, NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, and, lt, sql, count, events, tickets, waitlist } from "@ssb/db";
+import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { sendWaitlistEmail } from "@/app/lib/email";
+import { type WaitlistEmailData } from "@/app/lib/email";
+import {
+  createWaitlistEmailJob,
+  enqueueEmailJob,
+  processEmailJob,
+} from "@/app/lib/email-jobs";
+import { validateReferralInput } from "@/app/lib/referrals";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -28,6 +31,30 @@ type JoinWaitlistRpcResult = {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
+}
+
+function scheduleAfterResponse(
+  label: string,
+  task: () => Promise<void>,
+) {
+  after(async () => {
+    try {
+      await task();
+    } catch (error) {
+      console.error(`${label} error:`, error);
+    }
+  });
+}
+
+async function queueWaitlistEmail(data: WaitlistEmailData) {
+  const queued = await enqueueEmailJob(createWaitlistEmailJob(data));
+  if (queued) {
+    return;
+  }
+
+  scheduleAfterResponse("Waitlist email", async () => {
+    await processEmailJob(createWaitlistEmailJob(data));
+  });
 }
 
 export async function POST(req: Request) {
@@ -55,7 +82,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral, name: nameFromBody } = body as {
+    const { event_id, referral: referralFromBody, name: nameFromBody } = body as {
       event_id?: string;
       referral?: string;
       name?: string;
@@ -82,6 +109,7 @@ export async function POST(req: Request) {
         standbyEnabled: true,
         tagline: true,
         imgVersion: true,
+        referralsEnabled: true,
       },
     });
 
@@ -89,36 +117,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
         { status: 404 },
-      );
-    }
-
-    // Block joining the online waitlist when standby mode is enabled
-    if (event.standbyEnabled) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
-        { status: 400 },
-      );
-    }
-
-    // Check if event is sold out
-    const { available } = await getAvailablePublicTickets(event_id);
-    if (available > 0) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_NOT_SOLD_OUT },
-        { status: 400 },
-      );
-    }
-
-    // Check user doesn't already have a ticket
-    const existingTicket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { id: true },
-    });
-
-    if (existingTicket) {
-      return NextResponse.json(
-        { error: WAITLIST_MESSAGES.ERROR_ALREADY_HAS_TICKET },
-        { status: 400 },
       );
     }
 
@@ -134,6 +132,22 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    const referralValidation = await validateReferralInput({
+      eventId: event_id,
+      referralCode: referralFromBody,
+      userEmail: user.email,
+      referralsEnabled: event.referralsEnabled,
+    });
+
+    if (!referralValidation.ok) {
+      return NextResponse.json(
+        { error: referralValidation.message },
+        { status: 400 },
+      );
+    }
+
+    const referral = referralValidation.referral;
 
     // Use stored procedure to atomically join waitlist (prevents position collisions)
     let rpcData: JoinWaitlistRpcResult | null = null;
@@ -159,10 +173,46 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
+      if (msg.includes("already_has_ticket")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_ALREADY_HAS_TICKET },
+          { status: 400 },
+        );
+      }
       if (msg.includes("already")) {
         return NextResponse.json(
           { error: WAITLIST_MESSAGES.ERROR_ALREADY_ON_WAITLIST },
           { status: 400 },
+        );
+      }
+      if (msg.includes("self_referral")) {
+        return NextResponse.json(
+          { error: "You cannot use your own referral code" },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("invalid_referral")) {
+        return NextResponse.json(
+          { error: "Invalid referral code for this event" },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("not_sold_out")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_NOT_SOLD_OUT },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("waitlist_closed")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_WAITLIST_CLOSED },
+          { status: 400 },
+        );
+      }
+      if (msg.includes("event_not_found")) {
+        return NextResponse.json(
+          { error: WAITLIST_MESSAGES.ERROR_EVENT_NOT_FOUND },
+          { status: 404 },
         );
       }
 
@@ -173,30 +223,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const nextPosition = rpcData?.position;
+    const waitlistPosition = rpcData?.position ?? null;
 
-    if (!nextPosition) {
+    if (!waitlistPosition) {
       return NextResponse.json(
         { error: WAITLIST_MESSAGES.ERROR_GENERIC },
         { status: 500 },
       );
     }
 
-    // Calculate actual position (same logic as GET handler)
-    // This ensures the email shows the same position as the UI
-    const [aheadResult] = await db.select({ count: count() })
-      .from(waitlist)
-      .where(and(eq(waitlist.eventId, event_id), lt(waitlist.position, nextPosition)));
-
-    // User's actual position is count of people ahead + 1 (1-indexed)
-    const actualPosition = (aheadResult?.count ?? 0) + 1;
-
-    // Send email immediately
-    try {
-      await sendWaitlistEmail({
+    await queueWaitlistEmail({
         email: user.email,
         eventName: event.name || "Event",
-        position: actualPosition,
+        position: waitlistPosition,
         eventStartTime: event.startTimeDate?.toISOString() ?? null,
         eventVenue: event.venue,
         eventVenueLink: event.venueLink,
@@ -205,16 +244,12 @@ export async function POST(req: Request) {
         imgVersion: event.imgVersion,
         eventTagline: event.tagline,
       });
-    } catch (emailError) {
-      console.error("Waitlist email error:", emailError);
-      // Don't fail the request if email fails
-    }
 
     return NextResponse.json(
       {
         success: true,
         message: WAITLIST_MESSAGES.SUCCESS,
-        position: actualPosition,
+        position: waitlistPosition,
       },
       { status: 200 },
     );
@@ -326,21 +361,10 @@ export async function GET(req: Request) {
         .from(waitlist)
         .where(eq(waitlist.eventId, eventId));
 
-      // Calculate actual position by counting how many people are ahead (have lower position numbers)
-      let actualPosition: number | null = null;
-      if (entry) {
-        const [aheadResult] = await db.select({ count: count() })
-          .from(waitlist)
-          .where(and(eq(waitlist.eventId, eventId), lt(waitlist.position, entry.position)));
-
-        // User's actual position is count of people ahead + 1 (1-indexed)
-        actualPosition = (aheadResult?.count ?? 0) + 1;
-      }
-
       return NextResponse.json(
         {
           isOnWaitlist: !!entry,
-          position: actualPosition,
+          position: entry?.position ?? null,
           total: totalResult?.count ?? 0,
         },
         { status: 200 },

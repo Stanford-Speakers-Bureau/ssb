@@ -4,6 +4,7 @@ import {
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
+import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
@@ -13,6 +14,7 @@ const CACHE_HEADERS = {
   "CDN-Cache-Control": "public, max-age=31536000, immutable",
   "X-Content-Type-Options": "nosniff",
 };
+const IMAGE_ORIGIN_FETCH_TIMEOUT_MS = 10_000;
 
 export async function GET(
   request: NextRequest,
@@ -93,7 +95,21 @@ export async function GET(
   }
 
   // Fetch image from Supabase
-  const imageResponse = await fetch(signedData.signedUrl);
+  let imageResponse: Response;
+  try {
+    imageResponse = await fetchWithTimeout(
+      signedData.signedUrl,
+      {},
+      IMAGE_ORIGIN_FETCH_TIMEOUT_MS,
+    );
+  } catch (error) {
+    if (isFetchTimeoutError(error)) {
+      return new NextResponse("Image origin timed out", { status: 504 });
+    }
+
+    throw error;
+  }
+
   if (!imageResponse.ok) {
     return new NextResponse("Image not found", { status: 404 });
   }

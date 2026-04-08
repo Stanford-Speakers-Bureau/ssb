@@ -231,6 +231,15 @@ export default function EventPopup({
   // ─── Notify handler ───
 
   const handleNotify = useCallback(async () => {
+    if (!isLoggedIn) {
+      const redirectUrl =
+        window.location.pathname +
+        window.location.search +
+        window.location.hash;
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      return;
+    }
+
     setNotifyStatus("loading");
     try {
       const res = await fetch("/api/notify", {
@@ -240,7 +249,11 @@ export default function EventPopup({
       });
 
       if (res.status === 401) {
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(window.location.pathname)}`;
+        const redirectUrl =
+          window.location.pathname +
+          window.location.search +
+          window.location.hash;
+        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
         return;
       }
 
@@ -252,7 +265,7 @@ export default function EventPopup({
     } catch {
       setNotifyStatus("error");
     }
-  }, [eventId, dismiss]);
+  }, [eventId, isLoggedIn]);
 
   // ─── Phase-dependent content ───
 

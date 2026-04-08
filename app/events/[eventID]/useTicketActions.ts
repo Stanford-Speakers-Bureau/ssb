@@ -3,12 +3,142 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { isEventOver } from "@/app/lib/eventTime";
+import {
+  fetchWithTimeout as sharedFetchWithTimeout,
+  isFetchTimeoutError,
+} from "@/app/lib/fetch";
 import { fireFullConfetti, fireSimpleConfetti } from "./confetti";
+
+const REQUEST_TIMEOUT_MS = 12_000;
+const WAITLIST_CACHE_PREFIX = "waitlist_status";
+const PROCESSING_MESSAGE =
+  "This is taking longer than usual. We are checking the result.";
+
+type WaitlistStatusCache = {
+  isOnWaitlist: boolean;
+  position: number | null;
+};
+
+type TicketLookupResponse = {
+  ticketId?: string;
+  ticketName?: string | null;
+  ticketType?: string | null;
+  error?: string;
+};
+
+type WaitlistLookupResponse = {
+  isOnWaitlist?: boolean;
+  position?: number | null;
+  total?: number;
+  error?: string;
+};
+
+function getWaitlistCacheKey(eventId: string): string {
+  return `${WAITLIST_CACHE_PREFIX}:${eventId}`;
+}
+
+function readWaitlistCache(eventId: string): WaitlistStatusCache | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(getWaitlistCacheKey(eventId));
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as WaitlistStatusCache;
+    return {
+      isOnWaitlist: !!parsed.isOnWaitlist,
+      position:
+        typeof parsed.position === "number" ? parsed.position : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeWaitlistCache(eventId: string, value: WaitlistStatusCache): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.setItem(
+      getWaitlistCacheKey(eventId),
+      JSON.stringify(value),
+    );
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
+function clearWaitlistCache(eventId: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(getWaitlistCacheKey(eventId));
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
+function getReferralStorageKey(eventId: string): string {
+  return `referral:${eventId}`;
+}
+
+function readStoredReferralCode(eventId: string): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    return window.sessionStorage.getItem(getReferralStorageKey(eventId));
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredReferralCode(eventId: string, referralCode: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.setItem(
+      getReferralStorageKey(eventId),
+      referralCode.trim(),
+    );
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
+function clearStoredReferralCode(eventId: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(getReferralStorageKey(eventId));
+  } catch {
+    // Ignore storage errors in private/incognito contexts.
+  }
+}
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+): Promise<Response> {
+  return sharedFetchWithTimeout(input, init, REQUEST_TIMEOUT_MS);
+}
+
+async function safeJson<T>(response: Response): Promise<T | null> {
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
 
 export type TicketButtonProps = {
   eventId: string;
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
+  initialIsOnWaitlist?: boolean;
+  initialWaitlistPosition?: number | null;
   eventStartTime?: string | null;
   eventEndTime?: string | null;
   doorsOpen?: string | null;
@@ -24,10 +154,8 @@ export type TicketButtonProps = {
   standbyMode?: boolean;
 };
 
-const REFERRAL_KEY = "referral";
-
 export const TICKET_MESSAGES = {
-  SUCCESS: "Ticket created successfully!",
+  SUCCESS: "Ticket confirmed! Check your email in a moment.",
   DELETED: "Ticket cancelled successfully!",
   ERROR_GENERIC: "Something went wrong. Please try again.",
   ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in.",
@@ -37,13 +165,16 @@ export const TICKET_MESSAGES = {
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   EVENT_OVER_WITH_TICKET: "This event is over. Thank you for attending!",
   EVENT_PASSED: "This event has passed.",
-  CREATING: "Creating ticket...",
-  CANCELLING: "Cancelling ticket...",
+  CREATING: "Creating your ticket...",
+  JOINING_WAITLIST: "Joining the waitlist...",
+  CANCELLING: "Cancelling your ticket...",
 } as const;
 
 export default function useTicketActions({
   eventId,
   initialHasTicket = false,
+  initialIsOnWaitlist = false,
+  initialWaitlistPosition = null,
   eventStartTime = null,
   eventEndTime = null,
   isSoldOut = false,
@@ -69,12 +200,37 @@ export default function useTicketActions({
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Waitlist states
-  const [isOnWaitlist, setIsOnWaitlist] = useState(false);
-  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
+  const initialWaitlistCache = readWaitlistCache(eventId);
+  const hasSsrWaitlistState = isLoggedIn && isSoldOut && !initialHasTicket;
+  const initialWaitlistState = hasSsrWaitlistState
+    ? {
+        isOnWaitlist: initialIsOnWaitlist,
+        position: initialWaitlistPosition,
+        isReady: initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
+      }
+    : !isLoggedIn
+      ? {
+          isOnWaitlist: false,
+          position: null,
+          isReady: false,
+        }
+    : {
+        isOnWaitlist: initialWaitlistCache?.isOnWaitlist ?? false,
+        position: initialWaitlistCache?.position ?? null,
+        isReady: !!initialWaitlistCache,
+      };
+  const [isOnWaitlist, setIsOnWaitlist] = useState(
+    initialWaitlistState.isOnWaitlist,
+  );
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(
+    initialWaitlistState.position,
+  );
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
   const [isWaitlistStatusLoading, setIsWaitlistStatusLoading] = useState(false);
-  const [isWaitlistPositionReady, setIsWaitlistPositionReady] = useState(false);
+  const [isWaitlistPositionReady, setIsWaitlistPositionReady] = useState(
+    initialWaitlistState.isReady,
+  );
 
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
@@ -97,35 +253,42 @@ export default function useTicketActions({
       hour12: true,
     }).format(date);
 
+  const redirectToAuth = useCallback(
+    (intent: "notify" | "waitlist" | "ticket" | "standby_ticket") => {
+      const redirectUrl = new URL(window.location.href);
+      redirectUrl.searchParams.set(intent, "true");
+      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(
+        redirectUrl.pathname + redirectUrl.search + redirectUrl.hash,
+      )}`;
+    },
+    [],
+  );
+
   const handleNotify = useCallback(async () => {
     if (isLoadingNotify || isNotified) return;
 
     if (!isLoggedIn) {
-      const currentPath = window.location.pathname;
-      const redirectUrl = `${currentPath}?notify=true`;
-      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      redirectToAuth("notify");
       return;
     }
 
     setIsLoadingNotify(true);
     let redirecting = false;
     try {
-      const response = await fetch("/api/notify", {
+      const response = await fetchWithTimeout("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ speaker_id: eventId }),
       });
       if (response.status === 401) {
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?notify=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("notify");
         return;
       }
-      const data = (await response.json()) as {
+      const data = (await safeJson<{
         alreadySignedUp?: boolean;
         error?: string;
-      };
+      }>(response)) ?? {};
       if (response.ok) {
         setIsNotified(true);
         if (data.alreadySignedUp) {
@@ -140,7 +303,7 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
-  }, [eventId, isLoadingNotify, isLoggedIn, isNotified]);
+  }, [eventId, isLoadingNotify, isLoggedIn, isNotified, redirectToAuth]);
 
   const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -160,46 +323,231 @@ export default function useTicketActions({
   // Standby mode is controlled by admin toggle
   const isStandbyMode = standbyMode;
 
+  const resetWaitlistStateFromCache = useCallback(() => {
+    if (!isLoggedIn) {
+      clearWaitlistCache(eventId);
+      setIsOnWaitlist(false);
+      setWaitlistPosition(null);
+      setIsWaitlistPositionReady(false);
+      return;
+    }
+
+    if (isLoggedIn && isSoldOut && !initialHasTicket) {
+      setIsOnWaitlist(initialIsOnWaitlist);
+      setWaitlistPosition(initialWaitlistPosition);
+      setIsWaitlistPositionReady(
+        initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
+      );
+
+      if (initialIsOnWaitlist) {
+        writeWaitlistCache(eventId, {
+          isOnWaitlist: true,
+          position: initialWaitlistPosition,
+        });
+      } else {
+        clearWaitlistCache(eventId);
+      }
+      return;
+    }
+
+    const cached = readWaitlistCache(eventId);
+    setIsOnWaitlist(cached?.isOnWaitlist ?? false);
+    setWaitlistPosition(cached?.position ?? null);
+    setIsWaitlistPositionReady(!!cached);
+  }, [
+    eventId,
+    initialHasTicket,
+    initialIsOnWaitlist,
+    initialWaitlistPosition,
+    isLoggedIn,
+    isSoldOut,
+  ]);
+
+  const reconcileTicketStatus = useCallback(
+    async (expectedOutcome: "created" | "cancelled") => {
+      try {
+        const response = await fetchWithTimeout(
+          `/api/tickets?eventId=${encodeURIComponent(eventId)}`,
+          {
+          method: "GET",
+          },
+        );
+        const data =
+          (await safeJson<{
+            hasTicket?: boolean;
+            ticketId?: string | null;
+            ticketName?: string | null;
+            ticketType?: string | null;
+          }>(response)) ?? {};
+
+        const hasEventTicket = response.ok && !!data.hasTicket;
+
+        if (expectedOutcome === "created" && hasEventTicket) {
+          setHasTicket(true);
+          setMessage(TICKET_MESSAGES.SUCCESS);
+          clearWaitlistCache(eventId);
+          window.dispatchEvent(
+            new CustomEvent("ticketChanged", {
+              detail: {
+                hasTicket: true,
+                ticketId: data.ticketId ?? null,
+                ticketName: data.ticketName ?? null,
+                ticketType: data.ticketType ?? null,
+              },
+            }),
+          );
+          return true;
+        }
+
+        if (expectedOutcome === "cancelled" && !hasEventTicket) {
+          setHasTicket(false);
+          setMessage(TICKET_MESSAGES.DELETED);
+          window.dispatchEvent(
+            new CustomEvent("ticketChanged", {
+              detail: {
+                hasTicket: false,
+                ticketId: null,
+                ticketName: null,
+                ticketType: null,
+              },
+            }),
+          );
+          return true;
+        }
+      } catch (error) {
+        console.error("Error reconciling ticket status:", error);
+      }
+
+      return false;
+    },
+    [eventId],
+  );
+
+  const reconcileWaitlistStatus = useCallback(
+    async (): Promise<WaitlistStatusCache | null> => {
+      try {
+        const response = await fetchWithTimeout(
+          `/api/waitlist?eventId=${eventId}`,
+          {
+            method: "GET",
+          },
+        );
+        const data = (await safeJson<WaitlistLookupResponse>(response)) ?? null;
+
+        if (response.ok && data) {
+          const nextIsOnWaitlist = !!data.isOnWaitlist;
+          const nextPosition =
+            typeof data.position === "number" ? data.position : null;
+
+          setIsOnWaitlist(nextIsOnWaitlist);
+          setWaitlistPosition(nextPosition);
+          setIsWaitlistPositionReady(true);
+          writeWaitlistCache(eventId, {
+            isOnWaitlist: nextIsOnWaitlist,
+            position: nextPosition,
+          });
+          return {
+            isOnWaitlist: nextIsOnWaitlist,
+            position: nextPosition,
+          };
+        }
+      } catch (error) {
+        console.error("Error reconciling waitlist status:", error);
+      }
+
+      return null;
+    },
+    [eventId],
+  );
+
   useEffect(() => {
     // Clear message after 3 seconds
     if (message) {
-      const timer = setTimeout(() => setMessage(null), 3000);
+      const lowered = message.toLowerCase();
+      const autoClearMs =
+        lowered.includes("processing") ||
+        lowered.includes("checking") ||
+        lowered.includes("waiting") ||
+        lowered.includes("longer than usual")
+          ? 10_000
+          : 3_000;
+      const timer = setTimeout(() => setMessage(null), autoClearMs);
       return () => clearTimeout(timer);
     }
   }, [message]);
 
+  useEffect(() => {
+    resetWaitlistStateFromCache();
+    setIsWaitlistStatusLoading(false);
+  }, [eventId, resetWaitlistStateFromCache]);
+
   // Check waitlist status when event is sold out
   const checkWaitlistStatus = useCallback(async () => {
-    if (!isSoldOut) return;
+    if (!isSoldOut || hasTicket) return;
+
+    const cached = readWaitlistCache(eventId);
+    if (cached && (!cached.isOnWaitlist || cached.position !== null)) {
+      setIsOnWaitlist(cached.isOnWaitlist);
+      setWaitlistPosition(cached.position);
+      setIsWaitlistPositionReady(true);
+      return;
+    }
 
     try {
       setIsWaitlistStatusLoading(true);
-      const response = await fetch(`/api/waitlist?eventId=${eventId}`);
+      const response = await fetchWithTimeout(
+        `/api/waitlist?eventId=${eventId}`,
+      );
       if (response.ok) {
-        const data = (await response.json()) as {
-          isOnWaitlist: boolean;
-          position: number | null;
-        };
-        setIsOnWaitlist(data.isOnWaitlist);
-        setWaitlistPosition(data.position);
+        const data = (await safeJson<WaitlistLookupResponse>(response)) ?? null;
+        if (data) {
+          const nextIsOnWaitlist = !!data.isOnWaitlist;
+          const nextPosition =
+            typeof data.position === "number" ? data.position : null;
+          setIsOnWaitlist(nextIsOnWaitlist);
+          setWaitlistPosition(nextPosition);
+          setIsWaitlistPositionReady(true);
+          writeWaitlistCache(eventId, {
+            isOnWaitlist: nextIsOnWaitlist,
+            position: nextPosition,
+          });
+        }
+      } else {
         setIsWaitlistPositionReady(true);
       }
     } catch (error) {
       console.error("Error checking waitlist status:", error);
+      setIsWaitlistPositionReady(true);
     } finally {
       setIsWaitlistStatusLoading(false);
     }
-  }, [eventId, isSoldOut]);
+  }, [eventId, hasTicket, isSoldOut]);
 
   // Check waitlist status on mount if sold out
   useEffect(() => {
-    if (isSoldOut && !hasTicket) {
+    if (
+      isSoldOut &&
+      !hasTicket &&
+      (!isWaitlistPositionReady || (isOnWaitlist && waitlistPosition === null))
+    ) {
       checkWaitlistStatus();
     }
-  }, [isSoldOut, hasTicket, checkWaitlistStatus]);
+  }, [
+    checkWaitlistStatus,
+    hasTicket,
+    isOnWaitlist,
+    isSoldOut,
+    isWaitlistPositionReady,
+    waitlistPosition,
+  ]);
 
   // Handle joining waitlist
   const handleJoinWaitlist = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("waitlist");
+      return;
+    }
+
     setIsWaitlistLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -213,12 +561,13 @@ export default function useTicketActions({
 
       // Get referral from input or session storage
       let referral: string | null = null;
-      const referralKey = REFERRAL_KEY;
-      if (referralCode.trim()) {
-        referral = referralCode.trim();
-        sessionStorage.setItem(referralKey, referral);
-      } else {
-        referral = sessionStorage.getItem(referralKey);
+      if (referralsEnabled) {
+        if (referralCode.trim()) {
+          referral = referralCode.trim();
+          writeStoredReferralCode(eventId, referral);
+        } else {
+          referral = readStoredReferralCode(eventId);
+        }
       }
 
       const requestBody: { event_id: string; referral?: string | null } = {
@@ -228,7 +577,7 @@ export default function useTicketActions({
         requestBody.referral = referral;
       }
 
-      const response = await fetch("/api/waitlist", {
+      const response = await fetchWithTimeout("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -237,36 +586,63 @@ export default function useTicketActions({
       if (response.status === 401) {
         // Not authenticated, redirect to Stanford sign-in
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?waitlist=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("waitlist");
         return;
       }
 
-      const data = (await response.json()) as {
+      const data = (await safeJson<{
         position?: number;
         error?: string;
-      };
+      }>(response)) ?? {};
 
       if (response.ok) {
+        const nextPosition =
+          typeof data.position === "number" ? data.position : null;
         setIsOnWaitlist(true);
-        setWaitlistPosition(null);
-        setIsWaitlistPositionReady(false);
-        await checkWaitlistStatus();
+        setWaitlistPosition(nextPosition);
+        setIsWaitlistPositionReady(nextPosition !== null);
+        writeWaitlistCache(eventId, {
+          isOnWaitlist: true,
+          position: nextPosition,
+        });
         setMessage("Successfully joined the waitlist!");
-        // Clear referral from session storage
-        sessionStorage.removeItem(referralKey);
+        if (referral) {
+          clearStoredReferralCode(eventId);
+        }
+        if (nextPosition === null) {
+          void reconcileWaitlistStatus();
+        }
       } else {
         const errorMessage = data.error || "Failed to join waitlist";
         setMessage(errorMessage);
       }
     } catch (error) {
-      console.error("Error joining waitlist:", error);
-      setMessage("Something went wrong. Please try again.");
+      if (isFetchTimeoutError(error)) {
+        setMessage(PROCESSING_MESSAGE);
+        const reconciled = await reconcileWaitlistStatus();
+        if (reconciled?.isOnWaitlist) {
+          setMessage("Successfully joined the waitlist!");
+        } else {
+          setMessage(
+            "Your waitlist request may still be processing. Please try again in a moment.",
+          );
+        }
+      } else {
+        console.error("Error joining waitlist:", error);
+        setMessage("Something went wrong. Please try again.");
+      }
     } finally {
       if (!redirecting) setIsWaitlistLoading(false);
     }
-  }, [checkWaitlistStatus, eventId, referralCode, referralWarning]);
+  }, [
+    eventId,
+    isLoggedIn,
+    referralsEnabled,
+    referralCode,
+    referralWarning,
+    reconcileWaitlistStatus,
+    redirectToAuth,
+  ]);
 
   // Handle leaving waitlist
   const handleLeaveWaitlist = useCallback(async () => {
@@ -275,30 +651,48 @@ export default function useTicketActions({
     setShowCancelModal(false);
 
     try {
-      const response = await fetch("/api/waitlist", {
+      const response = await fetchWithTimeout("/api/waitlist", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId }),
       });
 
-      const data = (await response.json()) as { error?: string };
+      const data = (await safeJson<{ error?: string }>(response)) ?? {};
 
       if (response.ok) {
         setIsOnWaitlist(false);
         setWaitlistPosition(null);
-        setIsWaitlistPositionReady(false);
+        setIsWaitlistPositionReady(true);
+        writeWaitlistCache(eventId, {
+          isOnWaitlist: false,
+          position: null,
+        });
         setMessage("Successfully left the waitlist");
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
         setMessage(errorMessage);
       }
     } catch (error) {
-      console.error("Error leaving waitlist:", error);
-      setMessage("Something went wrong. Please try again.");
+      if (isFetchTimeoutError(error)) {
+        setMessage(PROCESSING_MESSAGE);
+        const reconciled = await reconcileWaitlistStatus();
+        if (reconciled?.isOnWaitlist) {
+          setMessage("You are still on the waitlist.");
+        } else if (reconciled && !reconciled.isOnWaitlist) {
+          setMessage("Successfully left the waitlist");
+        } else {
+          setMessage(
+            "Your request to leave the waitlist may still be processing. Please refresh or try again in a moment.",
+          );
+        }
+      } else {
+        console.error("Error leaving waitlist:", error);
+        setMessage("Something went wrong. Please try again.");
+      }
     } finally {
       setIsWaitlistLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, reconcileWaitlistStatus]);
 
   // Handle cancelling a ticket
   const handleCancelTicket = useCallback(async () => {
@@ -307,18 +701,17 @@ export default function useTicketActions({
     setShowCancelTicketModal(false);
 
     try {
-      const response = await fetch("/api/tickets", {
+      const response = await fetchWithTimeout("/api/tickets", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId }),
       });
 
-      const data = (await response.json()) as {
-        error?: string;
-      };
+      const data = (await safeJson<{ error?: string }>(response)) ?? {};
 
       if (response.ok) {
         setHasTicket(false);
+        clearWaitlistCache(eventId);
         setMessage(TICKET_MESSAGES.DELETED);
 
         // Dispatch event to update ticket status
@@ -330,15 +723,30 @@ export default function useTicketActions({
       } else {
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
-    } catch {
-      setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+    } catch (error) {
+      if (isFetchTimeoutError(error)) {
+        setMessage(PROCESSING_MESSAGE);
+        const reconciled = await reconcileTicketStatus("cancelled");
+        if (!reconciled) {
+          setMessage(
+            "Your cancellation may still be processing. Please refresh or try again in a moment.",
+          );
+        }
+      } else {
+        setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, reconcileTicketStatus]);
 
   // Actual ticket creation/cancellation logic
   const processTicketRequest = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("ticket");
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     let redirecting = false;
@@ -355,13 +763,13 @@ export default function useTicketActions({
       // Get referral from input or session storage if creating a ticket
       let referral: string | null = null;
       if (!hasTicket) {
-        const referralKey = REFERRAL_KEY;
-        // Use input value if provided, otherwise check session storage
-        if (referralCode.trim()) {
-          referral = referralCode.trim();
-          sessionStorage.setItem(referralKey, referral);
-        } else {
-          referral = sessionStorage.getItem(referralKey);
+        if (referralsEnabled) {
+          if (referralCode.trim()) {
+            referral = referralCode.trim();
+            writeStoredReferralCode(eventId, referral);
+          } else {
+            referral = readStoredReferralCode(eventId);
+          }
         }
       }
 
@@ -372,7 +780,7 @@ export default function useTicketActions({
         requestBody.referral = referral;
       }
 
-      const response = await fetch("/api/tickets", {
+      const response = await fetchWithTimeout("/api/tickets", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -381,32 +789,26 @@ export default function useTicketActions({
       if (response.status === 401) {
         // Not authenticated, redirect to Stanford sign-in with auto_ticket flag
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?ticket=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("ticket");
         return;
       }
 
-      const data = (await response.json()) as {
-        ticketId?: string;
-        ticketName?: string | null;
-        ticketType?: string | null;
-        error?: string;
-      };
+      const data = (await safeJson<TicketLookupResponse>(response)) ?? {};
 
       if (response.ok) {
         if (hasTicket) {
           // Cancelling ticket
           setHasTicket(false);
+          clearWaitlistCache(eventId);
           setMessage(TICKET_MESSAGES.DELETED);
         } else {
           // Creating ticket
           setHasTicket(true);
+          clearWaitlistCache(eventId);
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
           // Clear referral from session storage after successful ticket creation
-          const referralKey = REFERRAL_KEY;
-          sessionStorage.removeItem(referralKey);
+          clearStoredReferralCode(eventId);
         }
         // Dispatch event to update ticket count and ticket status
         window.dispatchEvent(
@@ -422,21 +824,49 @@ export default function useTicketActions({
       } else {
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
-    } catch {
-      setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+    } catch (error) {
+      if (isFetchTimeoutError(error)) {
+        setMessage(PROCESSING_MESSAGE);
+        const reconciled = await reconcileTicketStatus(
+          hasTicket ? "cancelled" : "created",
+        );
+        if (!reconciled) {
+          setMessage(
+            hasTicket
+              ? "Your cancellation may still be processing. Please refresh in a moment."
+              : "Your ticket request may still be processing. Please wait a moment before retrying.",
+          );
+        }
+      } else {
+        setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+      }
     } finally {
       if (!redirecting) setIsLoading(false);
     }
-  }, [eventId, hasTicket, referralCode, referralWarning]);
+  }, [
+    eventId,
+    hasTicket,
+    isLoggedIn,
+    referralsEnabled,
+    referralCode,
+    referralWarning,
+    reconcileTicketStatus,
+    redirectToAuth,
+  ]);
 
   // Standby ticket creation: issued when sold out and within 2 hours of event
   const processStandbyTicketRequest = useCallback(async () => {
+    if (!isLoggedIn) {
+      redirectToAuth("standby_ticket");
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     let redirecting = false;
 
     try {
-      const response = await fetch("/api/tickets", {
+      const response = await fetchWithTimeout("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId, type: "STANDBY" }),
@@ -444,21 +874,15 @@ export default function useTicketActions({
 
       if (response.status === 401) {
         redirecting = true;
-        const currentPath = window.location.pathname;
-        const redirectUrl = `${currentPath}?standby_ticket=true`;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+        redirectToAuth("standby_ticket");
         return;
       }
 
-      const data = (await response.json()) as {
-        ticketId?: string;
-        ticketName?: string | null;
-        ticketType?: string | null;
-        error?: string;
-      };
+      const data = (await safeJson<TicketLookupResponse>(response)) ?? {};
 
       if (response.ok) {
         setHasTicket(true);
+        clearWaitlistCache(eventId);
         setMessage(TICKET_MESSAGES.SUCCESS);
         fireSimpleConfetti();
         // Dispatch event to update ticket status
@@ -475,12 +899,22 @@ export default function useTicketActions({
       } else {
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
-    } catch {
-      setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+    } catch (error) {
+      if (isFetchTimeoutError(error)) {
+        setMessage(PROCESSING_MESSAGE);
+        const reconciled = await reconcileTicketStatus("created");
+        if (!reconciled) {
+          setMessage(
+            "Your standby ticket may still be processing. Please wait a moment before retrying.",
+          );
+        }
+      } else {
+        setMessage(TICKET_MESSAGES.ERROR_GENERIC);
+      }
     } finally {
       if (!redirecting) setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, isLoggedIn, reconcileTicketStatus, redirectToAuth]);
 
   // Validate referral code
   const validateReferralCode = useCallback(
@@ -490,8 +924,18 @@ export default function useTicketActions({
         return;
       }
 
+      if (!referralsEnabled) {
+        setReferralWarning(null);
+        return;
+      }
+
+      if (!isLoggedIn) {
+        setReferralWarning(null);
+        return;
+      }
+
       try {
-        const response = await fetch("/api/referrals", {
+        const response = await fetchWithTimeout("/api/referrals", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -506,10 +950,10 @@ export default function useTicketActions({
           return;
         }
 
-        const data = (await response.json()) as {
+        const data = (await safeJson<{
           valid?: boolean;
           message?: string;
-        };
+        }>(response)) ?? {};
 
         if (data.valid) {
           setReferralWarning(null);
@@ -517,23 +961,44 @@ export default function useTicketActions({
           setReferralWarning(data.message || "Invalid referral code");
         }
       } catch (error) {
+        if (isFetchTimeoutError(error)) {
+          setReferralWarning(null);
+          return;
+        }
+
         console.error("Error validating referral code:", error);
         // Don't show error on validation failure, just clear warning
         setReferralWarning(null);
       }
     },
-    [eventId],
+    [eventId, isLoggedIn, referralsEnabled],
   );
 
   // Track referral parameters from URL and store in session storage
   useEffect(() => {
-    const referralKey = REFERRAL_KEY;
     const url = new URL(window.location.href);
     const urlReferralCode = url.searchParams.get("referral_code");
 
+    if (!referralsEnabled) {
+      clearStoredReferralCode(eventId);
+      setReferralCode("");
+      setReferralWarning(null);
+
+      if (urlReferralCode) {
+        url.searchParams.delete("referral_code");
+        window.history.replaceState(
+          {},
+          "",
+          `${url.pathname}${url.search}${url.hash}`,
+        );
+      }
+
+      return;
+    }
+
     // If we have referral parameters, store the referral code in session storage and input
     if (urlReferralCode) {
-      sessionStorage.setItem(referralKey, urlReferralCode);
+      writeStoredReferralCode(eventId, urlReferralCode);
       setReferralCode(urlReferralCode);
       // Validate the referral code from URL
       void validateReferralCode(urlReferralCode);
@@ -546,13 +1011,16 @@ export default function useTicketActions({
       );
     } else {
       // Check if there's already a referral code in session storage
-      const storedReferral = sessionStorage.getItem(referralKey);
+      const storedReferral = readStoredReferralCode(eventId);
       if (storedReferral) {
         setReferralCode(storedReferral);
         void validateReferralCode(storedReferral);
+      } else {
+        setReferralCode("");
+        setReferralWarning(null);
       }
     }
-  }, [eventId, validateReferralCode]);
+  }, [eventId, referralsEnabled, validateReferralCode]);
 
   // Auto-action after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
@@ -712,11 +1180,10 @@ export default function useTicketActions({
   const handleReferralCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setReferralCode(value);
-    const referralKey = REFERRAL_KEY;
-    if (value.trim()) {
-      sessionStorage.setItem(referralKey, value.trim());
+    if (referralsEnabled && value.trim()) {
+      writeStoredReferralCode(eventId, value);
     } else {
-      sessionStorage.removeItem(referralKey);
+      clearStoredReferralCode(eventId);
     }
 
     // Clear previous warning
