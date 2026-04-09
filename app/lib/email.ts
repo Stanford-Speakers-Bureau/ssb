@@ -1473,9 +1473,13 @@ export type CancellationEmailData = {
 async function generateCancellationEmailHTML(
   data: CancellationEmailData,
 ): Promise<string> {
-  const { eventName, eventStartTime, eventVenue, eventVenueLink } = data;
+  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } = data;
 
+  const baseUrl = getBaseUrl();
+  const isVIP = data.ticketType?.toUpperCase() === "VIP";
+  const isExternal = data.ticketType?.toUpperCase() === "EXTERNAL";
   const formattedDate = formatFullDateTime(eventStartTime);
+  const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
 
   const heroCard = buildHeroCard({
     eventName,
@@ -1485,18 +1489,21 @@ async function generateCancellationEmailHTML(
     eventVenueLink,
     eventId: data.eventId,
     imgVersion: data.imgVersion,
+    isVIP,
+    isExternal,
   });
 
   const contentSections: string[] = [];
 
+  const greeting = data.name ? `Hi ${data.name}, your` : "Your";
   contentSections.push(buildParagraph(
-    `Your ticket for ${eventName} has been cancelled.`,
+    `${greeting} ticket for ${eventName} has been cancelled.`,
   ));
 
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [
-    { label: "Event:", value: eventName },
-    { label: "Date & Time:", value: formattedDate },
-  ];
+  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  if (data.name) detailRows.push({ label: "Name:", value: data.name });
+  detailRows.push({ label: "Event:", value: eventName });
+  detailRows.push({ label: "Date & Time:", value: formattedDate });
   if (eventVenue) {
     detailRows.push({
       label: "Location:",
@@ -1508,10 +1515,13 @@ async function generateCancellationEmailHTML(
   contentSections.push(buildDetailsCard({
     rows: detailRows,
     ticketTypeBadge: { type: data.ticketType || "STANDARD" },
+    actionButtonHref: eventUrl,
+    isVIP,
+    isExternal,
   }));
 
   contentSections.push(buildParagraph(
-    `If you did not request this cancellation, please contact us immediately at ${getFromEmail()}.`,
+    `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
     { color: "#a1a1aa", fontSize: "14px" },
   ));
 
@@ -1528,26 +1538,30 @@ async function generateCancellationEmailHTML(
 
   return buildEmailShell(
     "Ticket Cancellation",
-    buildEmailStyles(),
+    buildEmailStyles({ isVIP, isExternal }),
     bodyContent,
   );
 }
 
 function generateCancellationEmailText(data: CancellationEmailData): string {
-  const { eventName, eventStartTime, eventVenue } = data;
+  const { eventName, eventStartTime, eventRoute, eventVenue } = data;
   const formattedDate = formatFullDateTime(eventStartTime);
+  const baseUrl = getBaseUrl();
+  const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
+  const greeting = data.name ? `Hi ${data.name}, your` : "Your";
 
   return `
 Ticket Cancelled
 
-Your ticket for ${eventName} has been cancelled.
+${greeting} ticket for ${eventName} has been cancelled.
 
 Event Details:
-- Event: ${eventName}
+${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName}
 - Date & Time: ${formattedDate}
 ${eventVenue ? `- Location: ${eventVenue}\n` : ""}- Ticket Type: ${data.ticketType || "STANDARD"}
+${eventUrl ? `- Event Page: ${eventUrl}` : ""}
 
-If you did not request this cancellation, please contact us immediately at ${getFromEmail()}.
+If you did not request this cancellation, please contact us at ${getFromEmail()}.
 
 Stanford Speakers Bureau
 For ADA accommodations or other questions, please email ${getFromEmail()}

@@ -891,20 +891,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    queueAuditEvent({
-      action: "ticket.cancel",
-      actor: user.email,
-      eventId: event_id,
-      eventName: eventRow?.name ?? null,
-      targetEmail: user.email,
-      metadata: {
-        ...(gotTicketAt ? { gotTicketAt } : {}),
-        ...(heldFor ? { heldFor } : {}),
-        ticketId: cancelledTicketId,
-        cancellationEmailSent: true,
-      },
-    });
-
+    let cancellationEmailQueued = false;
     if (eventRow && ticketToCancel) {
       await queueCancellationEmail({
         email: user.email,
@@ -919,7 +906,22 @@ export async function DELETE(req: Request) {
         imgVersion: eventRow.imgVersion ?? null,
         eventTagline: eventRow.tagline || null,
       });
+      cancellationEmailQueued = true;
     }
+
+    queueAuditEvent({
+      action: "ticket.cancel",
+      actor: user.email,
+      eventId: event_id,
+      eventName: eventRow?.name ?? null,
+      targetEmail: user.email,
+      metadata: {
+        ...(gotTicketAt ? { gotTicketAt } : {}),
+        ...(heldFor ? { heldFor } : {}),
+        ticketId: cancelledTicketId,
+        ...(cancellationEmailQueued ? { cancellationEmailSent: true } : {}),
+      },
+    });
 
     if (
       rpcData?.promoted_ticket_id
