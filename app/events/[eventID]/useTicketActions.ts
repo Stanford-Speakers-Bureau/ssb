@@ -277,7 +277,7 @@ export default function useTicketActions({
         data?.code === FEE_WAIVER_INELIGIBLE_CODE
         || (
           !data?.code &&
-          data?.error?.toLowerCase().includes("please contact assu")
+          (data?.error ?? "").toLowerCase().includes("please contact assu")
         );
 
       if (!isFeeWaiverResponse) {
