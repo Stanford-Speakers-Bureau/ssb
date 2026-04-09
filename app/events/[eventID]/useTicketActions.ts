@@ -8,6 +8,7 @@ import {
   isFetchTimeoutError,
 } from "@/app/lib/fetch";
 import { fireFullConfetti, fireSimpleConfetti } from "./confetti";
+import posthog from "posthog-js";
 
 const REQUEST_TIMEOUT_MS = 12_000;
 const WAITLIST_CACHE_PREFIX = "waitlist_status";
@@ -332,6 +333,9 @@ export default function useTicketActions({
       }>(response)) ?? {};
       if (response.ok) {
         setIsNotified(true);
+        if (!data.alreadySignedUp) {
+          posthog.capture("notify_signup_completed", { event_id: eventId });
+        }
         if (data.alreadySignedUp) {
           setMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
         }
@@ -650,6 +654,11 @@ export default function useTicketActions({
           position: nextPosition,
         });
         setMessage("Successfully joined the waitlist!");
+        posthog.capture("waitlist_joined", {
+          event_id: eventId,
+          waitlist_position: nextPosition,
+          referral_used: !!referral,
+        });
         if (referral) {
           clearStoredReferralCode(eventId);
         }
@@ -716,6 +725,7 @@ export default function useTicketActions({
           position: null,
         });
         setMessage("Successfully left the waitlist");
+        posthog.capture("waitlist_left", { event_id: eventId });
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
         setMessage(errorMessage);
@@ -761,6 +771,7 @@ export default function useTicketActions({
         setHasTicket(false);
         clearWaitlistCache(eventId);
         setMessage(TICKET_MESSAGES.DELETED);
+        posthog.capture("ticket_cancelled", { event_id: eventId });
 
         // Dispatch event to update ticket status
         window.dispatchEvent(
@@ -849,12 +860,18 @@ export default function useTicketActions({
           setHasTicket(false);
           clearWaitlistCache(eventId);
           setMessage(TICKET_MESSAGES.DELETED);
+          posthog.capture("ticket_cancelled", { event_id: eventId });
         } else {
           // Creating ticket
           setHasTicket(true);
           clearWaitlistCache(eventId);
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
+          posthog.capture("ticket_created", {
+            event_id: eventId,
+            ticket_type: "STANDARD",
+            referral_used: !!referral,
+          });
           // Clear referral from session storage after successful ticket creation
           clearStoredReferralCode(eventId);
         }
@@ -937,6 +954,7 @@ export default function useTicketActions({
         clearWaitlistCache(eventId);
         setMessage(TICKET_MESSAGES.SUCCESS);
         fireSimpleConfetti();
+        posthog.capture("standby_ticket_created", { event_id: eventId });
         // Dispatch event to update ticket status
         window.dispatchEvent(
           new CustomEvent("ticketChanged", {

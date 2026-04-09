@@ -4,11 +4,24 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
+  skipTrailingSlashRedirect: true,
   transpilePackages: ["@ssb/db"],
   images: {
     qualities: [70, 75, 90],
     loader: "custom",
     loaderFile: "./image-loader.ts",
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
+    ];
   },
   async redirects() {
     return [

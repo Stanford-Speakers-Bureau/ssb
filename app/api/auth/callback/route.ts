@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
 import { consumeLoginState, getSession } from "@/app/lib/session";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 
 function buildFailureRedirect(
   baseUrl: string,
@@ -64,6 +65,30 @@ export async function POST(request: NextRequest) {
     session.user = user;
     await session.save();
     await upsertUserProfile(user);
+
+    after(async () => {
+      try {
+        const posthog = getPostHogClient();
+        posthog.identify({
+          distinctId: attrs.email,
+          properties: {
+            email: attrs.email,
+            name: attrs.displayName,
+            affiliation: attrs.eduPersonAffiliation ?? null,
+          },
+        });
+        posthog.capture({
+          distinctId: attrs.email,
+          event: "user_signed_in",
+          properties: {
+            auth_method: "stanford_sso",
+            redirect_to: redirectTo,
+          },
+        });
+      } catch (e) {
+        console.error("PostHog auth callback error:", e);
+      }
+    });
 
     return NextResponse.redirect(new URL(redirectTo, baseUrl), 303);
   } catch (error) {

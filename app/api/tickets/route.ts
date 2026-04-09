@@ -1,4 +1,5 @@
 import { after, NextResponse } from "next/server";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 import {
   updateReferralRecords,
   getAvailablePublicTickets,
@@ -531,6 +532,20 @@ export async function POST(req: Request) {
         metadata: { type: "STANDBY", ticketId: standbyTicket.id },
       });
 
+      scheduleAfterResponse("PostHog standby ticket event", async () => {
+        const posthog = getPostHogClient();
+        posthog.capture({
+          distinctId: user.email,
+          event: "standby_ticket_created",
+          properties: {
+            event_id: event_id,
+            event_name: event.name ?? null,
+            ticket_id: standbyTicket.id,
+            ticket_type: "STANDBY",
+          },
+        });
+      });
+
       return NextResponse.json(
         {
           success: true,
@@ -659,6 +674,22 @@ export async function POST(req: Request) {
       eventName: event.name ?? null,
       targetEmail: user.email,
       metadata: { type: "STANDARD", ticketId },
+    });
+
+    scheduleAfterResponse("PostHog ticket created event", async () => {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "ticket_created",
+        properties: {
+          event_id: event_id,
+          event_name: event.name ?? null,
+          ticket_id: ticketId,
+          ticket_type: "STANDARD",
+          referral_used: !!referral,
+        },
+      });
+      await posthog.shutdown();
     });
 
     return NextResponse.json(
@@ -810,6 +841,20 @@ export async function DELETE(req: Request) {
       eventName: eventRow?.name ?? null,
       targetEmail: user.email,
       metadata: { ticketId: cancelledTicketId },
+    });
+
+    scheduleAfterResponse("PostHog ticket cancelled event", async () => {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "ticket_cancelled",
+        properties: {
+          event_id: event_id,
+          event_name: eventRow?.name ?? null,
+          ticket_id: cancelledTicketId,
+        },
+      });
+      await posthog.shutdown();
     });
 
     if (

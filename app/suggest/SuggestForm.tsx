@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
+import posthog from "posthog-js";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
@@ -79,6 +80,9 @@ export default function SuggestForm() {
       }
 
       setStatus("success");
+      posthog.capture("speaker_suggested", {
+        speaker_count: allSuggestions.length,
+      });
       setPills([]);
       setCurrentInput("");
       router.refresh();

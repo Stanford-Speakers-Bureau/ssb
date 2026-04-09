@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { REFERRAL_MESSAGE } from "@/app/lib/constants";
+import posthog from "posthog-js";
 
 type ReferralShareProps = {
   referralCode: string;
@@ -65,6 +66,11 @@ export default function ReferralShare({
       await navigator.clipboard.writeText(referralUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      posthog.capture("referral_link_copied", {
+        event_id: eventId,
+        referral_code: referralCode,
+        referral_count: referralCount,
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
     }

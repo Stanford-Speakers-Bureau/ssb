@@ -1,4 +1,5 @@
 import { after, NextResponse } from "next/server";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
@@ -290,6 +291,20 @@ export async function POST(req: Request) {
       eventTagline: event.tagline,
     });
 
+    scheduleAfterResponse("PostHog waitlist joined event", async () => {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "waitlist_joined",
+        properties: {
+          event_id: event_id,
+          event_name: event.name ?? null,
+          waitlist_position: waitlistPosition,
+          referral_used: !!referral,
+        },
+      });
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -364,6 +379,15 @@ export async function DELETE(req: Request) {
         { status: 500 },
       );
     }
+
+    scheduleAfterResponse("PostHog waitlist left event", async () => {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "waitlist_left",
+        properties: { event_id: event_id },
+      });
+    });
 
     return NextResponse.json(
       {
