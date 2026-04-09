@@ -54,6 +54,10 @@ export const events = pgTable(
     livestream: text("livestream"),
     title: text("title"),
     priority: text("priority"),
+    ticketingRoles: text("ticketing_roles")
+      .array()
+      .notNull()
+      .default(["student", "faculty", "staff"]),
     hideTicketingDate: boolean("hide_ticketing_date").notNull().default(false),
     waitlistChance: text("waitlist_chance").notNull().default("High"),
     standbyEnabled: boolean("standby_enabled").notNull().default(false),

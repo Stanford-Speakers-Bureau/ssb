@@ -10,6 +10,11 @@ import {
   processEmailJob,
 } from "@/app/lib/email-jobs";
 import { validateReferralInput } from "@/app/lib/referrals";
+import {
+  formatTicketingRoleList,
+  isTicketingEligible,
+  resolveTicketingRoles,
+} from "@/app/lib/ticketingRoles";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -29,6 +34,7 @@ const WAITLIST_MESSAGES = {
 
 const FEE_WAIVER_ROLE = "fee_waiver";
 const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
+const ROLE_INELIGIBLE_CODE = "ticketing_role_ineligible";
 const ASSU_URL = "https://assu.stanford.edu";
 const ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
 
@@ -38,6 +44,15 @@ function getFeeWaiverIneligiblePayload() {
     code: FEE_WAIVER_INELIGIBLE_CODE,
     assuUrl: ASSU_URL,
     faqUrl: ASSU_FAQ_URL,
+  };
+}
+
+function getRoleIneligiblePayload(allowedRoles: readonly string[]) {
+  const resolvedRoles = resolveTicketingRoles(allowedRoles);
+  return {
+    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}.`,
+    code: ROLE_INELIGIBLE_CODE,
+    allowedRoles: resolvedRoles,
   };
 }
 
@@ -133,6 +148,7 @@ export async function POST(req: Request) {
         tagline: true,
         imgVersion: true,
         referralsEnabled: true,
+        ticketingRoles: true,
       },
     });
 
@@ -144,6 +160,34 @@ export async function POST(req: Request) {
     }
 
     const userRoles = await getRoleNamesForEmail(user.email);
+    const userAffiliations = [
+      ...user.eduPersonAffiliation,
+      ...user.eduPersonScopedAffiliation,
+    ];
+
+    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
+      const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
+
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "WAITLIST",
+          reason: "ticketing_roles",
+          allowedRoles,
+          userAffiliations,
+        },
+      });
+
+      return NextResponse.json(
+        getRoleIneligiblePayload(allowedRoles),
+        { status: 403 },
+      );
+    }
+
     if (userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",
