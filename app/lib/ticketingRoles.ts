@@ -75,10 +75,6 @@ export function formatTicketingRoleList(
     TICKETING_ROLE_OPTIONS.find((option) => option.value === role)?.label ?? role
   );
 
-  if (labels.length === 0) {
-    return "eligible Stanford affiliates";
-  }
-
   if (labels.length === 1) {
     return labels[0];
   }

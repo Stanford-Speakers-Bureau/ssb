@@ -165,6 +165,27 @@ export async function POST(req: Request) {
       ...user.eduPersonScopedAffiliation,
     ];
 
+    if (userRoles.includes(FEE_WAIVER_ROLE)) {
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "WAITLIST",
+          reason: FEE_WAIVER_ROLE,
+          assuUrl: ASSU_URL,
+          faqUrl: ASSU_FAQ_URL,
+        },
+      });
+
+      return NextResponse.json(
+        getFeeWaiverIneligiblePayload(),
+        { status: 403 },
+      );
+    }
+
     if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
       const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
 
@@ -184,27 +205,6 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
-    }
-
-    if (userRoles.includes(FEE_WAIVER_ROLE)) {
-      queueAuditEvent({
-        action: "ticket.ineligible",
-        actor: user.email,
-        eventId: event_id,
-        eventName: event.name ?? null,
-        targetEmail: user.email,
-        metadata: {
-          attemptedType: "WAITLIST",
-          reason: FEE_WAIVER_ROLE,
-          assuUrl: ASSU_URL,
-          faqUrl: ASSU_FAQ_URL,
-        },
-      });
-
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
         { status: 403 },
       );
     }

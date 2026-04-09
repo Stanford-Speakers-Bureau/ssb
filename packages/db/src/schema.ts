@@ -8,8 +8,9 @@ import {
   numeric,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ── Events ──────────────────────────────────────────────────────────────────
 export const events = pgTable(
@@ -63,7 +64,13 @@ export const events = pgTable(
     standbyEnabled: boolean("standby_enabled").notNull().default(false),
     referralsEnabled: boolean("referrals_enabled").notNull().default(false),
   },
-  (t) => [index("events_route_idx").on(t.route)],
+  (t) => [
+    index("events_route_idx").on(t.route),
+    check(
+      "events_ticketing_roles_nonempty",
+      sql`cardinality(${t.ticketingRoles}) > 0`,
+    ),
+  ],
 );
 
 // ── Tickets ─────────────────────────────────────────────────────────────────

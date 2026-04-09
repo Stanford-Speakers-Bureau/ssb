@@ -394,10 +394,28 @@ export async function POST(req: Request) {
     ];
     const isStandbyRequest = ticketType === "STANDBY";
 
-    if (
-      !isStandbyRequest
-      && !isTicketingEligible(userAffiliations, event.ticketingRoles)
-    ) {
+    if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "STANDARD",
+          reason: FEE_WAIVER_ROLE,
+          assuUrl: ASSU_URL,
+          faqUrl: ASSU_FAQ_URL,
+        },
+      });
+
+      return NextResponse.json(
+        getFeeWaiverIneligiblePayload(),
+        { status: 403 },
+      );
+    }
+
+    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
       const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
 
       queueAuditEvent({
@@ -416,27 +434,6 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
-    }
-
-    if (userRoles.includes(FEE_WAIVER_ROLE)) {
-      queueAuditEvent({
-        action: "ticket.ineligible",
-        actor: user.email,
-        eventId: event_id,
-        eventName: event.name ?? null,
-        targetEmail: user.email,
-        metadata: {
-          attemptedType: isStandbyRequest ? "STANDBY" : "STANDARD",
-          reason: FEE_WAIVER_ROLE,
-          assuUrl: ASSU_URL,
-          faqUrl: ASSU_FAQ_URL,
-        },
-      });
-
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
         { status: 403 },
       );
     }
