@@ -16,8 +16,9 @@ import {
 } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { type TicketEmailData } from "@/app/lib/email";
+import { type CancellationEmailData, type TicketEmailData } from "@/app/lib/email";
 import {
+  createCancellationEmailJob,
   createTicketEmailJob,
   enqueueEmailJob,
   processEmailJob,
@@ -161,6 +162,17 @@ async function queueTicketEmail(params: TicketEmailData) {
 
   scheduleAfterResponse("Ticket email", async () => {
     await processEmailJob(createTicketEmailJob(params));
+  });
+}
+
+async function queueCancellationEmail(params: CancellationEmailData) {
+  const queued = await enqueueEmailJob(createCancellationEmailJob(params));
+  if (queued) {
+    return;
+  }
+
+  scheduleAfterResponse("Cancellation email", async () => {
+    await processEmailJob(createCancellationEmailJob(params));
   });
 }
 
@@ -819,7 +831,7 @@ export async function DELETE(req: Request) {
 
     const ticketToCancel = await db.query.tickets.findFirst({
       where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { createdAt: true },
+      columns: { createdAt: true, name: true, type: true },
     });
 
     let rpcData: TicketCancellationRpcResult | null = null;
@@ -889,8 +901,25 @@ export async function DELETE(req: Request) {
         ...(gotTicketAt ? { gotTicketAt } : {}),
         ...(heldFor ? { heldFor } : {}),
         ticketId: cancelledTicketId,
+        cancellationEmailSent: true,
       },
     });
+
+    if (eventRow && ticketToCancel) {
+      await queueCancellationEmail({
+        email: user.email,
+        name: ticketToCancel.name ?? null,
+        eventName: eventRow.name || "Event",
+        ticketType: ticketToCancel.type || "STANDARD",
+        eventStartTime: eventRow.startTimeDate?.toISOString() || null,
+        eventVenue: eventRow.venue || null,
+        eventVenueLink: eventRow.venueLink || null,
+        eventRoute: eventRow.route || null,
+        eventId: eventRow.id,
+        imgVersion: eventRow.imgVersion ?? null,
+        eventTagline: eventRow.tagline || null,
+      });
+    }
 
     if (
       rpcData?.promoted_ticket_id
