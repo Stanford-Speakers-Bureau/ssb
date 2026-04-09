@@ -54,7 +54,7 @@ const TICKET_MESSAGES = {
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line. Please contact ASSU for further details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -75,7 +75,7 @@ function getFeeWaiverIneligiblePayload() {
 function getRoleIneligiblePayload(allowedRoles: readonly string[]) {
   const resolvedRoles = resolveTicketingRoles(allowedRoles);
   return {
-    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}. We encourage you to show up to the venue early to join the standby line.`,
+    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}. We encourage you to show up to the venue early to join the standby line instead.`,
     code: ROLE_INELIGIBLE_CODE,
     allowedRoles: resolvedRoles,
   };
