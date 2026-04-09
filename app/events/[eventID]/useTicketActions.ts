@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TICKETING_NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { isEventOver } from "@/app/lib/eventTime";
+import { ROLE_INELIGIBLE_CODE } from "@/app/lib/ticketingRoles";
 import {
   fetchWithTimeout as sharedFetchWithTimeout,
   isFetchTimeoutError,
@@ -14,7 +15,6 @@ const WAITLIST_CACHE_PREFIX = "waitlist_status";
 const PROCESSING_MESSAGE =
   "This is taking longer than usual. We are checking the result.";
 const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
-const ROLE_INELIGIBLE_CODE = "ticketing_role_ineligible";
 const DEFAULT_ASSU_URL = "https://assu.stanford.edu";
 const DEFAULT_ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
 const DEFAULT_INELIGIBLE_MESSAGE =

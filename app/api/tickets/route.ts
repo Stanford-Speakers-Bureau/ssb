@@ -27,7 +27,7 @@ import {
   validateReferralInput,
 } from "@/app/lib/referrals";
 import {
-  formatTicketingRoleList,
+  getRoleIneligiblePayload,
   isTicketingEligible,
   resolveTicketingRoles,
 } from "@/app/lib/ticketingRoles";
@@ -59,7 +59,6 @@ const TICKET_MESSAGES = {
 
 const FEE_WAIVER_ROLE = "fee_waiver";
 const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
-const ROLE_INELIGIBLE_CODE = "ticketing_role_ineligible";
 const ASSU_URL = "https://assu.stanford.edu";
 const ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
 
@@ -69,15 +68,6 @@ function getFeeWaiverIneligiblePayload() {
     code: FEE_WAIVER_INELIGIBLE_CODE,
     assuUrl: ASSU_URL,
     faqUrl: ASSU_FAQ_URL,
-  };
-}
-
-function getRoleIneligiblePayload(allowedRoles: readonly string[]) {
-  const resolvedRoles = resolveTicketingRoles(allowedRoles);
-  return {
-    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}. We encourage you to show up to the venue early to join the standby line instead.`,
-    code: ROLE_INELIGIBLE_CODE,
-    allowedRoles: resolvedRoles,
   };
 }
 
@@ -394,6 +384,8 @@ export async function POST(req: Request) {
     ];
     const isStandbyRequest = ticketType === "STANDBY";
 
+    // Keep the ASSU guidance for standard online ticketing, but still allow the
+    // standby flow to proceed to the broader affiliation eligibility check.
     if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",

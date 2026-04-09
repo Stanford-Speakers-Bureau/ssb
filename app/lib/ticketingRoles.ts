@@ -1,18 +1,16 @@
-export const DEFAULT_TICKETING_ROLES = [
-  "student",
-  "faculty",
-  "staff",
-] as const;
+import {
+  DEFAULT_TICKETING_ROLES,
+  TICKETING_ROLE_OPTIONS,
+  type TicketingRole,
+} from "@ssb/db/ticketingRoles";
 
-export const TICKETING_ROLE_OPTIONS = [
-  { value: "student", label: "Student" },
-  { value: "faculty", label: "Faculty" },
-  { value: "staff", label: "Staff" },
-  { value: "affiliate", label: "Affiliate" },
-  { value: "member", label: "Member" },
-] as const;
+export {
+  DEFAULT_TICKETING_ROLES,
+  TICKETING_ROLE_OPTIONS,
+  type TicketingRole,
+};
 
-export type TicketingRole = (typeof TICKETING_ROLE_OPTIONS)[number]["value"];
+export const ROLE_INELIGIBLE_CODE = "ticketing_role_ineligible";
 
 const TICKETING_ROLE_SET = new Set<TicketingRole>(
   TICKETING_ROLE_OPTIONS.map(({ value }) => value),
@@ -84,4 +82,13 @@ export function formatTicketingRoleList(
   }
 
   return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1]}`;
+}
+
+export function getRoleIneligiblePayload(allowedRoles: readonly string[]) {
+  const resolvedRoles = resolveTicketingRoles(allowedRoles);
+  return {
+    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}. We encourage you to show up to the venue early to join the standby line instead.`,
+    code: ROLE_INELIGIBLE_CODE,
+    allowedRoles: resolvedRoles,
+  };
 }

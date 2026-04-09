@@ -11,6 +11,7 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
+import { DEFAULT_TICKETING_ROLES } from "./ticketingRoles";
 
 // ── Events ──────────────────────────────────────────────────────────────────
 export const events = pgTable(
@@ -58,7 +59,7 @@ export const events = pgTable(
     ticketingRoles: text("ticketing_roles")
       .array()
       .notNull()
-      .default(["student", "faculty", "staff"]),
+      .default([...DEFAULT_TICKETING_ROLES]),
     hideTicketingDate: boolean("hide_ticketing_date").notNull().default(false),
     waitlistChance: text("waitlist_chance").notNull().default("High"),
     standbyEnabled: boolean("standby_enabled").notNull().default(false),
