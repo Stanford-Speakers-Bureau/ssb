@@ -1,7 +1,9 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import {
+  sendCancellationEmail,
   sendTicketEmail,
   sendWaitlistEmail,
+  type CancellationEmailData,
   type TicketEmailData,
   type WaitlistEmailData,
 } from "./email";
@@ -16,7 +18,12 @@ export type WaitlistEmailJob = {
   payload: WaitlistEmailData;
 };
 
-export type EmailJob = TicketEmailJob | WaitlistEmailJob;
+export type CancellationEmailJob = {
+  kind: "cancellation_email";
+  payload: CancellationEmailData;
+};
+
+export type EmailJob = TicketEmailJob | WaitlistEmailJob | CancellationEmailJob;
 
 type QueueEnv = CloudflareEnv & {
   EMAIL_JOBS_QUEUE?: Queue<EmailJob>;
@@ -34,6 +41,15 @@ export function createWaitlistEmailJob(
 ): WaitlistEmailJob {
   return {
     kind: "waitlist_email",
+    payload,
+  };
+}
+
+export function createCancellationEmailJob(
+  payload: CancellationEmailData,
+): CancellationEmailJob {
+  return {
+    kind: "cancellation_email",
     payload,
   };
 }
@@ -69,6 +85,9 @@ export async function processEmailJob(job: EmailJob): Promise<void> {
       return;
     case "waitlist_email":
       await sendWaitlistEmail(job.payload);
+      return;
+    case "cancellation_email":
+      await sendCancellationEmail(job.payload);
       return;
     default: {
       const exhaustive: never = job;

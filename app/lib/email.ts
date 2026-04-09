@@ -1453,6 +1453,160 @@ export async function sendWaitlistEmail(
 }
 
 // ============================================================================
+// Ticket cancellation email
+// ============================================================================
+
+export type CancellationEmailData = {
+  email: string;
+  name?: string | null;
+  eventName: string;
+  ticketType: string;
+  eventStartTime: string | null;
+  eventVenue?: string | null;
+  eventVenueLink?: string | null;
+  eventRoute?: string | null;
+  eventId?: string | null;
+  imgVersion?: number | null;
+  eventTagline?: string | null;
+};
+
+async function generateCancellationEmailHTML(
+  data: CancellationEmailData,
+): Promise<string> {
+  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } = data;
+
+  const baseUrl = getBaseUrl();
+  const isVIP = data.ticketType?.toUpperCase() === "VIP";
+  const isExternal = data.ticketType?.toUpperCase() === "EXTERNAL";
+  const formattedDate = formatFullDateTime(eventStartTime);
+  const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
+
+  const heroCard = buildHeroCard({
+    eventName,
+    eventTagline: data.eventTagline,
+    eventStartTime,
+    eventVenue,
+    eventVenueLink,
+    eventId: data.eventId,
+    imgVersion: data.imgVersion,
+    isVIP,
+    isExternal,
+  });
+
+  const contentSections: string[] = [];
+
+  const greeting = data.name ? `Hi ${data.name}, your` : "Your";
+  contentSections.push(buildParagraph(
+    `${greeting} ticket for ${eventName} has been cancelled.`,
+  ));
+
+  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  if (data.name) detailRows.push({ label: "Name:", value: data.name });
+  detailRows.push({ label: "Event:", value: eventName });
+  detailRows.push({ label: "Date & Time:", value: formattedDate });
+  if (eventVenue) {
+    detailRows.push({
+      label: "Location:",
+      value: eventVenue,
+      isLink: !!eventVenueLink,
+      href: eventVenueLink || undefined,
+    });
+  }
+  contentSections.push(buildDetailsCard({
+    rows: detailRows,
+    ticketTypeBadge: { type: data.ticketType || "STANDARD" },
+    actionButtonHref: eventUrl,
+    isVIP,
+    isExternal,
+  }));
+
+  contentSections.push(buildParagraph(
+    `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
+    { color: "#a1a1aa", fontSize: "14px" },
+  ));
+
+  const bodyContent = `
+    ${heroCard}
+    <tr>
+      <td align="center" class="email-container" style="background-color: #27272a; padding: 32px 20px; max-width: 900px; width: 100%;">
+        <div style="padding: 0; max-width: 600px; margin: 0 auto;">
+          ${contentSections.join("\n")}
+        </div>
+      </td>
+    </tr>
+    ${buildFooter()}`;
+
+  return buildEmailShell(
+    "Ticket Cancellation",
+    buildEmailStyles({ isVIP, isExternal }),
+    bodyContent,
+  );
+}
+
+function generateCancellationEmailText(data: CancellationEmailData): string {
+  const { eventName, eventStartTime, eventRoute, eventVenue } = data;
+  const formattedDate = formatFullDateTime(eventStartTime);
+  const baseUrl = getBaseUrl();
+  const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
+  const greeting = data.name ? `Hi ${data.name}, your` : "Your";
+
+  return `
+Ticket Cancelled
+
+${greeting} ticket for ${eventName} has been cancelled.
+
+Event Details:
+${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName}
+- Date & Time: ${formattedDate}
+${eventVenue ? `- Location: ${eventVenue}\n` : ""}- Ticket Type: ${data.ticketType || "STANDARD"}
+${eventUrl ? `- Event Page: ${eventUrl}` : ""}
+
+If you did not request this cancellation, please contact us at ${getFromEmail()}.
+
+Stanford Speakers Bureau
+For ADA accommodations or other questions, please email ${getFromEmail()}
+  `.trim();
+}
+
+export async function sendCancellationEmail(
+  data: CancellationEmailData,
+): Promise<void> {
+  if (process.env.DISABLE_EMAIL?.toLowerCase().trim() == "true") {
+    console.log(
+      `Email sending is disabled (DISABLE_EMAIL=true). Skipping cancellation email to ${data.email}`,
+    );
+    return;
+  }
+
+  const subject = `Cancellation Confirmed: Your ticket for ${data.eventName}`;
+  const textContent = generateCancellationEmailText(data);
+  const htmlContent = await generateCancellationEmailHTML(data);
+
+  const boundary = `mix_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const lines: string[] = [];
+  lines.push(
+    `From: ${getFromEmail()}`,
+    `To: ${data.email}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    ...buildUtf8MimeBodyPart("text/plain", textContent),
+    `--${boundary}`,
+    ...buildUtf8MimeBodyPart("text/html", htmlContent),
+    `--${boundary}--`,
+    "",
+  );
+
+  const rawMessage = lines.join("\r\n");
+
+  await sendRawEmailViaSES(rawMessage);
+  console.log(`Cancellation email sent to ${data.email}`);
+}
+
+// ============================================================================
 // VIP scan notification email (internal, not redesigned)
 // ============================================================================
 
