@@ -97,28 +97,30 @@ export default function TicketButton(props: TicketButtonProps) {
       <ConfirmationModal
         open={actions.showIneligibleModal}
         onClose={actions.closeIneligibleModal}
-        title="Student Activities Fee Waived"
+        title={actions.ineligibleTitle}
         description={actions.ineligibleMessage}
         cancelLabel="Close"
       >
-        <div className="flex flex-col gap-3 text-sm">
-          <a
-            href={actions.ineligibleAssuUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#A80D0C] underline underline-offset-2 hover:text-[#C11211]"
-          >
-            Visit ASSU
-          </a>
-          <a
-            href={actions.ineligibleFaqUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#A80D0C] underline underline-offset-2 hover:text-[#C11211]"
-          >
-            Read the FAQ
-          </a>
-        </div>
+        {actions.showIneligibleLinks && (
+          <div className="flex flex-col gap-3 text-sm">
+            <a
+              href={actions.ineligibleAssuUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#A80D0C] underline underline-offset-2 hover:text-[#C11211]"
+            >
+              Visit ASSU
+            </a>
+            <a
+              href={actions.ineligibleFaqUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#A80D0C] underline underline-offset-2 hover:text-[#C11211]"
+            >
+              Read the FAQ
+            </a>
+          </div>
+        )}
       </ConfirmationModal>
       <FeedbackMessage message={actions.message} />
     </>

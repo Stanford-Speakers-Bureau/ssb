@@ -34,6 +34,8 @@
     "motion": "^12.34.2",
     "next": "16.1.7",
     "passkit-generator": "^3.5.7",
+    "posthog-js": "^1.365.4",
+    "posthog-node": "^5.29.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "19.2.1",
