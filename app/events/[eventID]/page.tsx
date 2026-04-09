@@ -44,7 +44,9 @@ export async function generateMetadata({
   const title = generateEventTitle(event.name);
   const description = generateEventDescription(event);
   const eventUrl = `/events/${event.route || eventID}`;
-  const ogImageUrl = `${eventUrl}/opengraph-image`;
+  const ogImageUrl = (event.img || event.mobile_img)
+    ? `${baseURL}${getImageProxyUrl(event.id, event.img_version)}`
+    : `${baseURL}/speakers/jojo-siwa.jpg`;
 
   return {
     title,
@@ -57,9 +59,7 @@ export async function generateMetadata({
       images: [
         {
           url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
+          alt: event.name || title,
         },
       ],
     },
