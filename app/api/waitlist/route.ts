@@ -29,7 +29,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. Please contact ASSU for details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
