@@ -4,7 +4,10 @@ type AuditAction =
   | "notify.signup"
   | "ticket.get"
   | "ticket.ineligible"
-  | "ticket.cancel";
+  | "ticket.cancel"
+  | "waitlist.join"
+  | "waitlist.leave"
+  | "waitlist.pull";
 
 type AuditLogParams = {
   action: AuditAction;

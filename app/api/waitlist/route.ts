@@ -325,6 +325,18 @@ export async function POST(req: Request) {
       eventTagline: event.tagline,
     });
 
+    queueAuditEvent({
+      action: "waitlist.join",
+      actor: user.email,
+      eventId: event.id,
+      eventName: event.name ?? null,
+      targetEmail: user.email,
+      metadata: {
+        position: waitlistPosition,
+        referral,
+      },
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -399,6 +411,19 @@ export async function DELETE(req: Request) {
         { status: 500 },
       );
     }
+
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, event_id),
+      columns: { name: true },
+    });
+
+    queueAuditEvent({
+      action: "waitlist.leave",
+      actor: user.email,
+      eventId: event_id,
+      eventName: event?.name ?? null,
+      targetEmail: user.email,
+    });
 
     return NextResponse.json(
       {
