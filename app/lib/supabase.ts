@@ -1,4 +1,5 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { db, eq, gte, events, referrals } from "@ssb/db";
 import type { InferSelectModel } from "@ssb/db";
 import {
@@ -93,14 +94,22 @@ export function getSupabaseClient() {
 /**
  * Get the closest upcoming event for the banner
  */
-export async function getClosestUpcomingEvent(): Promise<Event | null> {
-  const event = await db.query.events.findFirst({
-    where: gte(events.doorsOpen, new Date()),
-    orderBy: (events, { asc }) => [asc(events.doorsOpen)],
-  });
+const getCachedClosestUpcomingEvent = unstable_cache(
+  async (): Promise<Event | null> => {
+    const event = await db.query.events.findFirst({
+      where: gte(events.doorsOpen, new Date()),
+      orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+    });
 
-  if (!event) return null;
-  return serializeEvent(event);
+    if (!event) return null;
+    return serializeEvent(event);
+  },
+  ["closest-upcoming-event"],
+  { revalidate: 60 },
+);
+
+export async function getClosestUpcomingEvent(): Promise<Event | null> {
+  return getCachedClosestUpcomingEvent();
 }
 
 /**
