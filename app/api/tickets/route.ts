@@ -75,6 +75,39 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
 }
 
+function formatHeldFor(createdAt: Date | null | undefined): string | null {
+  if (!createdAt) {
+    return null;
+  }
+
+  const diffMs = Date.now() - createdAt.getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) {
+    return null;
+  }
+
+  const totalMinutes = Math.floor(diffMs / (1000 * 60));
+  if (totalMinutes < 1) {
+    return "<1m";
+  }
+
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days}d`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (days === 0 && minutes > 0) {
+    parts.push(`${minutes}m`);
+  }
+
+  return parts.slice(0, 2).join(" ");
+}
+
 type TicketCreationRpcResult = {
   success?: boolean;
   ticket_id?: string | null;
@@ -784,6 +817,11 @@ export async function DELETE(req: Request) {
       );
     }
 
+    const ticketToCancel = await db.query.tickets.findFirst({
+      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
+      columns: { createdAt: true },
+    });
+
     let rpcData: TicketCancellationRpcResult | null = null;
     try {
       const result = await db.execute<{
@@ -831,6 +869,8 @@ export async function DELETE(req: Request) {
     }
 
     const cancelledTicketId = rpcData?.cancelled_ticket_id ?? null;
+    const gotTicketAt = ticketToCancel?.createdAt?.toISOString() ?? null;
+    const heldFor = formatHeldFor(ticketToCancel?.createdAt);
     if (!cancelledTicketId) {
       console.error("Ticket cancellation RPC returned without a cancelled ticket id:", rpcData);
       return NextResponse.json(
@@ -845,7 +885,11 @@ export async function DELETE(req: Request) {
       eventId: event_id,
       eventName: eventRow?.name ?? null,
       targetEmail: user.email,
-      metadata: { ticketId: cancelledTicketId },
+      metadata: {
+        ...(gotTicketAt ? { gotTicketAt } : {}),
+        ...(heldFor ? { heldFor } : {}),
+        ticketId: cancelledTicketId,
+      },
     });
 
     if (
@@ -853,6 +897,20 @@ export async function DELETE(req: Request) {
       && rpcData.promoted_email
       && eventRow
     ) {
+      queueAuditEvent({
+        action: "waitlist.pull",
+        actor: user.email,
+        eventId: event_id,
+        eventName: eventRow.name ?? null,
+        targetEmail: rpcData.promoted_email,
+        metadata: {
+          trigger: "ticket.cancel",
+          ticketId: rpcData.promoted_ticket_id,
+          ticketType: rpcData.promoted_ticket_type || "STANDARD",
+          cancelledTicketId,
+        },
+      });
+
       queueReferralRecordUpdate(event_id, rpcData.promoted_email);
       await queueTicketEmail(
         buildTicketEmailPayload({
