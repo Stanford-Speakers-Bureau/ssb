@@ -275,7 +275,10 @@ export default function useTicketActions({
     (data: FeeWaiverEligibilityResponse | null | undefined) => {
       const isFeeWaiverResponse =
         data?.code === FEE_WAIVER_INELIGIBLE_CODE
-        || data?.error?.toLowerCase().includes("please contact assu");
+        || (
+          !data?.code &&
+          (data?.error ?? "").toLowerCase().includes("please contact assu")
+        );
 
       if (!isFeeWaiverResponse) {
         return false;
