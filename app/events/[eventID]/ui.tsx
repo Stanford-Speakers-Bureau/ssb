@@ -262,7 +262,7 @@ export function ConfirmationModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-            className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
+            className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">

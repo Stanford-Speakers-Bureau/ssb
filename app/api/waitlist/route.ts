@@ -29,7 +29,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. Please contact ASSU for further details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line. Please contact ASSU for further details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -50,7 +50,7 @@ function getFeeWaiverIneligiblePayload() {
 function getRoleIneligiblePayload(allowedRoles: readonly string[]) {
   const resolvedRoles = resolveTicketingRoles(allowedRoles);
   return {
-    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}.`,
+    error: `Online ticketing for this event is limited to ${formatTicketingRoleList(resolvedRoles)}. We encourage you to show up to the venue early to join the standby line.`,
     code: ROLE_INELIGIBLE_CODE,
     allowedRoles: resolvedRoles,
   };
