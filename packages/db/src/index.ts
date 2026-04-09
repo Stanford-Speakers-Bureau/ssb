@@ -52,5 +52,6 @@ export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
 });
 
 export * from "./schema";
+export * from "./ticketingRoles";
 export { sql, eq, ne, and, or, gt, gte, lt, lte, asc, desc, count, inArray, ilike, isNull, isNotNull } from "drizzle-orm";
 export type { InferSelectModel, InferInsertModel } from "drizzle-orm";

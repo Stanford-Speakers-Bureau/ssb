@@ -26,6 +26,11 @@ import {
   sanitizeStoredReferral,
   validateReferralInput,
 } from "@/app/lib/referrals";
+import {
+  getRoleIneligiblePayload,
+  isTicketingEligible,
+  resolveTicketingRoles,
+} from "@/app/lib/ticketingRoles";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Your ticket is confirmed. Check your email in a moment.",
@@ -49,7 +54,7 @@ const TICKET_MESSAGES = {
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -361,6 +366,7 @@ export async function POST(req: Request) {
         tagline: true,
         imgVersion: true,
         referralsEnabled: true,
+        ticketingRoles: true,
       },
     });
 
@@ -372,7 +378,14 @@ export async function POST(req: Request) {
     }
 
     const userRoles = await getRoleNamesForEmail(user.email);
+    const userAffiliations = [
+      ...user.eduPersonAffiliation,
+      ...user.eduPersonScopedAffiliation,
+    ];
     const isStandbyRequest = ticketType === "STANDBY";
+
+    // Keep the ASSU guidance for standard online ticketing, but still allow the
+    // standby flow to proceed to the broader affiliation eligibility check.
     if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",
@@ -390,6 +403,29 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         getFeeWaiverIneligiblePayload(),
+        { status: 403 },
+      );
+    }
+
+    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
+      const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
+
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: isStandbyRequest ? "STANDBY" : "STANDARD",
+          reason: "ticketing_roles",
+          allowedRoles,
+          userAffiliations,
+        },
+      });
+
+      return NextResponse.json(
+        getRoleIneligiblePayload(allowedRoles),
         { status: 403 },
       );
     }

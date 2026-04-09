@@ -10,6 +10,11 @@ import {
   processEmailJob,
 } from "@/app/lib/email-jobs";
 import { validateReferralInput } from "@/app/lib/referrals";
+import {
+  getRoleIneligiblePayload,
+  isTicketingEligible,
+  resolveTicketingRoles,
+} from "@/app/lib/ticketingRoles";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -24,7 +29,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee has been waived. Please contact ASSU for details.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -133,6 +138,7 @@ export async function POST(req: Request) {
         tagline: true,
         imgVersion: true,
         referralsEnabled: true,
+        ticketingRoles: true,
       },
     });
 
@@ -144,6 +150,12 @@ export async function POST(req: Request) {
     }
 
     const userRoles = await getRoleNamesForEmail(user.email);
+    const userAffiliations = [
+      ...user.eduPersonAffiliation,
+      ...user.eduPersonScopedAffiliation,
+    ];
+
+    // Prefer the fee-waiver-specific response here so users still get the ASSU links.
     if (userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",
@@ -161,6 +173,29 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         getFeeWaiverIneligiblePayload(),
+        { status: 403 },
+      );
+    }
+
+    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
+      const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
+
+      queueAuditEvent({
+        action: "ticket.ineligible",
+        actor: user.email,
+        eventId: event_id,
+        eventName: event.name ?? null,
+        targetEmail: user.email,
+        metadata: {
+          attemptedType: "WAITLIST",
+          reason: "ticketing_roles",
+          allowedRoles,
+          userAffiliations,
+        },
+      });
+
+      return NextResponse.json(
+        getRoleIneligiblePayload(allowedRoles),
         { status: 403 },
       );
     }

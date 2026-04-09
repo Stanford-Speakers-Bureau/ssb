@@ -8,8 +8,10 @@ import {
   numeric,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import { DEFAULT_TICKETING_ROLES } from "./ticketingRoles";
 
 // ── Events ──────────────────────────────────────────────────────────────────
 export const events = pgTable(
@@ -54,12 +56,22 @@ export const events = pgTable(
     livestream: text("livestream"),
     title: text("title"),
     priority: text("priority"),
+    ticketingRoles: text("ticketing_roles")
+      .array()
+      .notNull()
+      .default([...DEFAULT_TICKETING_ROLES]),
     hideTicketingDate: boolean("hide_ticketing_date").notNull().default(false),
     waitlistChance: text("waitlist_chance").notNull().default("High"),
     standbyEnabled: boolean("standby_enabled").notNull().default(false),
     referralsEnabled: boolean("referrals_enabled").notNull().default(false),
   },
-  (t) => [index("events_route_idx").on(t.route)],
+  (t) => [
+    index("events_route_idx").on(t.route),
+    check(
+      "events_ticketing_roles_nonempty",
+      sql`cardinality(${t.ticketingRoles}) > 0`,
+    ),
+  ],
 );
 
 // ── Tickets ─────────────────────────────────────────────────────────────────

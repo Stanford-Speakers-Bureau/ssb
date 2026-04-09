@@ -10,6 +10,7 @@ import {
   getWaitlistCount as _getWaitlistCount,
 } from "@ssb/db/queries";
 import { generateReferralCode } from "./utils";
+import { resolveTicketingRoles } from "./ticketingRoles";
 
 type DBEvent = InferSelectModel<typeof events>;
 
@@ -44,6 +45,7 @@ export type Event = {
   hide_ticketing_date?: boolean;
   referrals_enabled?: boolean;
   standby_enabled?: boolean;
+  ticketing_roles?: string[];
 };
 
 /**
@@ -74,6 +76,7 @@ export function serializeEvent(e: DBEvent): Event {
     waitlist_chance: e.waitlistChance ?? null,
     livestream: e.livestream ?? null,
     priority: e.priority ?? null,
+    ticketing_roles: resolveTicketingRoles(e.ticketingRoles),
     hide_ticketing_date: e.hideTicketingDate ?? false,
     referrals_enabled: e.referralsEnabled ?? false,
     standby_enabled: e.standbyEnabled ?? false,
