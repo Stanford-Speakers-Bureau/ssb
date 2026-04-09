@@ -15,6 +15,7 @@ import {
   waitlist,
 } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
+import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { type CancellationEmailData, type TicketEmailData } from "@/app/lib/email";
 import {
@@ -764,22 +765,6 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const user = await getSessionUser();
-
-    if (!user?.email) {
-      return NextResponse.json(
-        { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
-        { status: 401 },
-      );
-    }
-
-    // Rate limit by user email
-    const rateLimitResponse = await checkRateLimit(
-      ticketRatelimit,
-      `ticket:${user.email}`,
-    );
-    if (rateLimitResponse) return rateLimitResponse;
-
     let body;
     try {
       body = await req.json();
@@ -787,7 +772,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id } = body as { event_id?: string };
+    const {
+      event_id,
+      cancel_token,
+    } = body as { event_id?: string; cancel_token?: string };
 
     if (!event_id || typeof event_id !== "string") {
       return NextResponse.json(
@@ -795,6 +783,27 @@ export async function DELETE(req: Request) {
         { status: 400 },
       );
     }
+
+    const sessionUser = await getSessionUser();
+    const signedLinkClaims =
+      typeof cancel_token === "string" && cancel_token.trim()
+        ? await verifyCancellationToken(cancel_token.trim())
+        : null;
+    const authenticatedEmail = signedLinkClaims?.email ?? sessionUser?.email ?? null;
+    const authMethod = signedLinkClaims ? "signed_link" : "session";
+
+    if (!authenticatedEmail) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NOT_AUTHENTICATED },
+        { status: 401 },
+      );
+    }
+
+    const rateLimitResponse = await checkRateLimit(
+      ticketRatelimit,
+      `ticket:${authenticatedEmail}`,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Check if event is over
     const eventRow = await db.query.events.findFirst({
@@ -830,16 +839,29 @@ export async function DELETE(req: Request) {
     }
 
     const ticketToCancel = await db.query.tickets.findFirst({
-      where: and(eq(tickets.eventId, event_id), eq(tickets.email, user.email)),
-      columns: { createdAt: true, name: true, type: true },
+      where: signedLinkClaims
+        ? and(
+          eq(tickets.id, signedLinkClaims.ticketId),
+          eq(tickets.eventId, event_id),
+          eq(tickets.email, authenticatedEmail),
+        )
+        : and(eq(tickets.eventId, event_id), eq(tickets.email, authenticatedEmail)),
+      columns: { id: true, createdAt: true, name: true, type: true },
     });
+
+    if (signedLinkClaims && !ticketToCancel) {
+      return NextResponse.json(
+        { error: TICKET_MESSAGES.ERROR_NO_TICKET },
+        { status: 400 },
+      );
+    }
 
     let rpcData: TicketCancellationRpcResult | null = null;
     try {
       const result = await db.execute<{
         cancel_ticket_and_promote: TicketCancellationRpcResult;
       }>(sql`
-        SELECT cancel_ticket_and_promote(${event_id}::uuid, ${user.email})
+        SELECT cancel_ticket_and_promote(${event_id}::uuid, ${authenticatedEmail})
       `);
       rpcData = result[0]?.cancel_ticket_and_promote ?? null;
     } catch (rpcError: unknown) {
@@ -894,7 +916,7 @@ export async function DELETE(req: Request) {
     let cancellationEmailQueued = false;
     if (eventRow && ticketToCancel) {
       await queueCancellationEmail({
-        email: user.email,
+        email: authenticatedEmail,
         name: ticketToCancel.name ?? null,
         eventName: eventRow.name || "Event",
         ticketType: ticketToCancel.type || "STANDARD",
@@ -911,11 +933,12 @@ export async function DELETE(req: Request) {
 
     queueAuditEvent({
       action: "ticket.cancel",
-      actor: user.email,
+      actor: authenticatedEmail,
       eventId: event_id,
       eventName: eventRow?.name ?? null,
-      targetEmail: user.email,
+      targetEmail: authenticatedEmail,
       metadata: {
+        authMethod,
         ...(gotTicketAt ? { gotTicketAt } : {}),
         ...(heldFor ? { heldFor } : {}),
         ticketId: cancelledTicketId,
@@ -930,11 +953,12 @@ export async function DELETE(req: Request) {
     ) {
       queueAuditEvent({
         action: "waitlist.pull",
-        actor: user.email,
+        actor: authenticatedEmail,
         eventId: event_id,
         eventName: eventRow.name ?? null,
         targetEmail: rpcData.promoted_email,
         metadata: {
+          authMethod,
           trigger: "ticket.cancel",
           ticketId: rpcData.promoted_ticket_id,
           ticketType: rpcData.promoted_ticket_type || "STANDARD",

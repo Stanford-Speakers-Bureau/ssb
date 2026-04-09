@@ -34,6 +34,7 @@ type TicketSectionProps = {
   initialIsScanned?: boolean;
   standbyMode?: boolean;
   requireTicketAccess?: boolean;
+  allowCancelFlowAccess?: boolean;
 };
 
 type ViewerEventStateResponse = {
@@ -70,6 +71,7 @@ export default function TicketSection({
   initialIsScanned = false,
   standbyMode = false,
   requireTicketAccess = false,
+  allowCancelFlowAccess = false,
 }: TicketSectionProps) {
   const router = useRouter();
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -196,6 +198,7 @@ export default function TicketSection({
   useEffect(() => {
     if (
       requireTicketAccess
+      && !allowCancelFlowAccess
       && !isViewerStateLoading
       && !viewerStateError
       && !hasTicket
@@ -204,6 +207,7 @@ export default function TicketSection({
     }
   }, [
     hasTicket,
+    allowCancelFlowAccess,
     isViewerStateLoading,
     requireTicketAccess,
     router,
@@ -250,6 +254,7 @@ export default function TicketSection({
     initialHasTicket: hasTicket,
     initialIsOnWaitlist: isOnWaitlist,
     initialWaitlistPosition: waitlistPosition,
+    initialTicketName: ticketName,
     eventStartTime,
     eventEndTime,
     doorsOpen,
@@ -265,7 +270,10 @@ export default function TicketSection({
     standbyMode,
   };
 
-  if (isViewerStateLoading || (requireTicketAccess && !hasTicket)) {
+  if (
+    isViewerStateLoading
+    || (requireTicketAccess && !allowCancelFlowAccess && !hasTicket)
+  ) {
     return (
       <div className="event-ticket-section flex flex-col gap-5">
         <div className={glassPanel + " p-5 sm:p-6"}>

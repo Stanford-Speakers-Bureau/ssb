@@ -6,6 +6,7 @@ import {
   PACIFIC_TIMEZONE,
   REFERRAL_MESSAGE,
 } from "./constants";
+import { buildCancellationLink } from "./cancellation-links";
 import { fetchWithTimeout } from "./fetch";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
@@ -969,6 +970,7 @@ export type TicketEmailData = {
   eventId?: string | null;
   imgVersion?: number | null;
   eventTagline?: string | null;
+  cancelTicketUrl?: string | null;
 };
 
 async function generateTicketEmailHTML(
@@ -988,7 +990,8 @@ async function generateTicketEmailHTML(
 
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
-  const cancelTicketUrl = ticketId ? `${baseUrl}/cancel/${ticketId}` : null;
+  const cancelTicketUrl =
+    data.cancelTicketUrl ?? (ticketId ? `${baseUrl}/cancel/${ticketId}` : null);
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
 
@@ -1165,7 +1168,8 @@ function generateTicketEmailText(data: TicketEmailData): string {
   const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
-  const cancelTicketUrl = ticketId ? `${baseUrl}/cancel/${ticketId}` : null;
+  const cancelTicketUrl =
+    data.cancelTicketUrl ?? (ticketId ? `${baseUrl}/cancel/${ticketId}` : null);
   const referralCode = generateReferralCode(data.email);
   const referralUrl =
     referralCode && data.eventRoute
@@ -1214,12 +1218,23 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   const subject = data.eventName
     ? `Your Ticket for ${data.eventName} is enclosed!`
     : "Your Ticket is enclosed!";
-  const textContent = generateTicketEmailText(data);
+  const cancelTicketUrl = await buildCancellationLink({
+    baseUrl: getBaseUrl(),
+    email: data.email,
+    ticketId: data.ticketId,
+    eventStartTime: data.eventStartTime,
+    eventEndTime: data.eventEndTime ?? null,
+  });
+  const renderData: TicketEmailData = {
+    ...data,
+    cancelTicketUrl,
+  };
+  const textContent = generateTicketEmailText(renderData);
 
   // Generate QR and prepare cid
   const qrCid = `ticket-qr-${data.ticketId}@stanfordspeakersbureau`;
   const qrBuffer = await generateQRCodePngBuffer(data.ticketId);
-  const htmlContent = await generateTicketEmailHTML(data, {
+  const htmlContent = await generateTicketEmailHTML(renderData, {
     qrCid: qrBuffer ? qrCid : undefined,
   });
 

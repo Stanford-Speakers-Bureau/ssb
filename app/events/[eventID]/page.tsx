@@ -22,6 +22,10 @@ import { NoticeBanner } from "./ui";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;
+  searchParams: Promise<{
+    cancel_ticket?: string | string[] | undefined;
+    cancel_token?: string | string[] | undefined;
+  }>;
 }
 
 const getCachedEvent = cache(getEventByRoute);
@@ -75,8 +79,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function EventPage({ params }: PageProps) {
+export default async function EventPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { eventID } = await params;
+  const resolvedSearchParams = await searchParams;
+  const hasCancelFlowParam =
+    typeof resolvedSearchParams.cancel_ticket === "string"
+    || typeof resolvedSearchParams.cancel_token === "string";
 
   const event = await getCachedEvent(eventID);
 
@@ -123,6 +134,7 @@ export default async function EventPage({ params }: PageProps) {
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
               requireTicketAccess
+              allowCancelFlowAccess={hasCancelFlowParam}
             />
           </div>
         </main>

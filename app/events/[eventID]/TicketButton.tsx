@@ -12,6 +12,19 @@ import HasTicket from "./ticket-states/HasTicket";
 
 export default function TicketButton(props: TicketButtonProps) {
   const actions = useTicketActions(props);
+  const cancelTicketOwnerName =
+    actions.emailCancelAttendeeName ?? props.initialTicketName ?? null;
+  const cancelTargetText = cancelTicketOwnerName
+    ? `the ticket for ${cancelTicketOwnerName}`
+    : actions.emailCancelAttendeeName
+      ? "this ticket"
+      : "your ticket";
+  const cancelTitle = actions.initialIsScanned
+    ? "Ticket Already Scanned"
+    : "Cancel Ticket?";
+  const cancelDescription = actions.initialIsScanned
+    ? `${cancelTargetText[0].toUpperCase()}${cancelTargetText.slice(1)} has already been scanned at the door and can no longer be cancelled.`
+    : `Are you sure you want to cancel ${cancelTargetText}? You may not be able to get it back if you cancel.`;
 
   let content: React.ReactNode;
 
@@ -80,11 +93,8 @@ export default function TicketButton(props: TicketButtonProps) {
         {actions.hasTicket && (
           <HasTicket
             isLoading={actions.isLoading}
-            isScanned={actions.initialIsScanned}
             isEventLongOver={actions.isEventLongOver}
-            handleCancelTicket={actions.handleCancelTicket}
-            showCancelTicketModal={actions.showCancelTicketModal}
-            setShowCancelTicketModal={actions.setShowCancelTicketModal}
+            openCancelModal={() => actions.setShowCancelTicketModal(true)}
           />
         )}
       </div>
@@ -94,6 +104,15 @@ export default function TicketButton(props: TicketButtonProps) {
   return (
     <>
       {content}
+      <ConfirmationModal
+        open={actions.showCancelTicketModal}
+        onClose={() => actions.setShowCancelTicketModal(false)}
+        title={cancelTitle}
+        description={cancelDescription}
+        cancelLabel={actions.initialIsScanned ? "OK" : "Keep Ticket"}
+        confirmLabel={actions.initialIsScanned ? undefined : "Cancel Ticket"}
+        onConfirm={actions.initialIsScanned ? undefined : actions.handleCancelTicket}
+      />
       <ConfirmationModal
         open={actions.showIneligibleModal}
         onClose={actions.closeIneligibleModal}
