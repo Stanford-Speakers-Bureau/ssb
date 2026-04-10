@@ -1,5 +1,3 @@
-import "server-only";
-
 import { SignJWT, jwtVerify } from "jose";
 
 const DEV_SECRET = "dev-secret-change-me-in-production-1234";
