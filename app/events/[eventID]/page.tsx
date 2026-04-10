@@ -7,6 +7,7 @@ import {
   getImageProxyUrl,
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
+import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
 import { getEventEndDate } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
@@ -14,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
+import { db, and, eq, tickets } from "@ssb/db";
 import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
@@ -22,11 +24,68 @@ import { NoticeBanner } from "./ui";
 
 interface PageProps {
   params: Promise<{ eventID: string }>;
+  searchParams: Promise<{
+    cancel_ticket?: string | string[] | undefined;
+    cancel_token?: string | string[] | undefined;
+  }>;
 }
 
 const getCachedEvent = cache(getEventByRoute);
 
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+async function getVerifiedCancellationFlow(input: {
+  eventId: string;
+  cancelTicketParam?: string | string[] | undefined;
+  cancelTokenParam?: string | string[] | undefined;
+}): Promise<{
+  allowCancelFlowAccess: boolean;
+  attendeeName: string | null;
+}> {
+  const cancelTicket =
+    typeof input.cancelTicketParam === "string" ? input.cancelTicketParam : null;
+  const cancelToken =
+    typeof input.cancelTokenParam === "string" ? input.cancelTokenParam : null;
+
+  if (!cancelTicket || !cancelToken) {
+    return {
+      allowCancelFlowAccess: false,
+      attendeeName: null,
+    };
+  }
+
+  const verifiedToken = await verifyCancellationToken(cancelToken);
+
+  if (!verifiedToken || verifiedToken.ticketId !== cancelTicket) {
+    return {
+      allowCancelFlowAccess: false,
+      attendeeName: null,
+    };
+  }
+
+  const ticket = await db.query.tickets.findFirst({
+    where: and(
+      eq(tickets.id, cancelTicket),
+      eq(tickets.email, verifiedToken.email),
+      eq(tickets.eventId, input.eventId),
+    ),
+    columns: {
+      name: true,
+    },
+  });
+
+  if (!ticket) {
+    return {
+      allowCancelFlowAccess: false,
+      attendeeName: null,
+    };
+  }
+
+  return {
+    allowCancelFlowAccess: true,
+    attendeeName: ticket.name?.trim() || null,
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -75,14 +134,24 @@ export async function generateMetadata({
   };
 }
 
-export default async function EventPage({ params }: PageProps) {
+export default async function EventPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { eventID } = await params;
+  const resolvedSearchParams = await searchParams;
 
   const event = await getCachedEvent(eventID);
 
   if (!event) {
     redirect("/upcoming-speakers");
   }
+
+  const verifiedCancellationFlow = await getVerifiedCancellationFlow({
+    eventId: event.id,
+    cancelTicketParam: resolvedSearchParams.cancel_ticket,
+    cancelTokenParam: resolvedSearchParams.cancel_token,
+  });
 
   const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
     ? null
@@ -123,6 +192,12 @@ export default async function EventPage({ params }: PageProps) {
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
               requireTicketAccess
+              allowCancelFlowAccess={
+                verifiedCancellationFlow.allowCancelFlowAccess
+              }
+              initialEmailCancelAttendeeName={
+                verifiedCancellationFlow.attendeeName
+              }
             />
           </div>
         </main>
@@ -306,6 +381,12 @@ export default async function EventPage({ params }: PageProps) {
                 waitlistChance={event.waitlist_chance}
                 referralsEnabled={event.referrals_enabled}
                 standbyMode={event.standby_enabled}
+                allowCancelFlowAccess={
+                  verifiedCancellationFlow.allowCancelFlowAccess
+                }
+                initialEmailCancelAttendeeName={
+                  verifiedCancellationFlow.attendeeName
+                }
               />
             </div>
           </div>

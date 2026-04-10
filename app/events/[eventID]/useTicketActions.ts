@@ -56,6 +56,11 @@ type TicketingRoleEligibilityResponse = {
   allowedRoles?: string[];
 };
 
+type EmailCancellationContext = {
+  attendeeName: string | null;
+  cancelToken: string | null;
+};
+
 function getWaitlistCacheKey(eventId: string): string {
   return `${WAITLIST_CACHE_PREFIX}:${eventId}`;
 }
@@ -160,6 +165,8 @@ export type TicketButtonProps = {
   eventId: string;
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
+  initialTicketName?: string | null;
+  initialEmailCancelAttendeeName?: string | null;
   initialIsOnWaitlist?: boolean;
   initialWaitlistPosition?: number | null;
   eventStartTime?: string | null;
@@ -175,6 +182,7 @@ export type TicketButtonProps = {
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
   standbyMode?: boolean;
+  allowCancelFlowAccess?: boolean;
 };
 
 export const TICKET_MESSAGES = {
@@ -196,6 +204,8 @@ export const TICKET_MESSAGES = {
 export default function useTicketActions({
   eventId,
   initialHasTicket = false,
+  initialTicketName = null,
+  initialEmailCancelAttendeeName = null,
   initialIsOnWaitlist = false,
   initialWaitlistPosition = null,
   eventStartTime = null,
@@ -210,6 +220,7 @@ export default function useTicketActions({
   referralsEnabled = false,
   initialIsScanned = false,
   standbyMode = false,
+  allowCancelFlowAccess = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -257,6 +268,8 @@ export default function useTicketActions({
 
   // Ticket cancellation states
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
+  const [emailCancelContext, setEmailCancelContext] =
+    useState<EmailCancellationContext | null>(null);
   const [showIneligibleModal, setShowIneligibleModal] = useState(false);
   const [ineligibleTitle, setIneligibleTitle] = useState(
     DEFAULT_INELIGIBLE_TITLE,
@@ -271,6 +284,14 @@ export default function useTicketActions({
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
   const [isLoadingNotify, setIsLoadingNotify] = useState(false);
+
+  const closeCancelTicketModal = useCallback(() => {
+    setShowCancelTicketModal(false);
+
+    if (emailCancelContext?.cancelToken) {
+      setEmailCancelContext(null);
+    }
+  }, [emailCancelContext?.cancelToken]);
 
   const ticketingOpensAt = ticketingOpensAtProp
     ? new Date(ticketingOpensAtProp)
@@ -785,13 +806,19 @@ export default function useTicketActions({
       const response = await fetchWithTimeout("/api/tickets", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_id: eventId }),
+        body: JSON.stringify({
+          event_id: eventId,
+          ...(emailCancelContext?.cancelToken
+            ? { cancel_token: emailCancelContext.cancelToken }
+            : {}),
+        }),
       });
 
       const data = (await safeJson<{ error?: string }>(response)) ?? {};
 
       if (response.ok) {
         setHasTicket(false);
+        setEmailCancelContext(null);
         clearWaitlistCache(eventId);
         setMessage(TICKET_MESSAGES.DELETED);
 
@@ -807,7 +834,10 @@ export default function useTicketActions({
     } catch (error) {
       if (isFetchTimeoutError(error)) {
         setMessage(PROCESSING_MESSAGE);
-        const reconciled = await reconcileTicketStatus("cancelled");
+        const canReconcile = !emailCancelContext?.cancelToken || isLoggedIn;
+        const reconciled = canReconcile
+          ? await reconcileTicketStatus("cancelled")
+          : false;
         if (!reconciled) {
           setMessage(
             "Your cancellation may still be processing. Please refresh or try again in a moment.",
@@ -819,7 +849,7 @@ export default function useTicketActions({
     } finally {
       setIsLoading(false);
     }
-  }, [eventId, reconcileTicketStatus]);
+  }, [emailCancelContext?.cancelToken, eventId, isLoggedIn, reconcileTicketStatus]);
 
   // Actual ticket creation/cancellation logic
   const processTicketRequest = useCallback(async () => {
@@ -1170,10 +1200,12 @@ export default function useTicketActions({
   useEffect(() => {
     const url = new URL(window.location.href);
     const cancelTicketParam = url.searchParams.get("cancel_ticket");
+    const cancelTokenParam = url.searchParams.get("cancel_token");
 
     if (cancelTicketParam) {
-      // If not logged in, redirect to login and come back with the cancel param
-      if (!isLoggedIn) {
+      const normalizedCancelToken = cancelTokenParam?.trim() || null;
+
+      if (!normalizedCancelToken && !isLoggedIn) {
         const currentUrl =
           window.location.pathname +
           window.location.search +
@@ -1184,18 +1216,38 @@ export default function useTicketActions({
 
       // Clean up the URL immediately
       url.searchParams.delete("cancel_ticket");
+      url.searchParams.delete("cancel_token");
       window.history.replaceState(
         {},
         "",
         `${url.pathname}${url.search}${url.hash}`,
       );
 
-      // If the user has a ticket, show the cancel confirmation modal
+      if (normalizedCancelToken) {
+        if (!allowCancelFlowAccess) {
+          setEmailCancelContext(null);
+          return;
+        }
+
+        setEmailCancelContext({
+          cancelToken: normalizedCancelToken,
+          attendeeName: initialEmailCancelAttendeeName,
+        });
+        setShowCancelTicketModal(true);
+        return;
+      }
+
+      setEmailCancelContext(null);
       if (hasTicket) {
         setShowCancelTicketModal(true);
       }
     }
-  }, [hasTicket, isLoggedIn]);
+  }, [
+    allowCancelFlowAccess,
+    hasTicket,
+    initialEmailCancelAttendeeName,
+    isLoggedIn,
+  ]);
 
   useEffect(() => {
     const autoTicketKey = `auto_ticket_pending:${eventId}`;
@@ -1335,6 +1387,8 @@ export default function useTicketActions({
     isWaitlistPositionReady,
     showCancelTicketModal,
     setShowCancelTicketModal,
+    closeCancelTicketModal,
+    emailCancelAttendeeName: emailCancelContext?.attendeeName ?? null,
     showIneligibleModal,
     ineligibleTitle,
     ineligibleMessage,
@@ -1346,6 +1400,7 @@ export default function useTicketActions({
 
     // Props passed through
     initialIsScanned,
+    initialTicketName,
     isLoggedIn,
     isSoldOut,
     isTicketingOpen,

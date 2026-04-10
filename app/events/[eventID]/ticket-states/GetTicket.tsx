@@ -10,6 +10,7 @@ type GetTicketProps = {
   isButtonDisabled: boolean;
   isSalesDisabled: boolean;
   processTicketRequest: () => void;
+  isLoggedIn?: boolean;
   referralsEnabled?: boolean;
   referralCode?: string;
   referralWarning?: string | null;
@@ -21,6 +22,7 @@ export default function GetTicket({
   isButtonDisabled,
   isSalesDisabled,
   processTicketRequest,
+  isLoggedIn = false,
   referralsEnabled = false,
   referralCode = "",
   referralWarning = null,
@@ -45,7 +47,7 @@ export default function GetTicket({
         loading={isLoading}
         loadingText={TICKET_MESSAGES.CREATING}
       >
-        Get Ticket
+        {isLoggedIn ? "Get Ticket" : "Login to Get Ticket"}
       </RedButton>
 
       {isSalesDisabled && (

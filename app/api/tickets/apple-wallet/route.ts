@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/app/lib/auth";
 import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
 import { getSignedImageUrl } from "@/app/lib/supabase";
-import { getSessionUser } from "@/app/lib/auth";
+import { verifyAppleWalletToken } from "@/app/lib/wallet-links";
 import { getAppleWalletPass } from "@/app/lib/wallet";
 import { db, eq, and, tickets } from "@ssb/db";
 
@@ -25,32 +26,62 @@ const APPLE_WALLET_IMAGE_FETCH_TIMEOUT_MS = 10_000;
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-
-    if (!user?.email) {
-      const redirectUrl = new URL("/api/auth/login", req.url);
-      console.log(redirectUrl);
-
-      redirectUrl.searchParams.set(
-        "redirect_to",
-        "/api/tickets/apple-wallet?" + new URL(req.url).searchParams.toString(),
-      );
-
-      return NextResponse.redirect(redirectUrl);
-    }
-
     const { searchParams } = new URL(req.url);
     const ticket_id = searchParams.get("ticket_id");
+    const walletToken = searchParams.get("wallet_token");
 
-    if (!ticket_id) {
+    const verifiedWalletToken = walletToken
+      ? await verifyAppleWalletToken(walletToken)
+      : null;
+
+    if (walletToken && !verifiedWalletToken) {
       return NextResponse.json(
-        { error: "Missing required query parameter: ticket_id" },
+        { error: "Invalid or expired wallet token" },
+        { status: 401 },
+      );
+    }
+
+    if (
+      verifiedWalletToken
+      && ticket_id
+      && ticket_id !== verifiedWalletToken.ticketId
+    ) {
+      return NextResponse.json(
+        { error: "Wallet token does not match the requested ticket" },
+        { status: 401 },
+      );
+    }
+
+    const resolvedTicketId = verifiedWalletToken?.ticketId ?? ticket_id;
+
+    if (!resolvedTicketId) {
+      return NextResponse.json(
+        { error: "Missing required query parameter: ticket_id or wallet_token" },
         { status: 400 },
       );
     }
 
+    const sessionUser = verifiedWalletToken ? null : await getSessionUser();
+
+    if (!verifiedWalletToken && !sessionUser?.email) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
+    const sessionUserEmail = sessionUser?.email ?? null;
+
     const ticket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, ticket_id), eq(tickets.email, user.email)),
+      where: verifiedWalletToken
+        ? and(
+          eq(tickets.id, verifiedWalletToken.ticketId),
+          eq(tickets.email, verifiedWalletToken.email),
+        )
+        : and(
+          eq(tickets.id, resolvedTicketId),
+          eq(tickets.email, sessionUserEmail!),
+        ),
       columns: {
         id: true,
         email: true,
