@@ -84,6 +84,7 @@ export default function TicketButton(props: TicketButtonProps) {
             isButtonDisabled={actions.isButtonDisabled}
             isSalesDisabled={actions.isSalesDisabled}
             processTicketRequest={actions.processTicketRequest}
+            isLoggedIn={actions.isLoggedIn}
             referralsEnabled={actions.referralsEnabled}
             referralCode={actions.referralCode}
             referralWarning={actions.referralWarning}

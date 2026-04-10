@@ -8,6 +8,7 @@ import {
 } from "./constants";
 import { buildCancellationLink } from "./cancellation-links";
 import { fetchWithTimeout } from "./fetch";
+import { buildAppleWalletLink } from "./wallet-links";
 import { generateGoogleCalendarUrl, generateReferralCode } from "./utils";
 
 // emails are so stupid
@@ -674,6 +675,7 @@ function buildQRSection(opts: {
   qrImageSrc: string;
   ticketType: string;
   ticketId: string;
+  appleWalletUrl?: string | null;
   ticketValidTime?: string;
   ticketValidDate?: string;
   attendeeName?: string;
@@ -715,6 +717,8 @@ function buildQRSection(opts: {
         </p>
       ${gmailBlendEnd}`
     : "";
+  const appleWalletUrl = opts.appleWalletUrl
+    || `${baseUrl}/api/tickets/apple-wallet?ticket_id=${opts.ticketId}`;
 
   return `
     <div class="qr-section${opts.isVIP ? " vip-border vip-shadow" : opts.isExternal ? " external-border external-shadow" : ""}" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center; ${borderStyle}">
@@ -730,7 +734,7 @@ function buildQRSection(opts: {
       <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
         <tr>
           <td align="center">
-            <a href="${baseUrl}/api/tickets/apple-wallet?ticket_id=${opts.ticketId}" target="_blank" rel="noopener noreferrer">
+            <a href="${appleWalletUrl}" target="_blank" rel="noopener noreferrer">
               <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" width="auto" height="48" style="display: inline-block; height: 48px; border: 0;" />
             </a>
           </td>
@@ -971,6 +975,7 @@ export type TicketEmailData = {
   imgVersion?: number | null;
   eventTagline?: string | null;
   cancelTicketUrl?: string | null;
+  appleWalletUrl?: string | null;
 };
 
 async function generateTicketEmailHTML(
@@ -990,8 +995,8 @@ async function generateTicketEmailHTML(
 
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
-  const cancelTicketUrl =
-    data.cancelTicketUrl ?? (ticketId ? `${baseUrl}/cancel/${ticketId}` : null);
+  const cancelTicketUrl = data.cancelTicketUrl ?? null;
+  const appleWalletUrl = data.appleWalletUrl ?? null;
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
 
@@ -1128,6 +1133,7 @@ async function generateTicketEmailHTML(
       qrImageSrc,
       ticketType: ticketType || "STANDARD",
       ticketId,
+      appleWalletUrl,
       ticketValidTime,
       ticketValidDate,
       attendeeName,
@@ -1168,8 +1174,7 @@ function generateTicketEmailText(data: TicketEmailData): string {
   const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
-  const cancelTicketUrl =
-    data.cancelTicketUrl ?? (ticketId ? `${baseUrl}/cancel/${ticketId}` : null);
+  const cancelTicketUrl = data.cancelTicketUrl ?? null;
   const referralCode = generateReferralCode(data.email);
   const referralUrl =
     referralCode && data.eventRoute
@@ -1225,9 +1230,17 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     eventStartTime: data.eventStartTime,
     eventEndTime: data.eventEndTime ?? null,
   });
+  const appleWalletUrl = await buildAppleWalletLink({
+    baseUrl: getBaseUrl(),
+    email: data.email,
+    ticketId: data.ticketId,
+    eventStartTime: data.eventStartTime,
+    eventEndTime: data.eventEndTime ?? null,
+  });
   const renderData: TicketEmailData = {
     ...data,
     cancelTicketUrl,
+    appleWalletUrl,
   };
   const textContent = generateTicketEmailText(renderData);
 
