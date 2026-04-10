@@ -27,10 +27,10 @@ export default function WaitlistPosition({
 
   const formattedDoorsOpen = doorsOpen
     ? new Date(doorsOpen).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        timeZoneName: "short",
-      })
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    })
     : null;
 
   return (
@@ -69,10 +69,10 @@ export default function WaitlistPosition({
 
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
             {waitlistPosition === 1
-              ? "You\u2019re next \u2014 the first spot that opens is yours."
+              ? "You\u2019re next. The first spot that opens is yours."
               : waitlistPosition <= 3
-                ? `Almost there \u2014 only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
-                : "Lots of people cancel or don\u2019t show up \u2014 you have a real shot at getting in."}
+                ? `Almost there! Only ${waitlistPosition - 1} ${waitlistPosition === 2 ? "person" : "people"} ahead of you.`
+                : "Lots of people cancel or don\u2019t show up so you have a real shot at getting in."}
           </p>
 
           {/* High chance indicator */}
@@ -116,7 +116,7 @@ export default function WaitlistPosition({
               </p>
             )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive as early as possible for the best chance of getting in.
+              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show up, if you arrive early you&apos;re very likely to get in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-300 dark:text-zinc-400">
@@ -220,7 +220,7 @@ export default function WaitlistPosition({
             </div>
             {formattedDoorsOpen && (
               <p className="text-sm font-semibold text-white dark:text-white mb-2">
-                We start letting people off the standby line at {formattedDoorsOpen} — arrive earlier to secure your spot
+                We start letting people off the standby line at {formattedDoorsOpen}. Arrive early to secure your spot!
               </p>
             )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
