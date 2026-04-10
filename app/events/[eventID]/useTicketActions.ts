@@ -219,6 +219,7 @@ export default function useTicketActions({
   hideTicketingDate = false,
   referralsEnabled = false,
   initialIsScanned = false,
+  doorsOpen = null,
   standbyMode = false,
   allowCancelFlowAccess = false,
 }: TicketButtonProps) {
@@ -1407,6 +1408,7 @@ export default function useTicketActions({
     waitlistChance,
     hideTicketingDate,
     referralsEnabled,
+    doorsOpen,
 
     // Computed
     hasEventStarted,

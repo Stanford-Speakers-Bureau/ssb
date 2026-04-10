@@ -10,6 +10,7 @@ type WaitlistPositionProps = {
   showCancelModal: boolean;
   setShowCancelModal: (v: boolean) => void;
   handleLeaveWaitlist: () => void;
+  doorsOpen?: string | null;
 };
 
 export default function WaitlistPosition({
@@ -20,8 +21,17 @@ export default function WaitlistPosition({
   showCancelModal,
   setShowCancelModal,
   handleLeaveWaitlist,
+  doorsOpen = null,
 }: WaitlistPositionProps) {
   const isHighChance = waitlistChance?.toLowerCase() === "high";
+
+  const formattedDoorsOpen = doorsOpen
+    ? new Date(doorsOpen).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZoneName: "short",
+      })
+    : null;
 
   return (
     <div>
@@ -100,8 +110,13 @@ export default function WaitlistPosition({
                 Show up for the best chance
               </p>
             </div>
+            {formattedDoorsOpen && (
+              <p className="text-sm font-semibold text-white dark:text-white mb-2">
+                We start letting people off the standby line at {formattedDoorsOpen} — arrive earlier to secure your spot
+              </p>
+            )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive early and you&apos;re very likely to get in.
+              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive as early as possible for the best chance of getting in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-300 dark:text-zinc-400">
@@ -203,8 +218,13 @@ export default function WaitlistPosition({
                 Show up for the best chance
               </p>
             </div>
+            {formattedDoorsOpen && (
+              <p className="text-sm font-semibold text-white dark:text-white mb-2">
+                We start letting people off the standby line at {formattedDoorsOpen} — arrive earlier to secure your spot
+              </p>
+            )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive early and you&apos;re very likely to get in.
+              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive as early as possible for the best chance of getting in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-300 dark:text-zinc-400">

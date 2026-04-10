@@ -61,6 +61,7 @@ export default function TicketButton(props: TicketButtonProps) {
           showCancelModal={actions.showCancelModal}
           setShowCancelModal={actions.setShowCancelModal}
           handleLeaveWaitlist={actions.handleLeaveWaitlist}
+          doorsOpen={actions.doorsOpen}
         />
       );
     }
