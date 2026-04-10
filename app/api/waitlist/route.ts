@@ -29,7 +29,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details. If you think this is an error, please email tickets@stanfordspeakersbureau.com.",
+    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
