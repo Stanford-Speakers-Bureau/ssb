@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/app/lib/auth";
 import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
 import { getSignedImageUrl } from "@/app/lib/supabase";
 import { verifyAppleWalletToken } from "@/app/lib/wallet-links";
@@ -60,13 +61,27 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const sessionUser = verifiedWalletToken ? null : await getSessionUser();
+
+    if (!verifiedWalletToken && !sessionUser?.email) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
+    const sessionUserEmail = sessionUser?.email ?? null;
+
     const ticket = await db.query.tickets.findFirst({
       where: verifiedWalletToken
         ? and(
           eq(tickets.id, verifiedWalletToken.ticketId),
           eq(tickets.email, verifiedWalletToken.email),
         )
-        : eq(tickets.id, resolvedTicketId),
+        : and(
+          eq(tickets.id, resolvedTicketId),
+          eq(tickets.email, sessionUserEmail!),
+        ),
       columns: {
         id: true,
         email: true,
