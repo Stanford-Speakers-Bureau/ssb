@@ -18,7 +18,7 @@ const FEE_WAIVER_INELIGIBLE_CODE = "fee_waiver_ineligible";
 const DEFAULT_ASSU_URL = "https://assu.stanford.edu";
 const DEFAULT_ASSU_FAQ_URL = "https://www.assu.stanford.edu/m/FAQ#question-85";
 const DEFAULT_INELIGIBLE_MESSAGE =
-  "Unfortunately, you are ineligible for online ticketing as your student activity fee for Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.";
+  "Unfortunately, you are ineligible for online ticketing as your student activity fee for StanfordSpeakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.";
 const DEFAULT_INELIGIBLE_TITLE = "Speakers Bureau Student Activity Fee Waived";
 const DEFAULT_ROLE_RESTRICTION_TITLE = "Ticketing Restricted";
 const DEFAULT_ROLE_RESTRICTION_MESSAGE =
