@@ -23,7 +23,7 @@ export default async function CancelTicketRedirect({
 
   const ticket = await db.query.tickets.findFirst({
     where: eq(tickets.id, ticketId),
-    columns: { eventId: true, email: true, name: true },
+    columns: { eventId: true, email: true },
     with: {
       event: {
         columns: { route: true },
@@ -54,9 +54,6 @@ export default async function CancelTicketRedirect({
     && verifiedToken.email === normalizedTicketEmail
   ) {
     redirectParams.set("cancel_token", cancelToken);
-    if (ticket.name?.trim()) {
-      redirectParams.set("cancel_name", ticket.name.trim());
-    }
   }
 
   redirect(`/events/${route}?${redirectParams.toString()}`);

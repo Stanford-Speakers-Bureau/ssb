@@ -717,8 +717,18 @@ function buildQRSection(opts: {
         </p>
       ${gmailBlendEnd}`
     : "";
-  const appleWalletUrl = opts.appleWalletUrl
-    || `${baseUrl}/api/tickets/apple-wallet?ticket_id=${opts.ticketId}`;
+  const appleWalletButton = opts.appleWalletUrl
+    ? `
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
+        <tr>
+          <td align="center">
+            <a href="${opts.appleWalletUrl}" target="_blank" rel="noopener noreferrer">
+              <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" width="auto" height="48" style="display: inline-block; height: 48px; border: 0;" />
+            </a>
+          </td>
+        </tr>
+      </table>`
+    : "";
 
   return `
     <div class="qr-section${opts.isVIP ? " vip-border vip-shadow" : opts.isExternal ? " external-border external-shadow" : ""}" style="background-color: #18181b; padding: 24px; margin-bottom: 24px; text-align: center; ${borderStyle}">
@@ -731,15 +741,7 @@ function buildQRSection(opts: {
         </div>
       </div>
       ${typeBadge}
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
-        <tr>
-          <td align="center">
-            <a href="${appleWalletUrl}" target="_blank" rel="noopener noreferrer">
-              <img src="${baseUrl}/images/add-to-apple-wallet.png" alt="Add to Apple Wallet" width="auto" height="48" style="display: inline-block; height: 48px; border: 0;" />
-            </a>
-          </td>
-        </tr>
-      </table>
+      ${appleWalletButton}
       ${validityText}
     </div>`;
 }

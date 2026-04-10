@@ -16,9 +16,7 @@ export default function TicketButton(props: TicketButtonProps) {
     actions.emailCancelAttendeeName ?? props.initialTicketName ?? null;
   const cancelTargetText = cancelTicketOwnerName
     ? `the ticket for ${cancelTicketOwnerName}`
-    : actions.emailCancelAttendeeName
-      ? "this ticket"
-      : "your ticket";
+    : "your ticket";
   const cancelTitle = actions.initialIsScanned
     ? "Ticket Already Scanned"
     : "Cancel Ticket?";
@@ -107,7 +105,7 @@ export default function TicketButton(props: TicketButtonProps) {
       {content}
       <ConfirmationModal
         open={actions.showCancelTicketModal}
-        onClose={() => actions.setShowCancelTicketModal(false)}
+        onClose={actions.closeCancelTicketModal}
         title={cancelTitle}
         description={cancelDescription}
         cancelLabel={actions.initialIsScanned ? "OK" : "Keep Ticket"}

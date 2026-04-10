@@ -54,7 +54,9 @@ function resolveExpirationTimestamp(input: {
     : null;
 
   return Math.floor(
-    Math.max(defaultExpiry, eventBasedExpiry ?? 0) / 1000,
+    (eventBasedExpiry == null
+      ? defaultExpiry
+      : Math.min(defaultExpiry, eventBasedExpiry)) / 1000,
   );
 }
 
@@ -84,7 +86,9 @@ export async function verifyCancellationToken(
   token: string,
 ): Promise<CancellationTokenClaims | null> {
   try {
-    const { payload } = await jwtVerify(token, getCancellationLinkSecret());
+    const { payload } = await jwtVerify(token, getCancellationLinkSecret(), {
+      algorithms: ["HS256"],
+    });
 
     if (payload.purpose !== TOKEN_PURPOSE) {
       return null;

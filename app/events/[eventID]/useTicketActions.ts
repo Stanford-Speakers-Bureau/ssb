@@ -166,6 +166,7 @@ export type TicketButtonProps = {
   initialHasTicket?: boolean;
   initialTicketId?: string | null;
   initialTicketName?: string | null;
+  initialEmailCancelAttendeeName?: string | null;
   initialIsOnWaitlist?: boolean;
   initialWaitlistPosition?: number | null;
   eventStartTime?: string | null;
@@ -181,6 +182,7 @@ export type TicketButtonProps = {
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
   standbyMode?: boolean;
+  allowCancelFlowAccess?: boolean;
 };
 
 export const TICKET_MESSAGES = {
@@ -203,6 +205,7 @@ export default function useTicketActions({
   eventId,
   initialHasTicket = false,
   initialTicketName = null,
+  initialEmailCancelAttendeeName = null,
   initialIsOnWaitlist = false,
   initialWaitlistPosition = null,
   eventStartTime = null,
@@ -217,6 +220,7 @@ export default function useTicketActions({
   referralsEnabled = false,
   initialIsScanned = false,
   standbyMode = false,
+  allowCancelFlowAccess = false,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -280,6 +284,14 @@ export default function useTicketActions({
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
   const [isLoadingNotify, setIsLoadingNotify] = useState(false);
+
+  const closeCancelTicketModal = useCallback(() => {
+    setShowCancelTicketModal(false);
+
+    if (emailCancelContext?.cancelToken) {
+      setEmailCancelContext(null);
+    }
+  }, [emailCancelContext?.cancelToken]);
 
   const ticketingOpensAt = ticketingOpensAtProp
     ? new Date(ticketingOpensAtProp)
@@ -1189,11 +1201,9 @@ export default function useTicketActions({
     const url = new URL(window.location.href);
     const cancelTicketParam = url.searchParams.get("cancel_ticket");
     const cancelTokenParam = url.searchParams.get("cancel_token");
-    const cancelNameParam = url.searchParams.get("cancel_name");
 
     if (cancelTicketParam) {
       const normalizedCancelToken = cancelTokenParam?.trim() || null;
-      const normalizedCancelName = cancelNameParam?.trim() || null;
 
       if (!normalizedCancelToken && !isLoggedIn) {
         const currentUrl =
@@ -1207,7 +1217,6 @@ export default function useTicketActions({
       // Clean up the URL immediately
       url.searchParams.delete("cancel_ticket");
       url.searchParams.delete("cancel_token");
-      url.searchParams.delete("cancel_name");
       window.history.replaceState(
         {},
         "",
@@ -1215,9 +1224,14 @@ export default function useTicketActions({
       );
 
       if (normalizedCancelToken) {
+        if (!allowCancelFlowAccess) {
+          setEmailCancelContext(null);
+          return;
+        }
+
         setEmailCancelContext({
           cancelToken: normalizedCancelToken,
-          attendeeName: normalizedCancelName,
+          attendeeName: initialEmailCancelAttendeeName,
         });
         setShowCancelTicketModal(true);
         return;
@@ -1228,7 +1242,12 @@ export default function useTicketActions({
         setShowCancelTicketModal(true);
       }
     }
-  }, [hasTicket, isLoggedIn]);
+  }, [
+    allowCancelFlowAccess,
+    hasTicket,
+    initialEmailCancelAttendeeName,
+    isLoggedIn,
+  ]);
 
   useEffect(() => {
     const autoTicketKey = `auto_ticket_pending:${eventId}`;
@@ -1368,6 +1387,7 @@ export default function useTicketActions({
     isWaitlistPositionReady,
     showCancelTicketModal,
     setShowCancelTicketModal,
+    closeCancelTicketModal,
     emailCancelAttendeeName: emailCancelContext?.attendeeName ?? null,
     showIneligibleModal,
     ineligibleTitle,
