@@ -35,7 +35,7 @@ export default function WaitlistPosition({
 
   return (
     <div>
-      {isWaitlistPositionReady && waitlistPosition !== null ? (
+      {isWaitlistPositionReady && waitlistPosition !== null && waitlistPosition <= 5 ? (
         <>
           <div className="flex items-center justify-between mb-4">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
