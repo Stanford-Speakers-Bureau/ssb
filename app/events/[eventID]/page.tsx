@@ -198,6 +198,7 @@ export default async function EventPage({
               initialEmailCancelAttendeeName={
                 verifiedCancellationFlow.attendeeName
               }
+              eventName={event.name}
             />
           </div>
         </main>
@@ -387,6 +388,7 @@ export default async function EventPage({
                 initialEmailCancelAttendeeName={
                   verifiedCancellationFlow.attendeeName
                 }
+                eventName={event.name}
               />
             </div>
           </div>
