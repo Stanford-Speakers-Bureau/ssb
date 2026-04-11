@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
-type TicketStatus = "scanned" | "already_scanned" | "invalid" | null;
+type TicketStatus = "scanned" | "already_scanned" | "invalid" | "valid" | null;
 
 type TicketInfo = {
   id: string;
@@ -39,6 +39,11 @@ export default function ScanClient() {
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
   const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
+  const [pendingTicket, setPendingTicket] = useState<TicketInfo | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const showConfirmationRef = useRef(false);
+  const pendingTicketIdRef = useRef<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
   const stopInFlightRef = useRef<Promise<void> | null>(null);
@@ -86,6 +91,11 @@ export default function ScanClient() {
 
     return stopInFlightRef.current;
   }, []);
+
+  // Keep ref in sync so handleScan can check without re-creating
+  useEffect(() => {
+    showConfirmationRef.current = showConfirmation;
+  }, [showConfirmation]);
 
   // Detect mobile device
   useEffect(() => {
@@ -183,9 +193,12 @@ export default function ScanClient() {
   const lastScannedRef = useRef<string | null>(null);
   const scanCooldownRef = useRef<number>(0);
 
-  // Handle scan results
+  // Handle scan results - GET lookup first, then confirm before marking scanned
   const handleScan = useCallback(async (id: string) => {
     if (!id.trim()) return;
+
+    // Ignore scans while confirmation modal is open
+    if (showConfirmationRef.current) return;
 
     // Prevent duplicate scans within 3 seconds
     const now = Date.now();
@@ -208,55 +221,44 @@ export default function ScanClient() {
     setStatus(null);
     setTicketInfo(null);
 
-    // Don't pause scanner - keep it running to avoid showing "paused" message
-
     setIsLoading(true);
     setSpinTime(0.5);
     try {
-      const response = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticket_id: id.trim(),
-          email: null,
-          event_id: null,
-        }),
-      });
+      // Step 1: GET lookup only (no side effects)
+      const response = await fetch(
+        `/api/scan?ticket_id=${encodeURIComponent(id.trim())}`,
+      );
 
       const data = (await response.json()) as {
         status?: TicketStatus;
         ticket?: TicketInfo;
       };
 
-      if (response.ok) {
-        // Update with new scan results
-        setStatus(data.status ?? null);
-        setTicketInfo(data.ticket ?? null);
-      } else {
-        // Handle error responses that still have status info
-        if (data.status) {
-          setStatus(data.status);
-          setTicketInfo(data.ticket ?? null);
-        } else {
-          setStatus("invalid");
-          setTicketInfo(null);
-        }
-      }
+      const ticketStatus = data.status ?? "invalid";
 
-      await fetchLiveEvent();
-      // Clear status after 3 seconds
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
+      if (ticketStatus === "valid" && data.ticket) {
+        // Step 2: Show confirmation modal for valid tickets
+        setPendingTicket(data.ticket);
+        pendingTicketIdRef.current = data.ticket.id;
+        setShowConfirmation(true);
+      } else {
+        // Already scanned or invalid - show immediate feedback
+        setStatus(ticketStatus === "valid" ? null : ticketStatus);
+        setTicketInfo(data.ticket ?? null);
+        await fetchLiveEvent();
+
+        statusTimeoutRef.current = setTimeout(() => {
+          setStatus(null);
+          setTicketInfo(null);
+          statusTimeoutRef.current = null;
+        }, 3000);
+      }
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
       await fetchLiveEvent();
 
-      // Clear status after 3 seconds even on error
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
@@ -270,56 +272,56 @@ export default function ScanClient() {
 
   const handleEmailSubmit = useCallback(async () => {
     if (!emailSUNET.trim()) return;
+    if (showConfirmationRef.current) return;
 
+    // Clear any existing timeout
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = null;
+    }
+
+    setStatus(null);
+    setTicketInfo(null);
     setIsLoading(true);
     setSpinTime(0.5);
     try {
-      const response = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticket_id: null,
-          emailSUNET: emailSUNET.toLowerCase().trim(),
-          event_id: liveEvent?.id,
-        }),
-      });
+      // Step 1: GET lookup only (no side effects)
+      const response = await fetch(
+        `/api/scan?emailSUNET=${encodeURIComponent(emailSUNET.toLowerCase().trim())}&event_id=${encodeURIComponent(liveEvent?.id ?? "")}`,
+      );
 
       const data = (await response.json()) as {
         status?: TicketStatus;
         ticket?: TicketInfo;
       };
 
-      if (response.ok) {
-        // Update with new scan results
-        setStatus(data.status ?? null);
-        setTicketInfo(data.ticket ?? null);
-      } else {
-        // Handle error responses that still have status info
-        if (data.status) {
-          setStatus(data.status);
-          setTicketInfo(data.ticket ?? null);
-        } else {
-          setStatus("invalid");
-          setTicketInfo(null);
-        }
-      }
-
+      const ticketStatus = data.status ?? "invalid";
       setEmailSUNET("");
-      await fetchLiveEvent();
-      // Clear status after 10 seconds
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 10000);
+
+      if (ticketStatus === "valid" && data.ticket) {
+        // Step 2: Show confirmation modal for valid tickets
+        setPendingTicket(data.ticket);
+        pendingTicketIdRef.current = data.ticket.id;
+        setShowConfirmation(true);
+      } else {
+        // Already scanned or invalid - show immediate feedback
+        setStatus(ticketStatus === "valid" ? null : ticketStatus);
+        setTicketInfo(data.ticket ?? null);
+        await fetchLiveEvent();
+
+        statusTimeoutRef.current = setTimeout(() => {
+          setStatus(null);
+          setTicketInfo(null);
+          statusTimeoutRef.current = null;
+        }, 10000);
+      }
     } catch (error) {
       console.error("Scan error:", error);
       setStatus("invalid");
       setTicketInfo(null);
-
       setEmailSUNET("");
       await fetchLiveEvent();
-      // Clear status after 3 seconds even on error
+
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
@@ -330,6 +332,63 @@ export default function ScanClient() {
       setSpinTime(2.0);
     }
   }, [emailSUNET, liveEvent?.id]);
+
+  // Confirm scan - POST to mark ticket as scanned
+  const handleConfirm = useCallback(async () => {
+    if (!pendingTicket) return;
+    setIsConfirming(true);
+    try {
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: pendingTicketIdRef.current }),
+      });
+      const data = (await response.json()) as {
+        status?: TicketStatus;
+        ticket?: TicketInfo;
+      };
+
+      // Dismiss confirmation modal
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+
+      // Show success/failure overlay
+      setStatus(data.status ?? "invalid");
+      setTicketInfo(data.ticket ?? null);
+      await fetchLiveEvent();
+
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
+    } catch (error) {
+      console.error("Confirm scan error:", error);
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+      setStatus("invalid");
+
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
+    } finally {
+      setIsConfirming(false);
+    }
+  }, [pendingTicket]);
+
+  // Cancel scan - dismiss modal, reset state
+  const handleCancel = useCallback(() => {
+    setShowConfirmation(false);
+    setPendingTicket(null);
+    pendingTicketIdRef.current = null;
+    // Reset cooldown so the same QR can be re-scanned
+    lastScannedRef.current = null;
+    scanCooldownRef.current = 0;
+  }, []);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -949,6 +1008,68 @@ export default function ScanClient() {
                     </div>
                   )}
                 </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ID Verification Confirmation Modal */}
+          <AnimatePresence>
+            {showConfirmation && pendingTicket && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                onClick={handleCancel}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+                  className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h3 className="text-xl font-bold text-white mb-1 font-serif text-center">
+                    Verify Identity
+                  </h3>
+                  <p className="text-zinc-400 text-sm text-center mb-4">
+                    Does this name match their photo ID?
+                  </p>
+                  <div className="bg-zinc-800 rounded-xl p-4 mb-5 text-center">
+                    <p className="text-2xl font-bold text-white mb-1">
+                      {pendingTicket.name || "No name on ticket"}
+                    </p>
+                    {pendingTicket.email && (
+                      <p className="text-sm text-zinc-400 break-all">
+                        {pendingTicket.email}
+                      </p>
+                    )}
+                    {pendingTicket.type && (
+                      <p className="text-xs text-zinc-500 mt-1 uppercase tracking-wide">
+                        {pendingTicket.type} ticket
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleCancel}
+                      disabled={isConfirming}
+                      className="flex-1 rounded-xl py-4 text-lg font-semibold text-white bg-zinc-700 border border-zinc-600 transition-colors active:bg-zinc-600 disabled:opacity-50 touch-manipulation"
+                    >
+                      No
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleConfirm}
+                      disabled={isConfirming}
+                      className="flex-1 rounded-xl py-4 text-lg font-semibold text-white bg-green-600 transition-colors active:bg-green-500 disabled:opacity-50 touch-manipulation"
+                    >
+                      {isConfirming ? "..." : "Yes"}
+                    </motion.button>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
