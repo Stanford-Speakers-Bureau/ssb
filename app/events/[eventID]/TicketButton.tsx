@@ -38,6 +38,7 @@ export default function TicketButton(props: TicketButtonProps) {
       <StandbyTicketCTA
         isLoading={actions.isLoading}
         processStandbyTicketRequest={actions.processStandbyTicketRequest}
+        waitlistChance={actions.waitlistChance}
       />
     );
   } else if (actions.isSoldOut && !actions.hasTicket) {

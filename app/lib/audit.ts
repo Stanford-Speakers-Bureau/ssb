@@ -7,7 +7,8 @@ type AuditAction =
   | "ticket.cancel"
   | "waitlist.join"
   | "waitlist.leave"
-  | "waitlist.pull";
+  | "waitlist.pull"
+  | "scan.fail";
 
 type AuditLogParams = {
   action: AuditAction;

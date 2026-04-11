@@ -186,21 +186,33 @@ export default function WaitlistPosition({
 
           {/* High chance indicator */}
           {isHighChance && (
-            <div className="flex items-center gap-2.5 mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/20">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
-                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                </svg>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/20 relative overflow-hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+              />
+              <div className="relative flex items-center gap-2.5">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                    High chance of getting in
+                  </p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                    Based on past similar events
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
-                  High chance of getting in
-                </p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  Based on past similar events
-                </p>
-              </div>
-            </div>
+            </motion.div>
           )}
 
           {liveActivityBlock}
@@ -298,21 +310,33 @@ export default function WaitlistPosition({
 
           {/* High chance indicator */}
           {isHighChance && (
-            <div className="flex items-center gap-2.5 mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/20">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
-                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                </svg>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/20 relative overflow-hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+              />
+              <div className="relative flex items-center gap-2.5">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                    High chance of getting in
+                  </p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                    Based on past similar events
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
-                  High chance of getting in
-                </p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  Based on past similar events
-                </p>
-              </div>
-            </div>
+            </motion.div>
           )}
 
           {liveActivityBlock}
