@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
-type TicketStatus = "scanned" | "already_scanned" | "invalid" | "valid" | null;
+type TicketStatus = "scanned" | "already_scanned" | "invalid" | "valid" | "id_mismatch" | null;
 
 type TicketInfo = {
   id: string;
@@ -380,15 +380,38 @@ export default function ScanClient() {
     }
   }, [pendingTicket]);
 
-  // Cancel scan - dismiss modal, reset state
+  // Cancel scan - log failed ID check, show standby message
   const handleCancel = useCallback(() => {
+    const ticket = pendingTicket;
     setShowConfirmation(false);
     setPendingTicket(null);
     pendingTicketIdRef.current = null;
     // Reset cooldown so the same QR can be re-scanned
     lastScannedRef.current = null;
     scanCooldownRef.current = 0;
-  }, []);
+
+    // Show red "send to standby" screen
+    setStatus("id_mismatch");
+    setTicketInfo(ticket);
+    statusTimeoutRef.current = setTimeout(() => {
+      setStatus(null);
+      setTicketInfo(null);
+      statusTimeoutRef.current = null;
+    }, 5000);
+
+    // Log failed scan to audit log (fire-and-forget)
+    if (ticket) {
+      fetch("/api/scan/fail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticket_id: ticket.id,
+          ticket_name: ticket.name,
+          ticket_email: ticket.email,
+        }),
+      }).catch((err) => console.error("Failed to log scan failure:", err));
+    }
+  }, [pendingTicket]);
 
   // Start camera when permission is granted
   const startCamera = useCallback(async () => {
@@ -550,6 +573,7 @@ export default function ScanClient() {
     }
     if (status === "already_scanned") return "⚠ Already Scanned";
     if (status === "invalid") return "✗ Invalid Ticket";
+    if (status === "id_mismatch") return "✗ ID Does Not Match";
     return "Ready to Scan";
   };
 
@@ -579,6 +603,9 @@ export default function ScanClient() {
       return "bg-yellow-600/90";
     }
     if (status === "invalid") {
+      return "bg-red-600/90";
+    }
+    if (status === "id_mismatch") {
       return "bg-red-600/90";
     }
     return "";
@@ -942,12 +969,26 @@ export default function ScanClient() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl transition-colors duration-500 shrink-0 bg-transparent`}
+                className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl transition-colors duration-500 shrink-0 bg-transparent cursor-pointer`}
+                onClick={() => {
+                  if (statusTimeoutRef.current) {
+                    clearTimeout(statusTimeoutRef.current);
+                    statusTimeoutRef.current = null;
+                  }
+                  setStatus(null);
+                  setTicketInfo(null);
+                }}
               >
                 <div className="text-center">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-white">
                     {getStatusText()}
                   </h2>
+
+                  {status === "id_mismatch" && (
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3">
+                      Send to Standby Line
+                    </p>
+                  )}
 
                   {ticketInfo && (
                     <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
