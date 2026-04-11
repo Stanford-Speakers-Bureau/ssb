@@ -139,6 +139,7 @@ export async function POST(req: Request) {
         imgVersion: true,
         referralsEnabled: true,
         ticketingRoles: true,
+        route: true,
       },
     });
 
@@ -323,6 +324,7 @@ export async function POST(req: Request) {
       eventId: event.id,
       imgVersion: event.imgVersion,
       eventTagline: event.tagline,
+      eventRoute: event.route,
     });
 
     queueAuditEvent({

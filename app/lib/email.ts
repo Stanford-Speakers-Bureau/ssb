@@ -1344,6 +1344,7 @@ export type WaitlistEmailData = {
   eventId?: string | null;
   imgVersion?: number | null;
   eventTagline?: string | null;
+  eventRoute?: string | null;
 };
 
 async function generateWaitlistEmailHTML(
@@ -1370,16 +1371,26 @@ async function generateWaitlistEmailHTML(
     `You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!`,
   ));
 
-  // Waitlist position badge
-  contentSections.push(`
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div class="position-badge" style="display: inline-block; padding: 20px 40px; background-color: #A80D0C; border-radius: 12px;">
-        ${gmailBlendStart}
-          <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Position</p>
-          <p style="margin: 0; color: #ffffff; font-size: 48px; font-weight: 700;">#${position}</p>
-        ${gmailBlendEnd}
-      </div>
-    </div>`);
+  // Waitlist position badge (only show position for top 5)
+  if (position <= 5) {
+    contentSections.push(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="position-badge" style="display: inline-block; padding: 20px 40px; background-color: #A80D0C; border-radius: 12px;">
+          ${gmailBlendStart}
+            <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Position</p>
+            <p style="margin: 0; color: #ffffff; font-size: 48px; font-weight: 700;">#${position}</p>
+          ${gmailBlendEnd}
+        </div>
+      </div>`);
+  }
+
+  // View waitlist status button
+  const baseUrl = getBaseUrl();
+  const eventRoute = data.eventRoute;
+  if (eventRoute) {
+    const eventUrl = `${baseUrl}/events/${eventRoute}`;
+    contentSections.push(buildButton(eventUrl, "View Waitlist Status"));
+  }
 
   // Event details card (partial)
   const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [
@@ -1423,14 +1434,14 @@ async function generateWaitlistEmailHTML(
 function generateWaitlistEmailText(data: WaitlistEmailData): string {
   const { eventName, position, eventStartTime, eventVenue } = data;
   const formattedDate = formatFullDateTime(eventStartTime);
+  const baseUrl = getBaseUrl();
+  const eventUrl = data.eventRoute ? `${baseUrl}/events/${data.eventRoute}` : null;
 
   return `
 You're on the waitlist!
 
 You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!
-
-Your Position: #${position}
-
+${position <= 5 ? `\nYour Position: #${position}\n` : ""}${eventUrl ? `\nView your waitlist status: ${eventUrl}\n` : ""}
 Event Details:
 - Event: ${eventName}
 - Date & Time: ${formattedDate}
