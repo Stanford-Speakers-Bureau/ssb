@@ -21,7 +21,7 @@ export default function TicketButton(props: TicketButtonProps) {
   const cancelTitle = actions.initialIsScanned
     ? "Ticket Already Scanned"
     : "Cancel Ticket?";
-  const boldType = ticketTypeLabel ? <strong className="text-zinc-700 dark:text-zinc-200">{ticketTypeLabel}</strong> : null;
+  const boldType = ticketTypeLabel?.toUpperCase() ? <strong className="text-zinc-700 dark:text-zinc-200">{ticketTypeLabel.toUpperCase()}</strong> : null;
   const boldEvent = actions.eventName ? <strong className="text-zinc-700 dark:text-zinc-200">{actions.eventName}</strong> : null;
   const boldName = cancelTicketOwnerName ? <strong className="text-zinc-700 dark:text-zinc-200">{cancelTicketOwnerName}</strong> : null;
 
