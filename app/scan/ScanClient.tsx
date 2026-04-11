@@ -391,6 +391,10 @@ export default function ScanClient() {
     scanCooldownRef.current = 0;
 
     // Show red "send to standby" screen
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = null;
+    }
     setStatus("id_mismatch");
     setTicketInfo(ticket);
     statusTimeoutRef.current = setTimeout(() => {
