@@ -16,22 +16,18 @@ export default function TicketButton(props: TicketButtonProps) {
   const ticketTypeLabel = actions.ticketType
     ? actions.ticketType.charAt(0).toUpperCase() + actions.ticketType.slice(1).toLowerCase()
     : null;
-  const cancelTicketDesc = [
-    "1",
-    ticketTypeLabel,
-    "ticket",
-    actions.eventName ? `to ${actions.eventName}` : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
   const cancelTicketOwnerName =
     actions.emailCancelAttendeeName ?? props.initialTicketName ?? null;
   const cancelTitle = actions.initialIsScanned
     ? "Ticket Already Scanned"
     : "Cancel Ticket?";
+  const boldType = ticketTypeLabel ? <strong className="text-zinc-700 dark:text-zinc-200">{ticketTypeLabel}</strong> : null;
+  const boldEvent = actions.eventName ? <strong className="text-zinc-700 dark:text-zinc-200">{actions.eventName}</strong> : null;
+  const boldName = cancelTicketOwnerName ? <strong className="text-zinc-700 dark:text-zinc-200">{cancelTicketOwnerName}</strong> : null;
+
   const cancelDescription = actions.initialIsScanned
-    ? `The ${cancelTicketDesc}${cancelTicketOwnerName ? ` for ${cancelTicketOwnerName}` : ""} has already been scanned at the door and can no longer be cancelled.`
-    : `Are you sure you want to cancel ${cancelTicketDesc}${cancelTicketOwnerName ? ` for ${cancelTicketOwnerName}` : ""}? You may not be able to get it back if you cancel.`;
+    ? <>The 1 {boldType} ticket{boldEvent && <> to {boldEvent}</>}{boldName && <> for {boldName}</>} has already been scanned at the door and can no longer be cancelled.</>
+    : <>Are you sure you want to cancel 1 {boldType} ticket{boldEvent && <> to {boldEvent}</>}{boldName && <> for {boldName}</>}? You may not be able to get it back if you cancel.</>;
 
   let content: React.ReactNode;
 

@@ -238,7 +238,7 @@ export function ConfirmationModal({
   open: boolean;
   onClose: () => void;
   title: string;
-  description: string;
+  description: React.ReactNode;
   cancelLabel: string;
   confirmLabel?: string;
   onConfirm?: () => void;
