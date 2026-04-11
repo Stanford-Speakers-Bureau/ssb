@@ -13,17 +13,25 @@ import HasTicket from "./ticket-states/HasTicket";
 
 export default function TicketButton(props: TicketButtonProps) {
   const actions = useTicketActions(props);
+  const ticketTypeLabel = actions.ticketType
+    ? actions.ticketType.charAt(0).toUpperCase() + actions.ticketType.slice(1).toLowerCase()
+    : null;
+  const cancelTicketDesc = [
+    "1",
+    ticketTypeLabel,
+    "ticket",
+    actions.eventName ? `to ${actions.eventName}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
   const cancelTicketOwnerName =
     actions.emailCancelAttendeeName ?? props.initialTicketName ?? null;
-  const cancelTargetText = cancelTicketOwnerName
-    ? `the ticket for ${cancelTicketOwnerName}`
-    : "your ticket";
   const cancelTitle = actions.initialIsScanned
     ? "Ticket Already Scanned"
     : "Cancel Ticket?";
   const cancelDescription = actions.initialIsScanned
-    ? `${cancelTargetText[0].toUpperCase()}${cancelTargetText.slice(1)} has already been scanned at the door and can no longer be cancelled.`
-    : `Are you sure you want to cancel ${cancelTargetText}? You may not be able to get it back if you cancel.`;
+    ? `The ${cancelTicketDesc}${cancelTicketOwnerName ? ` for ${cancelTicketOwnerName}` : ""} has already been scanned at the door and can no longer be cancelled.`
+    : `Are you sure you want to cancel ${cancelTicketDesc}${cancelTicketOwnerName ? ` for ${cancelTicketOwnerName}` : ""}? You may not be able to get it back if you cancel.`;
 
   let content: React.ReactNode;
 

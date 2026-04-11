@@ -36,6 +36,7 @@ type TicketSectionProps = {
   requireTicketAccess?: boolean;
   allowCancelFlowAccess?: boolean;
   initialEmailCancelAttendeeName?: string | null;
+  eventName?: string | null;
 };
 
 type ViewerEventStateResponse = {
@@ -74,6 +75,7 @@ export default function TicketSection({
   requireTicketAccess = false,
   allowCancelFlowAccess = false,
   initialEmailCancelAttendeeName = null,
+  eventName = null,
 }: TicketSectionProps) {
   const router = useRouter();
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -272,6 +274,8 @@ export default function TicketSection({
     standbyMode,
     allowCancelFlowAccess,
     initialEmailCancelAttendeeName,
+    ticketType,
+    eventName,
   };
 
   if (

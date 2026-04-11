@@ -183,6 +183,8 @@ export type TicketButtonProps = {
   initialIsScanned?: boolean;
   standbyMode?: boolean;
   allowCancelFlowAccess?: boolean;
+  ticketType?: string | null;
+  eventName?: string | null;
 };
 
 export const TICKET_MESSAGES = {
@@ -222,6 +224,8 @@ export default function useTicketActions({
   doorsOpen = null,
   standbyMode = false,
   allowCancelFlowAccess = false,
+  ticketType = null,
+  eventName = null,
 }: TicketButtonProps) {
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
   const [isLoading, setIsLoading] = useState(false);
@@ -1402,6 +1406,8 @@ export default function useTicketActions({
     // Props passed through
     initialIsScanned,
     initialTicketName,
+    ticketType: ticketType ?? null,
+    eventName: eventName ?? null,
     isLoggedIn,
     isSoldOut,
     isTicketingOpen,
