@@ -4,6 +4,7 @@ import {
   text,
   boolean,
   bigint,
+  integer,
   timestamp,
   numeric,
   uniqueIndex,
@@ -259,6 +260,42 @@ export const userProfiles = pgTable(
   (t) => [uniqueIndex("user_profiles_email_unique").on(t.email)],
 );
 
+// ── Event Feedback ──────────────────────────────────────────────────────────
+export const eventFeedback = pgTable(
+  "event_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    ticketId: uuid("ticket_id")
+      .notNull()
+      .references(() => tickets.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    email: text("email").notNull(),
+    score: integer("score").notNull(),
+    comment: text("comment"),
+    submittedVia: text("submitted_via").notNull().default("event_page"),
+  },
+  (t) => [
+    uniqueIndex("event_feedback_ticket_id_unique").on(t.ticketId),
+    index("event_feedback_event_id_idx").on(t.eventId),
+    index("event_feedback_email_idx").on(t.email),
+    index("event_feedback_score_idx").on(t.score),
+  ],
+);
+
 // ── Audit Logs ─────────────────────────────────────────────────────────────
 export const auditLogs = pgTable(
   "audit_logs",
@@ -291,10 +328,15 @@ export const eventsRelations = relations(events, ({ many }) => ({
   waitlistList: many(waitlist),
   referralList: many(referrals),
   notifyList: many(notify),
+  feedbackList: many(eventFeedback),
 }));
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
   event: one(events, { fields: [tickets.eventId], references: [events.id] }),
+  feedback: one(eventFeedback, {
+    fields: [tickets.id],
+    references: [eventFeedback.ticketId],
+  }),
 }));
 
 export const waitlistRelations = relations(waitlist, ({ one }) => ({
@@ -318,4 +360,15 @@ export const notifyRelations = relations(notify, ({ one }) => ({
 
 export const referralsRelations = relations(referrals, ({ one }) => ({
   event: one(events, { fields: [referrals.eventId], references: [events.id] }),
+}));
+
+export const eventFeedbackRelations = relations(eventFeedback, ({ one }) => ({
+  event: one(events, {
+    fields: [eventFeedback.eventId],
+    references: [events.id],
+  }),
+  ticket: one(tickets, {
+    fields: [eventFeedback.ticketId],
+    references: [tickets.id],
+  }),
 }));
