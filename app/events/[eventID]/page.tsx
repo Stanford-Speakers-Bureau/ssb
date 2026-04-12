@@ -8,14 +8,16 @@ import {
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
+import { verifyEventFeedbackToken } from "@/app/lib/feedback-links";
 import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
 import { getEventEndDate, isEventOver } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
+import { normalizeEmail } from "@/app/lib/validation";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
-import { db, and, eq, tickets } from "@ssb/db";
+import { db, and, eq, sql, tickets } from "@ssb/db";
 import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
@@ -89,6 +91,38 @@ async function getVerifiedCancellationFlow(input: {
   };
 }
 
+async function getVerifiedFeedbackFlow(input: {
+  eventId: string;
+  feedbackTokenParam?: string | string[] | undefined;
+}): Promise<{ allowFeedbackFlowAccess: boolean }> {
+  const feedbackToken =
+    typeof input.feedbackTokenParam === "string" ? input.feedbackTokenParam : null;
+
+  if (!feedbackToken) {
+    return { allowFeedbackFlowAccess: false };
+  }
+
+  const verifiedToken = await verifyEventFeedbackToken(feedbackToken);
+  if (!verifiedToken || verifiedToken.eventId !== input.eventId) {
+    return { allowFeedbackFlowAccess: false };
+  }
+
+  const ticket = await db.query.tickets.findFirst({
+    where: and(
+      eq(tickets.id, verifiedToken.ticketId),
+      eq(tickets.eventId, input.eventId),
+      sql<boolean>`lower(trim(${tickets.email})) = ${normalizeEmail(verifiedToken.email)}`,
+    ),
+    columns: {
+      scanned: true,
+    },
+  });
+
+  return {
+    allowFeedbackFlowAccess: Boolean(ticket?.scanned),
+  };
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -154,9 +188,10 @@ export default async function EventPage({
     cancelTicketParam: resolvedSearchParams.cancel_ticket,
     cancelTokenParam: resolvedSearchParams.cancel_token,
   });
-  const hasFeedbackToken =
-    typeof resolvedSearchParams.feedback_token === "string"
-    && resolvedSearchParams.feedback_token.trim().length > 0;
+  const verifiedFeedbackFlow = await getVerifiedFeedbackFlow({
+    eventId: event.id,
+    feedbackTokenParam: resolvedSearchParams.feedback_token,
+  });
 
   const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
     ? null
@@ -198,7 +233,7 @@ export default async function EventPage({
               waitlistChance={event.waitlist_chance}
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
-              requireTicketAccess={!hasFeedbackToken}
+              requireTicketAccess={!verifiedFeedbackFlow.allowFeedbackFlowAccess}
               allowCancelFlowAccess={
                 verifiedCancellationFlow.allowCancelFlowAccess
               }

@@ -1,4 +1,5 @@
 import { jwtVerify } from "jose";
+import { normalizeEmail } from "@/app/lib/validation";
 
 const DEV_SECRET = "dev-secret-change-me-in-production-1234";
 const TOKEN_PURPOSE = "event_feedback";
@@ -22,10 +23,6 @@ function getFeedbackLinkSecret(): Uint8Array {
   }
 
   return new TextEncoder().encode(secret);
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
 }
 
 export async function verifyEventFeedbackToken(

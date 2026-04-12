@@ -286,13 +286,21 @@ export const eventFeedback = pgTable(
     email: text("email").notNull(),
     score: integer("score").notNull(),
     comment: text("comment"),
-    submittedVia: text("submitted_via").notNull().default("event_page"),
+    submittedVia: text("submitted_via").notNull().default("session"),
   },
   (t) => [
     uniqueIndex("event_feedback_ticket_id_unique").on(t.ticketId),
     index("event_feedback_event_id_idx").on(t.eventId),
     index("event_feedback_email_idx").on(t.email),
     index("event_feedback_score_idx").on(t.score),
+    check(
+      "event_feedback_score_check",
+      sql`${t.score} >= 1 AND ${t.score} <= 10`,
+    ),
+    check(
+      "event_feedback_submitted_via_check",
+      sql`${t.submittedVia} in ('session', 'signed_link')`,
+    ),
   ],
 );
 

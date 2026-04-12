@@ -77,6 +77,7 @@ function FeedbackForm({
   const isCard = variant === "card";
   const wrapperClass = isCard ? `${glassPanel} p-5 sm:p-6` : "";
   const wrapperId = isCard ? "feedback" : undefined;
+  const [currentTimeMs] = useState(() => Date.now());
   const scoreOptions = useMemo(
     () => Array.from({ length: 10 }, (_, i) => i + 1),
     [],
@@ -122,7 +123,7 @@ function FeedbackForm({
     : null;
   const scoreLocked =
     submittedAtMs != null &&
-    Date.now() - submittedAtMs >= SCORE_EDIT_WINDOW_MS;
+    currentTimeMs - submittedAtMs >= SCORE_EDIT_WINDOW_MS;
   const displayedScore = pendingScore ?? existingFeedback?.score ?? null;
   const savedComment = existingFeedback?.comment ?? "";
   const commentChanged = comment !== savedComment;
@@ -142,6 +143,12 @@ function FeedbackForm({
         {error && (
           <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
             {error}
+          </div>
+        )}
+
+        {confirmation && (
+          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+            {confirmation}
           </div>
         )}
 

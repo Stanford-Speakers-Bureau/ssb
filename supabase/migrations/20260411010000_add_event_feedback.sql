@@ -9,8 +9,40 @@ CREATE TABLE IF NOT EXISTS "public"."event_feedback" (
   "email" text NOT NULL,
   "score" integer NOT NULL CHECK ("score" >= 1 AND "score" <= 10),
   "comment" text,
-  "submitted_via" text NOT NULL DEFAULT 'event_page'
+  "submitted_via" text NOT NULL DEFAULT 'session' CHECK ("submitted_via" IN ('session', 'signed_link'))
 );
+
+CREATE OR REPLACE FUNCTION "public"."validate_event_feedback_ticket_event_match"()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  ticket_event_id uuid;
+BEGIN
+  SELECT "event_id"
+  INTO ticket_event_id
+  FROM "public"."tickets"
+  WHERE "id" = NEW."ticket_id";
+
+  IF ticket_event_id IS NULL THEN
+    RAISE EXCEPTION 'event_feedback.ticket_id % does not reference an existing ticket', NEW."ticket_id";
+  END IF;
+
+  IF ticket_event_id <> NEW."event_id" THEN
+    RAISE EXCEPTION 'event_feedback.event_id % does not match ticket % event_id %', NEW."event_id", NEW."ticket_id", ticket_event_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS "validate_event_feedback_ticket_event_match" ON "public"."event_feedback";
+
+CREATE TRIGGER "validate_event_feedback_ticket_event_match"
+BEFORE INSERT OR UPDATE OF "event_id", "ticket_id"
+ON "public"."event_feedback"
+FOR EACH ROW
+EXECUTE FUNCTION "public"."validate_event_feedback_ticket_event_match"();
 
 ALTER TABLE "public"."event_feedback" ENABLE ROW LEVEL SECURITY;
 

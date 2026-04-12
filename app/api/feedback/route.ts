@@ -6,7 +6,7 @@ import {
   normalizeEmail,
   sanitizeString,
 } from "@/app/lib/validation";
-import { and, db, eq, eventFeedback, tickets } from "@ssb/db";
+import { and, db, eq, eventFeedback, sql, tickets } from "@ssb/db";
 
 const MAX_COMMENT_LENGTH = 1_500;
 const SCORE_EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -50,6 +50,10 @@ function parseScore(input: unknown): number | null {
   return null;
 }
 
+function normalizedTicketEmailEquals(email: string) {
+  return sql<boolean>`lower(trim(${tickets.email})) = ${normalizeEmail(email)}`;
+}
+
 async function resolveFeedbackRequest(input: {
   eventId: string;
   feedbackToken?: string | null;
@@ -70,7 +74,7 @@ async function resolveFeedbackRequest(input: {
       where: and(
         eq(tickets.id, claims.ticketId),
         eq(tickets.eventId, input.eventId),
-        eq(tickets.email, claims.email),
+        normalizedTicketEmailEquals(claims.email),
       ),
       columns: {
         id: true,
@@ -140,7 +144,7 @@ async function resolveFeedbackRequest(input: {
   const ticket = await db.query.tickets.findFirst({
     where: and(
       eq(tickets.eventId, input.eventId),
-      eq(tickets.email, sessionEmail),
+      normalizedTicketEmailEquals(sessionEmail),
     ),
     columns: {
       id: true,
@@ -266,13 +270,22 @@ export async function POST(req: Request) {
     const commentProvided = "comment" in body;
     let comment: string | null = null;
     if (commentProvided) {
-      comment = sanitizeString(body.comment ?? null, MAX_COMMENT_LENGTH);
-      if (body.comment && comment == null) {
+      if (body.comment != null && typeof body.comment !== "string") {
+        return NextResponse.json(
+          { error: "comment must be a string or null" },
+          { status: 400 },
+        );
+      }
+
+      const rawComment = typeof body.comment === "string" ? body.comment : null;
+      if (rawComment != null && rawComment.length > MAX_COMMENT_LENGTH) {
         return NextResponse.json(
           { error: `comment must be ${MAX_COMMENT_LENGTH} characters or fewer` },
           { status: 400 },
         );
       }
+
+      comment = sanitizeString(rawComment, MAX_COMMENT_LENGTH);
     }
 
     const resolution = await resolveFeedbackRequest({
