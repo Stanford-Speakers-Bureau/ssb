@@ -8,18 +8,21 @@ import {
   getAvailablePublicTickets,
 } from "@/app/lib/supabase";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
+import { verifyEventFeedbackToken } from "@/app/lib/feedback-links";
 import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
-import { getEventEndDate } from "@/app/lib/eventTime";
+import { getEventEndDate, isEventOver } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
+import { normalizeEmail } from "@/app/lib/validation";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
-import { db, and, eq, tickets } from "@ssb/db";
+import { db, and, eq, sql, tickets } from "@ssb/db";
 import TicketSection from "./TicketSection";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
 import LivestreamBanner from "./LivestreamBanner";
+import EventFeedbackCard from "./EventFeedbackCard";
 import { NoticeBanner } from "./ui";
 
 interface PageProps {
@@ -27,6 +30,7 @@ interface PageProps {
   searchParams: Promise<{
     cancel_ticket?: string | string[] | undefined;
     cancel_token?: string | string[] | undefined;
+    feedback_token?: string | string[] | undefined;
   }>;
 }
 
@@ -84,6 +88,38 @@ async function getVerifiedCancellationFlow(input: {
   return {
     allowCancelFlowAccess: true,
     attendeeName: ticket.name?.trim() || null,
+  };
+}
+
+async function getVerifiedFeedbackFlow(input: {
+  eventId: string;
+  feedbackTokenParam?: string | string[] | undefined;
+}): Promise<{ allowFeedbackFlowAccess: boolean }> {
+  const feedbackToken =
+    typeof input.feedbackTokenParam === "string" ? input.feedbackTokenParam : null;
+
+  if (!feedbackToken) {
+    return { allowFeedbackFlowAccess: false };
+  }
+
+  const verifiedToken = await verifyEventFeedbackToken(feedbackToken);
+  if (!verifiedToken || verifiedToken.eventId !== input.eventId) {
+    return { allowFeedbackFlowAccess: false };
+  }
+
+  const ticket = await db.query.tickets.findFirst({
+    where: and(
+      eq(tickets.id, verifiedToken.ticketId),
+      eq(tickets.eventId, input.eventId),
+      sql<boolean>`lower(trim(${tickets.email})) = ${normalizeEmail(verifiedToken.email)}`,
+    ),
+    columns: {
+      scanned: true,
+    },
+  });
+
+  return {
+    allowFeedbackFlowAccess: Boolean(ticket?.scanned),
   };
 }
 
@@ -152,6 +188,10 @@ export default async function EventPage({
     cancelTicketParam: resolvedSearchParams.cancel_ticket,
     cancelTokenParam: resolvedSearchParams.cancel_token,
   });
+  const verifiedFeedbackFlow = await getVerifiedFeedbackFlow({
+    eventId: event.id,
+    feedbackTokenParam: resolvedSearchParams.feedback_token,
+  });
 
   const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
     ? null
@@ -163,6 +203,8 @@ export default async function EventPage({
       <div className="relative flex min-h-screen flex-col bg-white font-sans dark:bg-zinc-950">
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-5">
+            <EventFeedbackCard eventId={event.id} />
+
             <NoticeBanner
               color="blue"
               icon={<svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
@@ -191,7 +233,7 @@ export default async function EventPage({
               waitlistChance={event.waitlist_chance}
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
-              requireTicketAccess
+              requireTicketAccess={!verifiedFeedbackFlow.allowFeedbackFlowAccess}
               allowCancelFlowAccess={
                 verifiedCancellationFlow.allowCancelFlowAccess
               }
@@ -217,6 +259,10 @@ export default async function EventPage({
     ? getImageProxyUrl(event.id, event.img_version, "mobile")
     : null;
   const eventEndDate = getEventEndDate({
+    endTime: event.end_time_date,
+    startTime: event.start_time_date,
+  });
+  const eventOver = isEventOver({
     endTime: event.end_time_date,
     startTime: event.start_time_date,
   });
@@ -342,6 +388,8 @@ export default async function EventPage({
           {/* Right column – ticket section (sticky on desktop) */}
           <div>
             <div className="lg:sticky lg:top-24 flex flex-col gap-5">
+              <EventFeedbackCard eventId={event.id} />
+
               {/* Livestream banner */}
               {event.livestream && (
                 <LivestreamBanner
@@ -350,7 +398,7 @@ export default async function EventPage({
                 />
               )}
 
-              {event.priority && (
+              {event.priority && !eventOver && (
                 <NoticeBanner
                   color="blue"
                   icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
