@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 
+import FeaturedSpeakersCarousel from "./components/FeaturedSpeakersCarousel";
+
 const MotionLink = motion.create(Link);
 
 export default function HomeClient() {
@@ -143,91 +145,7 @@ export default function HomeClient() {
             Featured Past Speakers
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-            {/* Hasan Minhaj */}
-            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
-              <Image
-                src="/speakers/hasan-minhaj.jpg"
-                alt="Hasan Minhaj speaking at Stanford University from Stanford Speakers Bureau (SSB)"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-              <div className="relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
-                  Hasan Minhaj
-                </h3>
-                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
-                  Comedian & Former "Patriot Act" Host
-                </p>
-                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and as creator and host of "Patriot Act with Hasan Minhaj."
-                </p>
-              </div>
-            </div>
-
-            {/* Mark Rober */}
-            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
-              <Image
-                src="/speakers/mark-rober.jpeg"
-                alt="Mark Rober speaking at Stanford University from Stanford Speakers Bureau (SSB)"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-              <div className="relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
-                  Mark Rober
-                </h3>
-                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
-                  YouTube Educator, Former NASA & Apple Engineer
-                </p>
-                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Former NASA engineer turned YouTube star with 45+ million
-                  subscribers, known for viral science and engineering videos.
-                </p>
-              </div>
-            </div>
-
-            {/* JoJo Siwa */}
-            <div className="relative p-6 rounded overflow-hidden min-h-[400px] flex flex-col justify-end">
-              <Image
-                src="/speakers/jojo-siwa.jpg"
-                alt="JoJo Siwa speaking at Stanford University from Stanford Speakers Bureau (SSB)"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-              <div className="relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
-                  JoJo Siwa
-                </h3>
-                <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
-                  Media Icon
-                </p>
-                <p className="text-sm sm:text-base text-gray-100 leading-relaxed">
-                  Media icon, dancer, and singer who rose to fame through the
-                  reality show Dance Moms and her vibrant online presence.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center mb-16">
-            <MotionLink
-              href="/past-speakers"
-              prefetch={false}
-              className="rounded px-6 py-2.5 text-sm font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211]"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              View More Speakers
-            </MotionLink>
-          </div>
+          <FeaturedSpeakersCarousel />
 
           {/* Other Programs */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#A80D0C] mb-12 sm:mb-16 font-serif">
