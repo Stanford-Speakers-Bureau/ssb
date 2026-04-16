@@ -1,22 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "motion/react";
-
-type Speaker = {
-  slug: string;
-  name: string;
-  title?: string;
-  bio: string;
-  videoUrl?: string;
-  videoLabel?: string;
-};
-
-type YearGroup = {
-  year: string;
-  speakers: Speaker[];
-};
+import { useMemo, useState } from "react";
+import ArchiveHero from "./components/ArchiveHero";
+import SpeakerSpotlight from "./components/SpeakerSpotlight";
+import ArchiveToolbar from "./components/ArchiveToolbar";
+import SpeakerGrid from "./components/SpeakerGrid";
+import TimelineView from "./components/TimelineView";
+import SpeakerDrawer from "./components/SpeakerDrawer";
+import type { FlatSpeaker, ViewMode, YearGroup } from "./components/types";
 
 const SPEAKER_IMAGES: Record<string, string> = {
   "malala-yousafzai": "/speakers/malala-yousafzai.jpg",
@@ -42,7 +33,7 @@ const SPEAKERS_BY_YEAR: YearGroup[] = [
         title: "U.S. Senator from Vermont",
         bio: "Bernie Sanders is the longest-serving independent in congressional history, currently serving as U.S. Senator from Vermont. He previously served in the House of Representatives for 16 years. Sanders ran for the Democratic presidential nomination in 2016 and 2020, becoming one of the most prominent progressive voices in American politics. He is known for his decades-long advocacy on issues including income inequality, universal healthcare, climate change, and campaign finance reform. He served as chair of the Senate Budget Committee and has authored several books, including The Speech and Our Revolution.",
         videoUrl: "https://youtu.be/Wx18tNmNYbE?t=712",
-        videoLabel: "Watch Livestream →",
+        videoLabel: "Watch Livestream",
       },
       {
         slug: "ro-khanna",
@@ -240,158 +231,141 @@ const SPEAKERS_BY_YEAR: YearGroup[] = [
   },
 ];
 
-const INITIAL_EXPANDED: Record<string, boolean> = Object.fromEntries(
-  SPEAKERS_BY_YEAR.map((g) => [g.year, true]),
+const ALL_SPEAKERS: FlatSpeaker[] = SPEAKERS_BY_YEAR.flatMap((g) =>
+  g.speakers.map((s) => ({ ...s, year: g.year })),
 );
 
-function VideoLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {label}
-    </a>
-  );
-}
+const YEARS: string[] = SPEAKERS_BY_YEAR.map((g) => g.year);
 
-function SpeakerWithPhoto({ speaker }: { speaker: Speaker }) {
-  const image = SPEAKER_IMAGES[speaker.slug];
-  return (
-    <div className="mb-8 sm:relative sm:pl-56 sm:min-h-48">
-      <div className="relative sm:absolute sm:left-0 sm:top-0 w-full sm:w-48 h-48 mb-4 sm:mb-0 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-        <Image
-          src={image}
-          alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, 192px"
-        />
-      </div>
-      <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
-        {speaker.name}
-      </h3>
-      {speaker.title && (
-        <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
-          {speaker.title}
-        </p>
-      )}
-      <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-2">
-        {speaker.bio}
-      </p>
-      {speaker.videoUrl && speaker.videoLabel && (
-        <VideoLink href={speaker.videoUrl} label={speaker.videoLabel} />
-      )}
-    </div>
-  );
-}
-
-function SpeakerTextOnly({ speaker }: { speaker: Speaker }) {
-  return (
-    <div className="mb-8 relative pl-5 sm:pl-6 border-l-2 border-[#A80D0C]/70">
-      <h3 className="text-xl sm:text-2xl font-semibold font-serif text-black dark:text-white mb-0">
-        {speaker.name}
-      </h3>
-      {speaker.title && (
-        <p className="text-base sm:text-lg font-normal text-zinc-600 dark:text-zinc-400 mb-2">
-          {speaker.title}
-        </p>
-      )}
-      <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed mb-2">
-        {speaker.bio}
-      </p>
-      {speaker.videoUrl && speaker.videoLabel && (
-        <VideoLink href={speaker.videoUrl} label={speaker.videoLabel} />
-      )}
-    </div>
-  );
-}
-
-function SpeakerRow({ speaker }: { speaker: Speaker }) {
-  const hasPhoto = Boolean(SPEAKER_IMAGES[speaker.slug]);
-  return hasPhoto ? (
-    <SpeakerWithPhoto speaker={speaker} />
-  ) : (
-    <SpeakerTextOnly speaker={speaker} />
-  );
-}
-
-function YearSection({
-  group,
-  expanded,
-  onToggle,
-}: {
-  group: YearGroup;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="mb-12">
-      <h2
-        className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 cursor-pointer flex items-center gap-2 sm:gap-3 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
-        onClick={onToggle}
-      >
-        <motion.span
-          className="text-xl sm:text-2xl inline-block w-5 sm:w-6"
-          initial={{ rotate: expanded ? 0 : -90 }}
-          animate={{ rotate: expanded ? 0 : -90 }}
-          transition={{ duration: 0.3 }}
-        >
-          ▼
-        </motion.span>
-        {group.year}
-      </h2>
-
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
-          >
-            {group.speakers.map((speaker) => (
-              <SpeakerRow key={speaker.slug} speaker={speaker} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+const SPOTLIGHT_SLUGS = [
+  "malala-yousafzai",
+  "hasan-minhaj",
+  "mark-rober",
+  "jojo-siwa",
+  "john-green",
+];
 
 export default function PastSpeakersClient() {
-  const [expandedYears, setExpandedYears] =
-    useState<Record<string, boolean>>(INITIAL_EXPANDED);
+  const [query, setQuery] = useState("");
+  const [yearFilter, setYearFilter] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
-  const toggleYear = (year: string) => {
-    setExpandedYears((prev) => ({
-      ...prev,
-      [year]: !prev[year],
+  const filteredSpeakers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return ALL_SPEAKERS.filter((s) => {
+      if (yearFilter && s.year !== yearFilter) return false;
+      if (!q) return true;
+      return (
+        s.name.toLowerCase().includes(q) ||
+        (s.title?.toLowerCase().includes(q) ?? false) ||
+        s.bio.toLowerCase().includes(q)
+      );
+    });
+  }, [query, yearFilter]);
+
+  const filteredByYear = useMemo(() => {
+    return YEARS.map((year) => ({
+      year,
+      speakers: filteredSpeakers.filter((s) => s.year === year),
     }));
+  }, [filteredSpeakers]);
+
+  const spotlightSpeakers = useMemo(() => {
+    return SPOTLIGHT_SLUGS.map((slug) => {
+      const speaker = ALL_SPEAKERS.find((s) => s.slug === slug);
+      const image = SPEAKER_IMAGES[slug];
+      if (!speaker || !image) return null;
+      return { ...speaker, image };
+    }).filter((s): s is NonNullable<typeof s> => s !== null);
+  }, []);
+
+  const selectedSpeaker = selectedSlug
+    ? (filteredSpeakers.find((s) => s.slug === selectedSlug) ??
+      ALL_SPEAKERS.find((s) => s.slug === selectedSlug) ??
+      null)
+    : null;
+
+  const navigationList = useMemo(() => {
+    // If selected speaker is in the current filter, navigate within it.
+    // Otherwise fall back to full list (e.g., opened from spotlight).
+    if (
+      selectedSlug &&
+      filteredSpeakers.some((s) => s.slug === selectedSlug)
+    ) {
+      return filteredSpeakers;
+    }
+    return ALL_SPEAKERS;
+  }, [selectedSlug, filteredSpeakers]);
+
+  const selectedIndex = selectedSlug
+    ? navigationList.findIndex((s) => s.slug === selectedSlug)
+    : -1;
+
+  const openSpeaker = (slug: string) => setSelectedSlug(slug);
+  const closeDrawer = () => setSelectedSlug(null);
+  const nextSpeaker = () => {
+    if (navigationList.length === 0) return;
+    const next = (selectedIndex + 1) % navigationList.length;
+    setSelectedSlug(navigationList[next].slug);
+  };
+  const prevSpeaker = () => {
+    if (navigationList.length === 0) return;
+    const prev =
+      (selectedIndex - 1 + navigationList.length) % navigationList.length;
+    setSelectedSlug(navigationList[prev].slug);
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full justify-center bg-white dark:bg-black pt-24">
-        <section className="w-full max-w-5xl lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-          <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
-            Past Speakers
-          </h1>
+    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+      <main className="flex w-full flex-col">
+        <ArchiveHero
+          speakerNames={ALL_SPEAKERS.map((s) => s.name)}
+        />
 
-          {SPEAKERS_BY_YEAR.map((group) => (
-            <YearSection
-              key={group.year}
-              group={group}
-              expanded={!!expandedYears[group.year]}
-              onToggle={() => toggleYear(group.year)}
-            />
-          ))}
-        </section>
+        <SpeakerSpotlight
+          speakers={spotlightSpeakers}
+          onOpen={openSpeaker}
+        />
+
+        <ArchiveToolbar
+          query={query}
+          onQueryChange={setQuery}
+          year={yearFilter}
+          onYearChange={setYearFilter}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          years={YEARS}
+          resultCount={filteredSpeakers.length}
+          totalCount={ALL_SPEAKERS.length}
+        />
+
+        {viewMode === "grid" ? (
+          <SpeakerGrid
+            speakers={filteredSpeakers}
+            images={SPEAKER_IMAGES}
+            onOpen={openSpeaker}
+          />
+        ) : (
+          <TimelineView
+            sections={filteredByYear}
+            images={SPEAKER_IMAGES}
+            onOpen={openSpeaker}
+          />
+        )}
       </main>
+
+      <SpeakerDrawer
+        speaker={selectedSpeaker}
+        image={
+          selectedSpeaker ? SPEAKER_IMAGES[selectedSpeaker.slug] : undefined
+        }
+        onClose={closeDrawer}
+        onPrev={prevSpeaker}
+        onNext={nextSpeaker}
+        position={selectedIndex + 1}
+        total={navigationList.length}
+      />
     </div>
   );
 }
