@@ -99,12 +99,29 @@ export function getSupabaseClient() {
  */
 const getCachedClosestUpcomingEvent = unstable_cache(
   async (): Promise<Event | null> => {
-    const event = await db.query.events.findFirst({
-      where: gte(events.doorsOpen, new Date()),
+    const now = new Date();
+    const upcoming = await db.query.events.findMany({
+      where: gte(events.doorsOpen, now),
       orderBy: (events, { asc }) => [asc(events.doorsOpen)],
     });
 
-    if (!event) return null;
+    if (upcoming.length === 0) return null;
+
+    // Pick the event with the nearest future milestone. An event's next
+    // milestone is its release_date (if still pending reveal), else its
+    // ticketing_date (if tickets haven't dropped), else doors_open. This
+    // ensures that when two mystery events are both pending reveal, we
+    // surface the one that will be revealed first — not the one whose
+    // doors open first.
+    const nextMilestone = (e: DBEvent): number => {
+      if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
+      if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
+      return e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
+    };
+
+    const event = upcoming.reduce((best, cur) =>
+      nextMilestone(cur) < nextMilestone(best) ? cur : best,
+    );
     return serializeEvent(event);
   },
   ["closest-upcoming-event"],
