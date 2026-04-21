@@ -46,6 +46,8 @@ export type Event = {
   referrals_enabled?: boolean;
   standby_enabled?: boolean;
   ticketing_roles?: string[];
+  external_ticketing_enabled?: boolean;
+  external_ticketing_url?: string | null;
 };
 
 /**
@@ -80,6 +82,8 @@ export function serializeEvent(e: DBEvent): Event {
     hide_ticketing_date: e.hideTicketingDate ?? false,
     referrals_enabled: e.referralsEnabled ?? false,
     standby_enabled: e.standbyEnabled ?? false,
+    external_ticketing_enabled: e.externalTicketingEnabled ?? false,
+    external_ticketing_url: e.externalTicketingUrl ?? null,
   };
 }
 
