@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClosestUpcomingEvent, getImageProxyUrl } from "../../lib/supabase";
+import { getNextMilestoneEvent, getImageProxyUrl } from "../../lib/supabase";
 import { BANNER_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, bannerRatelimit } from "@/app/lib/ratelimit";
 import { getSessionUser } from "@/app/lib/auth";
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const closestEvent = await getClosestUpcomingEvent();
+    const closestEvent = await getNextMilestoneEvent();
 
     // Determine phase: mystery (before release) | before ticketing | event countdown
     // LOCAL_EVENTS_ENABLED=true means all events are treated as released (never mystery)

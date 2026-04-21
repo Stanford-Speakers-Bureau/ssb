@@ -99,6 +99,31 @@ export function getSupabaseClient() {
  */
 const getCachedClosestUpcomingEvent = unstable_cache(
   async (): Promise<Event | null> => {
+    const event = await db.query.events.findFirst({
+      where: gte(events.doorsOpen, new Date()),
+      orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+    });
+
+    if (!event) return null;
+    return serializeEvent(event);
+  },
+  ["closest-upcoming-event"],
+  { revalidate: 60 },
+);
+
+export async function getClosestUpcomingEvent(): Promise<Event | null> {
+  return getCachedClosestUpcomingEvent();
+}
+
+/**
+ * Get the event with the nearest future milestone — release_date (if still
+ * pending reveal), else ticketing_date (if tickets haven't dropped), else
+ * doors_open. Used by the banner/popup so that when multiple mystery events
+ * are pending reveal, we surface the one revealing first instead of the
+ * one whose doors open first.
+ */
+const getCachedNextMilestoneEvent = unstable_cache(
+  async (): Promise<Event | null> => {
     const now = new Date();
     const upcoming = await db.query.events.findMany({
       where: gte(events.doorsOpen, now),
@@ -107,12 +132,6 @@ const getCachedClosestUpcomingEvent = unstable_cache(
 
     if (upcoming.length === 0) return null;
 
-    // Pick the event with the nearest future milestone. An event's next
-    // milestone is its release_date (if still pending reveal), else its
-    // ticketing_date (if tickets haven't dropped), else doors_open. This
-    // ensures that when two mystery events are both pending reveal, we
-    // surface the one that will be revealed first — not the one whose
-    // doors open first.
     const nextMilestone = (e: DBEvent): number => {
       if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
       if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
@@ -124,12 +143,12 @@ const getCachedClosestUpcomingEvent = unstable_cache(
     );
     return serializeEvent(event);
   },
-  ["closest-upcoming-event"],
+  ["next-milestone-event"],
   { revalidate: 60 },
 );
 
-export async function getClosestUpcomingEvent(): Promise<Event | null> {
-  return getCachedClosestUpcomingEvent();
+export async function getNextMilestoneEvent(): Promise<Event | null> {
+  return getCachedNextMilestoneEvent();
 }
 
 /**
