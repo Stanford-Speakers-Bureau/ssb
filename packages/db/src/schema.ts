@@ -65,6 +65,10 @@ export const events = pgTable(
     waitlistChance: text("waitlist_chance").notNull().default("High"),
     standbyEnabled: boolean("standby_enabled").notNull().default(false),
     referralsEnabled: boolean("referrals_enabled").notNull().default(false),
+    externalTicketingEnabled: boolean("external_ticketing_enabled")
+      .notNull()
+      .default(false),
+    externalTicketingUrl: text("external_ticketing_url"),
   },
   (t) => [
     index("events_route_idx").on(t.route),
