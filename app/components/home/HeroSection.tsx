@@ -107,7 +107,7 @@ export default function HeroSection() {
         >
           Stanford&rsquo;s largest student organization sponsor of speaking
           events. We bring Nobel laureates, artists, leaders, and creators to
-          campus — and have since 1935.
+          campus, and have since 1935.
         </motion.p>
 
         <motion.div

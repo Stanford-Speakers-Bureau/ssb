@@ -498,7 +498,7 @@ function MysteryCard({
         </div>
 
         <h2 className="text-xl sm:text-2xl font-semibold text-zinc-300 mb-6">
-          Speaker — To Be Announced
+          Speaker: To Be Announced
         </h2>
 
         {showCountdown && countdownDate && (

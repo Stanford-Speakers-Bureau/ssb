@@ -31,7 +31,7 @@ const PROGRAMS: Program[] = [
   {
     title: "Coffee Chats",
     description:
-      "Intimate conversations with Stanford professors in small groups of eight to ten students. A unique opportunity to engage with faculty in a casual, personal setting.",
+      "A unique opportunity to engage with faculty in a casual, personal setting.",
     image: "/coffee-chat.jpg",
     imageAlt:
       "Coffee Chats at Stanford University from Stanford Speakers Bureau (SSB)",
@@ -66,9 +66,8 @@ function ProgramCard({
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
-      className={`group relative overflow-hidden rounded ${
-        index === 0 ? "md:col-span-2 md:row-span-2 min-h-[420px]" : "min-h-[320px]"
-      }`}
+      className={`group relative overflow-hidden rounded ${index === 0 ? "md:col-span-2 md:row-span-2 min-h-[420px]" : "min-h-[320px]"
+        }`}
     >
       <Image
         src={program.image}
@@ -85,20 +84,18 @@ function ProgramCard({
 
       <div className="absolute inset-0 flex flex-col justify-end p-7 sm:p-9">
         <h3
-          className={`font-serif text-white leading-tight mb-3 ${
-            index === 0
+          className={`font-serif text-white leading-tight mb-3 ${index === 0
               ? "text-3xl sm:text-4xl"
               : "text-2xl sm:text-3xl"
-          }`}
+            }`}
         >
           {program.title}
         </h3>
         <p
-          className={`font-sans text-zinc-200 leading-relaxed mb-5 ${
-            index === 0
+          className={`font-sans text-zinc-200 leading-relaxed mb-5 ${index === 0
               ? "text-base max-w-lg"
               : "text-sm max-w-sm line-clamp-3"
-          }`}
+            }`}
         >
           {program.description}
         </p>

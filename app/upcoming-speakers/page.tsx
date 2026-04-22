@@ -153,7 +153,7 @@ export default async function UpcomingSpeakers() {
                   name={event.isMystery ? "???" : event.name || "???"}
                   header={
                     event.isMystery
-                      ? "Speaker — To Be Announced"
+                      ? "Speaker: To Be Announced"
                       : event.tagline || ""
                   }
                   dateText={formatEventDate(event.isMystery ? event.doors_open : event.start_time_date)}

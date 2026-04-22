@@ -235,7 +235,7 @@ export default function WaitlistPosition({
             </div>
             {formattedDoorsOpen && (
               <p className="text-sm font-semibold text-white dark:text-white mb-2">
-                We start letting people off the standby line at {formattedDoorsOpen} — arrive earlier to secure your spot
+                We start letting people off the standby line at {formattedDoorsOpen}. Arrive earlier to secure your spot
               </p>
             )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
@@ -362,7 +362,7 @@ export default function WaitlistPosition({
               </p>
             )}
             <p className="text-xs text-zinc-300 dark:text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show — arrive as early as possible for the best chance of getting in.
+              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show, so arrive as early as possible for the best chance of getting in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-300 dark:text-zinc-400">

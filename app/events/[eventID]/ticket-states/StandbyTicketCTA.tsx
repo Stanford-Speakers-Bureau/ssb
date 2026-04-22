@@ -36,7 +36,7 @@ export default function StandbyTicketCTA({
       </p>
       <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5">
         Grab a standby ticket below and head to the venue.
-        You&apos;ll be admitted as spots become available — no guarantee, but many people get in.
+        You&apos;ll be admitted as spots become available. No guarantee, but many people get in.
       </p>
 
       {/* High chance indicator */}

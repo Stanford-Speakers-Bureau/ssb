@@ -75,7 +75,7 @@ export default function JoinWaitlist({
               </div>
               <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-snug">Show up in person</p>
               <p className="text-xs text-zinc-500 leading-relaxed mt-1">
-                Join the standby line — first come, first serve.
+                Join the standby line, first come, first serve.
               </p>
             </div>
           </div>

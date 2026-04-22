@@ -77,7 +77,7 @@ const TIERS: Tier[] = [
     title: "Partnerships",
     subtitle: "Full-service",
     description:
-      "From finding speakers and negotiating honoraria to venue booking and day-of staffing — we run the event with you, not just next to you.",
+      "From finding speakers and negotiating honoraria to venue booking and day-of staffing, we run the event with you, not just next to you.",
   },
 ];
 
@@ -120,7 +120,7 @@ const STEPS: Step[] = [
         >
           application form
         </a>
-        . We review on a first-come, first-served basis — apply early.
+        . We review on a first-come, first-served basis, so apply early.
       </>
     ),
   },
@@ -441,7 +441,7 @@ function FundingSection() {
             </h2>
             <p className="font-sans text-base text-zinc-400 leading-relaxed">
               SSB covers the concrete costs of getting someone on stage at
-              Stanford — the things the flyer never mentions but which make or
+              Stanford, the things the flyer never mentions but which make or
               break an event.
             </p>
           </div>

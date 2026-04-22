@@ -160,7 +160,7 @@ function ContactHero() {
           transition={{ duration: 1.5, delay: .5, ease: EASE }}
           className="font-sans text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl leading-relaxed"
         >
-          Ideas, sponsorships, press, or just a question &mdash; we read every
+          Ideas, sponsorships, press, or just a question, we read every
           message.
         </motion.p>
       </div>

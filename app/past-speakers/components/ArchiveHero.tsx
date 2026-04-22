@@ -104,7 +104,7 @@ export default function ArchiveHero({
         >
           Since 1935, Stanford Speakers Bureau has brought Nobel laureates,
           activists, artists, athletes, and provocateurs to Stanford. Every
-          speaker below has lit up a room on our campus — scroll, search, and
+          speaker below has lit up a room on our campus. Scroll, search, and
           relive them.
         </motion.p>
       </div>

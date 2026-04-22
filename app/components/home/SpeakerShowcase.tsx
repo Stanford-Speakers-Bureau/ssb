@@ -48,7 +48,7 @@ function ArchiveSlide() {
             90 years of <span className="text-[#A80D0C]">voices</span> on our stage.
           </h3>
           <p className="font-sans text-sm sm:text-base text-zinc-300 leading-relaxed max-w-sm">
-            From Nobel laureates to comedians to sitting mayors — every speaker
+            From Nobel laureates to comedians to sitting mayors, every speaker
             who has graced an SSB stage, searchable by year.
           </p>
         </div>

@@ -238,8 +238,8 @@ function DirectorsSection() {
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Directors
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-3xl">
-            The folks owning the functions that make events happen.
+          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-6xl">
+            The folks that make events happen.
           </h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">

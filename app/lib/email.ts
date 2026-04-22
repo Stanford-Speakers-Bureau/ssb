@@ -1092,12 +1092,12 @@ async function generateTicketEmailHTML(
   // VIP welcome
   if (isVIP) {
     contentSections.push(buildParagraph(
-      "Use the VIP entrance when you arrive &mdash; we've saved you a front-row seat.",
+      "Use the VIP entrance when you arrive, we've saved you a front-row seat.",
     ));
   }
 
   // Welcome message
-  contentSections.push(buildParagraph("Your ticket is confirmed &mdash; we can't wait to see you!"));
+  contentSections.push(buildParagraph("Your ticket is confirmed, we can't wait to see you!"));
 
   // Cancel ticket message + button (VIP/External only — regular tickets use the top banner)
   if (isVIP || isExternal) {
@@ -1192,9 +1192,9 @@ function generateTicketEmailText(data: TicketEmailData): string {
   return `
 ${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
 
-Your ticket is confirmed — we can't wait to see you!
+Your ticket is confirmed, we can't wait to see you!
 
-${isVIP ? "Use the VIP entrance when you arrive — we've saved you a front-row seat.\n\n" : ""}Event Details:
+${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}

@@ -110,7 +110,7 @@ export default function CtaSection() {
           </h2>
           <p className="font-sans text-base text-zinc-400 max-w-lg mx-auto">
             Whether you want to attend events, suggest speakers, or partner with
-            us — there&rsquo;s a place for you at SSB.
+            us, there&rsquo;s a place for you at SSB.
           </p>
         </div>
 
