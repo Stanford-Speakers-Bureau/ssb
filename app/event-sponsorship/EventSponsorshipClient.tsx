@@ -393,7 +393,7 @@ function ProgramsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {TIERS.map((tier, i) => (
             <TierCard key={tier.title} tier={tier} index={i} />
           ))}
