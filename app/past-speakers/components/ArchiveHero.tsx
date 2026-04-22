@@ -24,7 +24,7 @@ function Marquee({
       className="relative overflow-hidden whitespace-nowrap select-none"
     >
       <motion.div
-        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-zinc-200/80 dark:text-zinc-800/80"
+        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-zinc-800/80"
         initial={{ x: from }}
         animate={reduce ? { x: from } : { x: to }}
         transition={
@@ -59,13 +59,13 @@ export default function ArchiveHero({
   const bottom = speakerNames.slice(half);
 
   return (
-    <section className="relative overflow-hidden bg-zinc-50 dark:bg-black pt-32 pb-20 sm:pt-40 sm:pb-28">
+    <section className="relative overflow-hidden bg-black pt-32 pb-20 sm:pt-40 sm:pb-28">
       <div className="absolute inset-0 flex flex-col justify-between py-16 sm:py-20">
         <Marquee names={top} direction="left" durationSec={60} />
         <Marquee names={bottom} direction="right" durationSec={75} />
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-50 via-zinc-50/60 to-zinc-50 dark:from-black dark:via-black/60 dark:to-black pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-black/60 to-black pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-12 text-center">
         <motion.p
@@ -81,7 +81,7 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-serif text-6xl sm:text-8xl lg:text-9xl text-black dark:text-white leading-[0.9] mb-6"
+          className="font-serif text-6xl sm:text-8xl lg:text-9xl text-white leading-[0.9] mb-6"
         >
           The Archive
         </motion.h1>
@@ -90,7 +90,7 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="font-serif text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 mb-4"
+          className="font-serif text-xl sm:text-2xl text-zinc-300 mb-4"
         >
           A living record of the voices who have stood on our stage.
         </motion.p>
@@ -99,7 +99,7 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="max-w-2xl mx-auto text-base text-zinc-600 dark:text-zinc-400"
+          className="max-w-2xl mx-auto text-base text-zinc-400"
         >
           Since 1935, Stanford Speakers Bureau has brought Nobel laureates,
           activists, artists, athletes, and provocateurs to Stanford. Every

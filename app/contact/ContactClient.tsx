@@ -186,7 +186,7 @@ function ReasonCardView({
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.12, ease: "easeOut" }}
-      className="group relative flex flex-col rounded-lg border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:border-[#A80D0C]/50 hover:shadow-xl hover:shadow-[#A80D0C]/5"
+      className="group relative flex flex-col rounded-lg border border-zinc-900 bg-black p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:border-[#A80D0C]/50 hover:shadow-xl hover:shadow-[#A80D0C]/5"
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C]/10 text-[#A80D0C] mb-6 transition-colors group-hover:bg-[#A80D0C]/20">
         {card.icon}
@@ -194,10 +194,10 @@ function ReasonCardView({
       <p className="text-xs uppercase tracking-[0.25em] text-[#A80D0C] mb-3 font-semibold">
         {card.kicker}
       </p>
-      <h2 className="font-serif text-2xl sm:text-3xl text-zinc-900 dark:text-white mb-3 leading-tight">
+      <h2 className="font-serif text-2xl sm:text-3xl text-white mb-3 leading-tight">
         {card.title}
       </h2>
-      <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-7 flex-1">
+      <p className="font-sans text-sm text-zinc-400 leading-relaxed mb-7 flex-1">
         {card.description}
       </p>
       {card.cta.external ? (
@@ -256,13 +256,13 @@ function ReasonCardView({
 
 function ReasonsSection() {
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 py-20 sm:py-28 px-6 sm:px-12">
+    <section className="bg-zinc-950 border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Start Here
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95]">
+          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95]">
             Three ways to reach us.
           </h2>
         </div>
@@ -282,7 +282,7 @@ function FurtherReading() {
   return (
     <section
       ref={ref}
-      className="bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-900 py-16 sm:py-20 px-6 sm:px-12"
+      className="bg-black border-t border-zinc-900 py-16 sm:py-20 px-6 sm:px-12"
     >
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -293,7 +293,7 @@ function FurtherReading() {
         <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-4">
           Further Reading
         </p>
-        <p className="font-serif text-xl sm:text-2xl text-zinc-800 dark:text-zinc-200 leading-relaxed max-w-2xl mx-auto">
+        <p className="font-serif text-xl sm:text-2xl text-zinc-200 leading-relaxed max-w-2xl mx-auto">
           Before planning an event, the{" "}
           <a
             href="https://ose.stanford.edu/student-orgs/event-planning"
@@ -320,7 +320,7 @@ function FurtherReading() {
 
 export default function ContactClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       <main className="flex w-full flex-col">
         <ContactHero />
         <ReasonsSection />

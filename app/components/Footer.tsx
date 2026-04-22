@@ -2,44 +2,44 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative z-30 bg-gray-100 dark:bg-zinc-900">
+    <footer className="relative z-30 bg-zinc-950 border-t border-zinc-900">
       <div className="mx-auto max-w-5xl px-8 py-8 sm:px-12 md:px-16">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           {/* Navigation Links - Left Side */}
           <nav className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-x-6 md:gap-y-2">
             <Link
               href="/upcoming-speakers"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Upcoming Speakers
             </Link>
             <Link
               href="/past-speakers"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Past Speakers
             </Link>
             <Link
               href="/suggest"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Suggest
             </Link>
             <Link
               href="/event-sponsorship"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Event Sponsorship
             </Link>
             <Link
               href="/team"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Team
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-gray-400 hover:text-[#A80D0C] transition-colors"
             >
               Contact
             </Link>
@@ -52,7 +52,7 @@ export default function Footer() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-gray-400 hover:text-[#A80D0C] transition-colors"
               aria-label="Join our mailing list"
             >
               <svg
@@ -76,7 +76,7 @@ export default function Footer() {
               href="https://www.instagram.com/stanfordspeakersbureau/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-gray-400 hover:text-[#A80D0C] transition-colors"
               aria-label="Follow us on Instagram"
             >
               <svg
@@ -96,8 +96,8 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-500">
+        <div className="mt-6 pt-6 border-t border-zinc-900">
+          <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} Stanford Speakers Bureau. All
             rights reserved.
           </p>

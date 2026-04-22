@@ -7,7 +7,7 @@ import CtaSection from "./components/home/CtaSection";
 
 export default function HomeClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       <HeroSection />
       <SpeakerShowcase />
       <ProgramsSection />

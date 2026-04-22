@@ -21,7 +21,7 @@ export default function TimelineView({
   if (sections.every((s) => s.speakers.length === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-24 text-center">
-        <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-400">
+        <p className="font-serif text-2xl text-zinc-400">
           No speakers match that search.
         </p>
       </div>
@@ -82,10 +82,10 @@ export default function TimelineView({
                     <button
                       type="button"
                       onClick={() => onOpen(speaker.slug)}
-                      className="group block w-full text-left rounded border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 p-6 sm:p-8 transition-all hover:border-[#A80D0C] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+                      className="group block w-full text-left rounded border border-zinc-900 bg-zinc-950 p-6 sm:p-8 transition-all hover:border-[#A80D0C] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
                     >
                       {image && (
-                        <div className="relative w-full h-56 mb-5 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                        <div className="relative w-full h-56 mb-5 rounded overflow-hidden bg-zinc-900">
                           <Image
                             src={image}
                             alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -95,7 +95,7 @@ export default function TimelineView({
                           />
                         </div>
                       )}
-                      <h3 className="font-serif text-2xl sm:text-3xl text-black dark:text-white leading-tight mb-2">
+                      <h3 className="font-serif text-2xl sm:text-3xl text-white leading-tight mb-2">
                         {speaker.name}
                       </h3>
                       {speaker.title && (
@@ -103,7 +103,7 @@ export default function TimelineView({
                           {speaker.title}
                         </p>
                       )}
-                      <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-4">
+                      <p className="font-sans text-sm text-zinc-400 leading-relaxed line-clamp-4">
                         {speaker.bio}
                       </p>
                     </button>

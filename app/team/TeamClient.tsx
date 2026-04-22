@@ -99,7 +99,7 @@ function LeaderCard({
       transition={{ duration: 0.6, delay: index * 0.12, ease: "easeOut" }}
       className="group"
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-900 bg-zinc-100 dark:bg-zinc-950 mb-5">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg ring-1 ring-zinc-900 bg-zinc-950 mb-5">
         <Image
           src={member.image}
           alt={member.name}
@@ -109,21 +109,21 @@ function LeaderCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
-      <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 dark:text-white mb-1 leading-tight">
+      <h3 className="font-serif text-2xl sm:text-3xl text-white mb-1 leading-tight">
         {member.name}
       </h3>
       <p className="text-xs uppercase tracking-[0.2em] text-[#A80D0C] mb-3 font-semibold">
         {member.role}
       </p>
       {member.bio && (
-        <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-3">
+        <p className="font-sans text-sm text-zinc-400 leading-relaxed mb-3">
           {member.bio}
         </p>
       )}
       {member.email && (
         <a
           href={`mailto:${member.email}`}
-          className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-zinc-500 dark:text-zinc-500 hover:text-[#A80D0C] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-zinc-500 hover:text-[#A80D0C] transition-colors"
         >
           <svg
             width="12"
@@ -148,13 +148,13 @@ function LeaderCard({
 
 function LeadershipSection() {
   return (
-    <section className="bg-white dark:bg-black py-20 sm:py-28 px-6 sm:px-12 border-t border-zinc-200 dark:border-zinc-900">
+    <section className="bg-black py-20 sm:py-28 px-6 sm:px-12 border-t border-zinc-900">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Leadership
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95] max-w-3xl">
+          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-3xl">
             The people who set the vision for the year.
           </h2>
         </div>
@@ -185,7 +185,7 @@ function DirectorCard({
       transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
       className="group relative overflow-hidden rounded-lg"
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+      <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
         <Image
           src={member.image}
           alt={member.name}
@@ -206,7 +206,7 @@ function DirectorCard({
       {member.email && (
         <a
           href={`mailto:${member.email}`}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-zinc-500 dark:text-zinc-500 hover:text-[#A80D0C] transition-colors"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-zinc-500 hover:text-[#A80D0C] transition-colors"
         >
           <svg
             width="12"
@@ -231,13 +231,13 @@ function DirectorCard({
 
 function DirectorsSection() {
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12">
+    <section className="bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Directors
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95] max-w-3xl">
+          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-3xl">
             The folks owning the functions that make events happen.
           </h2>
         </div>
@@ -330,7 +330,7 @@ function JoinCta() {
 
 export default function TeamClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       <main className="flex w-full flex-col">
         <TeamHero />
         <LeadershipSection />

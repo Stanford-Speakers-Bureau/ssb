@@ -170,7 +170,7 @@ export default function SpeakerSpotlight({
 
   return (
     <section
-      className="relative border-y border-zinc-200 dark:border-zinc-900 bg-black"
+      className="relative border-y border-zinc-900 bg-black"
       onMouseEnter={() => (pausedRef.current = true)}
       onMouseLeave={() => (pausedRef.current = false)}
     >

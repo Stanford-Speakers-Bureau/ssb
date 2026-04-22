@@ -300,8 +300,8 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
       transition={{ duration: 0.6, delay: index * 0.12, ease: "easeOut" }}
       className={`group relative flex flex-col overflow-hidden rounded-lg border p-8 sm:p-10 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl ${
         isFeatured
-          ? "md:col-span-2 md:row-span-1 border-[#A80D0C]/40 bg-[#A80D0C]/[0.04] hover:shadow-[#A80D0C]/10 dark:bg-[#A80D0C]/[0.07]"
-          : "border-zinc-200 bg-white hover:border-[#A80D0C]/40 hover:shadow-black/5 dark:border-zinc-900 dark:bg-zinc-950 dark:hover:shadow-black/40"
+          ? "md:col-span-2 md:row-span-1 border-[#A80D0C]/40 bg-[#A80D0C]/[0.07] hover:shadow-[#A80D0C]/10"
+          : "border-zinc-900 bg-zinc-950 hover:border-[#A80D0C]/40 hover:shadow-black/40"
       }`}
     >
       <div className="flex items-baseline gap-3 mb-4">
@@ -317,17 +317,17 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
       </div>
 
       <h3
-        className={`font-serif text-zinc-900 dark:text-white leading-[0.95] mb-2 ${
+        className={`font-serif text-white leading-[0.95] mb-2 ${
           isFeatured ? "text-3xl sm:text-5xl" : "text-2xl sm:text-3xl"
         }`}
       >
         {tier.title}
       </h3>
-      <p className="font-sans text-sm italic text-zinc-500 dark:text-zinc-500 mb-5">
+      <p className="font-sans text-sm italic text-zinc-500 mb-5">
         {tier.subtitle}
       </p>
       <p
-        className={`font-sans text-zinc-700 dark:text-zinc-300 leading-relaxed ${
+        className={`font-sans text-zinc-300 leading-relaxed ${
           isFeatured ? "text-base max-w-2xl" : "text-sm"
         }`}
       >
@@ -343,7 +343,7 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
             {COMMUNITY_TAGS.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center rounded-full border border-[#A80D0C]/30 bg-white dark:bg-black text-[#A80D0C] px-3 py-1 text-xs font-semibold"
+                className="inline-flex items-center rounded-full border border-[#A80D0C]/30 bg-black text-[#A80D0C] px-3 py-1 text-xs font-semibold"
               >
                 {tag}
               </span>
@@ -357,16 +357,16 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
 
 function ProgramsSection() {
   return (
-    <section className="bg-white dark:bg-black py-20 sm:py-28 px-6 sm:px-12">
+    <section className="bg-black py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Our Programs
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95]">
+          <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95]">
             Three ways we back student events.
           </h2>
-          <p className="font-sans text-base text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto mt-4 leading-relaxed">
+          <p className="font-sans text-base text-zinc-400 max-w-xl mx-auto mt-4 leading-relaxed">
             Every event is different. Pick the tier that matches what you need
             and we&rsquo;ll figure out the rest together.
           </p>
@@ -397,7 +397,7 @@ function FundingItem({
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
-      className="flex gap-4 p-5 rounded-lg border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black transition-colors hover:border-[#A80D0C]/40"
+      className="flex gap-4 p-5 rounded-lg border border-zinc-900 bg-black transition-colors hover:border-[#A80D0C]/40"
     >
       <div className="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#A80D0C]/10 text-[#A80D0C]">
         <svg
@@ -415,10 +415,10 @@ function FundingItem({
         </svg>
       </div>
       <div>
-        <p className="font-serif text-lg text-zinc-900 dark:text-white mb-1 leading-tight">
+        <p className="font-serif text-lg text-white mb-1 leading-tight">
           {item.label}
         </p>
-        <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        <p className="font-sans text-sm text-zinc-400 leading-relaxed">
           {item.body}
         </p>
       </div>
@@ -428,17 +428,17 @@ function FundingItem({
 
 function FundingSection() {
   return (
-    <section className="bg-white dark:bg-black py-20 sm:py-28 px-6 sm:px-12 border-y border-zinc-200 dark:border-zinc-900">
+    <section className="bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12 border-y border-zinc-900">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-10 lg:gap-16 items-start">
           <div className="lg:sticky lg:top-28">
             <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-4">
               What we fund
             </p>
-            <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95] mb-5">
+            <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] mb-5">
               Actual line items, not vibes.
             </h2>
-            <p className="font-sans text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="font-sans text-base text-zinc-400 leading-relaxed">
               SSB covers the concrete costs of getting someone on stage at
               Stanford — the things the flyer never mentions but which make or
               break an event.
@@ -594,7 +594,7 @@ function CtaFooter() {
 
 export default function EventSponsorshipClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       <main className="flex w-full flex-col">
         <SponsorshipHero />
         <ProgramsSection />

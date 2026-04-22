@@ -85,7 +85,7 @@ export default function PastSpeakersClient() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       <main className="flex w-full flex-col">
         <ArchiveHero speakerNames={SPEAKERS.map((s) => s.name)} />
 

@@ -54,7 +54,14 @@ function writeCachedAuthState(authenticated: boolean) {
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const isWhiteNavPage = pathname === "/" || pathname === "/contact" || pathname.startsWith("/events/");
+  const isWhiteNavPage =
+    pathname === "/"
+    || pathname === "/contact"
+    || pathname === "/team"
+    || pathname === "/suggest"
+    || pathname === "/past-speakers"
+    || pathname === "/event-sponsorship"
+    || pathname.startsWith("/events/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
     () => readCachedAuthState(),

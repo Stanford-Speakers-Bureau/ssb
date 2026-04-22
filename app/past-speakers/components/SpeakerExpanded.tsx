@@ -21,7 +21,7 @@ export default function SpeakerExpanded({
   if (sections.every((s) => s.speakers.length === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-24 text-center">
-        <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-400">
+        <p className="font-serif text-2xl text-zinc-400">
           No speakers match that search.
         </p>
       </div>
@@ -37,10 +37,10 @@ export default function SpeakerExpanded({
         return (
           <section key={section.year} className="mb-16 last:mb-0">
             <div className="flex items-baseline gap-4 mb-6">
-              <h2 className="font-serif text-4xl sm:text-5xl text-black dark:text-white">
+              <h2 className="font-serif text-4xl sm:text-5xl text-white">
                 {section.year}
               </h2>
-              <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+              <span className="h-px flex-1 bg-zinc-800" />
             </div>
 
             <div className="space-y-6">
@@ -85,7 +85,7 @@ function ExpandedCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-900 bg-zinc-950 dark:bg-zinc-950"
+      className="group relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
     >
       <div
         className={`grid ${image ? "md:grid-cols-2" : "grid-cols-1"} ${

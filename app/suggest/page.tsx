@@ -109,14 +109,14 @@ function UserSuggestionsPanel({
 }) {
   if (!isLoggedIn) {
     return (
-      <p className="font-sans text-sm text-zinc-500 dark:text-zinc-500">
+      <p className="font-sans text-sm text-zinc-500">
         Sign in to see the speakers you&rsquo;ve suggested.
       </p>
     );
   }
   if (userSuggestions.length === 0) {
     return (
-      <p className="font-sans text-sm text-zinc-500 dark:text-zinc-500">
+      <p className="font-sans text-sm text-zinc-500">
         You haven&rsquo;t suggested anyone yet.
       </p>
     );
@@ -126,30 +126,30 @@ function UserSuggestionsPanel({
       {userSuggestions.map((s) => {
         let statusLabel = "Pending review";
         let statusClass =
-          "text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300";
+          "text-amber-300 bg-amber-950/40";
 
         if (s.approved) {
           statusLabel = "On leaderboard";
           statusClass =
-            "text-green-700 bg-green-50 dark:bg-green-950/40 dark:text-green-300";
+            "text-green-300 bg-green-950/40";
         } else if (s.reviewed && !s.approved) {
           if (s.duplicate) {
             statusLabel = "Duplicate";
             statusClass =
-              "text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300";
+              "text-amber-300 bg-amber-950/40";
           } else {
             statusLabel = "Not selected";
             statusClass =
-              "text-zinc-600 bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-400";
+              "text-zinc-400 bg-zinc-900";
           }
         }
 
         return (
           <li
             key={s.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black px-4 py-3"
+            className="flex items-center justify-between gap-3 rounded-md border border-zinc-800 bg-black px-4 py-3"
           >
-            <span className="font-sans text-sm text-zinc-900 dark:text-white truncate">
+            <span className="font-sans text-sm text-white truncate">
               {s.speaker}
             </span>
             <span
@@ -208,10 +208,10 @@ export default async function SuggestPage({
     .filter(Boolean);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-black font-sans">
       {authError && (
         <div
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-3 rounded text-sm font-medium text-red-800 bg-red-50 dark:bg-red-950/80 dark:text-red-300 shadow-lg border border-red-200 dark:border-red-900"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-3 rounded text-sm font-medium text-red-300 bg-red-950/80 shadow-lg border border-red-900"
           role="alert"
         >
           Authentication failed. Please try signing in again.
@@ -225,16 +225,16 @@ export default async function SuggestPage({
           totalVotes={totalVotes}
         />
 
-        <section className="relative bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
+        <section className="relative bg-black border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-start">
             <div>
               <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-4">
                 The Shortlist
               </p>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-zinc-900 dark:text-white leading-[0.95] mb-6">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-[0.95] mb-6">
                 Our next speaker starts with a name on this list.
               </h2>
-              <p className="font-sans text-base sm:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed mb-10 max-w-xl">
+              <p className="font-sans text-base sm:text-lg text-zinc-400 leading-relaxed mb-10 max-w-xl">
                 SSB books dozens of speakers a year. We only get there because
                 the Stanford community tells us who they actually want to hear.
                 Drop a name below and we&rsquo;ll take it from there.
@@ -250,10 +250,10 @@ export default async function SuggestPage({
                       {step.num}
                     </span>
                     <div>
-                      <h3 className="font-serif text-xl sm:text-2xl text-zinc-900 dark:text-white mb-1.5">
+                      <h3 className="font-serif text-xl sm:text-2xl text-white mb-1.5">
                         {step.title}
                       </h3>
-                      <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-md">
+                      <p className="font-sans text-sm text-zinc-400 leading-relaxed max-w-md">
                         {step.body}
                       </p>
                     </div>
@@ -264,22 +264,22 @@ export default async function SuggestPage({
 
             <div className="lg:sticky lg:top-28">
               {user ? (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-6 sm:p-8 shadow-sm">
+                <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-sm">
                   <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
                     Submit
                   </p>
-                  <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 dark:text-white mb-5 leading-tight">
+                  <h3 className="font-serif text-2xl sm:text-3xl text-white mb-5 leading-tight">
                     Add a name to the list
                   </h3>
-                  <div className="flex items-center gap-3 mb-6 pb-5 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center gap-3 mb-6 pb-5 border-b border-zinc-800">
                     <div className="w-9 h-9 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
                       {userInitials}
                     </div>
                     <div className="text-xs leading-tight">
-                      <p className="text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">
+                      <p className="text-zinc-500 uppercase tracking-wider">
                         Signed in as
                       </p>
-                      <p className="text-zinc-900 dark:text-white font-medium truncate max-w-[220px] mt-0.5">
+                      <p className="text-white font-medium truncate max-w-[220px] mt-0.5">
                         {userName || user?.email}
                       </p>
                     </div>
@@ -287,14 +287,14 @@ export default async function SuggestPage({
                   <SuggestForm />
                 </div>
               ) : (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-8 text-center shadow-sm">
+                <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-8 text-center shadow-sm">
                   <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
                     Sign in required
                   </p>
-                  <h3 className="font-serif text-2xl text-zinc-900 dark:text-white mb-3 leading-tight">
+                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">
                     Use your Stanford account to suggest and vote
                   </h3>
-                  <p className="font-sans text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
+                  <p className="font-sans text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
                     One account, one vote. Takes a few seconds through Stanford
                     SSO.
                   </p>
@@ -325,16 +325,16 @@ export default async function SuggestPage({
           </div>
         </section>
 
-        <section className="relative bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
+        <section className="relative bg-zinc-950 border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
               <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
                 The Leaderboard
               </p>
-              <h2 className="font-serif text-3xl sm:text-5xl text-zinc-900 dark:text-white leading-[0.95]">
+              <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95]">
                 Who the community wants next
               </h2>
-              <p className="font-sans text-base text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto mt-4">
+              <p className="font-sans text-base text-zinc-400 max-w-lg mx-auto mt-4">
                 Ranked by votes. Tap the upvote to move a name up the list.
               </p>
             </div>
@@ -353,9 +353,9 @@ export default async function SuggestPage({
                     <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C]">
                       Your suggestions
                     </p>
-                    <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="flex-1 h-px bg-zinc-800" />
                   </div>
-                  <p className="font-sans text-xs text-zinc-500 dark:text-zinc-500 mb-4 leading-relaxed">
+                  <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
                     New suggestions take a little time to be reviewed before
                     they appear on the leaderboard.
                   </p>

@@ -134,13 +134,13 @@ function ProgramCard({
 
 export default function ProgramsSection() {
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 py-20 sm:py-28">
+    <section className="bg-zinc-950 py-20 sm:py-28">
       <div className="max-w-6xl mx-auto px-6 sm:px-12">
         <div className="text-center mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Beyond the Stage
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-black dark:text-white">
+          <h2 className="font-serif text-3xl sm:text-5xl text-white">
             Our Programs
           </h2>
         </div>

@@ -27,7 +27,7 @@ const INITIAL_VISIBLE = 30;
 
 function rankColor(globalIndex: number): string {
   if (globalIndex <= 2) return "text-[#A80D0C]";
-  return "text-zinc-300 dark:text-zinc-700";
+  return "text-zinc-700";
 }
 
 export default function Leaderboard({
@@ -112,7 +112,7 @@ export default function Leaderboard({
       <div className="mb-6">
         <div className="relative">
           <svg
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500 pointer-events-none"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -129,12 +129,12 @@ export default function Leaderboard({
             placeholder="Search suggestions"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-full text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
+            className="w-full pl-11 pr-10 py-3 bg-black border border-zinc-800 rounded-full text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-[#A80D0C] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-[#A80D0C] transition-colors"
               aria-label="Clear search"
             >
               <svg
@@ -155,7 +155,7 @@ export default function Leaderboard({
           )}
         </div>
         {isSearching && (
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+          <p className="mt-2 text-xs text-zinc-500">
             {filteredSuggestions.length} of {suggestions.length} speakers
           </p>
         )}
@@ -167,7 +167,7 @@ export default function Leaderboard({
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="mb-4 flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-900/50"
+            className="mb-4 flex items-start gap-2 p-3 bg-red-950/30 rounded-md border border-red-900/50"
           >
             <svg
               width="18"
@@ -184,31 +184,31 @@ export default function Leaderboard({
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            <p className="text-sm text-red-300">{error}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {suggestions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-500 mb-2">
+          <p className="font-serif text-2xl text-zinc-500 mb-2">
             No suggestions yet.
           </p>
-          <p className="font-sans text-sm text-zinc-400 dark:text-zinc-500 max-w-xs">
+          <p className="font-sans text-sm text-zinc-500 max-w-xs">
             Be the first to suggest a speaker.
           </p>
         </div>
       ) : filteredSuggestions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-500 mb-2">
+          <p className="font-serif text-2xl text-zinc-500 mb-2">
             No matches.
           </p>
-          <p className="font-sans text-sm text-zinc-400 dark:text-zinc-500 max-w-xs">
+          <p className="font-sans text-sm text-zinc-500 max-w-xs">
             Try a different name.
           </p>
         </div>
       ) : (
-        <ol className="divide-y divide-zinc-200 dark:divide-zinc-900 border-y border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black rounded-lg overflow-hidden">
+        <ol className="divide-y divide-zinc-900 border border-zinc-900 bg-black rounded-lg overflow-hidden">
           {displayedSuggestions.map((suggestion) => {
             const globalIndex = suggestions.findIndex(
               (s) => s.id === suggestion.id,
@@ -222,7 +222,7 @@ export default function Leaderboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-950"
+                className="group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-950"
               >
                 <span
                   className={`font-serif w-12 sm:w-14 text-right shrink-0 leading-none ${
@@ -236,13 +236,13 @@ export default function Leaderboard({
 
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`font-serif text-zinc-900 dark:text-white truncate leading-tight ${
+                    className={`font-serif text-white truncate leading-tight ${
                       isTopThree ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
                     }`}
                   >
                     {suggestion.speaker}
                   </p>
-                  <p className="mt-1 text-[11px] font-sans uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+                  <p className="mt-1 text-[11px] font-sans uppercase tracking-[0.2em] text-zinc-500">
                     {suggestion.votes}{" "}
                     {suggestion.votes === 1 ? "vote" : "votes"}
                   </p>
@@ -304,7 +304,7 @@ export default function Leaderboard({
                     )}
                   </motion.button>
                 ) : (
-                  <span className="shrink-0 text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-600">
+                  <span className="shrink-0 text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-600">
                     Sign in to vote
                   </span>
                 )}
@@ -319,7 +319,7 @@ export default function Leaderboard({
           <button
             type="button"
             onClick={() => setVisibleCount((n) => n + INITIAL_VISIBLE)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-700 dark:text-zinc-300 transition-colors hover:border-[#A80D0C] hover:text-[#A80D0C]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-300 transition-colors hover:border-[#A80D0C] hover:text-[#A80D0C]"
           >
             Show more
             <svg

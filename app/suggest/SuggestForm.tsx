@@ -103,18 +103,18 @@ export default function SuggestForm() {
       <div>
         <label
           htmlFor="speaker"
-          className="block font-sans text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-3"
+          className="block font-sans text-xs uppercase tracking-[0.2em] text-zinc-400 mb-3"
         >
           Who would you like to see?{" "}
-          <span className="normal-case tracking-normal text-zinc-400 dark:text-zinc-500">
+          <span className="normal-case tracking-normal text-zinc-500">
             (comma or enter to add)
           </span>
         </label>
         <div
           ref={containerRef}
           onClick={() => inputRef.current?.focus()}
-          className="w-full min-h-[92px] px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-800
-                     bg-white dark:bg-black
+          className="w-full min-h-[92px] px-4 py-3 rounded-lg border border-zinc-800
+                     bg-black
                      focus-within:outline-none focus-within:ring-2 focus-within:ring-[#A80D0C]/30 focus-within:border-[#A80D0C]
                      transition-all flex flex-wrap gap-2 items-start cursor-text"
         >
@@ -168,13 +168,13 @@ export default function SuggestForm() {
             disabled={isDisabled}
             placeholder={pills.length === 0 ? "Enter a name" : ""}
             className="flex-1 min-w-[120px] bg-transparent border-none outline-none
-                       text-zinc-900 dark:text-white
-                       placeholder:text-zinc-400 dark:placeholder:text-zinc-500
+                       text-white
+                       placeholder:text-zinc-500
                        disabled:opacity-50 disabled:cursor-not-allowed"
             maxLength={500}
           />
         </div>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1.5 text-right">
+        <p className="text-xs text-zinc-500 mt-1.5 text-right">
           {totalLength}/500
         </p>
       </div>
@@ -185,7 +185,7 @@ export default function SuggestForm() {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-900/50"
+            className="flex items-start gap-2 p-3 bg-red-950/30 rounded-md border border-red-900/50"
           >
             <svg
               width="18"
@@ -202,7 +202,7 @@ export default function SuggestForm() {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-red-700 dark:text-red-300">
+            <p className="text-sm text-red-300">
               {errorMessage}
             </p>
           </motion.div>
@@ -213,7 +213,7 @@ export default function SuggestForm() {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-md border border-green-200 dark:border-green-900/50"
+            className="flex items-start gap-2 p-3 bg-green-950/30 rounded-md border border-green-900/50"
           >
             <svg
               width="18"
@@ -230,7 +230,7 @@ export default function SuggestForm() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-green-700 dark:text-green-300">
+            <p className="text-sm text-green-300">
               {SUGGEST_MESSAGES.SUCCESS}
             </p>
           </motion.div>

@@ -71,7 +71,7 @@ export default function SpeakerDrawer({
           />
 
           <motion.aside
-            className="absolute right-0 top-0 h-full w-full sm:w-[min(580px,92vw)] bg-white dark:bg-zinc-950 shadow-2xl flex flex-col"
+            className="absolute right-0 top-0 h-full w-full sm:w-[min(580px,92vw)] bg-zinc-950 shadow-2xl flex flex-col"
             variants={slideVariants}
             initial="initial"
             animate="animate"
@@ -79,7 +79,7 @@ export default function SpeakerDrawer({
             transition={{ type: "spring", stiffness: 260, damping: 32 }}
           >
             {/* Header controls */}
-            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-zinc-200 dark:border-zinc-900 shrink-0">
+            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-zinc-900 shrink-0">
               <p className="text-xs font-sans uppercase tracking-[0.2em] text-zinc-500">
                 {position} / {total} · {speaker.year}
               </p>
@@ -98,7 +98,7 @@ export default function SpeakerDrawer({
                   type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
+                  className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
                 >
                   <svg
                     width="16"
@@ -121,7 +121,7 @@ export default function SpeakerDrawer({
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto">
               {image && (
-                <div className="relative w-full h-72 bg-zinc-100 dark:bg-zinc-900">
+                <div className="relative w-full h-72 bg-zinc-900">
                   <Image
                     src={image}
                     alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -138,17 +138,17 @@ export default function SpeakerDrawer({
                 </p>
                 <h2
                   id="speaker-drawer-title"
-                  className="font-serif text-4xl sm:text-5xl text-black dark:text-white leading-[0.95] mb-3"
+                  className="font-serif text-4xl sm:text-5xl text-white leading-[0.95] mb-3"
                 >
                   {speaker.name}
                 </h2>
                 {speaker.title && (
-                  <p className="font-sans text-base sm:text-lg italic text-zinc-600 dark:text-zinc-400 mb-6">
+                  <p className="font-sans text-base sm:text-lg italic text-zinc-400 mb-6">
                     {speaker.title}
                   </p>
                 )}
                 <div className="h-px bg-gradient-to-r from-[#A80D0C] via-[#A80D0C]/30 to-transparent mb-6" />
-                <p className="font-sans text-base text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                <p className="font-sans text-base text-zinc-300 leading-relaxed whitespace-pre-line">
                   {speaker.bio}
                 </p>
 
@@ -198,7 +198,7 @@ function NavButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
     >
       <svg
         width="16"
