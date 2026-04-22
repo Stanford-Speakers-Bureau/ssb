@@ -13,6 +13,7 @@ type ShowcaseSpeaker = {
   quote: string;
   image: string;
   year: string;
+  location?: string;
 };
 
 const AUTOPLAY_MS = 6000;
@@ -89,7 +90,7 @@ function Slide({ speaker }: { speaker: ShowcaseSpeaker }) {
 
       <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
         <span className="inline-block mb-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-white/70">
-          {speaker.year} · Stanford
+          {speaker.year} · {speaker.location ?? "Stanford"}
         </span>
         <h3 className="font-serif text-3xl sm:text-4xl text-white leading-[0.95] mb-2">
           {speaker.name}
@@ -117,9 +118,8 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={`${direction === "prev" ? "Previous" : "Next"} speaker`}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white border border-white/20 shadow-lg transition-all hover:bg-[#A80D0C] hover:border-[#A80D0C] ${
-        direction === "prev" ? "left-2" : "right-2"
-      }`}
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white border border-white/20 shadow-lg transition-all hover:bg-[#A80D0C] hover:border-[#A80D0C] ${direction === "prev" ? "left-2" : "right-2"
+        }`}
     >
       <svg
         width="20"
@@ -151,6 +151,7 @@ export default function SpeakerShowcase() {
         quote: s.homeFeaturedQuote ?? s.bio,
         image: s.image as string,
         year: s.year,
+        location: s.location,
       })),
     [],
   );
@@ -286,11 +287,10 @@ export default function SpeakerShowcase() {
               type="button"
               onClick={() => scrollTo(i)}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${
-                i === selected
-                  ? "w-8 bg-[#A80D0C]"
-                  : "w-4 bg-zinc-700 hover:bg-zinc-500"
-              }`}
+              className={`h-1.5 rounded-full transition-all ${i === selected
+                ? "w-8 bg-[#A80D0C]"
+                : "w-4 bg-zinc-700 hover:bg-zinc-500"
+                }`}
             />
           ))}
         </div>
