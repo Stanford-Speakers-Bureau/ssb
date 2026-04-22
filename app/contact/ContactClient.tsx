@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
 import { useRef } from "react";
 
 const MotionLink = motion.create(Link);
@@ -101,11 +107,24 @@ const REASONS: ReasonCard[] = [
 ];
 
 function ContactHero() {
+  const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const parallaxY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduce ? ["0%", "0%"] : ["0%", "20%"],
+  );
   return (
-    <section className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-black">
+    <section
+      ref={sectionRef}
+      className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-black"
+    >
       <motion.div
-        className="absolute inset-0 opacity-75 dark:opacity-70"
+        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-75 dark:opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -114,6 +133,7 @@ function ContactHero() {
           repeat: Infinity,
           repeatType: "reverse",
         }}
+        style={{ y: parallaxY }}
       >
         <Image
           src="/students.jpeg"

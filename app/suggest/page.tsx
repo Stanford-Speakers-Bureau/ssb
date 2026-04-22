@@ -164,21 +164,33 @@ function UserSuggestionsPanel({
   );
 }
 
-const STEPS: { num: string; title: string; body: string }[] = [
+const STEPS: { num: string; title: string; body: React.ReactNode }[] = [
   {
     num: "01",
     title: "Submit",
-    body: "Add the names of anyone you'd like to see speak at Stanford. You can add several in one go.",
+    body: "Add the names of anyone you'd like to see speak at Stanford.",
   },
   {
     num: "02",
     title: "Vote",
-    body: "Browse the leaderboard and upvote suggestions you'd pay to attend. Every Stanford account gets one vote per name.",
+    body: "Browse the leaderboard and upvote suggestions you'd pay to attend.",
   },
   {
     num: "03",
     title: "We chase",
-    body: "Each Monday we look at who's climbing. Top picks become the outreach list for our booking team.",
+    body: (
+      <>
+        Each Monday we look at who&rsquo;s climbing. Top picks become the
+        outreach list for our booking team.{" "}
+        <Link
+          href="/join"
+          prefetch={false}
+          className="font-semibold text-white underline underline-offset-4 decoration-[#A80D0C]/60 hover:decoration-[#A80D0C] transition-colors"
+        >
+          Want to join?
+        </Link>
+      </>
+    ),
   },
 ];
 
@@ -228,15 +240,11 @@ export default async function SuggestPage({
         <section className="relative bg-black border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-start">
             <div>
-              <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-4">
-                The Shortlist
-              </p>
               <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-[0.95] mb-6">
                 Our next speaker starts with a name on this list.
               </h2>
               <p className="font-sans text-base sm:text-lg text-zinc-400 leading-relaxed mb-10 max-w-xl">
-                SSB books dozens of speakers a year. We only get there because
-                the Stanford community tells us who they actually want to hear.
+                We only get there because the Stanford community tells us who they actually want to hear.
                 Drop a name below and we&rsquo;ll take it from there.
               </p>
 

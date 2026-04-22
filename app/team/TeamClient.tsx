@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { useRef } from "react";
 import { LEADERSHIP, DIRECTORS, type TeamMember } from "./members";
 
@@ -10,12 +17,12 @@ const MotionLink = motion.create(Link);
 
 const EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
-function TeamMosaic() {
+function TeamMosaic({ parallaxY }: { parallaxY: MotionValue<string> }) {
   const reduce = useReducedMotion();
   return (
     <div className="absolute inset-0 overflow-hidden">
       <motion.div
-        className="absolute inset-0 opacity-75 dark:opacity-70"
+        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-75 dark:opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -24,6 +31,7 @@ function TeamMosaic() {
           repeat: Infinity,
           repeatType: "reverse",
         }}
+        style={{ y: parallaxY }}
       >
         <Image
           src="/team.jpg"
@@ -41,9 +49,23 @@ function TeamMosaic() {
 }
 
 function TeamHero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const parallaxY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduce ? ["0%", "0%"] : ["0%", "20%"],
+  );
   return (
-    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-black">
-      <TeamMosaic />
+    <section
+      ref={sectionRef}
+      className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-black"
+    >
+      <TeamMosaic parallaxY={parallaxY} />
 
       <div className="relative z-10 flex flex-col items-center px-6 sm:px-12 text-center max-w-4xl mx-auto">
         <motion.span
@@ -194,12 +216,12 @@ function DirectorCard({
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
           sizes="(max-width: 768px) 50vw, 25vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-          <h3 className="font-serif text-lg sm:text-xl text-white leading-tight mb-1">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+          <h3 className="font-serif text-xl sm:text-2xl text-white leading-tight mb-1.5">
             {member.name}
           </h3>
-          <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-[#A80D0C] font-semibold">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#A80D0C] font-semibold">
             {member.role}
           </p>
         </div>
@@ -230,10 +252,74 @@ function DirectorCard({
   );
 }
 
+function RecruitCard({ index }: { index: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
+      className="group"
+    >
+      <Link
+        href="/join"
+        prefetch={false}
+        className="relative aspect-square w-full overflow-hidden rounded-lg border-2 border-dashed border-zinc-800 bg-zinc-950/50 flex flex-col items-center justify-center text-center p-6 sm:p-8 transition-all duration-500 hover:border-[#A80D0C] hover:bg-[#A80D0C]/5 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+      >
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#A80D0C]/10 text-[#A80D0C] mb-5 transition-colors group-hover:bg-[#A80D0C]/20">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+          </svg>
+        </div>
+        <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-[#A80D0C] font-semibold mb-3">
+          This could be you
+        </p>
+        <h3 className="font-serif text-xl sm:text-2xl text-white leading-tight mb-2">
+          Join the team.
+        </h3>
+        <p className="font-sans text-sm text-zinc-400 leading-relaxed mb-4 max-w-xs">
+          We&rsquo;re always looking for students who want to bring big names to campus.
+        </p>
+        <span className="inline-flex items-center gap-1.5 text-sm font-sans font-semibold text-white group-hover:text-[#A80D0C] transition-colors">
+          Get in touch
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="transition-transform group-hover:translate-x-0.5"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </span>
+      </Link>
+    </motion.div>
+  );
+}
+
 function DirectorsSection() {
   return (
     <section className="bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
             Directors
@@ -242,10 +328,13 @@ function DirectorsSection() {
             The folks that make events happen.
           </h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {DIRECTORS.map((member, i) => (
             <DirectorCard key={member.name} member={member} index={i} />
           ))}
+          {DIRECTORS.length % 3 !== 0 && (
+            <RecruitCard index={DIRECTORS.length} />
+          )}
         </div>
       </div>
     </section>

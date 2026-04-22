@@ -35,7 +35,7 @@ function Slide({
       <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-14">
         <div className="max-w-3xl">
           <span className="inline-block mb-4 rounded-full bg-[#A80D0C] px-3 py-1 text-xs font-sans uppercase tracking-[0.2em] text-white">
-            Spotlight · {speaker.year}
+            {speaker.year} · {speaker.location ?? "Stanford"}
           </span>
           <h2 className="font-serif text-4xl sm:text-6xl text-white leading-[0.95] mb-3">
             {speaker.name}
@@ -83,7 +83,7 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={direction === "prev" ? "Previous spotlight" : "Next spotlight"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "left-4 lg:left-6" : "right-4 lg:right-6"
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "-left-4 lg:-left-8" : "-right-4 lg:-right-8"
         }`}
     >
       <svg
