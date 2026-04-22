@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import {
   getClosestUpcomingEvent,
-  formatEventDate,
+  getSignedImageUrl,
   isEventMystery,
 } from "@/app/lib/supabase";
 
@@ -16,13 +16,15 @@ export default async function Image() {
   // Treat mystery events as "no event" so we don't leak the speaker art/name/venue/date.
   const event = rawEvent && !isEventMystery(rawEvent) ? rawEvent : null;
   const hasEventImage = !!(event?.img || event?.mobile_img);
+  const signedImageUrl = hasEventImage
+    ? await getSignedImageUrl(event?.img || event?.mobile_img || null)
+    : null;
 
-  // Use the upcoming event art when available, otherwise fall back to a static speaker image.
-  const imageUrl = event?.id && hasEventImage
+  const imageUrl = signedImageUrl || (event?.id && hasEventImage
     ? `${baseURL}/api/images/${event.id}?v=${event.img_version || 1}`
-    : `${baseURL}/speakers/jojo-siwa.jpg`;
+    : `${baseURL}/speakers/jojo-siwa.jpg`);
   const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
-  const dateStr = event ? formatEventDate(event.start_time_date) : null;
+  const showUpcomingSpeakerLabel = Boolean(event?.name);
 
   return new ImageResponse(
     (
@@ -32,6 +34,7 @@ export default async function Image() {
           width: "100%",
           height: "100%",
           position: "relative",
+          fontFamily: "system-ui, -apple-system, sans-serif",
         }}
       >
         {/* Background speaker image */}
@@ -40,13 +43,15 @@ export default async function Image() {
           alt=""
           style={{
             position: "absolute",
+            top: 0,
+            left: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
           }}
         />
 
-        {/* Dark gradient overlay */}
+        {/* Bottom-weighted darkening gradient for text legibility */}
         <div
           style={{
             display: "flex",
@@ -56,42 +61,63 @@ export default async function Image() {
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.85) 100%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.65) 75%, rgba(0,0,0,0.92) 100%)",
           }}
         />
 
-        {/* SSB Logo - top left */}
-        <img
-          src={logoUrl}
-          alt=""
-          style={{
-            position: "absolute",
-            top: 32,
-            left: 40,
-            height: 36,
-          }}
-        />
-
-        {/* Text content - bottom left */}
+        {/* Text content - bottom center */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
             position: "absolute",
-            bottom: 40,
-            left: 40,
-            right: 40,
+            bottom: 56,
+            left: 80,
+            right: 80,
           }}
         >
           {event?.name ? (
-            <>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "100%",
+                maxWidth: 980,
+              }}
+            >
+              {showUpcomingSpeakerLabel && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                    marginBottom: 14,
+                    fontSize: 22,
+                    fontWeight: 700,
+                    letterSpacing: 4,
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.82)",
+                    textShadow: "0 1px 10px rgba(0,0,0,0.6)",
+                  }}
+                >
+                  Upcoming Speaker
+                </div>
+              )}
               <div
                 style={{
-                  fontSize: 56,
-                  fontWeight: 700,
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "100%",
+                  fontSize: 76,
+                  fontWeight: 800,
                   color: "white",
-                  lineHeight: 1.15,
-                  textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                  lineHeight: 1.05,
+                  letterSpacing: -1.5,
+                  textShadow: "0 2px 18px rgba(0,0,0,0.7)",
+                  textAlign: "center",
                 }}
               >
                 {event.name}
@@ -99,27 +125,25 @@ export default async function Image() {
               <div
                 style={{
                   display: "flex",
-                  marginTop: 14,
-                  fontSize: 24,
-                  color: "rgba(255,255,255,0.9)",
-                  gap: 12,
-                  textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+                  justifyContent: "center",
+                  width: "100%",
+                  marginTop: 18,
                 }}
               >
-                {dateStr && <span>{dateStr}</span>}
-                {dateStr && event.venue && (
-                  <span style={{ color: "rgba(255,255,255,0.5)" }}>/</span>
-                )}
-                {event.venue && <span>{event.venue}</span>}
+                <img src={logoUrl} alt="" style={{ height: 96 }} />
               </div>
-            </>
+            </div>
           ) : (
             <div
               style={{
-                fontSize: 36,
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.9)",
-                textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                fontSize: 44,
+                fontWeight: 700,
+                color: "rgba(255,255,255,0.95)",
+                lineHeight: 1.15,
+                letterSpacing: -0.5,
+                textShadow: "0 2px 14px rgba(0,0,0,0.6)",
+                textAlign: "center",
+                maxWidth: 900,
               }}
             >
               Stanford&apos;s largest student speaker series since 1935
