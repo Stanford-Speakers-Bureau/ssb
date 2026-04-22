@@ -46,6 +46,8 @@ export type Event = {
   referrals_enabled?: boolean;
   standby_enabled?: boolean;
   ticketing_roles?: string[];
+  external_ticketing_enabled?: boolean;
+  external_ticketing_url?: string | null;
 };
 
 /**
@@ -80,6 +82,8 @@ export function serializeEvent(e: DBEvent): Event {
     hide_ticketing_date: e.hideTicketingDate ?? false,
     referrals_enabled: e.referralsEnabled ?? false,
     standby_enabled: e.standbyEnabled ?? false,
+    external_ticketing_enabled: e.externalTicketingEnabled ?? false,
+    external_ticketing_url: e.externalTicketingUrl ?? null,
   };
 }
 
@@ -113,6 +117,42 @@ const getCachedClosestUpcomingEvent = unstable_cache(
 
 export async function getClosestUpcomingEvent(): Promise<Event | null> {
   return getCachedClosestUpcomingEvent();
+}
+
+/**
+ * Get the event with the nearest future milestone — release_date (if still
+ * pending reveal), else ticketing_date (if tickets haven't dropped), else
+ * doors_open. Used by the banner/popup so that when multiple mystery events
+ * are pending reveal, we surface the one revealing first instead of the
+ * one whose doors open first.
+ */
+const getCachedNextMilestoneEvent = unstable_cache(
+  async (): Promise<Event | null> => {
+    const now = new Date();
+    const upcoming = await db.query.events.findMany({
+      where: gte(events.doorsOpen, now),
+      orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+    });
+
+    if (upcoming.length === 0) return null;
+
+    const nextMilestone = (e: DBEvent): number => {
+      if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
+      if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
+      return e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
+    };
+
+    const event = upcoming.reduce((best, cur) =>
+      nextMilestone(cur) < nextMilestone(best) ? cur : best,
+    );
+    return serializeEvent(event);
+  },
+  ["next-milestone-event"],
+  { revalidate: 60 },
+);
+
+export async function getNextMilestoneEvent(): Promise<Event | null> {
+  return getCachedNextMilestoneEvent();
 }
 
 /**

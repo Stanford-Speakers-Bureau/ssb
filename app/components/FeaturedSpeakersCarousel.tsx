@@ -27,7 +27,7 @@ const speakers: Speaker[] = [
     title: "U.S. Senator from Vermont",
     description:
       "Longest-serving independent in congressional history and one of the most prominent progressive voices in American politics.",
-    image: "/speakers/mystery.jpg",
+    image: "/speakers/bernie.jpg",
   },
   {
     name: "Hasan Minhaj",

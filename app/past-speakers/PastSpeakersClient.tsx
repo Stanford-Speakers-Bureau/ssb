@@ -14,6 +14,8 @@ const SPEAKER_IMAGES: Record<string, string> = {
   "jojo-siwa": "/speakers/jojo-siwa.jpg",
   "mark-rober": "/speakers/mark-rober.jpeg",
   "john-green": "/speakers/john-green.jpg",
+  "bernie-sanders": "/speakers/bernie-stand.jpg",
+  "ro-khanna": "/speakers/khanna.jpg",
 };
 
 const SPEAKERS_BY_YEAR: YearGroup[] = [

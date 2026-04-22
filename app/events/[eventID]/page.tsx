@@ -19,6 +19,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
 import { db, and, eq, sql, tickets } from "@ssb/db";
 import TicketSection from "./TicketSection";
+import ExternalTicketingCTA from "./ExternalTicketingCTA";
 import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
 import LivestreamBanner from "./LivestreamBanner";
@@ -379,10 +380,11 @@ export default async function EventPage({
                 Add to Google Calendar
               </a>
             )}
-            {/* Prohibited items – only shown once ticketing is open */}
-            {(!ticketingDate || new Date(ticketingDate) <= new Date()) && (
-              <ProhibitedItems />
-            )}
+            {/* Prohibited items – only shown for on-platform ticketing once sales are open */}
+            {!event.external_ticketing_enabled &&
+              (!ticketingDate || new Date(ticketingDate) <= new Date()) && (
+                <ProhibitedItems />
+              )}
           </div>
 
           {/* Right column – ticket section (sticky on desktop) */}
@@ -409,35 +411,40 @@ export default async function EventPage({
                 </NoticeBanner>
               )}
 
-              <TicketSection
-                eventId={event.id}
-                initialHasTicket={false}
-                initialTicketId={null}
-                initialTicketType={null}
-                initialTicketName={null}
-                initialIsScanned={false}
-                initialIsOnWaitlist={false}
-                initialWaitlistPosition={null}
-                userEmail={null}
-                eventRoute={event.route || eventID}
-                eventStartTime={event.start_time_date}
-                eventEndTime={event.end_time_date}
-                doorsOpen={event.doors_open}
-                isSoldOut={isSoldOut}
-                ticketingDate={ticketingDate}
-                hideTicketingDate={event.hide_ticketing_date}
-                initialIsNotified={false}
-                waitlistChance={event.waitlist_chance}
-                referralsEnabled={event.referrals_enabled}
-                standbyMode={event.standby_enabled}
-                allowCancelFlowAccess={
-                  verifiedCancellationFlow.allowCancelFlowAccess
-                }
-                initialEmailCancelAttendeeName={
-                  verifiedCancellationFlow.attendeeName
-                }
-                eventName={event.name}
-              />
+              {event.external_ticketing_enabled &&
+              event.external_ticketing_url ? (
+                <ExternalTicketingCTA url={event.external_ticketing_url} />
+              ) : (
+                <TicketSection
+                  eventId={event.id}
+                  initialHasTicket={false}
+                  initialTicketId={null}
+                  initialTicketType={null}
+                  initialTicketName={null}
+                  initialIsScanned={false}
+                  initialIsOnWaitlist={false}
+                  initialWaitlistPosition={null}
+                  userEmail={null}
+                  eventRoute={event.route || eventID}
+                  eventStartTime={event.start_time_date}
+                  eventEndTime={event.end_time_date}
+                  doorsOpen={event.doors_open}
+                  isSoldOut={isSoldOut}
+                  ticketingDate={ticketingDate}
+                  hideTicketingDate={event.hide_ticketing_date}
+                  initialIsNotified={false}
+                  waitlistChance={event.waitlist_chance}
+                  referralsEnabled={event.referrals_enabled}
+                  standbyMode={event.standby_enabled}
+                  allowCancelFlowAccess={
+                    verifiedCancellationFlow.allowCancelFlowAccess
+                  }
+                  initialEmailCancelAttendeeName={
+                    verifiedCancellationFlow.attendeeName
+                  }
+                  eventName={event.name}
+                />
+              )}
             </div>
           </div>
         </div>
