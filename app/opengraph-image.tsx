@@ -1,5 +1,9 @@
 import { ImageResponse } from "next/og";
-import { getClosestUpcomingEvent, formatEventDate } from "@/app/lib/supabase";
+import {
+  getClosestUpcomingEvent,
+  formatEventDate,
+  isEventMystery,
+} from "@/app/lib/supabase";
 
 export const alt = "Stanford Speakers Bureau";
 export const size = { width: 1200, height: 630 };
@@ -8,7 +12,9 @@ export const contentType = "image/png";
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export default async function Image() {
-  const event = await getClosestUpcomingEvent();
+  const rawEvent = await getClosestUpcomingEvent();
+  // Treat mystery events as "no event" so we don't leak the speaker art/name/venue/date.
+  const event = rawEvent && !isEventMystery(rawEvent) ? rawEvent : null;
   const hasEventImage = !!(event?.img || event?.mobile_img);
 
   // Use the upcoming event art when available, otherwise fall back to a static speaker image.
