@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@ssb/db"],
   images: {
     qualities: [70, 75, 90],
-    loader: "custom",
-    loaderFile: "./image-loader.ts",
+    // Optimized images are cache-busted via the `?v=N` param on /api/images/[eventId],
+    // so we can safely cache the /_next/image output for a long time.
+    minimumCacheTTL: 31536000,
   },
   async redirects() {
     return [
