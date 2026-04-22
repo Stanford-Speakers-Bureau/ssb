@@ -60,8 +60,8 @@ function PhotoMosaic() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-75 dark:opacity-70">
-        <PhotoRow photos={ROW_TOP} direction="left" durationSec={60} />
-        <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={75} />
+        <PhotoRow photos={ROW_TOP} direction="left" durationSec={35} />
+        <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={45} />
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/88" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/45" />

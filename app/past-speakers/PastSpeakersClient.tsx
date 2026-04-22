@@ -43,9 +43,10 @@ export default function PastSpeakersClient() {
   }, [filteredSpeakers]);
 
   const spotlightSpeakers = useMemo(() => {
-    return SPOTLIGHT_SPEAKERS.flatMap((s) =>
-      s.image ? [{ ...s, image: s.image }] : [],
-    );
+    return SPOTLIGHT_SPEAKERS.flatMap((s) => {
+      const img = s.spotlightImage || s.image;
+      return img ? [{ ...s, image: img }] : [];
+    });
   }, []);
 
   const selectedSpeaker = selectedSlug

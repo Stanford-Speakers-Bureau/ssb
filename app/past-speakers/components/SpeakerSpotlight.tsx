@@ -7,7 +7,7 @@ import type { FlatSpeaker } from "./types";
 
 const AUTOPLAY_INTERVAL_MS = 6000;
 
-type SpotlightSpeaker = FlatSpeaker & { image: string };
+type SpotlightSpeaker = FlatSpeaker & { image: string, spotlightImage?: string };
 
 function Slide({
   speaker,
@@ -24,7 +24,7 @@ function Slide({
       className="group relative block h-[60vh] min-h-[420px] w-full overflow-hidden rounded text-left"
     >
       <Image
-        src={speaker.image}
+        src={speaker.spotlightImage ?? speaker.image}
         alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
         fill
         priority
@@ -83,9 +83,8 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={direction === "prev" ? "Previous spotlight" : "Next spotlight"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${
-        direction === "prev" ? "left-4 lg:left-6" : "right-4 lg:right-6"
-      }`}
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "left-4 lg:left-6" : "right-4 lg:right-6"
+        }`}
     >
       <svg
         width="22"
@@ -212,11 +211,10 @@ export default function SpeakerSpotlight({
                 type="button"
                 onClick={() => scrollTo(i)}
                 aria-label={`Go to spotlight ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === selected
-                    ? "w-8 bg-[#A80D0C]"
-                    : "w-4 bg-zinc-600 hover:bg-zinc-400"
-                }`}
+                className={`h-1.5 rounded-full transition-all ${i === selected
+                  ? "w-8 bg-[#A80D0C]"
+                  : "w-4 bg-zinc-600 hover:bg-zinc-400"
+                  }`}
               />
             ))}
           </div>

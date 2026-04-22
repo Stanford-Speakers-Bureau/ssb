@@ -105,7 +105,7 @@ function ContactHero() {
   return (
     <section className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-black">
       <motion.div
-        className="absolute inset-0 opacity-45 dark:opacity-35"
+        className="absolute inset-0 opacity-75 dark:opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -124,7 +124,8 @@ function ContactHero() {
           priority
         />
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/88" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/45" />
       <div
         aria-hidden="true"
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#A80D0C]/10 blur-3xl pointer-events-none"
@@ -156,7 +157,7 @@ function ContactHero() {
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5, ease: EASE }}
+          transition={{ duration: 1.5, delay: .5, ease: EASE }}
           className="font-sans text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl leading-relaxed"
         >
           Ideas, sponsorships, press, or just a question &mdash; we read every

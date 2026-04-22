@@ -15,7 +15,7 @@ function TeamMosaic() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <motion.div
-        className="absolute inset-0 opacity-45 dark:opacity-35"
+        className="absolute inset-0 opacity-75 dark:opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -34,7 +34,8 @@ function TeamMosaic() {
           priority
         />
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/88" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/45" />
     </div>
   );
 }

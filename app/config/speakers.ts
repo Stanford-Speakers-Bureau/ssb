@@ -1,8 +1,9 @@
 // Single source of truth for SSB speakers.
 //
-// Add a new speaker by pushing to SPEAKERS. Flip `featuredOnHome` / `spotlightInArchive`
-// to control where they surface outside of the main timeline/expanded archive views
-// (those always include every entry here).
+// Add a new speaker by pushing to SPEAKERS. Set `featuredOnHome` / `spotlightInArchive`
+// to a position number (1 = first, 2 = second, …) to surface them outside of the main
+// timeline/expanded archive views (those always include every entry here). Omit the
+// field to exclude a speaker from that surface. Ties fall back to array order.
 
 export type Speaker = {
   slug: string;
@@ -16,12 +17,14 @@ export type Speaker = {
   videoUrl?: string;
   videoLabel?: string;
   // Short pull-quote used in the home page "Who's Spoken at Stanford" carousel.
-  // If omitted when featuredOnHome is true, the bio is shown (line-clamped).
+  // If omitted when featuredOnHome is set, the bio is shown (line-clamped).
   homeFeaturedQuote?: string;
-  // Opt-in: show this speaker in the home page carousel.
-  featuredOnHome?: boolean;
-  // Opt-in: show this speaker in the archive's spotlight row at top of /past-speakers.
-  spotlightInArchive?: boolean;
+  // Position (1-based) in the home page carousel. Omit to exclude.
+  featuredOnHome?: number;
+  featuredImage?: string;
+  // Position (1-based) in the archive's spotlight row. Omit to exclude.
+  spotlightInArchive?: number;
+  spotlightImage?: string;
 };
 
 export const SPEAKERS: Speaker[] = [
@@ -37,8 +40,8 @@ export const SPEAKERS: Speaker[] = [
     image: "/speakers/malala-yousafzai.jpg",
     homeFeaturedQuote:
       "Youngest Nobel Peace Prize laureate and global advocate for girls' education and women's rights.",
-    featuredOnHome: true,
-    spotlightInArchive: true,
+    featuredOnHome: 1,
+    spotlightInArchive: 1,
   },
   {
     slug: "bernie-sanders",
@@ -48,9 +51,13 @@ export const SPEAKERS: Speaker[] = [
     location: "Memorial Auditorium",
     title: "U.S. Senator from Vermont",
     bio: "Bernie Sanders is the longest-serving independent in congressional history, currently serving as U.S. Senator from Vermont. He previously served in the House of Representatives for 16 years. Sanders ran for the Democratic presidential nomination in 2016 and 2020, becoming one of the most prominent progressive voices in American politics. He is known for his decades-long advocacy on issues including income inequality, universal healthcare, climate change, and campaign finance reform. He served as chair of the Senate Budget Committee and has authored several books, including The Speech and Our Revolution.",
-    image: "/speakers/bernie-stand.jpg",
+    image: "/speakers/bernie.jpg",
     videoUrl: "https://youtu.be/Wx18tNmNYbE?t=712",
     videoLabel: "Watch Livestream",
+    featuredOnHome: 2,
+    featuredImage: "/speakers/bernie.jpg",
+    spotlightInArchive: 2,
+    spotlightImage: "/speakers/bernie-stand.jpg",
   },
   {
     slug: "ro-khanna",
@@ -73,8 +80,8 @@ export const SPEAKERS: Speaker[] = [
     image: "/speakers/hasan-minhaj.jpg",
     homeFeaturedQuote:
       "Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and Patriot Act.",
-    featuredOnHome: true,
-    spotlightInArchive: true,
+    featuredOnHome: 3,
+    spotlightInArchive: 3,
   },
 
   // 2025
@@ -89,8 +96,8 @@ export const SPEAKERS: Speaker[] = [
     image: "/speakers/mark-rober.jpeg",
     homeFeaturedQuote:
       "Former NASA engineer turned YouTube star with 45M+ subscribers, making science accessible to millions.",
-    featuredOnHome: true,
-    spotlightInArchive: true,
+    featuredOnHome: 5,
+    spotlightInArchive: 5,
   },
   {
     slug: "jojo-siwa",
@@ -103,8 +110,8 @@ export const SPEAKERS: Speaker[] = [
     image: "/speakers/jojo-siwa.jpg",
     homeFeaturedQuote:
       "Dancer, singer, and media icon with 41M+ TikTok followers who made history on Dancing with the Stars.",
-    featuredOnHome: true,
-    spotlightInArchive: true,
+    featuredOnHome: 4,
+    spotlightInArchive: 4,
   },
   {
     slug: "peter-cuneo",
@@ -148,8 +155,8 @@ export const SPEAKERS: Speaker[] = [
     image: "/speakers/john-green.jpg",
     homeFeaturedQuote:
       "Best-selling author of The Fault in Our Stars and co-creator of Crash Course with 15M+ subscribers.",
-    featuredOnHome: true,
-    spotlightInArchive: true,
+    featuredOnHome: 6,
+    spotlightInArchive: 6,
   },
   {
     slug: "phil-hellmuth",
@@ -481,13 +488,13 @@ export const SPEAKERS: Speaker[] = [
 
 // Derived views — everything below is computed from SPEAKERS above.
 
-export const FEATURED_HOME_SPEAKERS: Speaker[] = SPEAKERS.filter(
-  (s) => s.featuredOnHome,
-);
+export const FEATURED_HOME_SPEAKERS: Speaker[] = SPEAKERS
+  .filter((s) => typeof s.featuredOnHome === "number")
+  .sort((a, b) => (a.featuredOnHome ?? 0) - (b.featuredOnHome ?? 0));
 
-export const SPOTLIGHT_SPEAKERS: Speaker[] = SPEAKERS.filter(
-  (s) => s.spotlightInArchive,
-);
+export const SPOTLIGHT_SPEAKERS: Speaker[] = SPEAKERS
+  .filter((s) => typeof s.spotlightInArchive === "number")
+  .sort((a, b) => (a.spotlightInArchive ?? 0) - (b.spotlightInArchive ?? 0));
 
 export const SPEAKER_IMAGES: Record<string, string> = Object.fromEntries(
   SPEAKERS.filter((s) => s.image).map((s) => [s.slug, s.image as string]),

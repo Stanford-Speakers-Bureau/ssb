@@ -145,14 +145,18 @@ function Arrow({
 export default function SpeakerShowcase() {
   const SPEAKERS: ShowcaseSpeaker[] = useMemo(
     () =>
-      FEATURED_HOME_SPEAKERS.filter((s) => s.image).map((s) => ({
-        name: s.name,
-        title: s.title ?? "",
-        quote: s.homeFeaturedQuote ?? s.bio,
-        image: s.image as string,
-        year: s.year,
-        location: s.location,
-      })),
+      FEATURED_HOME_SPEAKERS.flatMap((s) => {
+        const img = s.featuredImage ?? s.image;
+        if (!img) return [];
+        return [{
+          name: s.name,
+          title: s.title ?? "",
+          quote: s.homeFeaturedQuote ?? s.bio,
+          image: img,
+          year: s.year,
+          location: s.location,
+        }];
+      }),
     [],
   );
 

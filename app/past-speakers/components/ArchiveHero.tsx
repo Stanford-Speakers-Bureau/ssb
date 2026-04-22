@@ -24,7 +24,7 @@ function Marquee({
       className="relative overflow-hidden whitespace-nowrap select-none"
     >
       <motion.div
-        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-zinc-800/80"
+        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-zinc-600/85"
         initial={{ x: from }}
         animate={reduce ? { x: from } : { x: to }}
         transition={
@@ -61,11 +61,12 @@ export default function ArchiveHero({
   return (
     <section className="relative overflow-hidden bg-black pt-32 pb-20 sm:pt-40 sm:pb-28">
       <div className="absolute inset-0 flex flex-col justify-between py-16 sm:py-20">
-        <Marquee names={top} direction="left" durationSec={60} />
-        <Marquee names={bottom} direction="right" durationSec={75} />
+        <Marquee names={top} direction="left" durationSec={150} />
+        <Marquee names={bottom} direction="right" durationSec={190} />
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-black/60 to-black pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/75 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-black/25 pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-12 text-center">
         <motion.p

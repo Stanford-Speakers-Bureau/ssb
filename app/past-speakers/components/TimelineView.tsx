@@ -29,23 +29,23 @@ export default function TimelineView({
   }
 
   return (
-    <div className="relative max-w-5xl mx-auto px-6 sm:px-12 py-16">
+    <div className="relative max-w-7xl mx-auto px-6 sm:px-12 py-10">
       {/* Center spine */}
       <div
         aria-hidden="true"
-        className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#A80D0C]/40 to-transparent"
+        className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#A80D0C]/20 via-[#A80D0C]/75 to-[#A80D0C]/20"
       />
 
       {sections.map((section) => {
         if (section.speakers.length === 0) return null;
         return (
-          <section key={section.year} className="relative mb-20 last:mb-0">
+          <section key={section.year} className="relative mb-12 last:mb-0">
             {/* Giant year marker */}
-            <div className="relative flex justify-center mb-12">
+            <div className="relative flex justify-center mb-6">
               <div className="relative">
                 <span
                   aria-hidden="true"
-                  className="block font-serif text-[7rem] sm:text-[12rem] leading-none text-transparent"
+                  className="block font-serif text-[5rem] sm:text-[8rem] leading-none text-transparent"
                   style={{
                     WebkitTextStroke: "2px #A80D0C",
                   }}
@@ -56,7 +56,7 @@ export default function TimelineView({
               </div>
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-8">
               {section.speakers.map((speaker, i) => {
                 const image = images[speaker.slug];
                 const isLeft = i % 2 === 0;
@@ -82,10 +82,10 @@ export default function TimelineView({
                     <button
                       type="button"
                       onClick={() => onOpen(speaker.slug)}
-                      className="group block w-full text-left rounded border border-zinc-900 bg-zinc-950 p-6 sm:p-8 transition-all hover:border-[#A80D0C] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+                      className="group block w-full text-left rounded border border-zinc-900 bg-zinc-950 p-5 sm:p-6 transition-all hover:border-[#A80D0C] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
                     >
                       {image && (
-                        <div className="relative w-full h-56 mb-5 rounded overflow-hidden bg-zinc-900">
+                        <div className="relative w-full h-72 sm:h-80 mb-5 rounded overflow-hidden bg-zinc-900">
                           <Image
                             src={image}
                             alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -103,7 +103,7 @@ export default function TimelineView({
                           {speaker.title}
                         </p>
                       )}
-                      <p className="font-sans text-sm text-zinc-400 leading-relaxed line-clamp-4">
+                      <p className="font-sans text-sm text-zinc-400 leading-relaxed line-clamp-3">
                         {speaker.bio}
                       </p>
                     </button>

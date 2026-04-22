@@ -178,7 +178,7 @@ const STEPS: { num: string; title: string; body: string }[] = [
   {
     num: "03",
     title: "We chase",
-    body: "Each Sunday we look at who's climbing. Top picks become the outreach list for our booking team.",
+    body: "Each Monday we look at who's climbing. Top picks become the outreach list for our booking team.",
   },
 ];
 
