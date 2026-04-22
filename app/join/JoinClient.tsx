@@ -139,13 +139,7 @@ function JoinHero() {
   );
 }
 
-type Essential = {
-  label: string;
-  value: string;
-  detail: string;
-};
-
-const ESSENTIALS: Essential[] = [
+const ESSENTIALS = [
   {
     label: "Open to",
     value: "Undergrad + Grad",
@@ -214,13 +208,7 @@ function EssentialsSection() {
   );
 }
 
-type Activity = {
-  number: string;
-  title: string;
-  body: string;
-};
-
-const ACTIVITIES: Activity[] = [
+const ACTIVITIES = [
   {
     number: "01",
     title: "Pitch the people you want to hear.",

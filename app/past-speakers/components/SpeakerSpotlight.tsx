@@ -21,7 +21,7 @@ function Slide({
     <button
       type="button"
       onClick={() => onOpen(speaker.slug)}
-      className="group relative block h-[60vh] min-h-[420px] w-full overflow-hidden rounded text-left"
+      className="group relative block h-[300px] sm:h-[60vh] sm:min-h-[420px] w-full overflow-hidden rounded text-left"
     >
       <Image
         src={speaker.spotlightImage ?? speaker.image}
@@ -32,25 +32,41 @@ function Slide({
         sizes="100vw"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/10" />
-      <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-14">
+      <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-14">
         <div className="max-w-3xl">
-          <span className="inline-block mb-4 rounded-full bg-[#A80D0C] px-3 py-1 text-xs font-sans uppercase tracking-[0.2em] text-white">
+          <span className="inline-block mb-3 sm:mb-4 rounded-full bg-[#A80D0C] px-3 py-1 text-[10px] sm:text-xs font-sans uppercase tracking-[0.2em] text-white">
             {speaker.year} · {speaker.location ?? "Stanford"}
           </span>
-          <h2 className="font-serif text-4xl sm:text-6xl text-white leading-[0.95] mb-3">
+          <h2 className="font-serif text-3xl sm:text-6xl text-white leading-[0.95] mb-2 sm:mb-3">
             {speaker.name}
           </h2>
           {speaker.title && (
-            <p className="font-sans text-base sm:text-lg italic text-zinc-200 mb-4">
+            <p className="font-sans text-sm sm:text-lg italic text-zinc-200 mb-3 sm:mb-4">
               {speaker.title}
             </p>
           )}
           <p className="hidden sm:block font-sans text-sm sm:text-base text-zinc-100 leading-relaxed max-w-2xl line-clamp-3">
             {pullQuote}
           </p>
-          <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white underline-offset-4 group-hover:underline">
+          <span className="mt-1.5 sm:mt-5 inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-sans sm:font-semibold uppercase sm:normal-case tracking-[0.2em] sm:tracking-normal text-white/80 sm:text-white underline-offset-4 group-hover:underline">
             Read the full story
             <svg
+              width="12"
+              height="12"
+              className="sm:hidden"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+            <svg
+              className="hidden sm:block"
               width="18"
               height="18"
               viewBox="0 0 24 24"
@@ -204,7 +220,7 @@ export default function SpeakerSpotlight({
           <Arrow direction="prev" onClick={scrollPrev} />
           <Arrow direction="next" onClick={scrollNext} />
 
-          <div className="mt-6 flex justify-center gap-2">
+          <div className="mt-3 sm:mt-6 flex justify-center gap-2">
             {speakers.map((_, i) => (
               <button
                 key={i}

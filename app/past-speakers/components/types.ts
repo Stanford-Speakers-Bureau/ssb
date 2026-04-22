@@ -9,11 +9,6 @@ export type Speaker = {
   location?: string;
 };
 
-export type YearGroup = {
-  year: string;
-  speakers: Speaker[];
-};
-
 export type FlatSpeaker = Speaker & { year: string };
 
 export type ViewMode = "timeline" | "expanded";

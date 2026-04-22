@@ -10,17 +10,9 @@ type Suggestion = {
   hasVoted: boolean;
 };
 
-type UserSuggestion = {
-  id: string;
-  speaker: string;
-  approved: boolean;
-  reviewed: boolean;
-};
-
 type LeaderboardProps = {
   suggestions: Suggestion[];
   isLoggedIn: boolean;
-  userSuggestions?: UserSuggestion[];
 };
 
 const INITIAL_VISIBLE = 30;

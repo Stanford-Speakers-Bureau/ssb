@@ -56,6 +56,8 @@ export const SPEAKERS: Speaker[] = [
     videoLabel: "Watch Livestream",
     featuredOnHome: 2,
     featuredImage: "/speakers/bernie.jpg",
+    homeFeaturedQuote:
+      "Longest-serving independent in congressional history and one of the most prominent progressive voices in American politics.",
     spotlightInArchive: 2,
     spotlightImage: "/speakers/bernie-stand.jpg",
   },
