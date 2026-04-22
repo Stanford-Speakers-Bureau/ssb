@@ -5,6 +5,8 @@ export type Speaker = {
   bio: string;
   videoUrl?: string;
   videoLabel?: string;
+  month?: string;
+  location?: string;
 };
 
 export type YearGroup = {
@@ -13,3 +15,5 @@ export type YearGroup = {
 };
 
 export type FlatSpeaker = Speaker & { year: string };
+
+export type ViewMode = "timeline" | "expanded";

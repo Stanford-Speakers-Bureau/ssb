@@ -31,10 +31,10 @@ function Marquee({
           reduce
             ? undefined
             : {
-                duration: durationSec,
-                ease: "linear",
-                repeat: Infinity,
-              }
+              duration: durationSec,
+              ease: "linear",
+              repeat: Infinity,
+            }
         }
       >
         {track.map((name, i) => (
@@ -128,27 +128,6 @@ export default function SuggestHero({
         >
           Submit names. Vote on others. Top picks become the leads we chase.
         </motion.p>
-
-        <motion.ul
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.55 }}
-          className="flex flex-wrap justify-center gap-3 sm:gap-4"
-        >
-          {stats.map((stat) => (
-            <li
-              key={stat.label}
-              className="flex items-baseline gap-2 rounded-full border border-zinc-300 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur px-4 py-2"
-            >
-              <span className="font-serif text-xl sm:text-2xl text-[#A80D0C]">
-                {stat.value}
-              </span>
-              <span className="text-xs sm:text-sm uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                {stat.label}
-              </span>
-            </li>
-          ))}
-        </motion.ul>
       </div>
     </section>
   );

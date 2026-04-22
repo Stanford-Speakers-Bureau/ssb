@@ -357,7 +357,7 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
 
 function ProgramsSection() {
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12">
+    <section className="bg-white dark:bg-black py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
@@ -520,7 +520,7 @@ function CtaFooter() {
   return (
     <section
       ref={ref}
-      className="relative bg-zinc-950 border-t border-zinc-900 py-20 sm:py-24 px-6 sm:px-12"
+      className="relative bg-black border-t border-zinc-900 py-20 sm:py-24 px-6 sm:px-12"
     >
       <div className="max-w-4xl mx-auto text-center">
         <motion.p

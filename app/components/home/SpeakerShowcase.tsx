@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
+import { FEATURED_HOME_SPEAKERS } from "@/app/config/speakers";
 
 type ShowcaseSpeaker = {
   name: string;
@@ -14,81 +15,91 @@ type ShowcaseSpeaker = {
   year: string;
 };
 
-const SPEAKERS: ShowcaseSpeaker[] = [
-  {
-    name: "Malala Yousafzai",
-    title: "Nobel Peace Prize Laureate",
-    quote:
-      "Youngest Nobel Peace Prize laureate and global advocate for girls' education and women's rights.",
-    image: "/speakers/malala-yousafzai.jpg",
-    year: "2026",
-  },
-  {
-    name: "Hasan Minhaj",
-    title: "Comedian & Writer",
-    quote:
-      "Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and Patriot Act.",
-    image: "/speakers/hasan-minhaj.jpg",
-    year: "2026",
-  },
-  {
-    name: "Mark Rober",
-    title: "YouTube Educator & Engineer",
-    quote:
-      "Former NASA engineer turned YouTube star with 45M+ subscribers, making science accessible to millions.",
-    image: "/speakers/mark-rober.jpeg",
-    year: "2025",
-  },
-  {
-    name: "JoJo Siwa",
-    title: "Media Icon",
-    quote:
-      "Dancer, singer, and media icon with 41M+ TikTok followers who made history on Dancing with the Stars.",
-    image: "/speakers/jojo-siwa.jpg",
-    year: "2025",
-  },
-  {
-    name: "John Green",
-    title: "Author & YouTube Educator",
-    quote:
-      "Best-selling author of The Fault in Our Stars and co-creator of Crash Course with 15M+ subscribers.",
-    image: "/speakers/john-green.jpg",
-    year: "2024",
-  },
-];
-
 const AUTOPLAY_MS = 6000;
+
+function ArchiveSlide() {
+  return (
+    <Link
+      href="/past-speakers"
+      prefetch={false}
+      className="relative block h-[500px] sm:h-[560px] w-full overflow-hidden rounded-lg border border-[#A80D0C]/40 bg-gradient-to-br from-[#A80D0C]/20 via-black to-black transition-colors hover:border-[#A80D0C] focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-[#A80D0C]/30 blur-3xl"
+      />
+
+      <div className="relative h-full flex flex-col justify-between p-6 sm:p-8">
+        <div>
+          <span className="inline-block mb-6 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-white/70">
+            Explore more
+          </span>
+          <h3 className="font-serif text-4xl sm:text-5xl text-white leading-[0.95] mb-4">
+            90 years of <span className="text-[#A80D0C]">voices</span> on our stage.
+          </h3>
+          <p className="font-sans text-sm sm:text-base text-zinc-300 leading-relaxed max-w-sm">
+            From Nobel laureates to comedians to sitting mayors — every speaker
+            who has graced an SSB stage, searchable by year.
+          </p>
+        </div>
+
+        <span className="inline-flex items-center gap-2 self-start rounded-full bg-[#A80D0C] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#A80D0C]/30 transition-colors group-hover:bg-[#C11211]">
+          Enter The Archive
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 function Slide({ speaker }: { speaker: ShowcaseSpeaker }) {
   return (
-    <div className="relative h-[75vh] min-h-[500px] w-full overflow-hidden">
+    <div className="relative h-[500px] sm:h-[560px] w-full overflow-hidden rounded-lg">
       <Image
         src={speaker.image}
         alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
         fill
-        className="object-cover"
-        sizes="100vw"
+        className="object-cover transition-transform duration-700 group-hover:scale-105"
+        sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
         priority
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/10" />
 
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-6xl mx-auto px-6 sm:px-12 w-full">
-          <div className="max-w-xl">
-            <span className="inline-block mb-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-4 py-1.5 text-xs font-sans uppercase tracking-[0.2em] text-white/70">
-              {speaker.year} · Stanford
-            </span>
-            <h3 className="font-serif text-5xl sm:text-7xl text-white leading-[0.9] mb-3">
-              {speaker.name}
-            </h3>
-            <p className="font-sans text-base sm:text-lg italic text-zinc-300 mb-5">
-              {speaker.title}
-            </p>
-            <p className="font-sans text-sm sm:text-base text-zinc-200 leading-relaxed max-w-md">
-              {speaker.quote}
-            </p>
-          </div>
-        </div>
+      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
+        <span className="inline-block mb-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-white/70">
+          {speaker.year} · Stanford
+        </span>
+        <h3 className="font-serif text-3xl sm:text-4xl text-white leading-[0.95] mb-2">
+          {speaker.name}
+        </h3>
+        <p className="font-sans text-sm italic text-zinc-300 mb-3">
+          {speaker.title}
+        </p>
+        <p className="font-sans text-sm text-zinc-200 leading-relaxed line-clamp-3">
+          {speaker.quote}
+        </p>
       </div>
     </div>
   );
@@ -107,7 +118,7 @@ function Arrow({
       onClick={onClick}
       aria-label={`${direction === "prev" ? "Previous" : "Next"} speaker`}
       className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white border border-white/20 shadow-lg transition-all hover:bg-[#A80D0C] hover:border-[#A80D0C] ${
-        direction === "prev" ? "left-6" : "right-6"
+        direction === "prev" ? "left-2" : "right-2"
       }`}
     >
       <svg
@@ -132,17 +143,33 @@ function Arrow({
 }
 
 export default function SpeakerShowcase() {
+  const SPEAKERS: ShowcaseSpeaker[] = useMemo(
+    () =>
+      FEATURED_HOME_SPEAKERS.filter((s) => s.image).map((s) => ({
+        name: s.name,
+        title: s.title ?? "",
+        quote: s.homeFeaturedQuote ?? s.bio,
+        image: s.image as string,
+        year: s.year,
+      })),
+    [],
+  );
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     loop: true,
     slidesToScroll: 1,
   });
   const [selected, setSelected] = useState(0);
+  const [snapCount, setSnapCount] = useState(SPEAKERS.length);
   const pausedRef = useRef(false);
 
   useEffect(() => {
     if (!emblaApi) return;
-    const handle = () => setSelected(emblaApi.selectedScrollSnap());
+    const handle = () => {
+      setSelected(emblaApi.selectedScrollSnap());
+      setSnapCount(emblaApi.scrollSnapList().length);
+    };
     emblaApi.on("select", handle);
     emblaApi.on("reInit", handle);
     const raf = requestAnimationFrame(handle);
@@ -225,31 +252,40 @@ export default function SpeakerShowcase() {
       </div>
 
       <div
-        className="relative"
+        className="relative max-w-6xl mx-auto px-6 sm:px-12"
         onMouseEnter={() => (pausedRef.current = true)}
         onMouseLeave={() => (pausedRef.current = false)}
       >
         <div ref={emblaRef} className="overflow-hidden">
-          <div className="flex touch-pan-y">
+          <div className="flex touch-pan-y gap-4 sm:gap-5">
             {SPEAKERS.map((speaker) => (
-              <div key={speaker.name} className="min-w-0 flex-[0_0_100%]">
+              <div
+                key={speaker.name}
+                className="group min-w-0 flex-[0_0_85%] sm:flex-[0_0_calc(50%-10px)]"
+              >
                 <Slide speaker={speaker} />
               </div>
             ))}
+            <div
+              key="archive-cta"
+              className="group min-w-0 flex-[0_0_85%] sm:flex-[0_0_calc(50%-10px)]"
+            >
+              <ArchiveSlide />
+            </div>
           </div>
         </div>
         <Arrow direction="prev" onClick={scrollPrev} />
         <Arrow direction="next" onClick={scrollNext} />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 sm:px-12 py-8 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 sm:px-12 py-8 flex items-center justify-center">
         <div className="flex gap-2">
-          {SPEAKERS.map((_, i) => (
+          {Array.from({ length: snapCount }).map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => scrollTo(i)}
-              aria-label={`Go to speaker ${i + 1}`}
+              aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
                 i === selected
                   ? "w-8 bg-[#A80D0C]"
@@ -258,9 +294,6 @@ export default function SpeakerShowcase() {
             />
           ))}
         </div>
-        <p className="text-xs text-zinc-500">
-          {selected + 1} / {SPEAKERS.length}
-        </p>
       </div>
 
       <div className="sm:hidden max-w-6xl mx-auto px-6 pb-10">

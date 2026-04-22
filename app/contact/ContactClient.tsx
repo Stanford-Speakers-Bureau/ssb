@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView } from "motion/react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
 
 const MotionLink = motion.create(Link);
@@ -100,17 +101,30 @@ const REASONS: ReasonCard[] = [
 ];
 
 function ContactHero() {
+  const reduce = useReducedMotion();
   return (
     <section className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-black">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-          backgroundSize: "32px 32px",
+      <motion.div
+        className="absolute inset-0 opacity-45 dark:opacity-35"
+        initial={{ scale: 1.1 }}
+        animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
+        transition={{
+          duration: 30,
+          ease: "linear",
+          repeat: Infinity,
+          repeatType: "reverse",
         }}
-      />
+      >
+        <Image
+          src="/students.jpeg"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+      </motion.div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/95" />
       <div
         aria-hidden="true"
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#A80D0C]/10 blur-3xl pointer-events-none"

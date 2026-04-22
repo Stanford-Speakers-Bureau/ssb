@@ -12,18 +12,10 @@ const EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 function TeamMosaic() {
   const reduce = useReducedMotion();
-  const images = [
-    "/team/anish.jpg",
-    "/team/annika.jpg",
-    "/team/katie.jpg",
-    "/team/suraya.jpg",
-    "/team/michael.jpg",
-    "/team/andrea.jpg",
-  ];
   return (
     <div className="absolute inset-0 overflow-hidden">
       <motion.div
-        className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-35 dark:opacity-25"
+        className="absolute inset-0 opacity-45 dark:opacity-35"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -33,25 +25,16 @@ function TeamMosaic() {
           repeatType: "reverse",
         }}
       >
-        {images.map((src, i) => (
-          <div
-            key={src}
-            className={`relative overflow-hidden ${
-              i === 0 ? "row-span-2" : ""
-            }`}
-          >
-            <Image
-              src={src}
-              alt=""
-              fill
-              className="object-cover grayscale-[30%]"
-              sizes="(max-width: 768px) 50vw, 33vw"
-              priority={i < 2}
-            />
-          </div>
-        ))}
+        <Image
+          src="/team.jpg"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/75 to-black/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/95" />
     </div>
   );
 }
@@ -94,31 +77,6 @@ function TeamHero() {
           weekly to decide who should come to campus, secure the funding, and
           put on the shows.
         </motion.p>
-
-        <motion.ul
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.65, ease: EASE }}
-          className="flex flex-wrap justify-center gap-3 sm:gap-4"
-        >
-          {[
-            { value: "8", label: "Board Members" },
-            { value: "Weekly", label: "Meetings" },
-            { value: "1935", label: "Founded" },
-          ].map((stat) => (
-            <li
-              key={stat.label}
-              className="flex items-baseline gap-2 rounded-full border border-white/20 bg-white/5 backdrop-blur px-4 py-2"
-            >
-              <span className="font-serif text-xl sm:text-2xl text-[#A80D0C]">
-                {stat.value}
-              </span>
-              <span className="text-xs sm:text-sm uppercase tracking-wider text-white/70">
-                {stat.label}
-              </span>
-            </li>
-          ))}
-        </motion.ul>
       </div>
     </section>
   );
@@ -150,11 +108,6 @@ function LeaderCard({
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-          <span className="inline-block rounded-full bg-[#A80D0C] px-3 py-1 text-[10px] font-sans uppercase tracking-widest text-white">
-            {index === 0 ? "01" : index === 1 ? "02" : "03"}
-          </span>
-        </div>
       </div>
       <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 dark:text-white mb-1 leading-tight">
         {member.name}

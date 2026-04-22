@@ -1,21 +1,23 @@
 "use client";
 
+import type { ViewMode } from "./types";
+
 export default function ArchiveToolbar({
   query,
   onQueryChange,
   year,
   onYearChange,
+  viewMode,
+  onViewModeChange,
   years,
-  resultCount,
-  totalCount,
 }: {
   query: string;
   onQueryChange: (q: string) => void;
   year: string | null;
   onYearChange: (y: string | null) => void;
+  viewMode: ViewMode;
+  onViewModeChange: (v: ViewMode) => void;
   years: string[];
-  resultCount: number;
-  totalCount: number;
 }) {
   return (
     <div className="sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-900 bg-white/85 dark:bg-black/85 backdrop-blur-md">
@@ -50,7 +52,7 @@ export default function ArchiveToolbar({
 
           {/* Year chips */}
           <div
-            className="flex-1 min-w-0 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]"
+            className="flex-1 min-w-0 flex gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
             aria-label="Filter by year"
           >
@@ -69,17 +71,92 @@ export default function ArchiveToolbar({
             ))}
           </div>
 
-          {/* Count */}
+          {/* View toggle */}
           <div className="flex items-center shrink-0">
-            <p className="hidden sm:block text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
-              {resultCount === totalCount
-                ? `${totalCount} speakers`
-                : `${resultCount} of ${totalCount}`}
-            </p>
+            <div
+              className="flex rounded-full border border-zinc-300 dark:border-zinc-800 p-0.5"
+              role="tablist"
+              aria-label="View mode"
+            >
+              <ViewButton
+                active={viewMode === "timeline"}
+                onClick={() => onViewModeChange("timeline")}
+                label="Timeline"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <circle cx="4" cy="6" r="1.5" />
+                  <circle cx="4" cy="12" r="1.5" />
+                  <circle cx="4" cy="18" r="1.5" />
+                </svg>
+              </ViewButton>
+              <ViewButton
+                active={viewMode === "expanded"}
+                onClick={() => onViewModeChange("expanded")}
+                label="Expanded"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="5" width="18" height="6" rx="1" />
+                  <rect x="3" y="13" width="18" height="6" rx="1" />
+                </svg>
+              </ViewButton>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ViewButton({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      role="tab"
+      aria-selected={active}
+      aria-label={`${label} view`}
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-sans font-medium transition-all ${
+        active
+          ? "bg-[#A80D0C] text-white"
+          : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+      }`}
+    >
+      {children}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
   );
 }
 

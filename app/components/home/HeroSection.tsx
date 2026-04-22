@@ -3,46 +3,68 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import { HERO_BACKGROUND_IMAGES } from "@/app/config/home-hero";
 
 const MotionLink = motion.create(Link);
 
-const MOSAIC_IMAGES = [
-  { src: "/speakers/malala-yousafzai.jpg", alt: "Malala Yousafzai" },
-  { src: "/speakers/hasan-minhaj.jpg", alt: "Hasan Minhaj" },
-  { src: "/speakers/mark-rober.jpeg", alt: "Mark Rober" },
-  { src: "/speakers/jojo-siwa.jpg", alt: "JoJo Siwa" },
-  { src: "/speakers/john-green.jpg", alt: "John Green" },
-];
+const ROW_TOP = HERO_BACKGROUND_IMAGES;
+const ROW_BOTTOM = [...HERO_BACKGROUND_IMAGES].reverse();
 
-function PhotoMosaic() {
+function PhotoRow({
+  photos,
+  direction,
+  durationSec,
+}: {
+  photos: string[];
+  direction: "left" | "right";
+  durationSec: number;
+}) {
   const reduce = useReducedMotion();
+  const from = direction === "left" ? "0%" : "-50%";
+  const to = direction === "left" ? "-50%" : "0%";
+  const track = [...photos, ...photos];
+
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div aria-hidden="true" className="relative overflow-hidden h-1/2">
       <motion.div
-        className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-35 dark:opacity-25"
-        initial={{ scale: 1.1 }}
-        animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
-        transition={{ duration: 30, ease: "linear", repeat: Infinity, repeatType: "reverse" }}
+        className="flex h-full gap-3"
+        initial={{ x: from }}
+        animate={reduce ? { x: from } : { x: to }}
+        transition={
+          reduce
+            ? undefined
+            : { duration: durationSec, ease: "linear", repeat: Infinity }
+        }
       >
-        {MOSAIC_IMAGES.map((img, i) => (
+        {track.map((src, i) => (
           <div
-            key={img.src}
-            className={`relative overflow-hidden ${
-              i === 0 ? "row-span-2" : ""
-            }`}
+            key={`${src}-${i}`}
+            className="relative h-full aspect-[4/5] shrink-0 overflow-hidden rounded"
           >
             <Image
-              src={img.src}
-              alt={`${img.alt} at Stanford Speakers Bureau`}
+              src={src}
+              alt=""
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 50vw, 33vw"
+              sizes="(max-width: 768px) 40vw, 20vw"
               priority={i < 2}
             />
           </div>
         ))}
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/75 to-black/90" />
+    </div>
+  );
+}
+
+function PhotoMosaic() {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-60 dark:opacity-50">
+        <PhotoRow photos={ROW_TOP} direction="left" durationSec={60} />
+        <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={75} />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/80 to-black/95" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
     </div>
   );
 }
@@ -50,13 +72,11 @@ function PhotoMosaic() {
 const EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 export default function HeroSection() {
-  const headingWords = ["Stanford", "Speakers", "Bureau"];
-
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
       <PhotoMosaic />
 
-      <div className="relative z-10 flex flex-col items-center px-6 sm:px-12 text-center max-w-5xl mx-auto">
+      <div className="relative z-10 flex flex-col items-center px-6 sm:px-12 text-center max-w-4xl mx-auto">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,44 +86,18 @@ export default function HeroSection() {
           Since 1935
         </motion.span>
 
-        <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9] mb-8">
-          {headingWords.map((word, wordIndex) => (
-            <motion.span
-              key={wordIndex}
-              className="inline-block mr-4 sm:mr-6 last:mr-0"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: {
-                  transition: { delayChildren: wordIndex * 0.15 },
-                },
-              }}
-            >
-              {word.split("").map((char, charIndex) => (
-                <motion.span
-                  key={charIndex}
-                  className={`inline-block ${
-                    wordIndex === 1
-                      ? "text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.4)]"
-                      : "text-white"
-                  }`}
-                  variants={{
-                    hidden: { opacity: 0, y: 50, rotateX: -90 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      rotateX: 0,
-                      transition: { duration: 0.6, ease: EASE },
-                    },
-                  }}
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </motion.span>
-          ))}
-        </h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
+          className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.0] mb-8 text-white"
+        >
+          Stanford{" "}
+          <span className="text-[#A80D0C] drop-shadow-[0_0_30px_rgba(168,13,12,0.35)]">
+            Speakers
+          </span>{" "}
+          Bureau
+        </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
