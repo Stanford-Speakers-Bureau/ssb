@@ -146,7 +146,7 @@ export default async function Image() {
                 maxWidth: 900,
               }}
             >
-              Stanford&apos;s largest student speaker series since 1935
+              Stanford&apos;s largest student organization sponsor of speaking events since 1935
             </div>
           )}
         </div>
