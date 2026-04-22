@@ -103,39 +103,43 @@ function getSessionPassword(): string {
 
 export const SAML_REQUEST_STATE_TTL_MS = 10 * 60 * 1000;
 
-const sessionOptions: SessionOptions = {
-  password: getSessionPassword(),
-  cookieName: getSessionCookieName(),
-  cookieOptions: {
-    secure: isSecureCookieEnabled(),
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-    ...(getCookieDomain() ? { domain: getCookieDomain() } : {}),
-  },
-};
+function getSessionOptions(): SessionOptions {
+  return {
+    password: getSessionPassword(),
+    cookieName: getSessionCookieName(),
+    cookieOptions: {
+      secure: isSecureCookieEnabled(),
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+      ...(getCookieDomain() ? { domain: getCookieDomain() } : {}),
+    },
+  };
+}
 
-const loginFlowSessionOptions: SessionOptions = {
-  password: getSessionPassword(),
-  cookieName: getLoginFlowCookieName(),
-  cookieOptions: {
-    secure: isSecureCookieEnabled(),
-    httpOnly: true,
-    sameSite: isSecureCookieEnabled() ? "none" : "lax",
-    path: "/",
-    maxAge: Math.ceil(SAML_REQUEST_STATE_TTL_MS / 1000),
-  },
-};
+function getLoginFlowSessionOptions(): SessionOptions {
+  return {
+    password: getSessionPassword(),
+    cookieName: getLoginFlowCookieName(),
+    cookieOptions: {
+      secure: isSecureCookieEnabled(),
+      httpOnly: true,
+      sameSite: isSecureCookieEnabled() ? "none" : "lax",
+      path: "/",
+      maxAge: Math.ceil(SAML_REQUEST_STATE_TTL_MS / 1000),
+    },
+  };
+}
 
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  return getIronSession<SessionData>(cookieStore, getSessionOptions());
 }
 
 async function getLoginFlowSession(): Promise<IronSession<LoginFlowData>> {
   const cookieStore = await cookies();
-  return getIronSession<LoginFlowData>(cookieStore, loginFlowSessionOptions);
+  return getIronSession<LoginFlowData>(cookieStore, getLoginFlowSessionOptions());
 }
 
 function getInMemoryLoginFlowStores(): Map<string, InMemoryLoginFlowData> {
