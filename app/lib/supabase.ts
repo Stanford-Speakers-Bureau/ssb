@@ -186,22 +186,23 @@ export function formatEventDate(dateString: string | null): string {
   if (!dateString) return "";
 
   const date = new Date(dateString);
-  const day = parseInt(
-    date.toLocaleDateString("en-US", {
-      day: "numeric",
-      timeZone: EVENT_TIMEZONE,
-    }),
-  );
-  const suffix = getOrdinalSuffix(day);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: EVENT_TIMEZONE,
+  }).formatToParts(date);
 
-  return date
-    .toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      timeZone: EVENT_TIMEZONE,
+  return parts
+    .map((part) => {
+      if (part.type !== "day") {
+        return part.value;
+      }
+
+      const day = Number(part.value);
+      return Number.isNaN(day) ? part.value : `${day}${getOrdinalSuffix(day)}`;
     })
-    .replace(/\d+/, `${day}${suffix}`);
+    .join("");
 }
 
 /**
