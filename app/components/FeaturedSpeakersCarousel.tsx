@@ -64,7 +64,7 @@ function SpeakerCard({ speaker }: { speaker: Speaker }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
       <div className="relative z-10">
-        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-serif">
+        <h3 className="text-xl sm:text-2xl text-white mb-2 font-serif">
           {speaker.name}
         </h3>
         <p className="text-sm sm:text-base text-gray-200 mb-3 italic">
@@ -94,7 +94,7 @@ function ViewMoreCard() {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-black/50" />
       <div className="relative z-10 flex flex-col items-center text-center">
-        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 font-serif">
+        <h3 className="text-2xl sm:text-3xl text-white mb-3 font-serif">
           View More Past Speakers
         </h3>
         <p className="text-sm sm:text-base text-gray-200 italic mb-4">

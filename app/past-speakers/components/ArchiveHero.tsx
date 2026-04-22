@@ -2,15 +2,6 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-type StatChip = { value: string; label: string };
-
-const STATS: StatChip[] = [
-  { value: "2", label: "Nobel Laureates" },
-  { value: "6", label: "Years" },
-  { value: "31", label: "Speakers" },
-  { value: "1", label: "Sitting Mayor" },
-];
-
 function Marquee({
   names,
   direction,
@@ -90,7 +81,7 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-serif text-6xl sm:text-8xl lg:text-9xl font-bold text-black dark:text-white leading-[0.9] mb-6"
+          className="font-serif text-6xl sm:text-8xl lg:text-9xl text-black dark:text-white leading-[0.9] mb-6"
         >
           The Archive
         </motion.h1>
@@ -108,34 +99,13 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="max-w-2xl mx-auto text-base text-zinc-600 dark:text-zinc-400 mb-10"
+          className="max-w-2xl mx-auto text-base text-zinc-600 dark:text-zinc-400"
         >
           Since 1935, Stanford Speakers Bureau has brought Nobel laureates,
           activists, artists, athletes, and provocateurs to Stanford. Every
           speaker below has lit up a room on our campus — scroll, search, and
           relive them.
         </motion.p>
-
-        <motion.ul
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.65 }}
-          className="flex flex-wrap justify-center gap-3 sm:gap-4"
-        >
-          {STATS.map((stat) => (
-            <li
-              key={stat.label}
-              className="flex items-baseline gap-2 rounded-full border border-zinc-300 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur px-4 py-2"
-            >
-              <span className="font-serif text-xl sm:text-2xl font-bold text-[#A80D0C]">
-                {stat.value}
-              </span>
-              <span className="text-xs sm:text-sm uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                {stat.label}
-              </span>
-            </li>
-          ))}
-        </motion.ul>
       </div>
     </section>
   );

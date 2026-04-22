@@ -86,7 +86,7 @@ export default async function AccountPage() {
       <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-24">
         <section className="w-full max-w-5xl flex flex-col lg:py-8 py-6 px-6 sm:px-12 md:px-16">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-2 font-serif">
+            <h1 className="text-3xl sm:text-4xl text-black dark:text-white mb-2 font-serif">
               My Account
             </h1>
             <p className="text-zinc-600 dark:text-zinc-400">
@@ -117,7 +117,7 @@ export default async function AccountPage() {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-6 font-serif">
+            <h2 className="text-2xl sm:text-3xl text-black dark:text-white mb-6 font-serif">
               My Tickets
             </h2>
             {tickets.length === 0 ? (
@@ -152,7 +152,7 @@ export default async function AccountPage() {
                     >
                       <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
+                          <h3 className="text-xl text-black dark:text-white mb-3 font-serif">
                             {event.name || "Event"}
                           </h3>
                           <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">

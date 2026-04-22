@@ -138,7 +138,7 @@ export default function SpeakerDrawer({
                 </p>
                 <h2
                   id="speaker-drawer-title"
-                  className="font-serif text-4xl sm:text-5xl font-bold text-black dark:text-white leading-[0.95] mb-3"
+                  className="font-serif text-4xl sm:text-5xl text-black dark:text-white leading-[0.95] mb-3"
                 >
                   {speaker.name}
                 </h2>

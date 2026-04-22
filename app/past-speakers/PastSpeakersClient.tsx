@@ -4,10 +4,9 @@ import { useMemo, useState } from "react";
 import ArchiveHero from "./components/ArchiveHero";
 import SpeakerSpotlight from "./components/SpeakerSpotlight";
 import ArchiveToolbar from "./components/ArchiveToolbar";
-import SpeakerGrid from "./components/SpeakerGrid";
 import TimelineView from "./components/TimelineView";
 import SpeakerDrawer from "./components/SpeakerDrawer";
-import type { FlatSpeaker, ViewMode, YearGroup } from "./components/types";
+import type { FlatSpeaker, YearGroup } from "./components/types";
 
 const SPEAKER_IMAGES: Record<string, string> = {
   "malala-yousafzai": "/speakers/malala-yousafzai.jpg",
@@ -248,7 +247,6 @@ const SPOTLIGHT_SLUGS = [
 export default function PastSpeakersClient() {
   const [query, setQuery] = useState("");
   const [yearFilter, setYearFilter] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   const filteredSpeakers = useMemo(() => {
@@ -333,26 +331,16 @@ export default function PastSpeakersClient() {
           onQueryChange={setQuery}
           year={yearFilter}
           onYearChange={setYearFilter}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
           years={YEARS}
           resultCount={filteredSpeakers.length}
           totalCount={ALL_SPEAKERS.length}
         />
 
-        {viewMode === "grid" ? (
-          <SpeakerGrid
-            speakers={filteredSpeakers}
-            images={SPEAKER_IMAGES}
-            onOpen={openSpeaker}
-          />
-        ) : (
-          <TimelineView
-            sections={filteredByYear}
-            images={SPEAKER_IMAGES}
-            onOpen={openSpeaker}
-          />
-        )}
+        <TimelineView
+          sections={filteredByYear}
+          images={SPEAKER_IMAGES}
+          onOpen={openSpeaker}
+        />
       </main>
 
       <SpeakerDrawer

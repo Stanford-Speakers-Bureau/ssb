@@ -23,6 +23,13 @@ type LeaderboardProps = {
   userSuggestions?: UserSuggestion[];
 };
 
+const INITIAL_VISIBLE = 30;
+
+function rankColor(globalIndex: number): string {
+  if (globalIndex <= 2) return "text-[#A80D0C]";
+  return "text-zinc-300 dark:text-zinc-700";
+}
+
 export default function Leaderboard({
   suggestions: initialSuggestions,
   isLoggedIn,
@@ -30,9 +37,9 @@ export default function Leaderboard({
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [, startTransition] = useTransition();
   const [votingId, setVotingId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
 
   const handleVote = async (speakerId: string, hasVoted: boolean) => {
     if (!isLoggedIn) return;
@@ -55,7 +62,6 @@ export default function Leaderboard({
 
       if (!response.ok) {
         if (data.alreadyVoted) {
-          // Update local state to reflect already voted
           setSuggestions((prev) =>
             prev.map((s) =>
               s.id === speakerId ? { ...s, hasVoted: true } : s,
@@ -67,7 +73,6 @@ export default function Leaderboard({
         return;
       }
 
-      // Update local state with new vote count and toggle hasVoted
       startTransition(() => {
         setSuggestions((prev) =>
           prev
@@ -90,29 +95,24 @@ export default function Leaderboard({
     }
   };
 
-  // Filter suggestions based on search query while preserving global rankings
   const filteredSuggestions = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return suggestions;
-    }
-    const query = searchQuery.toLowerCase().trim();
-    return suggestions.filter((s) => s.speaker.toLowerCase().includes(query));
+    if (!searchQuery.trim()) return suggestions;
+    const q = searchQuery.toLowerCase().trim();
+    return suggestions.filter((s) => s.speaker.toLowerCase().includes(q));
   }, [suggestions, searchQuery]);
 
-  return (
-    <div className="flex flex-col lg:flex-1 lg:h-full max-w-lg mx-0">
-      <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-4 font-serif">
-        Speaker Leaderboard
-      </h1>
-      <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed mb-6">
-        Vote for the speakers you&apos;d most like to see at Stanford
-      </p>
+  const isSearching = searchQuery.trim().length > 0;
+  const displayedSuggestions = isSearching
+    ? filteredSuggestions
+    : filteredSuggestions.slice(0, visibleCount);
+  const hasMore = !isSearching && filteredSuggestions.length > visibleCount;
 
-      {/* Search Bar */}
+  return (
+    <div className="flex flex-col">
       <div className="mb-6">
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-500"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500 pointer-events-none"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -126,19 +126,20 @@ export default function Leaderboard({
           </svg>
           <input
             type="text"
-            placeholder="Search speaker suggestions..."
+            placeholder="Search suggestions"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C] focus:border-transparent transition-all"
+            className="w-full pl-11 pr-10 py-3 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-full text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-[#A80D0C] transition-colors"
               aria-label="Clear search"
             >
               <svg
-                className="w-5 h-5"
+                width="16"
+                height="16"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -153,10 +154,9 @@ export default function Leaderboard({
             </button>
           )}
         </div>
-        {searchQuery && (
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Showing {filteredSuggestions.length} of {suggestions.length}{" "}
-            speakers
+        {isSearching && (
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+            {filteredSuggestions.length} of {suggestions.length} speakers
           </p>
         )}
       </div>
@@ -164,13 +164,15 @@ export default function Leaderboard({
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-4 flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800"
+            exit={{ opacity: 0, y: -6 }}
+            className="mb-4 flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-900/50"
           >
             <svg
-              className="w-5 h-5 text-red-500 shrink-0"
+              width="18"
+              height="18"
+              className="text-red-500 shrink-0 translate-y-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -187,191 +189,155 @@ export default function Leaderboard({
         )}
       </AnimatePresence>
 
-      <div className="space-y-3">
-        {suggestions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
-              <svg
-                className="w-8 h-8 text-zinc-400 dark:text-zinc-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
-              No suggestions yet
-            </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
-              Be the first to suggest a speaker you&apos;d like to see at
-              Stanford!
-            </p>
-          </div>
-        ) : filteredSuggestions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
-              <svg
-                className="w-8 h-8 text-zinc-400 dark:text-zinc-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
-              No speakers found
-            </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
-              Try adjusting your search query
-            </p>
-          </div>
-        ) : (
-          filteredSuggestions.map((suggestion) => {
-            // Find the global index to preserve ranking
+      {suggestions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-500 mb-2">
+            No suggestions yet.
+          </p>
+          <p className="font-sans text-sm text-zinc-400 dark:text-zinc-500 max-w-xs">
+            Be the first to suggest a speaker.
+          </p>
+        </div>
+      ) : filteredSuggestions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="font-serif text-2xl text-zinc-500 dark:text-zinc-500 mb-2">
+            No matches.
+          </p>
+          <p className="font-sans text-sm text-zinc-400 dark:text-zinc-500 max-w-xs">
+            Try a different name.
+          </p>
+        </div>
+      ) : (
+        <ol className="divide-y divide-zinc-200 dark:divide-zinc-900 border-y border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black rounded-lg overflow-hidden">
+          {displayedSuggestions.map((suggestion) => {
             const globalIndex = suggestions.findIndex(
               (s) => s.id === suggestion.id,
             );
+            const rankNumber = globalIndex + 1;
+            const isTopThree = globalIndex <= 2;
             return (
-              <motion.div
+              <motion.li
                 key={suggestion.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded"
+                className="group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-950"
               >
-                {/* Rank */}
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
-              ${
-                globalIndex === 0
-                  ? "bg-amber-400 text-amber-900"
-                  : globalIndex === 1
-                    ? "bg-zinc-300 text-zinc-700"
-                    : globalIndex === 2
-                      ? "bg-amber-600 text-amber-100"
-                      : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
-              }`}
+                <span
+                  className={`font-serif w-12 sm:w-14 text-right shrink-0 leading-none ${
+                    isTopThree
+                      ? "text-3xl sm:text-5xl"
+                      : "text-xl sm:text-2xl"
+                  } ${rankColor(globalIndex)}`}
                 >
-                  {globalIndex + 1}
-                </div>
+                  {rankNumber}
+                </span>
 
-                {/* Speaker Name */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-black dark:text-white font-medium truncate">
+                  <p
+                    className={`font-serif text-zinc-900 dark:text-white truncate leading-tight ${
+                      isTopThree ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
+                    }`}
+                  >
                     {suggestion.speaker}
+                  </p>
+                  <p className="mt-1 text-[11px] font-sans uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+                    {suggestion.votes}{" "}
+                    {suggestion.votes === 1 ? "vote" : "votes"}
                   </p>
                 </div>
 
-                {/* Vote Count */}
-                <div className="flex items-center gap-2">
-                  {/* Vote Button */}
-                  {isLoggedIn ? (
-                    <motion.button
-                      onClick={() =>
-                        handleVote(suggestion.id, suggestion.hasVoted)
-                      }
-                      onMouseEnter={() => setHoveredId(suggestion.id)}
-                      onMouseLeave={() => setHoveredId(null)}
-                      onTouchEnd={() => setHoveredId(null)}
-                      disabled={votingId === suggestion.id}
-                      whileHover={{ scale: 1.05 }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150 active:scale-95
-                    ${
-                      suggestion.hasVoted
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400"
-                        : "bg-[#A80D0C] hover:bg-[#8a0b0a] text-white shadow-sm hover:bg-[#C11211]"
+                {isLoggedIn ? (
+                  <motion.button
+                    onClick={() =>
+                      handleVote(suggestion.id, suggestion.hasVoted)
                     }
-                    disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {votingId === suggestion.id ? (
+                    disabled={votingId === suggestion.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                      ${
+                        suggestion.hasVoted
+                          ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"
+                          : "bg-[#A80D0C] text-white shadow-md shadow-[#A80D0C]/10 hover:bg-[#C11211]"
+                      }`}
+                    aria-pressed={suggestion.hasVoted}
+                  >
+                    {votingId === suggestion.id ? (
+                      <svg
+                        className="animate-spin w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    ) : suggestion.hasVoted ? (
+                      <>
                         <svg
-                          className="animate-spin w-4 h-4"
+                          width="12"
+                          height="12"
                           fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
                           viewBox="0 0 24 24"
+                          aria-hidden="true"
                         >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
+                          <path d="M20 6 9 17l-5-5" />
                         </svg>
-                      ) : suggestion.hasVoted ? (
-                        <>
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                          <span
-                            className={`${hoveredId === suggestion.id ? "hidden lg:inline" : ""}`}
-                          >
-                            Voted
-                          </span>
-                          <span
-                            className={`${hoveredId === suggestion.id ? "lg:hidden" : "hidden"}`}
-                          >
-                            Unvote
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 15l7-7 7 7"
-                            />
-                          </svg>
-                          <span>Vote</span>
-                        </>
-                      )}
-                    </motion.button>
-                  ) : (
-                    <div className="text-xs text-zinc-400 dark:text-zinc-500">
-                      Sign in to vote
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+                        <span>Voted</span>
+                      </>
+                    ) : (
+                      <span>Vote</span>
+                    )}
+                  </motion.button>
+                ) : (
+                  <span className="shrink-0 text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-600">
+                    Sign in to vote
+                  </span>
+                )}
+              </motion.li>
             );
-          })
-        )}
-      </div>
+          })}
+        </ol>
+      )}
+
+      {hasMore && (
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((n) => n + INITIAL_VISIBLE)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-700 dark:text-zinc-300 transition-colors hover:border-[#A80D0C] hover:text-[#A80D0C]"
+          >
+            Show more
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

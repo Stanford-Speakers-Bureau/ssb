@@ -133,7 +133,7 @@ export default async function UpcomingSpeakers() {
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-24">
         <section className="w-full max-w-6xl flex flex-col lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-          <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white mb-8 font-serif">
+          <h1 className="text-3xl sm:text-4xl text-black dark:text-white mb-8 font-serif">
             Upcoming Speakers
           </h1>
 
@@ -198,7 +198,7 @@ export default async function UpcomingSpeakers() {
             <SuggestSpeakerButton />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-black dark:text-white mb-6 mt-0 text-center drop-shadow-lg">
+          <h2 className="text-2xl sm:text-3xl font-serif text-black dark:text-white mb-6 mt-0 text-center drop-shadow-lg">
             To Hear About Upcoming Events:
           </h2>
 

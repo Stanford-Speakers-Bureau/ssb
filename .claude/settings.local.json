@@ -17,7 +17,16 @@
       "Bash(git diff:*)",
       "Read(//Users/michaelyu/Developer/WebStorm/ssb-db/**)",
       "Bash(find /Users/michaelyu/Developer/WebStorm/ssb-db -name *.sql)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(xargs cat *)",
+      "Bash(bun run *)",
+      "Bash(git stash *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(bunx eslint *)",
+      "Bash(curl *)",
+      "WebFetch(domain:localhost)",
+      "Bash(git log *)",
+      "Bash(npx eslint *)"
     ]
   }
 }

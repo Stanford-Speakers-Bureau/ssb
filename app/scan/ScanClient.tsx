@@ -627,7 +627,7 @@ export default function ScanClient() {
         <main className="flex w-full flex-1 justify-center bg-black pt-16">
           <section className="w-full max-w-5xl flex flex-col py-6 lg:py-8 px-6 sm:px-12 md:px-16">
             <div className="text-center mb-8">
-              <h1 className="text-4xl sm:text-4xl font-bold text-[#A80D0C] mb-4 font-serif">
+              <h1 className="text-4xl sm:text-4xl text-[#A80D0C] mb-4 font-serif">
                 SSB Scanner
               </h1>
             </div>
@@ -645,7 +645,7 @@ export default function ScanClient() {
                   d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
                 />
               </svg>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-serif">
+              <h2 className="text-2xl sm:text-3xl text-white mb-4 font-serif">
                 Please Use Mobile Device
               </h2>
               <p className="text-zinc-300 text-base sm:text-lg mb-2">
@@ -675,7 +675,7 @@ export default function ScanClient() {
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
           <div className="text-center mb-2 sm:mb-4">
             <h1
-              className={`text-4xl font-bold mb-1 sm:mb-2 font-serif ${
+              className={`text-4xl mb-1 sm:mb-2 font-serif ${
                 status ? getTextColor() : "text-[#A80D0C]"
               }`}
             >
@@ -984,7 +984,7 @@ export default function ScanClient() {
                 }}
               >
                 <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 font-serif text-white">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl mb-2 sm:mb-3 md:mb-4 font-serif text-white">
                     {getStatusText()}
                   </h2>
 
@@ -1075,7 +1075,7 @@ export default function ScanClient() {
                   className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <h3 className="text-xl font-bold text-white mb-1 font-serif text-center">
+                  <h3 className="text-xl text-white mb-1 font-serif text-center">
                     Verify Identity
                   </h3>
                   <p className="text-zinc-400 text-sm text-center mb-4">

@@ -1,14 +1,10 @@
 "use client";
 
-import type { ViewMode } from "./types";
-
 export default function ArchiveToolbar({
   query,
   onQueryChange,
   year,
   onYearChange,
-  viewMode,
-  onViewModeChange,
   years,
   resultCount,
   totalCount,
@@ -17,8 +13,6 @@ export default function ArchiveToolbar({
   onQueryChange: (q: string) => void;
   year: string | null;
   onYearChange: (y: string | null) => void;
-  viewMode: ViewMode;
-  onViewModeChange: (v: ViewMode) => void;
   years: string[];
   resultCount: number;
   totalCount: number;
@@ -75,65 +69,13 @@ export default function ArchiveToolbar({
             ))}
           </div>
 
-          {/* View toggle + count */}
-          <div className="flex items-center gap-4 shrink-0">
+          {/* Count */}
+          <div className="flex items-center shrink-0">
             <p className="hidden sm:block text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
               {resultCount === totalCount
                 ? `${totalCount} speakers`
                 : `${resultCount} of ${totalCount}`}
             </p>
-            <div
-              className="flex rounded-full border border-zinc-300 dark:border-zinc-800 p-0.5"
-              role="tablist"
-              aria-label="View mode"
-            >
-              <ViewButton
-                active={viewMode === "grid"}
-                onClick={() => onViewModeChange("grid")}
-                label="Grid"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-              </ViewButton>
-              <ViewButton
-                active={viewMode === "timeline"}
-                onClick={() => onViewModeChange("timeline")}
-                label="Timeline"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="8" y1="6" x2="21" y2="6" />
-                  <line x1="8" y1="12" x2="21" y2="12" />
-                  <line x1="8" y1="18" x2="21" y2="18" />
-                  <circle cx="4" cy="6" r="1.5" />
-                  <circle cx="4" cy="12" r="1.5" />
-                  <circle cx="4" cy="18" r="1.5" />
-                </svg>
-              </ViewButton>
-            </div>
           </div>
         </div>
       </div>
@@ -167,32 +109,3 @@ function Chip({
   );
 }
 
-function ViewButton({
-  active,
-  onClick,
-  label,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      role="tab"
-      aria-selected={active}
-      aria-label={`${label} view`}
-      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-sans font-medium transition-all ${
-        active
-          ? "bg-[#A80D0C] text-white"
-          : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
-      }`}
-    >
-      {children}
-      <span className="hidden sm:inline">{label}</span>
-    </button>
-  );
-}

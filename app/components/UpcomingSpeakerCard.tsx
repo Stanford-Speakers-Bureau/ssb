@@ -384,7 +384,7 @@ function RevealedCard({
         />
         <div className="absolute inset-0 z-10 hidden lg:flex flex-col justify-end px-10 pb-6">
           {showName && (
-            <h2 className="text-5xl font-bold font-serif text-white tracking-tight leading-[1.1] drop-shadow-lg">
+            <h2 className="text-5xl font-serif text-white tracking-tight leading-[1.1] drop-shadow-lg">
               {name}
             </h2>
           )}
@@ -404,7 +404,7 @@ function RevealedCard({
       {/* Below-image content — below lg */}
       <div className="lg:hidden px-5 sm:px-6 pt-4 pb-2">
         {showName && (
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-3xl font-serif text-white tracking-tight leading-tight">
             {name}
           </h2>
         )}
@@ -493,7 +493,7 @@ function MysteryCard({
 
       <div className="relative z-10 p-10 sm:p-12">
         {/* Large question mark */}
-        <div className="text-8xl sm:text-9xl font-serif font-bold text-red-500/80 mb-4 select-none">
+        <div className="text-8xl sm:text-9xl font-serif text-red-500/80 mb-4 select-none">
           ?
         </div>
 

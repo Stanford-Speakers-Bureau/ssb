@@ -37,7 +37,7 @@ function Slide({
           <span className="inline-block mb-4 rounded-full bg-[#A80D0C] px-3 py-1 text-xs font-sans uppercase tracking-[0.2em] text-white">
             Spotlight · {speaker.year}
           </span>
-          <h2 className="font-serif text-4xl sm:text-6xl font-bold text-white leading-[0.95] mb-3">
+          <h2 className="font-serif text-4xl sm:text-6xl text-white leading-[0.95] mb-3">
             {speaker.name}
           </h2>
           {speaker.title && (
@@ -180,7 +180,7 @@ export default function SpeakerSpotlight({
             <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
               In Focus
             </p>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white">
+            <h2 className="font-serif text-3xl sm:text-4xl text-white">
               Spotlight
             </h2>
           </div>

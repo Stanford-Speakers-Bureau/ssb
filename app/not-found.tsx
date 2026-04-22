@@ -5,10 +5,10 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-16">
         <section className="w-full max-w-5xl flex flex-col items-center justify-center py-12 px-6 sm:px-12 md:px-16">
-          <h1 className="text-6xl sm:text-8xl font-bold text-[#A80D0C] mb-4 font-serif">
+          <h1 className="text-6xl sm:text-8xl text-[#A80D0C] mb-4 font-serif">
             404
           </h1>
-          <h2 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-4 font-serif text-center">
+          <h2 className="text-2xl sm:text-3xl text-black dark:text-white mb-4 font-serif text-center">
             Page Not Found
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 text-center mb-8 max-w-md">

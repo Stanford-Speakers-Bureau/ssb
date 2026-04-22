@@ -348,7 +348,7 @@ export default function EventPopup({
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
-                      className="text-8xl font-serif font-bold text-[#A80D0C] select-none drop-shadow-lg"
+                      className="text-8xl font-serif text-[#A80D0C] select-none drop-shadow-lg"
                     >
                       ?
                     </motion.span>
@@ -390,7 +390,7 @@ export default function EventPopup({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
-                  className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white font-serif leading-tight"
+                  className="text-xl sm:text-2xl text-zinc-900 dark:text-white font-serif leading-tight"
                 >
                   {headline}
                 </motion.h2>

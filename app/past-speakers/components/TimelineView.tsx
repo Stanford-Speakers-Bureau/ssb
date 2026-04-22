@@ -45,7 +45,7 @@ export default function TimelineView({
               <div className="relative">
                 <span
                   aria-hidden="true"
-                  className="block font-serif font-bold text-[7rem] sm:text-[12rem] leading-none text-transparent"
+                  className="block font-serif text-[7rem] sm:text-[12rem] leading-none text-transparent"
                   style={{
                     WebkitTextStroke: "2px #A80D0C",
                   }}
@@ -95,7 +95,7 @@ export default function TimelineView({
                           />
                         </div>
                       )}
-                      <h3 className="font-serif text-2xl sm:text-3xl font-bold text-black dark:text-white leading-tight mb-2">
+                      <h3 className="font-serif text-2xl sm:text-3xl text-black dark:text-white leading-tight mb-2">
                         {speaker.name}
                       </h3>
                       {speaker.title && (

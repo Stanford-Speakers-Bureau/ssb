@@ -72,7 +72,7 @@ export default function HeroSection({
 
       {/* Hero content – anchored bottom-left */}
       <div className="relative z-10 flex flex-col sm:justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-5 sm:pt-28 pb-6 sm:pb-14">
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-tight sm:leading-[1.1] dark:drop-shadow-lg">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl text-zinc-900 dark:text-white font-serif tracking-tight leading-tight sm:leading-[1.1] dark:drop-shadow-lg">
           {name}
         </h1>
         {tagline && (

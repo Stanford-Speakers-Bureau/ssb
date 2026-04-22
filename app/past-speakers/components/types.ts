@@ -13,5 +13,3 @@ export type YearGroup = {
 };
 
 export type FlatSpeaker = Speaker & { year: string };
-
-export type ViewMode = "grid" | "timeline";
