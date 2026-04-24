@@ -58,10 +58,7 @@ export default function PastSpeakersClient() {
   const navigationList = useMemo(() => {
     // If selected speaker is in the current filter, navigate within it.
     // Otherwise fall back to full list (e.g., opened from spotlight).
-    if (
-      selectedSlug &&
-      filteredSpeakers.some((s) => s.slug === selectedSlug)
-    ) {
+    if (selectedSlug && filteredSpeakers.some((s) => s.slug === selectedSlug)) {
       return filteredSpeakers;
     }
     return SPEAKERS;
@@ -86,14 +83,11 @@ export default function PastSpeakersClient() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-black font-sans">
+    <div className="flex min-h-screen flex-col bg-[#140f0e] font-sans">
       <main className="flex w-full flex-col">
         <ArchiveHero speakerNames={SPEAKERS.map((s) => s.name)} />
 
-        <SpeakerSpotlight
-          speakers={spotlightSpeakers}
-          onOpen={openSpeaker}
-        />
+        <SpeakerSpotlight speakers={spotlightSpeakers} onOpen={openSpeaker} />
 
         <ArchiveToolbar
           query={query}

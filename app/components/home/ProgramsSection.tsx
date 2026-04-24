@@ -50,13 +50,7 @@ const PROGRAMS: Program[] = [
   },
 ];
 
-function ProgramCard({
-  program,
-  index,
-}: {
-  program: Program;
-  index: number;
-}) {
+function ProgramCard({ program, index }: { program: Program; index: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
@@ -66,8 +60,11 @@ function ProgramCard({
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
-      className={`group relative overflow-hidden rounded ${index === 0 ? "md:col-span-2 md:row-span-2 min-h-[420px]" : "min-h-[320px]"
-        }`}
+      className={`group relative overflow-hidden rounded-[30px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.22)] ${
+        index === 0
+          ? "md:col-span-2 md:row-span-2 min-h-[420px]"
+          : "min-h-[320px]"
+      }`}
     >
       <Image
         src={program.image}
@@ -80,22 +77,20 @@ function ProgramCard({
             : "(max-width: 768px) 100vw, 33vw"
         }
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 group-hover:from-black/95 group-hover:via-black/70 transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#151110]/88 via-[#151110]/32 to-transparent transition-all duration-500 group-hover:from-[#151110]/92 group-hover:via-[#151110]/48" />
 
       <div className="absolute inset-0 flex flex-col justify-end p-7 sm:p-9">
         <h3
-          className={`font-serif text-white leading-tight mb-3 ${index === 0
-              ? "text-3xl sm:text-4xl"
-              : "text-2xl sm:text-3xl"
-            }`}
+          className={`font-serif text-white leading-tight mb-3 ${
+            index === 0 ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"
+          }`}
         >
           {program.title}
         </h3>
         <p
-          className={`font-sans text-zinc-200 leading-relaxed mb-5 ${index === 0
-              ? "text-base max-w-lg"
-              : "text-sm max-w-sm line-clamp-3"
-            }`}
+          className={`font-sans text-zinc-200 leading-relaxed mb-5 ${
+            index === 0 ? "text-base max-w-lg" : "text-sm max-w-sm line-clamp-3"
+          }`}
         >
           {program.description}
         </p>
@@ -106,7 +101,7 @@ function ProgramCard({
           rel={program.external ? "noopener noreferrer" : undefined}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center gap-2 w-fit rounded-full bg-[#A80D0C] px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#C11211]"
+          className="inline-flex w-fit items-center gap-2 rounded-full bg-[#b51f1a] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_14px_35px_rgba(181,31,26,0.25)] transition-colors hover:bg-[#d24634]"
         >
           {program.linkLabel}
           <svg
@@ -131,18 +126,27 @@ function ProgramCard({
 
 export default function ProgramsSection() {
   return (
-    <section className="bg-zinc-950 py-20 sm:py-28">
-      <div className="max-w-6xl mx-auto px-6 sm:px-12">
-        <div className="text-center mb-12 sm:mb-16">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
+    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_30%),linear-gradient(180deg,#1b1412_0%,#140f0e_100%)] py-20 sm:py-28">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/14 to-transparent"
+      />
+      <div className="mx-auto max-w-6xl px-6 sm:px-12">
+        <div className="mb-12 text-center sm:mb-16">
+          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[#f19a80] sm:text-sm">
             Beyond the Stage
           </p>
-          <h2 className="font-serif text-3xl sm:text-5xl text-white">
+          <h2 className="font-serif text-3xl text-white sm:text-5xl">
             Our Programs
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#c6b6aa] sm:text-base">
+            SSB is more than a lecture night. These programs create
+            lighter-touch, more personal ways to bring ideas and people together
+            on campus.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {PROGRAMS.map((program, i) => (
             <ProgramCard key={program.title} program={program} index={i} />
           ))}

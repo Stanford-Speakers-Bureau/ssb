@@ -2,8 +2,19 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f0b0a;
+  --foreground: #f3e7dc;
+  --ssb-paper: #15100f;
+  --ssb-paper-strong: #1d1513;
+  --ssb-card: #1a1412;
+  --ssb-ink: #f6ede4;
+  --ssb-muted: #b9a79b;
+  --ssb-border: rgba(255, 236, 224, 0.1);
+  --ssb-accent: #b51f1a;
+  --ssb-accent-strong: #db4c3a;
+  --ssb-accent-soft: rgba(219, 76, 58, 0.14);
+  --ssb-night: #161211;
+  --ssb-night-soft: #211918;
 }
 
 @theme inline {
@@ -22,7 +33,15 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top, rgba(219, 76, 58, 0.16), transparent 34%),
+    linear-gradient(180deg, #17110f 0%, var(--ssb-paper) 100%);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(181, 31, 26, 0.18);
+  color: #fff7f2;
 }

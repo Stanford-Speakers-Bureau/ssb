@@ -59,12 +59,13 @@ function PhotoRow({
 function PhotoMosaic() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-75 dark:opacity-70">
+      <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-[0.88] dark:opacity-70">
         <PhotoRow photos={ROW_TOP} direction="left" durationSec={35} />
         <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={45} />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/88" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/45" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,240,224,0.18),transparent_28%),radial-gradient(circle_at_18%_22%,rgba(219,76,58,0.22),transparent_34%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#130e0d]/50 via-[#130e0d]/38 to-[#130e0d]/84" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#130e0d]/40 via-transparent to-[#130e0d]/32" />
     </div>
   );
 }
@@ -73,15 +74,23 @@ const EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[var(--ssb-night)]">
       <PhotoMosaic />
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/30 to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute left-1/2 top-32 h-64 w-64 -translate-x-1/2 rounded-full bg-[#e75b45]/20 blur-3xl"
+      />
 
-      <div className="relative z-10 flex flex-col items-center px-6 sm:px-12 text-center max-w-4xl mx-auto">
+      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center sm:px-12">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          className="inline-block mb-6 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-5 py-2 text-xs sm:text-sm font-sans uppercase tracking-[0.3em] text-white/80"
+          className="mb-6 inline-block rounded-full border border-white/20 bg-white/12 px-5 py-2 text-xs font-sans uppercase tracking-[0.3em] text-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.15)] backdrop-blur-md sm:text-sm"
         >
           Since 1935
         </motion.span>
@@ -90,10 +99,10 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.0] mb-8 text-white"
+          className="mb-8 max-w-4xl font-serif text-4xl leading-[0.98] text-white sm:text-5xl md:text-6xl lg:text-7xl"
         >
           Stanford{" "}
-          <span className="text-[#A80D0C] drop-shadow-[0_0_30px_rgba(168,13,12,0.35)]">
+          <span className="bg-gradient-to-r from-[#f28c73] via-[#e75b45] to-[#c62720] bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(219,76,58,0.32)]">
             Speakers
           </span>{" "}
           Bureau
@@ -103,7 +112,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6, ease: EASE }}
-          className="font-sans text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl leading-relaxed mb-10"
+          className="mb-10 max-w-2xl font-sans text-base leading-relaxed text-[#f5e8dc]/88 sm:text-lg md:text-xl"
         >
           Stanford&rsquo;s largest student organization sponsor of speaking
           events. We bring Nobel laureates, artists, leaders, and creators to
@@ -114,7 +123,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.75, ease: EASE }}
-          className="flex flex-col sm:flex-row gap-4"
+          className="flex flex-col gap-4 sm:flex-row"
         >
           <MotionLink
             href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
@@ -123,7 +132,7 @@ export default function HeroSection() {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full px-8 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
+            className="rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:-translate-y-0.5 hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
           >
             Join the Mailing List
           </MotionLink>
@@ -132,7 +141,7 @@ export default function HeroSection() {
             prefetch={false}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full px-8 py-3.5 text-sm sm:text-base font-semibold text-white border border-white/30 bg-white/5 backdrop-blur-sm transition-colors hover:bg-white/10"
+            className="rounded-full border border-[#f2ded0]/50 bg-[#fff8f1] px-8 py-3.5 text-sm font-semibold text-[#1c1614] shadow-[0_12px_35px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-0.5 hover:bg-white sm:text-base"
           >
             Suggest a Speaker
           </MotionLink>
@@ -148,7 +157,7 @@ export default function HeroSection() {
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-white/40"
+          className="flex flex-col items-center gap-2 text-white/60"
         >
           <span className="text-[10px] uppercase tracking-[0.3em] font-sans">
             Scroll

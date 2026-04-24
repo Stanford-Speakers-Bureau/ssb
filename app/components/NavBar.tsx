@@ -8,6 +8,21 @@ import Link from "next/link";
 
 const AUTH_CACHE_KEY = "ssb_nav_auth";
 const AUTH_CACHE_TTL_MS = 60_000;
+const NAV_ITEMS = [
+  { href: "/upcoming-speakers", label: "Upcoming Speakers" },
+  { href: "/past-speakers", label: "Past Speakers" },
+  { href: "/suggest", label: "Suggest" },
+  { href: "/event-sponsorship", label: "Event Sponsorship" },
+  { href: "/team", label: "Team" },
+  { href: "/contact", label: "Contact" },
+] as const;
+
+function isNavItemActive(pathname: string, href: string) {
+  if (href === "/upcoming-speakers") {
+    return pathname === href || pathname.startsWith("/events/");
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 function readCachedAuthState(): boolean | null {
   if (typeof window === "undefined") return null;
@@ -22,9 +37,9 @@ function readCachedAuthState(): boolean | null {
     };
 
     if (
-      typeof parsed.authenticated !== "boolean"
-      || typeof parsed.expiresAt !== "number"
-      || parsed.expiresAt <= Date.now()
+      typeof parsed.authenticated !== "boolean" ||
+      typeof parsed.expiresAt !== "number" ||
+      parsed.expiresAt <= Date.now()
     ) {
       window.sessionStorage.removeItem(AUTH_CACHE_KEY);
       return null;
@@ -54,17 +69,17 @@ function writeCachedAuthState(authenticated: boolean) {
 
 export default function NavBar({ banner }: { banner: boolean }) {
   const pathname = usePathname();
-  const isWhiteNavPage =
-    pathname === "/"
-    || pathname === "/contact"
-    || pathname === "/team"
-    || pathname === "/suggest"
-    || pathname === "/past-speakers"
-    || pathname === "/event-sponsorship"
-    || pathname.startsWith("/events/");
+  const isOverlayNavPage =
+    pathname === "/" ||
+    pathname === "/contact" ||
+    pathname === "/team" ||
+    pathname === "/suggest" ||
+    pathname === "/past-speakers" ||
+    pathname === "/event-sponsorship" ||
+    pathname.startsWith("/events/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
-    () => readCachedAuthState(),
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() =>
+    readCachedAuthState(),
   );
 
   // Check authentication state
@@ -95,25 +110,21 @@ export default function NavBar({ banner }: { banner: boolean }) {
     };
   }, [pathname]);
 
-  const logoClasses = isWhiteNavPage
-    ? "text-xl font-bold text-white"
-    : "text-xl font-bold text-black dark:text-white";
+  const glassClasses = isOverlayNavPage
+    ? "border-white/16 bg-[rgba(24,19,17,0.38)] shadow-[0_22px_60px_rgba(0,0,0,0.24)]"
+    : "border-white/10 bg-[rgba(18,14,13,0.88)] shadow-[0_18px_50px_rgba(0,0,0,0.2)]";
 
-  const linkClasses = isWhiteNavPage
-    ? "text-sm font-medium text-white transition-colors hover:text-white/80"
-    : "text-sm font-medium text-black dark:text-gray-300 transition-colors hover:text-black dark:hover:text-white";
+  const logoClasses = "text-xl font-bold text-white";
 
-  const mobileMenuBgClasses = isWhiteNavPage
-    ? "bg-black/95 backdrop-blur-sm"
-    : "bg-white dark:bg-zinc-900";
+  const mobileMenuBgClasses =
+    "border-l border-white/10 bg-[rgba(19,15,14,0.94)] text-white backdrop-blur-2xl";
 
-  const mobileLinkClasses = isWhiteNavPage
-    ? "text-lg font-medium text-white transition-colors hover:text-white/80 py-3"
-    : "text-lg font-medium text-black dark:text-gray-300 transition-colors hover:text-[#A80D0C] py-3";
+  const hamburgerClasses = "text-white";
 
-  const hamburgerClasses = isWhiteNavPage
-    ? "text-white"
-    : "text-black dark:text-white";
+  const accountClasses =
+    "rounded-full bg-white/12 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/18";
+  const mobileAccountClasses =
+    "mt-4 rounded-full bg-white/12 px-4 py-3 text-lg font-semibold text-white transition-colors hover:bg-white/18";
 
   // Disable body scroll when mobile menu is open
   useEffect(() => {
@@ -134,116 +145,76 @@ export default function NavBar({ banner }: { banner: boolean }) {
       <nav className="sticky top-0 left-0 right-0 z-50 w-full h-0">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div
-            className={`flex items-center gap-8 flex-1 absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-auto lg:right-auto lg:max-w-4xl lg:w-full top-4 h-[70px] backdrop-blur-[10px] bg-white/10 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)] opacity-90 px-4 sm:px-6 lg:px-6 pb-1 ${mobileMenuOpen ? "z-0" : "z-10"}`}
+            className={`absolute left-4 right-4 top-4 flex h-[64px] flex-1 items-center gap-6 rounded-full border px-4 pb-0.5 backdrop-blur-xl sm:left-6 sm:right-6 sm:px-6 lg:left-auto lg:right-auto lg:w-full lg:max-w-5xl lg:px-5 ${glassClasses} ${mobileMenuOpen ? "z-0" : "z-10"}`}
           >
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
               className="hidden lg:block"
             >
               <Link href="/" className={logoClasses} prefetch={false}>
                 <Image
                   src="/logo.png"
                   alt="Stanford Speakers Bureau (SSB) Logo"
-                  width={40}
-                  height={40}
+                  width={36}
+                  height={36}
                 />
               </Link>
             </motion.div>
-            <div className="hidden items-center gap-6 lg:flex flex-1 justify-center">
+            <div className="hidden flex-1 items-center justify-center gap-1 lg:flex">
+              {NAV_ITEMS.map((item) => {
+                const active = isNavItemActive(pathname, item.href);
+                const navItemClasses = active
+                  ? "bg-white/14 text-white"
+                  : "text-white/84 hover:bg-white/10 hover:text-white";
+
+                return (
+                  <motion.div
+                    key={item.href}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${navItemClasses}`}
+                      prefetch={false}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/upcoming-speakers"
-                  className={linkClasses}
-                  prefetch={false}
-                >
-                  Upcoming Speakers
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/past-speakers"
-                  className={linkClasses}
-                  prefetch={false}
-                >
-                  Past Speakers
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link href="/suggest" className={linkClasses} prefetch={false}>
-                  Suggest
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/event-sponsorship"
-                  className={linkClasses}
-                  prefetch={false}
-                >
-                  Event Sponsorship
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link href="/team" className={linkClasses} prefetch={false}>
-                  Team
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link href="/contact" className={linkClasses} prefetch={false}>
-                  Contact
-                </Link>
-              </motion.div>
-              {/*{isAuthenticated !== null && (*/}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="ml-auto"
               >
                 {isAuthenticated === null ? (
                   <span
-                    className={`${linkClasses} opacity-70 pointer-events-none`}
+                    className={`${accountClasses} pointer-events-none opacity-70`}
                     aria-hidden="true"
                   >
                     Account
                   </span>
                 ) : isAuthenticated ? (
-                  <Link href="/account" className={linkClasses}>
+                  <Link href="/account" className={accountClasses}>
                     Account
                   </Link>
                 ) : (
                   <Link
                     href={`/api/auth/login?redirect_to=${encodeURIComponent(pathname)}`}
-                    className={linkClasses}
+                    className={accountClasses}
                   >
                     Sign In
                   </Link>
                 )}
               </motion.div>
-              {/*)}*/}
             </div>
           </div>
 
           {/* Mobile Logo - positioned outside frosted div to stay above menu */}
-          <div className="lg:hidden absolute left-8 sm:left-10 top-[31px] z-30">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <div className="absolute left-8 top-[31px] z-30 lg:hidden sm:left-10">
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href="/"
                 className={logoClasses}
@@ -253,8 +224,8 @@ export default function NavBar({ banner }: { banner: boolean }) {
                 <Image
                   src="/logo.png"
                   alt="Stanford Speakers Bureau (SSB) Logo"
-                  width={40}
-                  height={40}
+                  width={36}
+                  height={36}
                 />
               </Link>
             </motion.div>
@@ -263,7 +234,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           {/* Mobile Menu Button - positioned outside frosted div to stay above menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`lg:hidden p-2 absolute right-6 sm:right-8 top-[27px] z-30 ${hamburgerClasses}`}
+            className={`absolute right-6 top-[25px] z-30 rounded-full bg-white/10 p-2.5 transition-colors hover:bg-white/16 lg:hidden sm:right-8 ${hamburgerClasses}`}
             aria-label="Toggle menu"
           >
             <svg
@@ -292,65 +263,35 @@ export default function NavBar({ banner }: { banner: boolean }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className={`fixed inset-y-0 right-0 z-20 w-full sm:w-80 ${mobileMenuBgClasses} shadow-2xl lg:hidden`}
+              className={`fixed inset-y-0 right-0 z-20 w-full shadow-2xl lg:hidden sm:w-80 ${mobileMenuBgClasses}`}
             >
               <div
-                className={`flex flex-col h-full ${banner ? "pt-30" : "pt-20"} px-8`}
+                className={`flex h-full flex-col px-8 ${banner ? "pt-30" : "pt-20"}`}
               >
-                <div className="flex flex-col space-y-1">
-                  <Link
-                    href="/upcoming-speakers"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Upcoming Speakers
-                  </Link>
-                  <Link
-                    href="/past-speakers"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Past Speakers
-                  </Link>
-                  <Link
-                    href="/suggest"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Suggest
-                  </Link>
-                  <Link
-                    href="/event-sponsorship"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Event Sponsorship
-                  </Link>
-                  <Link
-                    href="/team"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Team
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className={mobileLinkClasses}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Contact
-                  </Link>
+                <div className="flex flex-col space-y-2">
+                  {NAV_ITEMS.map((item) => {
+                    const active = isNavItemActive(pathname, item.href);
+                    const mobileLinkClasses = active
+                      ? "bg-white/12 text-white"
+                      : "text-white/88 hover:bg-white/8 hover:text-white";
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`rounded-2xl px-4 py-3 text-lg font-medium transition-colors ${mobileLinkClasses}`}
+                        prefetch={false}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                   {isAuthenticated !== null &&
                     (isAuthenticated ? (
                       <Link
                         href="/account"
-                        className={mobileLinkClasses}
+                        className={mobileAccountClasses}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}
                       >
@@ -359,7 +300,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     ) : (
                       <Link
                         href={`/api/auth/login?redirect_to=${encodeURIComponent(pathname)}`}
-                        className={mobileLinkClasses}
+                        className={mobileAccountClasses}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}
                       >
