@@ -10,19 +10,30 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const hasSupabaseStorageCredentials = Boolean(
+  process.env.SUPABASE_URL && process.env.SUPABASE_KEY,
+);
 
 export default async function Image() {
   const rawEvent = await getClosestUpcomingEvent();
   // Treat mystery events as "no event" so we don't leak the speaker art/name/venue/date.
   const event = rawEvent && !isEventMystery(rawEvent) ? rawEvent : null;
   const hasEventImage = !!(event?.img || event?.mobile_img);
-  const signedImageUrl = hasEventImage
-    ? await getSignedImageUrl(event?.img || event?.mobile_img || null)
-    : null;
+  let signedImageUrl: string | null = null;
 
-  const imageUrl = signedImageUrl || (event?.id && hasEventImage
-    ? `${baseURL}/api/images/${event.id}?v=${event.img_version || 1}`
-    : `${baseURL}/speakers/jojo-siwa.jpg`);
+  if (hasEventImage && hasSupabaseStorageCredentials) {
+    try {
+      signedImageUrl = await getSignedImageUrl(
+        event?.img || event?.mobile_img || null,
+      );
+    } catch {
+      signedImageUrl = null;
+    }
+  }
+
+  // If storage credentials are unavailable during the build, fall back to a
+  // generic speaker image so OG image generation still succeeds.
+  const imageUrl = signedImageUrl || `${baseURL}/speakers/jojo-siwa.jpg`;
   const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
   const showUpcomingSpeakerLabel = Boolean(event?.name);
 
