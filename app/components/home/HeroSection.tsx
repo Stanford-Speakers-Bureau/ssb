@@ -80,11 +80,6 @@ export default function HeroSection() {
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/30 to-transparent"
       />
-      <div
-        aria-hidden="true"
-        className="absolute left-1/2 top-32 h-64 w-64 -translate-x-1/2 rounded-full bg-[#e75b45]/20 blur-3xl"
-      />
-
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center sm:px-12">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
@@ -99,7 +94,12 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className="mb-8 max-w-4xl font-serif text-4xl leading-[0.98] text-white sm:text-5xl md:text-6xl lg:text-7xl"
+          className="mb-8 max-w-4xl font-serif text-4xl leading-[0.98] tracking-[-0.02em] text-white drop-shadow-[0_10px_28px_rgba(0,0,0,0.5)] sm:text-5xl md:text-6xl lg:text-7xl"
+          style={{
+            WebkitTextStroke: "0.6px rgba(14, 10, 10, 0.45)",
+            textShadow:
+              "0 8px 24px rgba(0, 0, 0, 0.38), 0 2px 6px rgba(0, 0, 0, 0.38)",
+          }}
         >
           Stanford{" "}
           <span className="bg-gradient-to-r from-[#f28c73] via-[#e75b45] to-[#c62720] bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(219,76,58,0.32)]">
