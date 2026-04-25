@@ -61,8 +61,8 @@ export default function ArchiveHero({
   return (
     <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(240,143,116,0.16),transparent_28%),linear-gradient(180deg,#1c1513_0%,#130f0e_100%)] pt-32 pb-20 sm:pt-40 sm:pb-28">
       <div className="absolute inset-0 flex flex-col justify-between py-16 sm:py-20">
-        <Marquee names={top} direction="left" durationSec={150} />
-        <Marquee names={bottom} direction="right" durationSec={190} />
+        <Marquee names={top} direction="left" durationSec={top.length * 10} />
+        <Marquee names={bottom} direction="right" durationSec={bottom.length * 12.5} />
       </div>
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#120f0e]/36 via-transparent to-[#120f0e]/72" />
