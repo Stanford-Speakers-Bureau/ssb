@@ -15,6 +15,8 @@ type LeaderboardProps = {
 };
 
 const INITIAL_VISIBLE = 30;
+const VOTE_SHARE_PROMPT_COOLDOWN_MS = 5 * 60 * 1000;
+const VOTE_SHARE_PROMPT_LAST_SHOWN_KEY = "ssb:last-vote-share-prompt-at";
 
 function rankColor(globalIndex: number): string {
   if (globalIndex <= 2) return "text-[#A80D0C]";
@@ -40,9 +42,51 @@ export default function Leaderboard({
   );
   const autoVoteFiredRef = useRef(false);
   const autoShareFiredRef = useRef(false);
+  const voteSharePromptLastShownRef = useRef(0);
 
   const openShare = (id: string, speaker: string) => {
     if (!speaker) return;
+    setThanks({ id, speaker });
+  };
+
+  const canOpenVoteSharePrompt = () => {
+    const now = Date.now();
+    let lastShownAt = voteSharePromptLastShownRef.current;
+
+    if (typeof window !== "undefined") {
+      try {
+        const storedLastShownAt = Number(
+          window.localStorage.getItem(VOTE_SHARE_PROMPT_LAST_SHOWN_KEY),
+        );
+        if (Number.isFinite(storedLastShownAt)) {
+          lastShownAt = Math.max(lastShownAt, storedLastShownAt);
+        }
+      } catch {
+        // Ignore storage failures and fall back to the in-memory cooldown.
+      }
+    }
+
+    if (now - lastShownAt < VOTE_SHARE_PROMPT_COOLDOWN_MS) {
+      return false;
+    }
+
+    voteSharePromptLastShownRef.current = now;
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(
+          VOTE_SHARE_PROMPT_LAST_SHOWN_KEY,
+          String(now),
+        );
+      } catch {
+        // In-memory timestamp still prevents repeated prompts on this page.
+      }
+    }
+
+    return true;
+  };
+
+  const openShareAfterVote = (id: string, speaker: string) => {
+    if (!speaker || !canOpenVoteSharePrompt()) return;
     setThanks({ id, speaker });
   };
 
@@ -78,7 +122,7 @@ export default function Leaderboard({
           );
           // The user just upvoted; server says they were already voted.
           // Either way they end up voted — surface the share prompt.
-          if (wasUnvoted) openShare(speakerId, speakerName);
+          if (wasUnvoted) openShareAfterVote(speakerId, speakerName);
         } else {
           setError(data.error || "Something went wrong");
         }
@@ -101,7 +145,7 @@ export default function Leaderboard({
         );
       });
       // Modal triggers on POST → voted transition only (not on DELETE/unvote).
-      if (wasUnvoted) openShare(speakerId, speakerName);
+      if (wasUnvoted) openShareAfterVote(speakerId, speakerName);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

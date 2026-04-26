@@ -60,7 +60,7 @@ export default function UpcomingHero({ hasEvents }: UpcomingHeroProps) {
           className="max-w-2xl font-sans text-base leading-relaxed text-[#f5e8dc]/85 sm:text-lg"
         >
           {hasEvents
-            ? "We're excited to welcome you to our next event! Suggest a name if you'd rather see someone else next."
+            ? "We're so excited to welcome you to our next event! Remember to join our mailing list to stay in the loop."
             : "We're between speakers. Drop a name on the suggest list or join the mailing list — you'll be the first to know when the next one drops."}
         </motion.p>
       </div>
