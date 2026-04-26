@@ -15,7 +15,9 @@ type LeaderboardProps = {
   autoShareId?: string | null;
 };
 
-const INITIAL_VISIBLE = 30;
+const INITIAL_VISIBLE_DESKTOP = 30;
+const INITIAL_VISIBLE_MOBILE = 20;
+const MOBILE_MAX_WIDTH_PX = 639; // matches Tailwind's `sm` breakpoint (640px)
 const VOTE_SHARE_PROMPT_COOLDOWN_MS = 5 * 60 * 1000;
 const VOTE_SHARE_PROMPT_LAST_SHOWN_KEY = "ssb:last-vote-share-prompt-at";
 
@@ -37,7 +39,8 @@ export default function Leaderboard({
   const [votingId, setVotingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [pageSize, setPageSize] = useState(INITIAL_VISIBLE_DESKTOP);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_DESKTOP);
   const [thanks, setThanks] = useState<{ id: string; speaker: string } | null>(
     null,
   );
@@ -214,6 +217,22 @@ export default function Leaderboard({
   }, [visibleSlice, filteredSuggestions, pinnedId]);
 
   const hasMore = !isSearching && filteredSuggestions.length > visibleCount;
+
+  // On mobile, show fewer rows initially so the "show more" affordance is
+  // discoverable above the fold.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`);
+    const apply = (matches: boolean) => {
+      const nextSize = matches ? INITIAL_VISIBLE_MOBILE : INITIAL_VISIBLE_DESKTOP;
+      setPageSize(nextSize);
+      setVisibleCount((n) => (n === INITIAL_VISIBLE_DESKTOP ? nextSize : n));
+    };
+    apply(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => apply(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // Auto-vote on landing if requested (e.g. after returning from Stanford SSO).
   useEffect(() => {
@@ -560,7 +579,7 @@ export default function Leaderboard({
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => setVisibleCount((n) => n + INITIAL_VISIBLE)}
+            onClick={() => setVisibleCount((n) => n + pageSize)}
             className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-300 transition-colors hover:border-[#A80D0C] hover:text-[#A80D0C]"
           >
             Show more
