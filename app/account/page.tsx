@@ -57,12 +57,12 @@ async function getUserTickets(): Promise<Ticket[]> {
     type: t.type,
     events: t.event
       ? {
-          id: t.event.id,
-          name: t.event.name,
-          route: t.event.route,
-          doors_open: t.event.doorsOpen?.toISOString() ?? null,
-          venue: t.event.venue,
-        }
+        id: t.event.id,
+        name: t.event.name,
+        route: t.event.route,
+        doors_open: t.event.doorsOpen?.toISOString() ?? null,
+        venue: t.event.venue,
+      }
       : null,
   }));
 }

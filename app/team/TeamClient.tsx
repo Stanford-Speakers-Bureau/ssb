@@ -174,11 +174,8 @@ function LeadershipSection() {
     <section className="bg-[var(--ssb-paper)] py-20 sm:py-28 px-6 sm:px-12 border-t border-zinc-900">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12 sm:mb-16">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
-            Leadership
-          </p>
           <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-3xl">
-            The people who set the vision for the year.
+            Executive Leadership
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
@@ -321,11 +318,9 @@ function DirectorsSection() {
     <section className="bg-zinc-950 py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-5xl mx-auto">
         <div className="mb-12 sm:mb-16">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
-            Directors
-          </p>
+
           <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] max-w-6xl">
-            The folks that make events happen.
+            Directors
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">

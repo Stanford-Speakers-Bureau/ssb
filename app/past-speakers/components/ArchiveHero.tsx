@@ -2,6 +2,12 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
+import { ARCHIVE_TITLE_PATHS } from "./archive-title-paths";
+
+const TITLE_REVEAL_EASE = "linear" as const;
+const TITLE_RED = "#A80D0C";
+const MASK_STROKE_WIDTH = 60;
+
 function Marquee({
   names,
   direction,
@@ -24,7 +30,7 @@ function Marquee({
       className="relative overflow-hidden whitespace-nowrap select-none"
     >
       <motion.div
-        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-[#bba89d]/82"
+        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-[#bba89d]/60"
         initial={{ x: from }}
         animate={reduce ? { x: from } : { x: to }}
         transition={
@@ -48,6 +54,85 @@ function Marquee({
   );
 }
 
+function ScriptArchiveTitle() {
+  const reduce = useReducedMotion();
+
+  return (
+    <h1
+      aria-label="The Archive"
+      className="relative mx-auto mb-8 w-full max-w-5xl px-0"
+    >
+      <svg
+        aria-hidden="true"
+        className="mx-auto block aspect-[1400/310] w-full overflow-visible drop-shadow-[0_16px_34px_rgba(0,0,0,0.7)]"
+        viewBox="0 0 1400 310"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <filter
+            id="archive-title-glow"
+            x="-10%"
+            y="-30%"
+            width="120%"
+            height="160%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="10"
+              stdDeviation="10"
+              floodColor="#000000"
+              floodOpacity="0.55"
+            />
+          </filter>
+          {ARCHIVE_TITLE_PATHS.map((p) => (
+            <mask
+              key={p.name}
+              id={`archive-mask-${p.name}`}
+              maskUnits="userSpaceOnUse"
+              maskContentUnits="userSpaceOnUse"
+              x="0"
+              y="0"
+              width="1400"
+              height="310"
+            >
+              <motion.path
+                d={p.d}
+                fill="none"
+                stroke="white"
+                strokeWidth={MASK_STROKE_WIDTH}
+                strokeLinecap="butt"
+                strokeLinejoin="round"
+                initial={{ pathLength: reduce ? 1 : 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{
+                  delay: reduce ? 0 : p.delay,
+                  duration: reduce ? 0 : p.duration,
+                  ease: TITLE_REVEAL_EASE,
+                }}
+              />
+            </mask>
+          ))}
+        </defs>
+
+        <g filter="url(#archive-title-glow)">
+          {ARCHIVE_TITLE_PATHS.map((p) => (
+            <path
+              key={p.name}
+              d={p.d}
+              fill={TITLE_RED}
+              mask={`url(#archive-mask-${p.name})`}
+            />
+          ))}
+        </g>
+      </svg>
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-[9%] bottom-0 h-px bg-gradient-to-r from-transparent via-[#f08f74]/80 to-transparent"
+      />
+    </h1>
+  );
+}
+
 export default function ArchiveHero({
   speakerNames,
 }: {
@@ -59,16 +144,21 @@ export default function ArchiveHero({
   const bottom = speakerNames.slice(half);
 
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(240,143,116,0.16),transparent_28%),linear-gradient(180deg,#1c1513_0%,#130f0e_100%)] pt-32 pb-20 sm:pt-40 sm:pb-28">
-      <div className="absolute inset-0 flex flex-col justify-between py-16 sm:py-20">
+    <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top,rgba(240,143,116,0.16),transparent_28%),linear-gradient(180deg,#1c1513_0%,#130f0e_100%)] pt-32 pb-24 sm:pt-40 sm:pb-32">
+      <div className="absolute inset-0 flex flex-col justify-between py-16 opacity-80 sm:py-20">
         <Marquee names={top} direction="left" durationSec={top.length * 10} />
-        <Marquee names={bottom} direction="right" durationSec={bottom.length * 12.5} />
+        <Marquee
+          names={bottom}
+          direction="right"
+          durationSec={bottom.length * 12.5}
+        />
       </div>
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#120f0e]/36 via-transparent to-[#120f0e]/72" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#120f0e]/20 via-transparent to-[#120f0e]/20" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(18,15,14,0.95)_0%,rgba(18,15,14,0.76)_34%,rgba(18,15,14,0.22)_63%,transparent_80%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#120f0e]/64 via-transparent to-[#120f0e]/84" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#120f0e]/36 via-transparent to-[#120f0e]/36" />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-12 text-center">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 text-center sm:px-12">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -78,20 +168,13 @@ export default function ArchiveHero({
           Stanford Speakers Bureau Presents
         </motion.p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-serif text-6xl sm:text-8xl lg:text-9xl text-white leading-[0.9] mb-6"
-        >
-          The Archive
-        </motion.h1>
+        <ScriptArchiveTitle />
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-4 font-serif text-xl text-[#f4e4d7] sm:text-2xl"
+          className="mb-4 font-serif text-xl text-[#fff3e8] drop-shadow-[0_3px_16px_rgba(0,0,0,0.9)] sm:text-2xl"
         >
           A living record of the voices who have stood on our stage.
         </motion.p>
@@ -100,7 +183,7 @@ export default function ArchiveHero({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mx-auto max-w-2xl text-base text-[#d4c0b2]"
+          className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-[#fff8f0] drop-shadow-[0_3px_16px_rgba(0,0,0,0.95)] sm:text-lg"
         >
           Since 1935, Stanford Speakers Bureau has brought Nobel laureates,
           activists, artists, athletes, and provocateurs to Stanford. Every

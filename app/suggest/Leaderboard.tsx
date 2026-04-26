@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import ShareThanksModal from "./ShareThanksModal";
+import SignInToVoteModal from "./SignInToVoteModal";
 import type { Suggestion } from "./data";
 
 type LeaderboardProps = {
@@ -40,6 +41,10 @@ export default function Leaderboard({
   const [thanks, setThanks] = useState<{ id: string; speaker: string } | null>(
     null,
   );
+  const [signInPrompt, setSignInPrompt] = useState<{
+    id: string;
+    speaker: string;
+  } | null>(null);
   const autoVoteFiredRef = useRef(false);
   const autoShareFiredRef = useRef(false);
   const voteSharePromptLastShownRef = useRef(0);
@@ -90,7 +95,27 @@ export default function Leaderboard({
     setThanks({ id, speaker });
   };
 
-  const handleVote = async (speakerId: string, hasVoted: boolean) => {
+  const forceOpenShareAfterVote = (id: string, speaker: string) => {
+    if (!speaker) return;
+    setThanks({ id, speaker });
+    voteSharePromptLastShownRef.current = Date.now();
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(
+          VOTE_SHARE_PROMPT_LAST_SHOWN_KEY,
+          String(Date.now()),
+        );
+      } catch {
+        // Ignore storage failures.
+      }
+    }
+  };
+
+  const handleVote = async (
+    speakerId: string,
+    hasVoted: boolean,
+    opts?: { forceShare?: boolean },
+  ) => {
     if (!isLoggedIn) return;
 
     setVotingId(speakerId);
@@ -122,7 +147,13 @@ export default function Leaderboard({
           );
           // The user just upvoted; server says they were already voted.
           // Either way they end up voted — surface the share prompt.
-          if (wasUnvoted) openShareAfterVote(speakerId, speakerName);
+          if (wasUnvoted) {
+            if (opts?.forceShare) {
+              forceOpenShareAfterVote(speakerId, speakerName);
+            } else {
+              openShareAfterVote(speakerId, speakerName);
+            }
+          }
         } else {
           setError(data.error || "Something went wrong");
         }
@@ -145,7 +176,13 @@ export default function Leaderboard({
         );
       });
       // Modal triggers on POST → voted transition only (not on DELETE/unvote).
-      if (wasUnvoted) openShareAfterVote(speakerId, speakerName);
+      if (wasUnvoted) {
+        if (opts?.forceShare) {
+          forceOpenShareAfterVote(speakerId, speakerName);
+        } else {
+          openShareAfterVote(speakerId, speakerName);
+        }
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -186,7 +223,10 @@ export default function Leaderboard({
     if (isLoggedIn) {
       const target = suggestions.find((s) => s.id === autoVoteId);
       if (target && !target.hasVoted) {
-        void handleVote(autoVoteId, false);
+        void handleVote(autoVoteId, false, { forceShare: true });
+      } else if (target?.hasVoted) {
+        // Vote already recorded (e.g. duplicate redirect) — still celebrate.
+        forceOpenShareAfterVote(autoVoteId, target.speaker);
       }
     }
 
@@ -330,9 +370,6 @@ export default function Leaderboard({
             const rankNumber = globalIndex + 1;
             const isTopThree = globalIndex <= 2;
             const isPinned = !!pinnedId && suggestion.id === pinnedId;
-            const ssoLink = `/api/auth/login?redirect_to=${encodeURIComponent(
-              `/suggest/${suggestion.id}?vote=1`,
-            )}`;
             return (
               <motion.li
                 key={suggestion.id}
@@ -340,14 +377,14 @@ export default function Leaderboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-950 ${
+                className={`group flex items-center gap-3 sm:gap-4 py-4 px-3 sm:px-6 transition-colors hover:bg-zinc-950 ${
                   isPinned
                     ? "bg-[#A80D0C]/[0.06] ring-1 ring-inset ring-[#A80D0C]/40"
                     : ""
                 }`}
               >
                 <span
-                  className={`font-serif w-12 sm:w-14 text-right shrink-0 leading-none ${
+                  className={`font-serif w-9 sm:w-14 text-right shrink-0 leading-none ${
                     isTopThree
                       ? "text-3xl sm:text-5xl"
                       : "text-xl sm:text-2xl"
@@ -411,7 +448,7 @@ export default function Leaderboard({
                       disabled={votingId === suggestion.id}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
                         ${
                           suggestion.hasVoted
                             ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"
@@ -490,18 +527,21 @@ export default function Leaderboard({
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                       </svg>
                     </motion.button>
-                    {isPinned ? (
-                      <a
-                        href={ssoLink}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#A80D0C] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-[#A80D0C]/10 transition-colors hover:bg-[#C11211]"
-                      >
-                        Sign in to upvote
-                      </a>
-                    ) : (
-                      <span className="text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-600">
-                        Sign in to vote
-                      </span>
-                    )}
+                    <motion.button
+                      type="button"
+                      onClick={() =>
+                        setSignInPrompt({
+                          id: suggestion.id,
+                          speaker: suggestion.speaker,
+                        })
+                      }
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#A80D0C] px-3 sm:px-4 py-2 text-xs font-semibold text-white shadow-md shadow-[#A80D0C]/10 transition-colors hover:bg-[#C11211]"
+                      aria-label={`Vote for ${suggestion.speaker}`}
+                    >
+                      Vote
+                    </motion.button>
                   </div>
                 )}
               </motion.li>
@@ -511,6 +551,10 @@ export default function Leaderboard({
       )}
 
       <ShareThanksModal thanks={thanks} onClose={() => setThanks(null)} />
+      <SignInToVoteModal
+        open={signInPrompt}
+        onClose={() => setSignInPrompt(null)}
+      />
 
       {hasMore && (
         <div className="mt-6 text-center">
