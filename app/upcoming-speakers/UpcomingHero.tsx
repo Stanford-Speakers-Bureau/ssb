@@ -61,7 +61,7 @@ export default function UpcomingHero({ hasEvents }: UpcomingHeroProps) {
         >
           {hasEvents
             ? "We're so excited to welcome you to our next event! Remember to join our mailing list to stay in the loop."
-            : "We're between speakers. Drop a name on the suggest list or join the mailing list — you'll be the first to know when the next one drops."}
+            : "We're between speakers. Drop a name on the suggest list or join the mailing list, and you'll be the first to know when the next one drops."}
         </motion.p>
       </div>
     </section>

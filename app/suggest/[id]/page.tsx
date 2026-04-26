@@ -90,7 +90,7 @@ export default async function SuggestionDeepLinkPage({
               come speak at Stanford?
             </h1>
             <p className="mt-5 font-sans text-base sm:text-lg text-zinc-400 leading-relaxed">
-              Upvote <strong>{suggestion.speaker}</strong> below — and while you&rsquo;re here,
+              Upvote <strong>{suggestion.speaker}</strong> below, and while you&rsquo;re here,
               add other names you&rsquo;d love to see and help us pick the rest
               of the lineup.
             </p>
@@ -129,7 +129,7 @@ export default async function SuggestionDeepLinkPage({
                     <div className="flex-1 h-px bg-zinc-800" />
                   </div>
                   <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
-                    Add another name to the list — every suggestion goes to
+                    Add another name to the list. Every suggestion goes to
                     the leaderboard once we review it.
                   </p>
                   <SubmitPanel

@@ -104,7 +104,7 @@ function JoinHero() {
           transition={{ duration: 0.6, delay: 0.45, ease: EASE }}
           className="font-sans text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl leading-relaxed mb-10"
         >
-          SSB is a student-run board &mdash; undergrad and grad &mdash; that
+          SSB is a student-run board, undergrad and grad, that
           meets every Monday, reaches out to the biggest names, and puts on the events.
           Applications open every fall.
         </motion.p>

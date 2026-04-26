@@ -200,7 +200,7 @@ export default async function UpcomingSpeakers() {
           </h2>
           <p className="mx-auto mt-4 max-w-xl font-sans text-base leading-relaxed text-[#f5e8dc]/80 sm:text-lg">
             Drop a name. Top picks become the outreach list for our booking
-            team — your suggestion is what fills the calendar above.
+            team. Your suggestion is what fills the calendar above.
           </p>
           <div className="mt-8">
             <SuggestSpeakerButton />
@@ -217,7 +217,7 @@ export default async function UpcomingSpeakers() {
             Hear about every upcoming speaker.
           </h2>
           <p className="mx-auto mt-4 max-w-xl font-sans text-base leading-relaxed text-[#f5e8dc]/80 sm:text-lg">
-            One email per event. We don&rsquo;t spam — we just tell you
+            One email per event. We don&rsquo;t spam. We just tell you
             who&rsquo;s coming and when tickets drop.
           </p>
           <a
