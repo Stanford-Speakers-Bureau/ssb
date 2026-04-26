@@ -13,7 +13,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   let speaker = "this person";
   if (isValidUUID(id)) {
     const row = await db.query.suggest.findFirst({
-      where: and(eq(suggest.id, id), eq(suggest.approved, true)),
+      where: and(
+        eq(suggest.id, id),
+        eq(suggest.approved, true),
+        eq(suggest.spoke, false),
+      ),
       columns: { speaker: true },
     });
     if (row?.speaker) speaker = row.speaker;

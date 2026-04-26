@@ -46,7 +46,7 @@ export default function UpcomingHero({ hasEvents }: UpcomingHeroProps) {
               <span className="bg-gradient-to-r from-[#f28c73] via-[#e75b45] to-[#c62720] bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(219,76,58,0.32)]">
                 next
               </span>{" "}
-              at Stanford.
+              on the Speakers Bureau stage.
             </>
           ) : (
             <>Nothing on the calendar yet.</>
@@ -60,7 +60,7 @@ export default function UpcomingHero({ hasEvents }: UpcomingHeroProps) {
           className="max-w-2xl font-sans text-base leading-relaxed text-[#f5e8dc]/85 sm:text-lg"
         >
           {hasEvents
-            ? "Tickets, doors, venue — everything you need to show up. Suggest a name if you'd rather see someone else next."
+            ? "We're excited to welcome you to our next event! Suggest a name if you'd rather see someone else next."
             : "We're between speakers. Drop a name on the suggest list or join the mailing list — you'll be the first to know when the next one drops."}
         </motion.p>
       </div>

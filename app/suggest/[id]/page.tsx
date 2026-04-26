@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { db, eq, and, suggest, votes } from "@ssb/db";
+import { db, eq, and, suggest } from "@ssb/db";
 import { getSessionUser } from "@/app/lib/auth";
 import { isValidUUID } from "@/app/lib/validation";
-import SuggestionCard from "./SuggestionCard";
+import Leaderboard from "../Leaderboard";
+import SubmitPanel from "../SubmitPanel";
+import UserSuggestionsPanel from "../UserSuggestionsPanel";
+import { getLeaderboardData, getUserSuggestions } from "../data";
 
-type PageParams = { params: Promise<{ id: string }>; searchParams: Promise<{ vote?: string }> };
+type PageParams = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ vote?: string }>;
+};
 
 async function loadSuggestion(id: string) {
   if (!isValidUUID(id)) return null;
   const row = await db.query.suggest.findFirst({
-    where: and(eq(suggest.id, id), eq(suggest.approved, true)),
+    where: and(
+      eq(suggest.id, id),
+      eq(suggest.approved, true),
+      eq(suggest.spoke, false),
+    ),
     columns: { id: true, speaker: true },
   });
   if (!row?.speaker) return null;
@@ -46,60 +55,114 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   };
 }
 
-export default async function SuggestionDeepLinkPage({ params, searchParams }: PageParams) {
+export default async function SuggestionDeepLinkPage({
+  params,
+  searchParams,
+}: PageParams) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const suggestion = await loadSuggestion(id);
   if (!suggestion) notFound();
 
   const user = await getSessionUser();
   const wantsAutoVote = sp.vote === "1";
+  const signInRedirect = `/suggest/${suggestion.id}`;
 
-  let hasVoted = false;
-  if (user?.email) {
-    const existing = await db.query.votes.findFirst({
-      where: and(eq(votes.speakerId, suggestion.id), eq(votes.email, user.email)),
-      columns: { id: true },
-    });
-    hasVoted = !!existing;
-  }
+  const [leaderboardData, userSuggestions] = await Promise.all([
+    getLeaderboardData(user?.email || null),
+    getUserSuggestions(user?.email || null),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans text-[var(--ssb-ink)]">
-      <main className="flex w-full flex-1 items-center justify-center px-6 py-24 sm:px-12">
-        <div className="w-full max-w-xl">
-          <p className="text-xs font-sans uppercase tracking-[0.3em] text-[#A80D0C] mb-4 text-center">
-            Stanford Speakers Bureau
-          </p>
-          <h1 className="text-center font-serif text-4xl sm:text-5xl text-white leading-[1.05]">
-            Should{" "}
-            <span className="text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.3)]">
-              {suggestion.speaker}
-            </span>{" "}
-            come speak at Stanford?
-          </h1>
-          <p className="mt-5 text-center font-sans text-base text-zinc-400 leading-relaxed">
-            We chase the names with the most community support. Add your vote
-            below — it takes a few seconds.
-          </p>
-
-          <SuggestionCard
-            id={suggestion.id}
-            speaker={suggestion.speaker}
-            isLoggedIn={!!user}
-            initialHasVoted={hasVoted}
-            autoVote={wantsAutoVote}
-          />
-
-          <div className="mt-10 text-center">
-            <Link
-              href="/suggest"
-              prefetch={false}
-              className="text-xs font-sans uppercase tracking-[0.2em] text-zinc-500 transition-colors hover:text-zinc-300"
-            >
-              See the full leaderboard →
-            </Link>
+      <main className="flex w-full flex-col">
+        {/* Hero */}
+        <section className="relative bg-[var(--ssb-paper)] pt-32 pb-12 sm:pt-40 sm:pb-16 px-6 sm:px-12">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs sm:text-sm font-sans uppercase tracking-[0.3em] text-[#A80D0C] mb-4">
+              Stanford Speakers Bureau
+            </p>
+            <h1 className="font-serif text-4xl sm:text-6xl text-white leading-[1.05]">
+              Should{" "}
+              <span className="text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.3)]">
+                {suggestion.speaker}
+              </span>{" "}
+              come speak at Stanford?
+            </h1>
+            <p className="mt-5 font-sans text-base sm:text-lg text-zinc-400 leading-relaxed">
+              Upvote <strong>{suggestion.speaker}</strong> below — and while you&rsquo;re here,
+              add other names you&rsquo;d love to see and help us pick the rest
+              of the lineup.
+            </p>
           </div>
-        </div>
+        </section>
+
+        {/* Leaderboard + Submit */}
+        <section className="relative bg-zinc-950 border-t border-zinc-900 py-16 sm:py-20 px-6 sm:px-12">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-10 sm:mb-12">
+              <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
+                The Leaderboard
+              </p>
+              <h2 className="font-serif text-2xl sm:text-4xl text-white leading-[0.95]">
+                Vote on every speaker the community wants next
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 lg:gap-12">
+              <div>
+                <Leaderboard
+                  suggestions={leaderboardData}
+                  isLoggedIn={!!user}
+                  pinnedId={suggestion.id}
+                  autoVoteId={wantsAutoVote ? suggestion.id : null}
+                />
+              </div>
+
+              <aside>
+                <div className="lg:sticky lg:top-28">
+                  <div className="flex items-center gap-4 mb-5">
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C]">
+                      Got someone else in mind?
+                    </p>
+                    <div className="flex-1 h-px bg-zinc-800" />
+                  </div>
+                  <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
+                    Add another name to the list — every suggestion goes to
+                    the leaderboard once we review it.
+                  </p>
+                  <SubmitPanel
+                    user={user}
+                    signInRedirect={signInRedirect}
+                    eyebrow="Suggest"
+                    heading="Add another name"
+                  />
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        {/* Your suggestions */}
+        {user && (
+          <section className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-16 sm:py-20 px-6 sm:px-12">
+            <div className="max-w-3xl mx-auto">
+              <div className="flex items-center gap-4 mb-5">
+                <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C]">
+                  Your suggestions
+                </p>
+                <div className="flex-1 h-px bg-zinc-800" />
+              </div>
+              <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
+                New suggestions take a little time to be reviewed before they
+                appear on the leaderboard.
+              </p>
+              <UserSuggestionsPanel
+                userSuggestions={userSuggestions}
+                isLoggedIn={!!user}
+              />
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

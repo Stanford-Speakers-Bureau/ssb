@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import ShareThanksModal from "./ShareThanksModal";
-
-type Suggestion = {
-  id: string;
-  speaker: string;
-  votes: number;
-  hasVoted: boolean;
-};
+import type { Suggestion } from "./data";
 
 type LeaderboardProps = {
   suggestions: Suggestion[];
   isLoggedIn: boolean;
+  pinnedId?: string | null;
+  autoVoteId?: string | null;
 };
 
 const INITIAL_VISIBLE = 30;
@@ -26,7 +23,10 @@ function rankColor(globalIndex: number): string {
 export default function Leaderboard({
   suggestions: initialSuggestions,
   isLoggedIn,
+  pinnedId = null,
+  autoVoteId = null,
 }: LeaderboardProps) {
+  const router = useRouter();
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [, startTransition] = useTransition();
   const [votingId, setVotingId] = useState<string | null>(null);
@@ -36,6 +36,7 @@ export default function Leaderboard({
   const [thanks, setThanks] = useState<{ id: string; speaker: string } | null>(
     null,
   );
+  const autoVoteFiredRef = useRef(false);
 
   const openShare = (id: string, speaker: string) => {
     if (!speaker) return;
@@ -112,10 +113,45 @@ export default function Leaderboard({
   }, [suggestions, searchQuery]);
 
   const isSearching = searchQuery.trim().length > 0;
-  const displayedSuggestions = isSearching
+  const visibleSlice = isSearching
     ? filteredSuggestions
     : filteredSuggestions.slice(0, visibleCount);
+
+  // Pin the shared speaker to the top regardless of rank, and ensure they
+  // appear even if they fall outside the initial visible window.
+  const displayedSuggestions = useMemo(() => {
+    if (!pinnedId) return visibleSlice;
+    const pinned =
+      visibleSlice.find((s) => s.id === pinnedId) ??
+      filteredSuggestions.find((s) => s.id === pinnedId);
+    if (!pinned) return visibleSlice;
+    const rest = visibleSlice.filter((s) => s.id !== pinnedId);
+    return [pinned, ...rest];
+  }, [visibleSlice, filteredSuggestions, pinnedId]);
+
   const hasMore = !isSearching && filteredSuggestions.length > visibleCount;
+
+  // Auto-vote on landing if requested (e.g. after returning from Stanford SSO).
+  useEffect(() => {
+    if (!autoVoteId || autoVoteFiredRef.current) return;
+    autoVoteFiredRef.current = true;
+
+    if (isLoggedIn) {
+      const target = suggestions.find((s) => s.id === autoVoteId);
+      if (target && !target.hasVoted) {
+        void handleVote(autoVoteId, false);
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("vote")) {
+        url.searchParams.delete("vote");
+        router.replace(url.pathname + (url.search || ""));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col">
@@ -225,6 +261,10 @@ export default function Leaderboard({
             );
             const rankNumber = globalIndex + 1;
             const isTopThree = globalIndex <= 2;
+            const isPinned = !!pinnedId && suggestion.id === pinnedId;
+            const ssoLink = `/api/auth/login?redirect_to=${encodeURIComponent(
+              `/suggest/${suggestion.id}?vote=1`,
+            )}`;
             return (
               <motion.li
                 key={suggestion.id}
@@ -232,7 +272,11 @@ export default function Leaderboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-950"
+                className={`group flex items-center gap-4 py-4 px-4 sm:px-6 transition-colors hover:bg-zinc-950 ${
+                  isPinned
+                    ? "bg-[#A80D0C]/[0.06] ring-1 ring-inset ring-[#A80D0C]/40"
+                    : ""
+                }`}
               >
                 <span
                   className={`font-serif w-12 sm:w-14 text-right shrink-0 leading-none ${
@@ -245,6 +289,11 @@ export default function Leaderboard({
                 </span>
 
                 <div className="flex-1 min-w-0">
+                  {isPinned && (
+                    <p className="mb-1 text-[10px] font-sans uppercase tracking-[0.25em] text-[#A80D0C]">
+                      Shared with you
+                    </p>
+                  )}
                   <p
                     className={`font-serif text-white truncate leading-tight ${
                       isTopThree ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
@@ -342,6 +391,13 @@ export default function Leaderboard({
                       )}
                     </motion.button>
                   </div>
+                ) : isPinned ? (
+                  <a
+                    href={ssoLink}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#A80D0C] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-[#A80D0C]/10 transition-colors hover:bg-[#C11211]"
+                  >
+                    Sign in to upvote
+                  </a>
                 ) : (
                   <span className="shrink-0 text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-600">
                     Sign in to vote

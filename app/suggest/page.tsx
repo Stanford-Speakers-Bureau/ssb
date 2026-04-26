@@ -1,168 +1,17 @@
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, suggest, votes } from "@ssb/db";
 import Link from "next/link";
-import SuggestForm from "./SuggestForm";
 import Leaderboard from "./Leaderboard";
 import SuggestHero from "./SuggestHero";
+import SubmitPanel from "./SubmitPanel";
+import UserSuggestionsPanel from "./UserSuggestionsPanel";
+import { getLeaderboardData, getUserSuggestions } from "./data";
 
 export const metadata: Metadata = {
   title: "Suggest a Speaker",
   description:
     "Suggest a speaker you'd love to see at Stanford. Vote on community suggestions and help shape future events.",
 };
-
-type Suggestion = {
-  id: string;
-  speaker: string;
-  votes: number;
-  hasVoted: boolean;
-};
-
-type UserSuggestion = {
-  id: string;
-  speaker: string;
-  approved: boolean;
-  reviewed: boolean;
-  duplicate?: boolean;
-};
-
-function getUserInitials(name: string | null, email: string | null): string {
-  const source = name?.trim() || email?.trim() || "";
-
-  if (!source) return "SS";
-
-  if (source.includes("@")) {
-    return source.slice(0, 2).toUpperCase();
-  }
-
-  const initials = source
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-
-  return initials || "SS";
-}
-
-async function getLeaderboardData(
-  userEmail: string | null,
-): Promise<Suggestion[]> {
-  const suggestions = await db.query.suggest.findMany({
-    where: eq(suggest.approved, true),
-    columns: { id: true, speaker: true, votes: true },
-    orderBy: (suggest, { desc }) => [desc(suggest.votes)],
-  });
-
-  let userVotes: Set<string> = new Set();
-  if (userEmail) {
-    const userVoteRows = await db.query.votes.findMany({
-      where: eq(votes.email, userEmail),
-      columns: { speakerId: true },
-    });
-    userVotes = new Set(
-      userVoteRows.map((v) => v.speakerId).filter(Boolean) as string[],
-    );
-  }
-
-  return suggestions.map((s) => ({
-    id: s.id,
-    speaker: s.speaker || "",
-    votes: s.votes || 0,
-    hasVoted: userVotes.has(s.id),
-  }));
-}
-
-async function getUserSuggestions(
-  userEmail: string | null,
-): Promise<UserSuggestion[]> {
-  if (!userEmail) return [];
-
-  const data = await db.query.suggest.findMany({
-    where: eq(suggest.email, userEmail),
-    columns: {
-      id: true,
-      speaker: true,
-      approved: true,
-      reviewed: true,
-      duplicate: true,
-    },
-    orderBy: (suggest, { desc }) => [desc(suggest.createdAt)],
-  });
-
-  return data.map((s) => ({
-    id: s.id,
-    speaker: s.speaker || "",
-    approved: !!s.approved,
-    reviewed: !!s.reviewed,
-    duplicate: !!s.duplicate,
-  }));
-}
-
-function UserSuggestionsPanel({
-  userSuggestions,
-  isLoggedIn,
-}: {
-  userSuggestions: UserSuggestion[];
-  isLoggedIn: boolean;
-}) {
-  if (!isLoggedIn) {
-    return (
-      <p className="font-sans text-sm text-zinc-500">
-        Sign in to see the speakers you&rsquo;ve suggested.
-      </p>
-    );
-  }
-  if (userSuggestions.length === 0) {
-    return (
-      <p className="font-sans text-sm text-zinc-500">
-        You haven&rsquo;t suggested anyone yet.
-      </p>
-    );
-  }
-  return (
-    <ul className="space-y-2">
-      {userSuggestions.map((s) => {
-        let statusLabel = "Pending review";
-        let statusClass =
-          "text-amber-300 bg-amber-950/40";
-
-        if (s.approved) {
-          statusLabel = "On leaderboard";
-          statusClass =
-            "text-green-300 bg-green-950/40";
-        } else if (s.reviewed && !s.approved) {
-          if (s.duplicate) {
-            statusLabel = "Duplicate";
-            statusClass =
-              "text-amber-300 bg-amber-950/40";
-          } else {
-            statusLabel = "Not selected";
-            statusClass =
-              "text-zinc-400 bg-zinc-900";
-          }
-        }
-
-        return (
-          <li
-            key={s.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-zinc-800 bg-[var(--ssb-card)] px-4 py-3"
-          >
-            <span className="font-sans text-sm text-white truncate">
-              {s.speaker}
-            </span>
-            <span
-              className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${statusClass}`}
-            >
-              {statusLabel}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
 
 const STEPS: { num: string; title: string; body: React.ReactNode }[] = [
   {
@@ -173,7 +22,7 @@ const STEPS: { num: string; title: string; body: React.ReactNode }[] = [
   {
     num: "02",
     title: "Vote",
-    body: "Browse the leaderboard and upvote suggestions you'd pay to attend.",
+    body: "Browse the leaderboard and upvote suggestions you'd love to see speak at Stanford.",
   },
   {
     num: "03",
@@ -203,9 +52,6 @@ export default async function SuggestPage({
 
   const resolvedSearchParams = await searchParams;
   const authError = resolvedSearchParams.error === "auth_failed";
-
-  const userName = user?.displayName || null;
-  const userInitials = getUserInitials(userName, user?.email || null);
 
   const [leaderboardData, userSuggestions] = await Promise.all([
     getLeaderboardData(user?.email || null),
@@ -271,64 +117,7 @@ export default async function SuggestPage({
             </div>
 
             <div className="lg:sticky lg:top-28">
-              {user ? (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
-                    Submit
-                  </p>
-                  <h3 className="font-serif text-2xl sm:text-3xl text-white mb-5 leading-tight">
-                    Add a name to the list
-                  </h3>
-                  <div className="flex items-center gap-3 mb-6 pb-5 border-b border-zinc-800">
-                    <div className="w-9 h-9 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
-                      {userInitials}
-                    </div>
-                    <div className="text-xs leading-tight">
-                      <p className="text-zinc-500 uppercase tracking-wider">
-                        Signed in as
-                      </p>
-                      <p className="text-white font-medium truncate max-w-[220px] mt-0.5">
-                        {userName || user?.email}
-                      </p>
-                    </div>
-                  </div>
-                  <SuggestForm />
-                </div>
-              ) : (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-8 text-center shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
-                    Sign in required
-                  </p>
-                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">
-                    Use your Stanford account to suggest and vote
-                  </h3>
-                  <p className="font-sans text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
-                    One account, one vote. Takes a few seconds through Stanford
-                    SSO.
-                  </p>
-                  <Link
-                    href="/api/auth/login?redirect_to=/suggest"
-                    prefetch={false}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#A80D0C] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
-                  >
-                    Sign in with Stanford
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-              )}
+              <SubmitPanel user={user} signInRedirect="/suggest" />
             </div>
           </div>
         </section>
