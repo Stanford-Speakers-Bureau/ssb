@@ -1,18 +1,24 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Link from "next/link";
 
-export function SuggestSpeakerButton() {
+const MotionLink = motion.create(Link);
+
+export function SuggestSpeakerButton({
+  label = "Suggest a Speaker",
+}: {
+  label?: string;
+}) {
   return (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Link
-        href="/suggest"
-        prefetch={false}
-        className="rounded px-5 py-3 text-base font-semibold text-white shadow-lg bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
-      >
-        Suggest!
-      </Link>
-    </motion.div>
+    <MotionLink
+      href="/suggest"
+      prefetch={false}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:-translate-y-0.5 hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
+    >
+      {label}
+    </MotionLink>
   );
 }

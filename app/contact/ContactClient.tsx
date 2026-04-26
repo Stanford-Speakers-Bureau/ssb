@@ -121,10 +121,10 @@ function ContactHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-black"
+      className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-[var(--ssb-paper)]"
     >
       <motion.div
-        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-75 dark:opacity-70"
+        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -207,7 +207,7 @@ function ReasonCardView({
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.12, ease: "easeOut" }}
-      className="group relative flex flex-col rounded-lg border border-zinc-900 bg-black p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:border-[#A80D0C]/50 hover:shadow-xl hover:shadow-[#A80D0C]/5"
+      className="group relative flex flex-col rounded-lg border border-zinc-900 bg-[var(--ssb-card)] p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:border-[#A80D0C]/50 hover:shadow-xl hover:shadow-[#A80D0C]/5"
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C]/10 text-[#A80D0C] mb-6 transition-colors group-hover:bg-[#A80D0C]/20">
         {card.icon}
@@ -303,7 +303,7 @@ function FurtherReading() {
   return (
     <section
       ref={ref}
-      className="bg-black border-t border-zinc-900 py-16 sm:py-20 px-6 sm:px-12"
+      className="bg-[var(--ssb-paper)] border-t border-zinc-900 py-16 sm:py-20 px-6 sm:px-12"
     >
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -341,7 +341,7 @@ function FurtherReading() {
 
 export default function ContactClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-black font-sans">
+    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
       <main className="flex w-full flex-col">
         <ContactHero />
         <ReasonsSection />

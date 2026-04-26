@@ -114,7 +114,7 @@ export default function SuggestForm() {
           ref={containerRef}
           onClick={() => inputRef.current?.focus()}
           className="w-full min-h-[92px] px-4 py-3 rounded-lg border border-zinc-800
-                     bg-black
+                     bg-[var(--ssb-paper)]
                      focus-within:outline-none focus-within:ring-2 focus-within:ring-[#A80D0C]/30 focus-within:border-[#A80D0C]
                      transition-all flex flex-wrap gap-2 items-start cursor-text"
         >

@@ -623,8 +623,8 @@ export default function ScanClient() {
   // Show desktop message if not on mobile
   if (!isMobile) {
     return (
-      <div className="flex min-h-screen flex-col items-center font-sans bg-black">
-        <main className="flex w-full flex-1 justify-center bg-black pt-16">
+      <div className="flex min-h-screen flex-col items-center font-sans bg-[var(--ssb-paper)]">
+        <main className="flex w-full flex-1 justify-center bg-[var(--ssb-paper)] pt-16">
           <section className="w-full max-w-5xl flex flex-col py-6 lg:py-8 px-6 sm:px-12 md:px-16">
             <div className="text-center mb-8">
               <h1 className="text-4xl sm:text-4xl text-[#A80D0C] mb-4 font-serif">
@@ -664,12 +664,12 @@ export default function ScanClient() {
   return (
     <div
       className={`flex h-screen flex-col items-center font-sans transition-colors duration-500 overflow-hidden ${
-        status ? getStatusOverlay() : "bg-black"
+        status ? getStatusOverlay() : "bg-[var(--ssb-paper)]"
       }`}
     >
       <main
         className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-6 overflow-y-auto ${
-          status ? getStatusOverlay() : "bg-black"
+          status ? getStatusOverlay() : "bg-[var(--ssb-paper)]"
         }`}
       >
         <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">

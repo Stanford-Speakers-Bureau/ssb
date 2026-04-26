@@ -18,14 +18,14 @@ export default function EventErrorPage({
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 py-16">
-      <div className="w-full max-w-xl rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+      <div className="w-full max-w-xl rounded-2xl border p-8 text-center shadow-sm border-zinc-800 bg-zinc-900">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-400">
           Event unavailable
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-zinc-950 dark:text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-white">
           We couldn&apos;t load this event right now.
         </h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+        <p className="mt-3 text-sm leading-6 text-zinc-300">
           Try again in a moment. Your ticket is not affected.
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
@@ -37,7 +37,7 @@ export default function EventErrorPage({
           </button>
           <Link
             href="/upcoming-speakers"
-            className="rounded-xl border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="rounded-xl border px-5 py-3 text-sm font-medium transition-colors border-zinc-700 text-zinc-200 hover:bg-zinc-800"
           >
             Browse events
           </Link>

@@ -22,7 +22,7 @@ function TeamMosaic({ parallaxY }: { parallaxY: MotionValue<string> }) {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <motion.div
-        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-75 dark:opacity-70"
+        className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-70"
         initial={{ scale: 1.1 }}
         animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
         transition={{
@@ -63,7 +63,7 @@ function TeamHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-black"
+      className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-[var(--ssb-paper)]"
     >
       <TeamMosaic parallaxY={parallaxY} />
 
@@ -171,7 +171,7 @@ function LeaderCard({
 
 function LeadershipSection() {
   return (
-    <section className="bg-black py-20 sm:py-28 px-6 sm:px-12 border-t border-zinc-900">
+    <section className="bg-[var(--ssb-paper)] py-20 sm:py-28 px-6 sm:px-12 border-t border-zinc-900">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
@@ -341,91 +341,13 @@ function DirectorsSection() {
   );
 }
 
-function JoinCta() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <section
-      ref={ref}
-      className="relative bg-black border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12 overflow-hidden"
-    >
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-      <div className="relative max-w-4xl mx-auto text-center">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-4"
-        >
-          Join Us
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] mb-5"
-        >
-          Want to help bring speakers to Stanford?
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="font-sans text-base sm:text-lg text-zinc-400 max-w-xl mx-auto mb-10 leading-relaxed"
-        >
-          We recruit new members each year. If you&rsquo;d like to be part of
-          the team that decides who speaks at Stanford, reach out.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <MotionLink
-            href="/contact"
-            prefetch={false}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            className="inline-flex items-center gap-2 rounded-full bg-[#A80D0C] px-8 py-3.5 text-sm sm:text-base font-semibold text-white shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
-          >
-            Get in touch
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
-          </MotionLink>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
 export default function TeamClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-black font-sans">
+    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
       <main className="flex w-full flex-col">
         <TeamHero />
         <LeadershipSection />
         <DirectorsSection />
-        <JoinCta />
       </main>
     </div>
   );

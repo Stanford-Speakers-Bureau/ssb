@@ -160,7 +160,7 @@ export default function SuggestHero({
   const typed = useTypewriterCycle(cycleNames, !!reduce);
 
   return (
-    <section className="relative overflow-hidden bg-black pt-32 pb-16 sm:pt-40 sm:pb-24">
+    <section className="relative overflow-hidden bg-[var(--ssb-paper)] pt-32 pb-16 sm:pt-40 sm:pb-24">
       <div className="absolute inset-0 flex flex-col justify-between py-16 sm:py-20 pointer-events-none">
         <Marquee names={top} direction="left" durationSec={60} />
         <Marquee names={bottom} direction="right" durationSec={75} />

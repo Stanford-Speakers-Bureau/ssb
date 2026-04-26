@@ -71,7 +71,7 @@ function JoinHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden bg-black"
+      className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden bg-[var(--ssb-paper)]"
     >
       <HeroBackdrop parallaxY={parallaxY} />
 
@@ -164,7 +164,7 @@ const ESSENTIALS = [
 
 function EssentialsSection() {
   return (
-    <section className="relative bg-black border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12">
+    <section className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -294,7 +294,7 @@ function FinalCta() {
   return (
     <section
       ref={ref}
-      className="relative bg-black border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12 overflow-hidden"
+      className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-20 sm:py-28 px-6 sm:px-12 overflow-hidden"
     >
       <div
         aria-hidden="true"
@@ -368,7 +368,7 @@ function FinalCta() {
 
 export default function JoinClient() {
   return (
-    <main className="flex min-h-screen flex-col bg-black">
+    <main className="flex min-h-screen flex-col bg-[var(--ssb-paper)]">
       <JoinHero />
       <EssentialsSection />
       <WhatYouDoSection />

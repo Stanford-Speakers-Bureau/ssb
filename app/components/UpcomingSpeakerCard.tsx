@@ -9,6 +9,10 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
 import CountdownTimer from "@/app/events/[eventID]/CountdownTimer";
+import { motion } from "motion/react";
+
+const MotionLink = motion.create(Link);
+const EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 export type UpcomingSpeakerCardProps = {
   name?: string;
@@ -33,6 +37,7 @@ export type UpcomingSpeakerCardProps = {
   capacity?: number | null; // Event capacity
   ticketsSold?: number | null; // Number of tickets sold
   reserved?: number | null; // Reserved seats
+  index?: number; // Position in the upcoming-events list, for staggered entrance motion
 };
 
 const PILL_CLASS =
@@ -59,6 +64,7 @@ export default function UpcomingSpeakerCard({
   capacity = null,
   ticketsSold = null,
   reserved = null,
+  index = 0,
 }: UpcomingSpeakerCardProps) {
   const showName = !!name;
   const showHeader = !!header;
@@ -155,8 +161,8 @@ export default function UpcomingSpeakerCard({
     }
   };
 
-  if (mystery) {
-    return <MysteryCard
+  const inner = mystery ? (
+    <MysteryCard
       showDate={showDate}
       dateText={dateText}
       showDoorsOpen={showDoorsOpen}
@@ -173,36 +179,46 @@ export default function UpcomingSpeakerCard({
       notifyMessage={notifyMessage}
       handleNotifyClick={handleNotifyClick}
       eventDateRaw={eventDateRaw}
-    />;
-  }
+    />
+  ) : (
+    <RevealedCard
+      backgroundImageUrl={backgroundImageUrl}
+      name={name}
+      showName={showName}
+      showHeader={showHeader}
+      header={header}
+      showMeta={showMeta}
+      showDate={showDate}
+      dateText={dateText}
+      showDoorsOpen={showDoorsOpen}
+      doorsOpenText={doorsOpenText}
+      showEventTime={showEventTime}
+      eventTimeText={eventTimeText}
+      showLocation={showLocation}
+      showLocationName={showLocationName}
+      showLocationUrl={showLocationUrl}
+      locationName={locationName}
+      locationUrl={locationUrl}
+      showSponsor={showSponsor}
+      showSponsorPrefix={showSponsorPrefix}
+      sponsorPrefix={sponsorPrefix}
+      showSponsorName={showSponsorName}
+      sponsorName={sponsorName}
+      showCta={showCta}
+      ctaHref={ctaHref}
+      ctaText={ctaText}
+    />
+  );
 
-  return <RevealedCard
-    backgroundImageUrl={backgroundImageUrl}
-    name={name}
-    showName={showName}
-    showHeader={showHeader}
-    header={header}
-    showMeta={showMeta}
-    showDate={showDate}
-    dateText={dateText}
-    showDoorsOpen={showDoorsOpen}
-    doorsOpenText={doorsOpenText}
-    showEventTime={showEventTime}
-    eventTimeText={eventTimeText}
-    showLocation={showLocation}
-    showLocationName={showLocationName}
-    showLocationUrl={showLocationUrl}
-    locationName={locationName}
-    locationUrl={locationUrl}
-    showSponsor={showSponsor}
-    showSponsorPrefix={showSponsorPrefix}
-    sponsorPrefix={sponsorPrefix}
-    showSponsorName={showSponsorName}
-    sponsorName={sponsorName}
-    showCta={showCta}
-    ctaHref={ctaHref}
-    ctaText={ctaText}
-  />;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, delay: index * 0.08, ease: EASE }}
+    >
+      {inner}
+    </motion.div>
+  );
 }
 
 // --- Icons (matching event page pill style) ---
@@ -359,15 +375,15 @@ function RevealedCard({
   ) : null;
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="group rounded-[28px] border border-white/10 bg-[var(--ssb-card)] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.22)] transition-colors hover:border-[#b51f1a]/40">
       {/* Image */}
-      <div className="relative w-full aspect-[2/1] overflow-hidden bg-zinc-800">
+      <div className="relative w-full aspect-[2/1] overflow-hidden bg-[var(--ssb-paper-strong)]">
         {backgroundImageUrl && (
           <Image
             src={backgroundImageUrl}
             alt={name || "Speaker"}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 960px"
             priority
             unoptimized
@@ -379,7 +395,7 @@ function RevealedCard({
           className="absolute inset-0 hidden lg:block"
           style={{
             background:
-              "linear-gradient(to top, rgb(24,24,27) 0%, rgba(24,24,27,0.8) 20%, rgba(24,24,27,0.2) 45%, transparent 65%)",
+              "linear-gradient(to top, rgba(21,16,15,0.98) 0%, rgba(21,16,15,0.78) 22%, rgba(21,16,15,0.22) 50%, transparent 70%)",
           }}
         />
         <div className="absolute inset-0 z-10 hidden lg:flex flex-col justify-end px-10 pb-6">
@@ -422,14 +438,16 @@ function RevealedCard({
 
       {/* Full-width CTA button */}
       {showCta && (
-        <div className="px-5 sm:px-6 pb-4 sm:pb-5">
-          <Link
+        <div className="px-5 sm:px-8 pb-5 sm:pb-7 pt-2">
+          <MotionLink
             href={ctaHref}
             prefetch={false}
-            className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 active:scale-[0.98]"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
           >
             {ctaText}
-          </Link>
+          </MotionLink>
         </div>
       )}
     </div>
@@ -477,7 +495,7 @@ function MysteryCard({
   const showCountdown =
     countdownDate && !Number.isNaN(countdownDate.getTime()) && countdownDate > new Date();
   return (
-    <div className="relative rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden text-center">
+    <div className="relative rounded-[28px] border border-white/10 bg-[var(--ssb-card)] overflow-hidden text-center shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
       {/* Blurred mystery background */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -488,7 +506,7 @@ function MysteryCard({
           sizes="(max-width: 768px) 100vw, 960px"
           unoptimized
         />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-[var(--ssb-paper)]/70" />
       </div>
 
       <div className="relative z-10 p-10 sm:p-12">
@@ -566,10 +584,12 @@ function MysteryCard({
                 </button>
               </div>
             ) : (
-              <button
+              <motion.button
                 onClick={handleNotifyClick}
                 disabled={notifyStatus === "loading"}
-                className="inline-flex items-center gap-2 rounded px-6 py-3 text-sm font-semibold text-white bg-[#A80D0C] shadow-md transition-all hover:bg-[#C11211] hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                whileHover={notifyStatus === "loading" ? undefined : { scale: 1.04 }}
+                whileTap={notifyStatus === "loading" ? undefined : { scale: 0.96 }}
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-7 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {notifyStatus === "loading" ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -580,7 +600,7 @@ function MysteryCard({
                   </svg>
                 )}
                 {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}
-              </button>
+              </motion.button>
             )}
           </div>
         )}

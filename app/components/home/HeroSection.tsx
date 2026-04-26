@@ -59,9 +59,9 @@ function PhotoRow({
 function PhotoMosaic() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-[0.88] dark:opacity-70">
-        <PhotoRow photos={ROW_TOP} direction="left" durationSec={35} />
-        <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={45} />
+      <div className="absolute inset-0 flex flex-col gap-3 py-6 opacity-70">
+        <PhotoRow photos={ROW_TOP} direction="left" durationSec={60} />
+        <PhotoRow photos={ROW_BOTTOM} direction="right" durationSec={80} />
       </div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,240,224,0.18),transparent_28%),radial-gradient(circle_at_18%_22%,rgba(219,76,58,0.22),transparent_34%)]" />
       <div className="absolute inset-0 bg-gradient-to-b from-[#130e0d]/50 via-[#130e0d]/38 to-[#130e0d]/84" />

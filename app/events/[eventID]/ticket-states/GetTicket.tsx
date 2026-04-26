@@ -52,7 +52,7 @@ export default function GetTicket({
 
       {isSalesDisabled && (
         <div className="flex min-h-[3rem] items-center justify-center">
-          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 text-center">
+          <p className="text-xs sm:text-sm text-zinc-400 text-center">
             {TICKET_MESSAGES.EVENT_PASSED}
           </p>
         </div>

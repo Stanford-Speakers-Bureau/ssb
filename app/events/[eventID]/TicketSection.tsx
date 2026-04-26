@@ -286,14 +286,14 @@ export default function TicketSection({
       <div className="event-ticket-section flex flex-col gap-5">
         <div className={glassPanel + " p-5 sm:p-6"}>
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700 dark:border-zinc-700 dark:border-t-zinc-100" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-100" />
             <div className="space-y-2">
-              <p className="text-sm font-medium text-zinc-900 dark:text-white">
+              <p className="text-sm font-medium text-white">
                 {requireTicketAccess
                   ? "Checking your ticket access..."
                   : "Loading your ticket status..."}
               </p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-zinc-400">
                 {requireTicketAccess
                   ? "If you already have a ticket, we'll bring it up automatically."
                   : "We're fetching your latest ticket, waitlist, and notification state."}
@@ -310,7 +310,7 @@ export default function TicketSection({
       <div className="event-ticket-section flex flex-col gap-5">
         <div className={glassPanel + " p-5 sm:p-6"}>
           <div className="flex flex-col items-center gap-4 text-center">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+            <p className="text-sm font-medium text-white">
               {viewerStateError}
             </p>
             <button
@@ -339,7 +339,7 @@ export default function TicketSection({
         <>
           {isEventLongOver && (
             <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
-              <p className="text-sm font-medium text-zinc-900 dark:text-white text-center">
+              <p className="text-sm font-medium text-white text-center">
                 This event is over. Thank you for attending!
               </p>
             </div>
@@ -365,14 +365,14 @@ export default function TicketSection({
             </NoticeBanner>
           )}
           {ticketId && (
-            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-amber-300/50 dark:border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-900/50 border border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
               {isStandbyTicket && (
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/40 to-amber-400/0" />
               )}
 
               {isStandbyTicket && (
-                <div className="mb-3 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/25">
-                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Standby Ticket</p>
+                <div className="mb-3 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/25">
+                  <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Standby Ticket</p>
                 </div>
               )}
 
@@ -381,7 +381,7 @@ export default function TicketSection({
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="mb-4 w-full px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200/60 dark:border-emerald-500/20 relative overflow-hidden"
+                  className="mb-4 w-full px-3.5 py-2.5 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20 relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
@@ -389,16 +389,16 @@ export default function TicketSection({
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
                   />
                   <div className="relative flex items-center gap-2.5">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                      <p className="text-sm font-semibold text-emerald-200">
                         High chance of getting in
                       </p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                      <p className="text-xs text-emerald-400">
                         Based on past similar events
                       </p>
                     </div>
@@ -407,9 +407,9 @@ export default function TicketSection({
               )}
 
               {ticketName && (
-                <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-200 font-medium text-center mb-4">
+                <p className="text-sm sm:text-base text-zinc-200 font-medium text-center mb-4">
                   Ticket for{" "}
-                  <span className="text-zinc-900 dark:text-white font-semibold">{ticketName}</span>
+                  <span className="text-white font-semibold">{ticketName}</span>
                 </p>
               )}
 
@@ -431,13 +431,13 @@ export default function TicketSection({
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       onClick={() => setQrRevealed(true)}
-                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-lg cursor-pointer"
+                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900 rounded-lg cursor-pointer"
                     >
-                      <svg className="w-10 h-10 text-zinc-400 dark:text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <svg className="w-10 h-10 text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
                       </svg>
-                      <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Tap to reveal standby ticket</p>
+                      <p className="text-sm font-semibold text-zinc-400">Tap to reveal standby ticket</p>
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -450,13 +450,13 @@ export default function TicketSection({
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       onClick={() => setScannedRevealed(true)}
-                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-50 dark:bg-emerald-950 rounded-lg cursor-pointer"
+                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-950 rounded-lg cursor-pointer"
                     >
-                      <svg className="w-10 h-10 text-emerald-500 dark:text-emerald-400 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <svg className="w-10 h-10 text-emerald-400 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                       </svg>
-                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Ticket scanned</p>
-                      <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">Enjoy the event!</p>
+                      <p className="text-sm font-semibold text-emerald-300">Ticket scanned</p>
+                      <p className="text-xs text-emerald-400/70 mt-1">Enjoy the event!</p>
                     </motion.button>
                   )}
                 </AnimatePresence>

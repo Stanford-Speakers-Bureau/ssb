@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import ShareThanksModal from "./ShareThanksModal";
 
 type Suggestion = {
   id: string;
@@ -32,12 +33,24 @@ export default function Leaderboard({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [thanks, setThanks] = useState<{ id: string; speaker: string } | null>(
+    null,
+  );
+
+  const openShare = (id: string, speaker: string) => {
+    if (!speaker) return;
+    setThanks({ id, speaker });
+  };
 
   const handleVote = async (speakerId: string, hasVoted: boolean) => {
     if (!isLoggedIn) return;
 
     setVotingId(speakerId);
     setError(null);
+
+    const wasUnvoted = !hasVoted; // a click in unvoted state is an upvote (POST)
+    const speakerName =
+      suggestions.find((s) => s.id === speakerId)?.speaker ?? "";
 
     try {
       const response = await fetch("/api/vote", {
@@ -59,6 +72,9 @@ export default function Leaderboard({
               s.id === speakerId ? { ...s, hasVoted: true } : s,
             ),
           );
+          // The user just upvoted; server says they were already voted.
+          // Either way they end up voted — surface the share prompt.
+          if (wasUnvoted) openShare(speakerId, speakerName);
         } else {
           setError(data.error || "Something went wrong");
         }
@@ -80,6 +96,8 @@ export default function Leaderboard({
             .sort((a, b) => b.votes - a.votes),
         );
       });
+      // Modal triggers on POST → voted transition only (not on DELETE/unvote).
+      if (wasUnvoted) openShare(speakerId, speakerName);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -121,7 +139,7 @@ export default function Leaderboard({
             placeholder="Search suggestions"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 bg-black border border-zinc-800 rounded-full text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
+            className="w-full pl-11 pr-10 py-3 bg-[var(--ssb-card)] border border-zinc-800 rounded-full text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
           />
           {searchQuery && (
             <button
@@ -200,7 +218,7 @@ export default function Leaderboard({
           </p>
         </div>
       ) : (
-        <ol className="divide-y divide-zinc-900 border border-zinc-900 bg-black rounded-lg overflow-hidden">
+        <ol className="divide-y divide-zinc-900 border border-zinc-900 bg-[var(--ssb-card)] rounded-lg overflow-hidden">
           {displayedSuggestions.map((suggestion) => {
             const globalIndex = suggestions.findIndex(
               (s) => s.id === suggestion.id,
@@ -234,67 +252,96 @@ export default function Leaderboard({
                   >
                     {suggestion.speaker}
                   </p>
-                  <p className="mt-1 text-[11px] font-sans uppercase tracking-[0.2em] text-zinc-500">
-                    {suggestion.votes}{" "}
-                    {suggestion.votes === 1 ? "vote" : "votes"}
-                  </p>
                 </div>
 
                 {isLoggedIn ? (
-                  <motion.button
-                    onClick={() =>
-                      handleVote(suggestion.id, suggestion.hasVoted)
-                    }
-                    disabled={votingId === suggestion.id}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                      ${
-                        suggestion.hasVoted
-                          ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"
-                          : "bg-[#A80D0C] text-white shadow-md shadow-[#A80D0C]/10 hover:bg-[#C11211]"
-                      }`}
-                    aria-pressed={suggestion.hasVoted}
-                  >
-                    {votingId === suggestion.id ? (
-                      <svg
-                        className="animate-spin w-3.5 h-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
+                  <div className="flex shrink-0 items-center gap-2">
+                    {suggestion.hasVoted && (
+                      <motion.button
+                        type="button"
+                        onClick={() =>
+                          openShare(suggestion.id, suggestion.speaker)
+                        }
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label={`Share ${suggestion.speaker}`}
+                        title="Share"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition-colors hover:border-[#A80D0C] hover:text-[#A80D0C]"
                       >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    ) : suggestion.hasVoted ? (
-                      <>
                         <svg
-                          width="12"
-                          height="12"
+                          width="14"
+                          height="14"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="2.5"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           viewBox="0 0 24 24"
                           aria-hidden="true"
                         >
-                          <path d="M20 6 9 17l-5-5" />
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                         </svg>
-                        <span>Voted</span>
-                      </>
-                    ) : (
-                      <span>Vote</span>
+                      </motion.button>
                     )}
-                  </motion.button>
+                    <motion.button
+                      onClick={() =>
+                        handleVote(suggestion.id, suggestion.hasVoted)
+                      }
+                      disabled={votingId === suggestion.id}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                        ${
+                          suggestion.hasVoted
+                            ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"
+                            : "bg-[#A80D0C] text-white shadow-md shadow-[#A80D0C]/10 hover:bg-[#C11211]"
+                        }`}
+                      aria-pressed={suggestion.hasVoted}
+                    >
+                      {votingId === suggestion.id ? (
+                        <svg
+                          className="animate-spin w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      ) : suggestion.hasVoted ? (
+                        <>
+                          <svg
+                            width="12"
+                            height="12"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                          <span>Voted</span>
+                        </>
+                      ) : (
+                        <span>Vote</span>
+                      )}
+                    </motion.button>
+                  </div>
                 ) : (
                   <span className="shrink-0 text-[11px] font-sans uppercase tracking-[0.15em] text-zinc-600">
                     Sign in to vote
@@ -305,6 +352,8 @@ export default function Leaderboard({
           })}
         </ol>
       )}
+
+      <ShareThanksModal thanks={thanks} onClose={() => setThanks(null)} />
 
       {hasMore && (
         <div className="mt-6 text-center">

@@ -147,7 +147,7 @@ function UserSuggestionsPanel({
         return (
           <li
             key={s.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-zinc-800 bg-black px-4 py-3"
+            className="flex items-center justify-between gap-3 rounded-md border border-zinc-800 bg-[var(--ssb-card)] px-4 py-3"
           >
             <span className="font-sans text-sm text-white truncate">
               {s.speaker}
@@ -220,7 +220,7 @@ export default async function SuggestPage({
     .filter(Boolean);
 
   return (
-    <div className="flex min-h-screen flex-col bg-black font-sans">
+    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
       {authError && (
         <div
           className="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-3 rounded text-sm font-medium text-red-300 bg-red-950/80 shadow-lg border border-red-900"
@@ -237,7 +237,7 @@ export default async function SuggestPage({
           totalVotes={totalVotes}
         />
 
-        <section className="relative bg-black border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
+        <section className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-start">
             <div>
               <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-[0.95] mb-6">

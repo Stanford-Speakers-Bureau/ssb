@@ -170,11 +170,11 @@ function SponsorshipHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden bg-black"
+      className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden bg-[var(--ssb-paper)]"
     >
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-75 dark:opacity-70"
+          className="absolute left-0 right-0 -top-[25%] h-[150%] opacity-70"
           initial={{ scale: 1.1 }}
           animate={reduce ? { scale: 1.1 } : { scale: 1.0 }}
           transition={{
@@ -364,7 +364,7 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
             {COMMUNITY_TAGS.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center rounded-full border border-[#A80D0C]/30 bg-black text-[#A80D0C] px-3 py-1 text-xs font-semibold"
+                className="inline-flex items-center rounded-full border border-[#A80D0C]/30 bg-[var(--ssb-card)] text-[#A80D0C] px-3 py-1 text-xs font-semibold"
               >
                 {tag}
               </span>
@@ -378,7 +378,7 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
 
 function ProgramsSection() {
   return (
-    <section className="bg-black py-20 sm:py-28 px-6 sm:px-12">
+    <section className="bg-[var(--ssb-paper)] py-20 sm:py-28 px-6 sm:px-12">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
@@ -418,7 +418,7 @@ function FundingItem({
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
-      className="flex gap-4 p-5 rounded-lg border border-zinc-900 bg-black transition-colors hover:border-[#A80D0C]/40"
+      className="flex gap-4 p-5 rounded-lg border border-zinc-900 bg-[var(--ssb-card)] transition-colors hover:border-[#A80D0C]/40"
     >
       <div className="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#A80D0C]/10 text-[#A80D0C]">
         <svg
@@ -505,7 +505,7 @@ function ProcessStep({ step, index }: { step: Step; index: number }) {
 
 function ProcessSection() {
   return (
-    <section className="relative bg-black py-20 sm:py-28 px-6 sm:px-12 overflow-hidden">
+    <section className="relative bg-[var(--ssb-paper)] py-20 sm:py-28 px-6 sm:px-12 overflow-hidden">
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-[0.03]"
@@ -541,7 +541,7 @@ function CtaFooter() {
   return (
     <section
       ref={ref}
-      className="relative bg-black border-t border-zinc-900 py-20 sm:py-24 px-6 sm:px-12"
+      className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-20 sm:py-24 px-6 sm:px-12"
     >
       <div className="max-w-4xl mx-auto text-center">
         <motion.p
@@ -615,7 +615,7 @@ function CtaFooter() {
 
 export default function EventSponsorshipClient() {
   return (
-    <div className="flex min-h-screen flex-col bg-black font-sans">
+    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
       <main className="flex w-full flex-col">
         <SponsorshipHero />
         <ProgramsSection />

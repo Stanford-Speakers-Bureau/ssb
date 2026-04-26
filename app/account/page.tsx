@@ -82,20 +82,20 @@ export default async function AccountPage() {
   const tickets = await getUserTickets();
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full flex-1 justify-center bg-white dark:bg-black pt-24">
+    <div className="flex min-h-screen flex-col items-center font-sans bg-[var(--ssb-paper)]">
+      <main className="flex w-full flex-1 justify-center bg-[var(--ssb-paper)] pt-24">
         <section className="w-full max-w-5xl flex flex-col lg:py-8 py-6 px-6 sm:px-12 md:px-16">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl text-black dark:text-white mb-2 font-serif">
+            <h1 className="text-3xl sm:text-4xl text-white mb-2 font-serif">
               My Account
             </h1>
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <p className="text-zinc-400">
               Manage your tickets and account settings
             </p>
           </div>
 
-          <div className="mb-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+          <div className="mb-8 rounded-2xl border p-5 border-zinc-800 bg-zinc-900">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
               Stanford Affiliation
             </p>
             {affiliations.length > 0 ? (
@@ -103,26 +103,26 @@ export default async function AccountPage() {
                 {affiliations.map((affiliation) => (
                   <span
                     key={affiliation}
-                    className="rounded-full bg-[#A80D0C]/10 px-3 py-1 text-sm font-medium text-[#A80D0C] dark:bg-[#A80D0C]/20 dark:text-red-200"
+                    className="rounded-full px-3 py-1 text-sm font-medium bg-[#A80D0C]/20 text-red-200"
                   >
                     {formatAffiliationLabel(affiliation)}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-zinc-400">
                 Stanford SSO did not provide an affiliation for your account.
               </p>
             )}
           </div>
 
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl text-black dark:text-white mb-6 font-serif">
+            <h2 className="text-2xl sm:text-3xl text-white mb-6 font-serif">
               My Tickets
             </h2>
             {tickets.length === 0 ? (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-6 md:p-8 text-center">
-                <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              <div className="bg-zinc-900 rounded-lg p-6 md:p-8 text-center">
+                <p className="text-zinc-400 mb-4">
                   You don&#39;t have any tickets yet.
                 </p>
                 <Link
@@ -148,14 +148,14 @@ export default async function AccountPage() {
                   return (
                     <div
                       key={ticket.id}
-                      className="bg-white dark:bg-zinc-800 rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
+                      className="bg-zinc-800 rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
                     >
                       <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-xl text-black dark:text-white mb-3 font-serif">
+                          <h3 className="text-xl text-white mb-3 font-serif">
                             {event.name || "Event"}
                           </h3>
-                          <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          <div className="space-y-2 text-sm text-zinc-400">
                             {eventDate && (
                               <div className="flex items-center gap-2">
                                 <svg
@@ -171,7 +171,7 @@ export default async function AccountPage() {
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                   />
                                 </svg>
-                                <span className="text-sm sm:text-base text-black dark:text-white font-medium">
+                                <span className="text-sm sm:text-base text-white font-medium">
                                   Date: {eventDate}
                                   {eventTime && ` at ${eventTime}`}
                                 </span>
@@ -198,7 +198,7 @@ export default async function AccountPage() {
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                   />
                                 </svg>
-                                <span className="text-sm sm:text-base text-black dark:text-white font-medium">
+                                <span className="text-sm sm:text-base text-white font-medium">
                                   {event.venue}
                                 </span>
                               </div>
@@ -217,7 +217,7 @@ export default async function AccountPage() {
                                   d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
                                 />
                               </svg>
-                              <span className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400">
+                              <span className="text-sm sm:text-base text-zinc-400">
                                 Ticket ID: {ticket.id}
                               </span>
                             </div>
@@ -239,7 +239,7 @@ export default async function AccountPage() {
             )}
           </div>
 
-          <div className="mt-8 pt-8 border-t border-zinc-200 dark:border-zinc-700">
+          <div className="mt-8 pt-8 border-t border-zinc-700">
             <SignOutButton />
           </div>
         </section>
