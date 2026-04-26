@@ -10,7 +10,7 @@ import { getLeaderboardData, getUserSuggestions } from "../data";
 
 type PageParams = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ vote?: string }>;
+  searchParams: Promise<{ vote?: string; share?: string }>;
 };
 
 async function loadSuggestion(id: string) {
@@ -65,6 +65,7 @@ export default async function SuggestionDeepLinkPage({
 
   const user = await getSessionUser();
   const wantsAutoVote = sp.vote === "1";
+  const wantsAutoShare = sp.share === "1";
   const signInRedirect = `/suggest/${suggestion.id}`;
 
   const [leaderboardData, userSuggestions] = await Promise.all([
@@ -115,6 +116,7 @@ export default async function SuggestionDeepLinkPage({
                   isLoggedIn={!!user}
                   pinnedId={suggestion.id}
                   autoVoteId={wantsAutoVote ? suggestion.id : null}
+                  autoShareId={wantsAutoShare ? suggestion.id : null}
                 />
               </div>
 
