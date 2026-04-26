@@ -18,7 +18,12 @@ export default function SignInToVoteModal({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
 
   const ssoHref = open
@@ -43,7 +48,7 @@ export default function SignInToVoteModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 8 }}
             transition={{ type: "spring", duration: 0.45, bounce: 0.25 }}
-            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[var(--ssb-card)] p-7 shadow-2xl"
+            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[var(--ssb-card)] p-5 sm:p-7 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

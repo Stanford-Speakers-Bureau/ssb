@@ -150,7 +150,7 @@ export default async function AccountPage() {
                       key={ticket.id}
                       className="bg-zinc-800 rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
+                      <div className="flex flex-col md:flex-row md:items-center items-stretch md:justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-xl text-white mb-3 font-serif">
                             {event.name || "Event"}
@@ -159,7 +159,7 @@ export default async function AccountPage() {
                             {eventDate && (
                               <div className="flex items-center gap-2">
                                 <svg
-                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
+                                  className="w-5 h-5 text-red-500 shrink-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -180,7 +180,7 @@ export default async function AccountPage() {
                             {event.venue && (
                               <div className="flex items-center gap-2">
                                 <svg
-                                  className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
+                                  className="w-5 h-5 text-red-500 shrink-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -205,7 +205,7 @@ export default async function AccountPage() {
                             )}
                             <div className="flex items-center gap-2">
                               <svg
-                                className="w-4 h-4 md:w-5 md:h-5 text-red-500 shrink-0"
+                                className="w-5 h-5 text-red-500 shrink-0"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"

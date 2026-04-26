@@ -49,7 +49,7 @@ function HeroBackdrop({ parallaxY }: { parallaxY: MotionValue<string> }) {
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/75 to-black" />
       <div
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[720px] rounded-full bg-[#A80D0C]/20 blur-3xl pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] h-[95vw] max-w-[720px] max-h-[720px] rounded-full bg-[#A80D0C]/20 blur-3xl pointer-events-none"
       />
     </div>
   );
@@ -89,7 +89,7 @@ function JoinHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25, ease: EASE }}
-          className="font-serif text-5xl sm:text-7xl md:text-8xl text-white leading-[0.92] mb-6"
+          className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white leading-[0.92] mb-6"
         >
           Decide who{" "}
           <span className="text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.35)]">
@@ -298,7 +298,7 @@ function FinalCta() {
     >
       <div
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] rounded-full bg-[#A80D0C]/10 blur-3xl pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] max-w-[540px] max-h-[540px] rounded-full bg-[#A80D0C]/10 blur-3xl pointer-events-none"
       />
       <div className="relative max-w-3xl mx-auto text-center">
         <motion.p

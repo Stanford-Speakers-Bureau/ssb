@@ -33,14 +33,14 @@ export default function SubmitPanel({
           {heading}
         </h3>
         <div className="flex items-center gap-3 mb-6 pb-5 border-b border-zinc-800">
-          <div className="w-9 h-9 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
+          <div className="shrink-0 w-9 h-9 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
             {userInitials}
           </div>
-          <div className="text-xs leading-tight">
+          <div className="min-w-0 flex-1 text-xs leading-tight">
             <p className="text-zinc-500 uppercase tracking-wider">
               Signed in as
             </p>
-            <p className="text-white font-medium truncate max-w-[220px] mt-0.5">
+            <p className="text-white font-medium truncate mt-0.5">
               {userName || user.email}
             </p>
           </div>

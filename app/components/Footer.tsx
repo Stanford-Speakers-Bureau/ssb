@@ -66,7 +66,7 @@ export default function Footer() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
               aria-label="Join our mailing list"
             >
               <svg
@@ -89,7 +89,7 @@ export default function Footer() {
               href="https://www.instagram.com/stanfordspeakersbureau/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
               aria-label="Follow us on Instagram"
             >
               <svg

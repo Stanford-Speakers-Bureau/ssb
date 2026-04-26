@@ -30,7 +30,7 @@ function Marquee({
       className="relative overflow-hidden whitespace-nowrap select-none"
     >
       <motion.div
-        className="inline-flex gap-10 pr-10 font-serif text-[clamp(2.5rem,7vw,6rem)] leading-none text-[#bba89d]/60"
+        className="inline-flex gap-6 pr-6 sm:gap-10 sm:pr-10 font-serif text-[clamp(2rem,7vw,6rem)] leading-none text-[#bba89d]/60"
         initial={{ x: from }}
         animate={reduce ? { x: from } : { x: to }}
         transition={

@@ -283,7 +283,7 @@ export default function Leaderboard({
             placeholder="Search suggestions"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 bg-[var(--ssb-card)] border border-zinc-800 rounded-full text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
+            className="w-full pl-10 sm:pl-11 pr-10 py-3 bg-[var(--ssb-card)] border border-zinc-800 rounded-full text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C] transition-all"
           />
           {searchQuery && (
             <button
@@ -448,7 +448,7 @@ export default function Leaderboard({
                       disabled={votingId === suggestion.id}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                      className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 sm:px-4 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed
                         ${
                           suggestion.hasVoted
                             ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"

@@ -99,7 +99,7 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={direction === "prev" ? "Previous spotlight" : "Next spotlight"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "-left-4 lg:-left-8" : "-right-4 lg:-right-8"
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "left-2 lg:-left-8" : "right-2 lg:-right-8"
         }`}
     >
       <svg

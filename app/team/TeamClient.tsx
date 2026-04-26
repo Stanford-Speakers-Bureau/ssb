@@ -81,7 +81,7 @@ function TeamHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25, ease: EASE }}
-          className="font-serif text-5xl sm:text-7xl md:text-8xl text-white leading-[0.92] mb-6"
+          className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white leading-[0.92] mb-6"
         >
           The students who{" "}
           <span className="text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.35)]">

@@ -32,7 +32,12 @@ export default function ShareThanksModal({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [thanks, onClose]);
 
   const handleCopy = async () => {
@@ -85,7 +90,7 @@ export default function ShareThanksModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 8 }}
             transition={{ type: "spring", duration: 0.45, bounce: 0.25 }}
-            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[var(--ssb-card)] p-7 shadow-2xl"
+            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[var(--ssb-card)] p-5 sm:p-7 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -149,13 +154,13 @@ export default function ShareThanksModal({
               <button
                 type="button"
                 onClick={handleNativeShare}
-                className="rounded-md border border-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:border-[#A80D0C] hover:text-white"
+                className="rounded-md border border-zinc-800 px-3 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-[#A80D0C] hover:text-white"
               >
                 Share
               </button>
               <a
                 href={`sms:?&body=${encodeURIComponent(`${shareText} ${shareUrl}`)}`}
-                className="rounded-md border border-zinc-800 px-3 py-2 text-center text-xs font-semibold text-zinc-200 transition-colors hover:border-[#A80D0C] hover:text-white"
+                className="rounded-md border border-zinc-800 px-3 py-2.5 text-center text-sm font-semibold text-zinc-200 transition-colors hover:border-[#A80D0C] hover:text-white"
               >
                 Text
               </a>

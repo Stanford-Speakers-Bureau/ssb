@@ -167,7 +167,7 @@ export default function SuggestForm() {
             onKeyDown={handleInputKeyDown}
             disabled={isDisabled}
             placeholder={pills.length === 0 ? "Enter a name" : ""}
-            className="flex-1 min-w-[120px] bg-transparent border-none outline-none
+            className="flex-1 min-w-[80px] sm:min-w-[120px] bg-transparent border-none outline-none
                        text-white
                        placeholder:text-zinc-500
                        disabled:opacity-50 disabled:cursor-not-allowed"

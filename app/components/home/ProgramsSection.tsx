@@ -62,8 +62,8 @@ function ProgramCard({ program, index }: { program: Program; index: number }) {
       transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
       className={`group relative overflow-hidden rounded-[30px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.22)] ${
         index === 0
-          ? "md:col-span-2 md:row-span-2 min-h-[420px]"
-          : "min-h-[320px]"
+          ? "md:col-span-2 md:row-span-2 min-h-[320px] sm:min-h-[420px]"
+          : "min-h-[260px] sm:min-h-[320px]"
       }`}
     >
       <Image
@@ -146,7 +146,7 @@ export default function ProgramsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
           {PROGRAMS.map((program, i) => (
             <ProgramCard key={program.title} program={program} index={i} />
           ))}

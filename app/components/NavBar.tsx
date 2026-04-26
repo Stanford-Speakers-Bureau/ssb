@@ -234,7 +234,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           {/* Mobile Menu Button - positioned outside frosted div to stay above menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`absolute right-6 top-[25px] z-30 rounded-full bg-white/10 p-2.5 transition-colors hover:bg-white/16 lg:hidden sm:right-8 ${hamburgerClasses}`}
+            className={`absolute right-4 top-[25px] z-30 rounded-full bg-white/10 p-2.5 transition-colors hover:bg-white/16 lg:hidden sm:right-8 ${hamburgerClasses}`}
             aria-label="Toggle menu"
           >
             <svg
@@ -266,7 +266,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
               className={`fixed inset-y-0 right-0 z-20 w-full shadow-2xl lg:hidden sm:w-80 ${mobileMenuBgClasses}`}
             >
               <div
-                className={`flex h-full flex-col px-8 ${banner ? "pt-30" : "pt-20"}`}
+                className={`flex h-full flex-col px-5 sm:px-8 ${banner ? "pt-30" : "pt-20"}`}
               >
                 <div className="flex flex-col space-y-2">
                   {NAV_ITEMS.map((item) => {
