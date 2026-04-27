@@ -7,6 +7,7 @@ import Leaderboard from "../Leaderboard";
 import SubmitPanel from "../SubmitPanel";
 import UserSuggestionsPanel from "../UserSuggestionsPanel";
 import { getLeaderboardData, getUserSuggestions } from "../data";
+import HighlightedName from "./HighlightedName";
 
 type PageParams = {
   params: Promise<{ id: string }>;
@@ -83,10 +84,7 @@ export default async function SuggestionDeepLinkPage({
               Stanford Speakers Bureau
             </p>
             <h1 className="font-serif text-4xl sm:text-6xl text-white leading-[1.05]">
-              Should{" "}
-              <span className="text-[#A80D0C] drop-shadow-[0_0_40px_rgba(168,13,12,0.3)] font-bold">
-                {suggestion.speaker}
-              </span>{" "}
+              Should <HighlightedName name={suggestion.speaker} />{" "}
               come speak at Stanford?
             </h1>
             <p className="mt-5 font-sans text-base sm:text-lg text-zinc-400 leading-relaxed">

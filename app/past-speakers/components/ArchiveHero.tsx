@@ -1,12 +1,11 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import type { CSSProperties } from "react";
+import { motion } from "motion/react";
 
 import { ARCHIVE_TITLE_PATHS } from "./archive-title-paths";
 
-const TITLE_REVEAL_EASE = "linear" as const;
 const TITLE_RED = "#A80D0C";
-const MASK_STROKE_WIDTH = 60;
 
 function Marquee({
   names,
@@ -17,31 +16,25 @@ function Marquee({
   direction: "left" | "right";
   durationSec: number;
 }) {
-  const reduce = useReducedMotion();
-  const from = direction === "left" ? "0%" : "-50%";
-  const to = direction === "left" ? "-50%" : "0%";
-
   // Duplicate the list so the loop is seamless.
   const track = [...names, ...names];
+  const animationClass =
+    direction === "left"
+      ? "archive-marquee-track-left"
+      : "archive-marquee-track-right";
+  const style = {
+    "--archive-marquee-duration": `${Math.max(durationSec, 32)}s`,
+    "--archive-marquee-start": direction === "left" ? "0%" : "-50%",
+  } as CSSProperties;
 
   return (
     <div
       aria-hidden="true"
       className="relative overflow-hidden whitespace-nowrap select-none"
     >
-      <motion.div
-        className="inline-flex gap-6 pr-6 sm:gap-10 sm:pr-10 font-serif text-[clamp(2rem,7vw,6rem)] leading-none text-[#bba89d]/60"
-        initial={{ x: from }}
-        animate={reduce ? { x: from } : { x: to }}
-        transition={
-          reduce
-            ? undefined
-            : {
-                duration: durationSec,
-                ease: "linear",
-                repeat: Infinity,
-              }
-        }
+      <div
+        className={`archive-marquee-track ${animationClass} inline-flex gap-6 pr-6 font-serif text-[clamp(2rem,7vw,6rem)] leading-none text-[#bba89d]/60 sm:gap-10 sm:pr-10`}
+        style={style}
       >
         {track.map((name, i) => (
           <span key={`${name}-${i}`} className="inline-block">
@@ -49,85 +42,34 @@ function Marquee({
             <span className="mx-6 text-[#f08f74]/44">✦</span>
           </span>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function ScriptArchiveTitle() {
-  const reduce = useReducedMotion();
-
   return (
     <h1
       aria-label="The Archive"
       className="relative mx-auto mb-8 w-full max-w-5xl px-0"
     >
-      <svg
-        aria-hidden="true"
-        className="mx-auto block aspect-[1400/310] w-full overflow-visible drop-shadow-[0_16px_34px_rgba(0,0,0,0.7)]"
-        viewBox="0 0 1400 310"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <filter
-            id="archive-title-glow"
-            x="-10%"
-            y="-30%"
-            width="120%"
-            height="160%"
-          >
-            <feDropShadow
-              dx="0"
-              dy="10"
-              stdDeviation="10"
-              floodColor="#000000"
-              floodOpacity="0.55"
-            />
-          </filter>
-          {ARCHIVE_TITLE_PATHS.map((p) => (
-            <mask
-              key={p.name}
-              id={`archive-mask-${p.name}`}
-              maskUnits="userSpaceOnUse"
-              maskContentUnits="userSpaceOnUse"
-              x="0"
-              y="0"
-              width="1400"
-              height="310"
-            >
-              <motion.path
-                d={p.d}
-                fill="none"
-                stroke="white"
-                strokeWidth={MASK_STROKE_WIDTH}
-                strokeLinecap="butt"
-                strokeLinejoin="round"
-                initial={{ pathLength: reduce ? 1 : 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{
-                  delay: reduce ? 0 : p.delay,
-                  duration: reduce ? 0 : p.duration,
-                  ease: TITLE_REVEAL_EASE,
-                }}
-              />
-            </mask>
-          ))}
-        </defs>
-
-        <g filter="url(#archive-title-glow)">
-          {ARCHIVE_TITLE_PATHS.map((p) => (
-            <path
-              key={p.name}
-              d={p.d}
-              fill={TITLE_RED}
-              mask={`url(#archive-mask-${p.name})`}
-            />
-          ))}
-        </g>
-      </svg>
+      <div className="archive-title-reveal relative mx-auto overflow-hidden">
+        <svg
+          aria-hidden="true"
+          className="archive-title-svg mx-auto block aspect-[1400/310] w-full overflow-visible"
+          viewBox="0 0 1400 310"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g>
+            {ARCHIVE_TITLE_PATHS.map((p) => (
+              <path key={p.name} d={p.d} fill={TITLE_RED} />
+            ))}
+          </g>
+        </svg>
+      </div>
       <span
         aria-hidden="true"
-        className="absolute inset-x-[9%] bottom-0 h-px bg-gradient-to-r from-transparent via-[#f08f74]/80 to-transparent"
+        className="archive-title-rule absolute inset-x-[9%] bottom-0 h-px origin-center bg-gradient-to-r from-transparent via-[#f08f74]/80 to-transparent"
       />
     </h1>
   );

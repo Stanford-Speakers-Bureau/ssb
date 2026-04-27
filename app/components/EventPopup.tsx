@@ -159,7 +159,7 @@ function setDismissed(eventId: string) {
 
 // ─── Suppressed routes ───
 
-const SUPPRESSED_PREFIXES = ["/events/", "/upcoming-speakers", "/scan"];
+const SUPPRESSED_PREFIXES = ["/events/", "/upcoming-speakers", "/scan", "/suggest/"];
 
 function isSuppressedRoute(pathname: string): boolean {
   return SUPPRESSED_PREFIXES.some((p) => pathname.startsWith(p));

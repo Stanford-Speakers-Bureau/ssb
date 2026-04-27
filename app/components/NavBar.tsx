@@ -78,15 +78,18 @@ export default function NavBar({ banner }: { banner: boolean }) {
     pathname === "/event-sponsorship" ||
     pathname.startsWith("/events/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() =>
-    readCachedAuthState(),
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // Check authentication state
   useEffect(() => {
     let cancelled = false;
+    const cachedAuthState = readCachedAuthState();
 
     const checkAuth = async () => {
+      if (cachedAuthState !== null && !cancelled) {
+        setIsAuthenticated(cachedAuthState);
+      }
+
       try {
         const response = await fetch("/api/auth/session");
         const data = (await response.json()) as { authenticated: boolean };
