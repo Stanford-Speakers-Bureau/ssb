@@ -19,6 +19,7 @@ export default async function Image() {
   // Treat mystery events as "no event" so we don't leak the speaker art/name/venue/date.
   const event = rawEvent && !isEventMystery(rawEvent) ? rawEvent : null;
   const hasEventImage = !!(event?.img || event?.mobile_img);
+
   let signedImageUrl: string | null = null;
 
   if (hasEventImage && hasSupabaseStorageCredentials) {
