@@ -1,10 +1,6 @@
-// Images used as the scrolling background on the home page hero.
-//
-// Top row scrolls left, bottom row scrolls right. Both rows pull from the same
-// pool and display every image (the bottom row is the pool reversed so the two
-// rows don't sync visually).
-//
-// Paths are relative to /public.
+// Images cycled through the home page hero background. Each one displays
+// for a few seconds before crossfading to the next. Paths are relative to
+// /public.
 
 export const HERO_BACKGROUND_IMAGES: string[] = [
   "/speakers/malala-yousafzai.jpg",
