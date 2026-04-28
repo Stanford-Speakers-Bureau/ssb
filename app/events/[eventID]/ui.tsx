@@ -11,13 +11,13 @@ import { sanitizeSchema } from "@/app/lib/sanitize";
 // ─── Design token constants ───
 
 export const glassPanel =
-  "rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/70 shadow-lg";
+  "rounded-xl bg-zinc-900/50 border border-zinc-800/70 shadow-lg";
 
 export const redButtonBase =
   "rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
 const secondaryButtonBase =
-  "rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200 transition-all hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed";
+  "rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed";
 
 // ─── Spinner ───
 
@@ -52,10 +52,10 @@ export function FeedbackMessage({
     lowered.includes("longer than usual") ||
     lowered.includes("still be processing");
   const toneClass = isSuccess
-    ? "bg-emerald-50/90 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/25 text-emerald-700 dark:text-emerald-300"
+    ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-300"
     : isInfo
-      ? "bg-amber-50/90 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/25 text-amber-700 dark:text-amber-300"
-      : "bg-red-50/90 dark:bg-red-500/15 border-red-200 dark:border-red-500/25 text-red-700 dark:text-red-300";
+      ? "bg-amber-500/15 border-amber-500/25 text-amber-300"
+      : "bg-red-500/15 border-red-500/25 text-red-300";
 
   return createPortal(
     <AnimatePresence>
@@ -136,17 +136,17 @@ export function RedButton({
 // ─── NoticeBanner ───
 
 const noticeBannerColors = {
-  red: "bg-red-50 dark:bg-red-500/[0.06] border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-200",
-  amber: "bg-amber-50 dark:bg-amber-500/[0.06] border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-200",
-  blue: "bg-blue-50 dark:bg-blue-500/[0.06] border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-200",
-  zinc: "bg-zinc-50 dark:bg-zinc-500/[0.06] border-zinc-200 dark:border-zinc-500/20 text-zinc-700 dark:text-zinc-200",
+  red: "bg-red-500/[0.06] border-red-500/20 text-red-200",
+  amber: "bg-amber-500/[0.06] border-amber-500/20 text-amber-200",
+  blue: "bg-blue-500/[0.06] border-blue-500/20 text-blue-200",
+  zinc: "bg-zinc-500/[0.06] border-zinc-500/20 text-zinc-200",
 } as const;
 
 const noticeBannerIconColors = {
-  red: "text-red-500 dark:text-red-400",
-  amber: "text-amber-500 dark:text-amber-400",
-  blue: "text-blue-500 dark:text-blue-400",
-  zinc: "text-zinc-500 dark:text-zinc-400",
+  red: "text-red-400",
+  amber: "text-amber-400",
+  blue: "text-blue-400",
+  zinc: "text-zinc-400",
 } as const;
 
 export function NoticeBanner({
@@ -182,7 +182,7 @@ export function PriorityBanner({ priorityText }: { priorityText: string }) {
         </svg>
       }
     >
-      <div className="prose prose-sm prose-amber dark:prose-invert prose-p:m-0 prose-a:underline max-w-none">
+      <div className="prose prose-sm prose-amber prose-invert prose-p:m-0 prose-a:underline max-w-none">
         <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{priorityText}</ReactMarkdown>
       </div>
     </NoticeBanner>
@@ -202,7 +202,7 @@ export function NoBagsModalChildren({
 }) {
   return (
     <>
-      <p className="text-zinc-600 dark:text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+      <p className="text-zinc-300 mb-5 text-sm sm:text-base font-medium">
         Type &quot;no bags&quot; below to confirm you understand:
       </p>
       <input
@@ -210,7 +210,7 @@ export function NoBagsModalChildren({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Type 'no bags' to confirm"
-        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none focus:border-red-500/30 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 mb-5 transition-colors"
+        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none placeholder:text-zinc-600 mb-5 transition-colors"
         onKeyDown={(e) => {
           if (e.key === "Enter" && value.toLowerCase().trim() === "no bags") {
             onConfirm();
@@ -242,7 +242,7 @@ export function FeedbackModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
@@ -250,14 +250,14 @@ export function FeedbackModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-            className="relative bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-7 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute top-4 right-4 rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/[0.08] dark:hover:text-white"
+              className="absolute top-4 right-4 rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-white/[0.08] hover:text-white"
             >
               <svg
                 className="w-5 h-5"
@@ -314,7 +314,7 @@ export function ConfirmationModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
@@ -322,13 +322,13 @@ export function ConfirmationModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-            className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl"
+            className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mb-3">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
               {title}
             </h3>
-            <p className="text-zinc-500 dark:text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
+            <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
               {description}
             </p>
             {children}

@@ -1,10 +1,10 @@
 export default function ProhibitedItems() {
   return (
-    <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5 space-y-5">
+    <div className="rounded-xl bg-amber-950/30 border border-amber-500/20 p-4 sm:p-5 space-y-5">
       <section>
-        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-amber-200 mb-2 flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+            className="w-4 h-4 text-amber-400 shrink-0"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -18,7 +18,7 @@ export default function ProhibitedItems() {
           </svg>
           Prohibited items
         </h3>
-        <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
+        <ul className="text-sm text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>Bags, including small purse</li>
           <li>Electronic devices larger than a cell phone</li>
           <li>Food or drink, including water bottles</li>
@@ -28,9 +28,9 @@ export default function ProhibitedItems() {
         </ul>
       </section>
       <section>
-        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-amber-200 mb-2 flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+            className="w-4 h-4 text-amber-400 shrink-0"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -44,7 +44,7 @@ export default function ProhibitedItems() {
           </svg>
           Event Restrictions
         </h3>
-        <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
+        <ul className="text-sm text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>This is a private event and capacity is limited.</li>
           <li>No re-entry will be permitted.</li>
           <li>All items are subject to search.</li>
@@ -53,9 +53,9 @@ export default function ProhibitedItems() {
         </ul>
       </section>
       <section>
-        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-amber-200 mb-2 flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0"
+            className="w-4 h-4 text-amber-400 shrink-0"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -69,12 +69,12 @@ export default function ProhibitedItems() {
           </svg>
           Media Policy
         </h3>
-        <ul className="text-sm text-amber-700 dark:text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
+        <ul className="text-sm text-amber-100/80 space-y-1.5 list-disc list-inside ml-1">
           <li>Attendees may be photographed or recorded.</li>
           <li>No photography or recording, aside from pre-approved media.</li>
         </ul>
       </section>
-      <p className="text-sm font-bold text-amber-700 dark:text-amber-100/80">Entering the venue shall be deemed consenting to all of the above conditions and any others set by Stanford University.</p>
+      <p className="text-sm font-bold text-amber-100/80">Entering the venue shall be deemed consenting to all of the above conditions and any others set by Stanford University.</p>
     </div>
   );
 }

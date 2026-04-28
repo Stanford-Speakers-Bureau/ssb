@@ -149,12 +149,14 @@ export const suggest = pgTable(
     votes: bigint("votes", { mode: "number" }).notNull().default(0),
     reviewed: boolean("reviewed").notNull().default(false),
     duplicate: boolean("duplicate").notNull().default(false),
+    spoke: boolean("spoke").notNull().default(false),
   },
   (t) => [
     index("suggest_email_idx").on(t.email),
     index("suggest_reviewed_idx").on(t.reviewed),
     index("suggest_speaker_idx").on(t.speaker),
     index("suggest_votes_idx").on(t.votes),
+    index("suggest_spoke_idx").on(t.spoke),
   ],
 );
 

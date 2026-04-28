@@ -29,7 +29,7 @@ export default function HeroSection({
     <section className="relative w-full overflow-hidden">
       {/* Speaker image – contained to hero only */}
       {signedImageUrl && (
-        <div className="relative aspect-[3/2] sm:absolute sm:inset-0 sm:aspect-auto bg-zinc-200 dark:bg-zinc-800">
+        <div className="relative aspect-[3/2] sm:absolute sm:inset-0 sm:aspect-auto bg-zinc-800">
           <picture className="absolute inset-0 block h-full w-full">
             {mobileSignedImageUrl && (
               <source media="(max-width: 639px)" srcSet={mobileSignedImageUrl} />
@@ -55,7 +55,7 @@ export default function HeroSection({
 
       {/* Bottom fade into page background — light */}
       <div
-        className="absolute inset-0 hidden sm:block dark:hidden"
+        className="absolute inset-0 hidden"
         style={{
           background:
             "linear-gradient(to top, rgb(255,255,255) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.25) 100%)",
@@ -63,7 +63,7 @@ export default function HeroSection({
       />
       {/* Bottom fade into page background — dark */}
       <div
-        className="absolute inset-0 hidden sm:dark:block"
+        className="absolute inset-0 hidden sm:block"
         style={{
           background:
             "linear-gradient(to top, rgb(9,9,11) 0%, rgba(9,9,11,0.85) 30%, rgba(9,9,11,0.35) 60%, rgba(9,9,11,0.25) 100%)",
@@ -72,11 +72,11 @@ export default function HeroSection({
 
       {/* Hero content – anchored bottom-left */}
       <div className="relative z-10 flex flex-col sm:justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-5 sm:pt-28 pb-6 sm:pb-14">
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white font-serif tracking-tight leading-tight sm:leading-[1.1] dark:drop-shadow-lg">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl text-white font-serif tracking-tight leading-tight sm:leading-[1.1] drop-shadow-lg">
           {name}
         </h1>
         {tagline && (
-          <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc dark:prose-invert prose-p:m-0 prose-a:text-red-500 dark:prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
+          <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
             <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{tagline}</ReactMarkdown>
           </div>
         )}

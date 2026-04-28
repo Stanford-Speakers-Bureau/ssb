@@ -14,20 +14,20 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 py-16 text-center dark:bg-zinc-950">
-      <div className="w-full max-w-xl rounded-2xl border border-zinc-200 bg-zinc-50 p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center bg-zinc-950">
+      <div className="w-full max-w-xl rounded-2xl border p-8 shadow-sm border-zinc-800 bg-zinc-900">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-400">
           Something went wrong
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-zinc-950 dark:text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-white">
           We hit an unexpected error.
         </h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+        <p className="mt-3 text-sm leading-6 text-zinc-300">
           Please try again. If the issue keeps happening, contact
           {" "}
           <a
             href="mailto:tickets@stanfordspeakersbureau.com"
-            className="font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-100"
+            className="font-medium underline underline-offset-2 text-zinc-100"
           >
             tickets@stanfordspeakersbureau.com
           </a>
@@ -42,7 +42,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           </button>
           <Link
             href="/upcoming-speakers"
-            className="rounded-xl border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="rounded-xl border px-5 py-3 text-sm font-medium transition-colors border-zinc-700 text-zinc-200 hover:bg-zinc-800"
           >
             Back to events
           </Link>

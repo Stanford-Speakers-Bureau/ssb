@@ -2,57 +2,71 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative z-30 bg-gray-100 dark:bg-zinc-900">
-      <div className="mx-auto max-w-5xl px-8 py-8 sm:px-12 md:px-16">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Navigation Links - Left Side */}
-          <nav className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-x-6 md:gap-y-2">
+    <footer className="relative z-30 overflow-hidden border-t border-white/8 bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_34%),linear-gradient(180deg,#14100f_0%,#0f0b0a_100%)]">
+      <div
+        aria-hidden="true"
+        className="absolute right-[-120px] top-10 h-72 w-72 rounded-full bg-[#c93f2d]/22 blur-3xl"
+      />
+      <div className="mx-auto max-w-5xl px-8 py-10 sm:px-12 md:px-16">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#b51f1a]">
+              Stanford Speakers Bureau
+            </p>
+            <p className="mt-3 font-serif text-2xl text-white">
+              Bringing unforgettable voices to campus since 1935.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-[#b9a79b]">
+              Student-led speaker events, community programs, and nights that
+              feel a little bigger than usual.
+            </p>
+          </div>
+
+          <nav className="flex flex-col gap-2 md:flex-row md:flex-wrap md:gap-x-6 md:gap-y-2">
             <Link
               href="/upcoming-speakers"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Upcoming Speakers
             </Link>
             <Link
               href="/past-speakers"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Past Speakers
             </Link>
             <Link
               href="/suggest"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Suggest
             </Link>
             <Link
               href="/event-sponsorship"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Event Sponsorship
             </Link>
             <Link
               href="/team"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Team
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
             >
               Contact
             </Link>
           </nav>
 
-          {/* Social Links - Right Side */}
           <div className="flex items-center gap-4">
-            {/* Mailing List */}
             <a
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
               aria-label="Join our mailing list"
             >
               <svg
@@ -71,12 +85,11 @@ export default function Footer() {
               </svg>
             </a>
 
-            {/* Instagram */}
             <a
               href="https://www.instagram.com/stanfordspeakersbureau/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-[#A80D0C] dark:hover:text-[#A80D0C] transition-colors"
+              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
               aria-label="Follow us on Instagram"
             >
               <svg
@@ -95,9 +108,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-500">
+        <div className="mt-8 border-t border-white/8 pt-6">
+          <p className="text-sm text-[#8f7d73]">
             &copy; {new Date().getFullYear()} Stanford Speakers Bureau. All
             rights reserved.
           </p>

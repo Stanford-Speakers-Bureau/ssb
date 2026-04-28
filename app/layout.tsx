@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Hedvig_Letters_Serif } from "next/font/google";
+import { Great_Vibes, Hedvig_Letters_Serif, Inter } from "next/font/google";
 import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
 import ClientFooter from "./components/ClientFooter";
@@ -11,6 +11,12 @@ const inter = Inter({
 
 const hedvigLettersSerif = Hedvig_Letters_Serif({
   variable: "--font-hedvig-letters-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const greatVibes = Great_Vibes({
+  variable: "--font-script",
   subsets: ["latin"],
   weight: ["400"],
 });
@@ -54,9 +60,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${hedvigLettersSerif.variable} antialiased`}
+        className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} antialiased`}
       >
         <ClientHeaderBar />
         {children}

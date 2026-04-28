@@ -50,7 +50,7 @@ function FlipDigit({ value }: { value: string }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 32, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="absolute font-mono font-bold text-2xl sm:text-3xl tabular-nums text-zinc-900 dark:text-white"
+          className="absolute font-mono font-bold text-2xl sm:text-3xl tabular-nums text-white"
         >
           {value}
         </motion.span>
@@ -89,22 +89,22 @@ function PopupCountdown({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 font-semibold">
+      <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
         {label}
       </p>
       <div className="flex items-center gap-1.5 sm:gap-2">
         {segments.map((seg, i) => (
           <div key={seg.unit} className="flex items-center gap-1.5 sm:gap-2">
             {i > 0 && (
-              <span className="text-lg font-bold text-zinc-300 dark:text-zinc-600 -mt-4">
+              <span className="text-lg font-bold text-zinc-600 -mt-4">
                 :
               </span>
             )}
             <div className="flex flex-col items-center">
-              <div className="rounded-lg bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 w-[3rem] sm:w-[3.5rem] h-[2.75rem] sm:h-[3.25rem] flex items-center justify-center">
+              <div className="rounded-lg bg-white/[0.06] border border-white/10 w-[3rem] sm:w-[3.5rem] h-[2.75rem] sm:h-[3.25rem] flex items-center justify-center">
                 <FlipDigit value={String(seg.value).padStart(2, "0")} />
               </div>
-              <span className="text-[9px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
+              <span className="text-[9px] uppercase tracking-wider text-zinc-500 mt-1 font-medium">
                 {seg.unit}
               </span>
             </div>
@@ -159,7 +159,7 @@ function setDismissed(eventId: string) {
 
 // ─── Suppressed routes ───
 
-const SUPPRESSED_PREFIXES = ["/events/", "/upcoming-speakers", "/scan"];
+const SUPPRESSED_PREFIXES = ["/events/", "/upcoming-speakers", "/scan", "/suggest/"];
 
 function isSuppressedRoute(pathname: string): boolean {
   return SUPPRESSED_PREFIXES.some((p) => pathname.startsWith(p));
@@ -305,7 +305,7 @@ export default function EventPopup({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
           onClick={dismiss}
         >
           <motion.div
@@ -313,13 +313,13 @@ export default function EventPopup({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.25 }}
-            className="relative w-full max-w-md bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
               onClick={dismiss}
-              className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 dark:bg-white/10 text-white hover:bg-black/40 dark:hover:bg-white/20 transition-colors"
+              className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
               aria-label="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -348,7 +348,7 @@ export default function EventPopup({
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
-                      className="text-8xl font-serif font-bold text-[#A80D0C] select-none drop-shadow-lg"
+                      className="text-8xl font-serif text-[#A80D0C] select-none drop-shadow-lg"
                     >
                       ?
                     </motion.span>
@@ -390,7 +390,7 @@ export default function EventPopup({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
-                  className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white font-serif leading-tight"
+                  className="text-xl sm:text-2xl text-white font-serif leading-tight"
                 >
                   {headline}
                 </motion.h2>
@@ -398,7 +398,7 @@ export default function EventPopup({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.4 }}
-                  className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5"
+                  className="text-sm text-zinc-400 mt-1.5"
                 >
                   {subtitle}
                 </motion.p>
@@ -510,7 +510,7 @@ export default function EventPopup({
                 {/* Dismiss link */}
                 <button
                   onClick={dismiss}
-                  className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors py-1"
+                  className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors py-1"
                 >
                   Maybe later
                 </button>

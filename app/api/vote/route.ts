@@ -55,9 +55,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if the speaker suggestion exists and is approved
+    // Check if the speaker suggestion exists, is approved, and has not already spoken
     const suggestion = await db.query.suggest.findFirst({
-      where: and(eq(suggest.id, speaker_id), eq(suggest.approved, true)),
+      where: and(
+        eq(suggest.id, speaker_id),
+        eq(suggest.approved, true),
+        eq(suggest.spoke, false),
+      ),
       columns: { id: true, votes: true },
     });
 

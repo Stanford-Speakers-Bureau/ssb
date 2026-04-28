@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, suggest, votes } from "@ssb/db";
-import Image from "next/image";
 import Link from "next/link";
-import SuggestForm from "./SuggestForm";
 import Leaderboard from "./Leaderboard";
+import SuggestHero from "./SuggestHero";
+import SubmitPanel from "./SubmitPanel";
+import UserSuggestionsPanel from "./UserSuggestionsPanel";
+import { getLeaderboardData, getUserSuggestions } from "./data";
 
 export const metadata: Metadata = {
   title: "Suggest a Speaker",
@@ -12,85 +13,35 @@ export const metadata: Metadata = {
     "Suggest a speaker you'd love to see at Stanford. Vote on community suggestions and help shape future events.",
 };
 
-type Suggestion = {
-  id: string;
-  speaker: string;
-  votes: number;
-  hasVoted: boolean;
-};
-
-type UserSuggestion = {
-  id: string;
-  speaker: string;
-  approved: boolean;
-  reviewed: boolean;
-  duplicate?: boolean;
-};
-
-function getUserInitials(name: string | null, email: string | null): string {
-  const source = name?.trim() || email?.trim() || "";
-
-  if (!source) return "SS";
-
-  if (source.includes("@")) {
-    return source.slice(0, 2).toUpperCase();
-  }
-
-  const initials = source
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-
-  return initials || "SS";
-}
-
-async function getLeaderboardData(
-  userEmail: string | null,
-): Promise<Suggestion[]> {
-  const suggestions = await db.query.suggest.findMany({
-    where: eq(suggest.approved, true),
-    columns: { id: true, speaker: true, votes: true },
-    orderBy: (suggest, { desc }) => [desc(suggest.votes)],
-  });
-
-  let userVotes: Set<string> = new Set();
-  if (userEmail) {
-    const userVoteRows = await db.query.votes.findMany({
-      where: eq(votes.email, userEmail),
-      columns: { speakerId: true },
-    });
-    userVotes = new Set(userVoteRows.map((v) => v.speakerId).filter(Boolean) as string[]);
-  }
-
-  return suggestions.map((s) => ({
-    id: s.id,
-    speaker: s.speaker || "",
-    votes: s.votes || 0,
-    hasVoted: userVotes.has(s.id),
-  }));
-}
-
-async function getUserSuggestions(
-  userEmail: string | null,
-): Promise<UserSuggestion[]> {
-  if (!userEmail) return [];
-
-  const data = await db.query.suggest.findMany({
-    where: eq(suggest.email, userEmail),
-    columns: { id: true, speaker: true, approved: true, reviewed: true, duplicate: true },
-    orderBy: (suggest, { desc }) => [desc(suggest.createdAt)],
-  });
-
-  return data.map((s) => ({
-    id: s.id,
-    speaker: s.speaker || "",
-    approved: !!s.approved,
-    reviewed: !!s.reviewed,
-    duplicate: !!s.duplicate,
-  }));
-}
+const STEPS: { num: string; title: string; body: React.ReactNode }[] = [
+  {
+    num: "01",
+    title: "Submit",
+    body: "Add the names of anyone you'd like to see speak at Stanford.",
+  },
+  {
+    num: "02",
+    title: "Vote",
+    body: "Browse the leaderboard and upvote suggestions you'd love to see speak at Stanford.",
+  },
+  {
+    num: "03",
+    title: "We chase",
+    body: (
+      <>
+        Each Monday we look at who&rsquo;s climbing. Top picks become the
+        outreach list for our booking team.{" "}
+        <Link
+          href="/join"
+          prefetch={false}
+          className="font-semibold text-white underline underline-offset-4 decoration-[#A80D0C]/60 hover:decoration-[#A80D0C] transition-colors"
+        >
+          Want to join?
+        </Link>
+      </>
+    ),
+  },
+];
 
 export default async function SuggestPage({
   searchParams,
@@ -99,331 +50,121 @@ export default async function SuggestPage({
 }) {
   const user = await getSessionUser();
 
-  // Check for authentication errors from the callback
   const resolvedSearchParams = await searchParams;
   const authError = resolvedSearchParams.error === "auth_failed";
 
-  const userName = user?.displayName || null;
-  const userInitials = getUserInitials(userName, user?.email || null);
-
-  // Fetch leaderboard and user suggestion data on the server
   const [leaderboardData, userSuggestions] = await Promise.all([
     getLeaderboardData(user?.email || null),
     getUserSuggestions(user?.email || null),
   ]);
 
+  const totalVotes = leaderboardData.reduce((acc, s) => acc + s.votes, 0);
+  const totalSuggestions = leaderboardData.length;
+  const topNames = leaderboardData
+    .slice(0, 24)
+    .map((s) => s.speaker)
+    .filter(Boolean);
+
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full flex-1 flex-col bg-white dark:bg-black pt-24 items-center">
-        {authError && (
-          <div
-            className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded text-sm font-medium text-red-800 bg-red-50 dark:bg-red-900/20 dark:text-red-300 shadow-lg"
-            role="alert"
-          >
-            Authentication failed. Please try signing in again.
-          </div>
-        )}
-        <div className="w-full max-w-5xl px-6 sm:px-12 md:px-16 pt-2 pb-4">
-          <div className="relative w-full h-96 rounded-xl overflow-hidden">
-            <Image
-              src="/images/suggest.jpg"
-              alt="Empty stage with seats awaiting a speaker"
-              fill
-              className="object-cover object-bottom"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-4 left-5">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif drop-shadow-lg">
-                Who should speak next?
-              </h1>
-            </div>
-          </div>
+    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
+      {authError && (
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-3 rounded text-sm font-medium text-red-300 bg-red-950/80 shadow-lg border border-red-900"
+          role="alert"
+        >
+          Authentication failed. Please try signing in again.
         </div>
-        {/* Desktop Layout - Centered leaderboard + right column */}
-        <div className="hidden lg:flex flex-1 justify-center items-start">
-          <section className="w-full max-w-5xl flex items-start justify-center lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-            {/* Leaderboard on the left */}
-            <div className="flex-1 max-w-lg mx-0">
-              <Leaderboard suggestions={leaderboardData} isLoggedIn={!!user} />
-            </div>
+      )}
 
-            {/* Right column: Suggest a Speaker + Your suggested speakers */}
-            <aside className="w-96 space-y-4">
-              {/* Suggest a Speaker */}
-              <section className="bg-white dark:bg-black p-4 pt-2 rounded">
-                <h2 className="text-xl font-bold text-black dark:text-white mb-3 font-serif">
-                  Suggest a Speaker
-                </h2>
-                <p className="text-zinc-600 dark:text-zinc-400 mb-3 text-sm leading-relaxed">
-                  Have someone you&apos;d love to see speak at Stanford? Submit
-                  your suggestion!
-                </p>
+      <main className="flex w-full flex-col">
+        <SuggestHero
+          topNames={topNames}
+          totalSuggestions={totalSuggestions}
+          totalVotes={totalVotes}
+        />
 
-                {user ? (
-                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
-                        {userInitials}
-                      </div>
-                      <div className="text-xs">
-                        <p className="text-zinc-500 dark:text-zinc-400">
-                          Signed in as
-                        </p>
-                        <p className="text-black dark:text-white font-medium truncate max-w-[200px]">
-                          {userName || user?.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <SuggestForm />
-                  </div>
-                ) : (
-                  <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4 text-center">
-                    <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center mx-auto mb-3">
-                      <svg
-                        className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                    <h3 className="text-sm font-semibold text-black dark:text-white mb-1">
-                      Sign in to Suggest
-                    </h3>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-4">
-                      Use your Stanford account
-                    </p>
-                    <Link
-                      href="/api/auth/login?redirect_to=/suggest"
-                      prefetch={false}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded font-semibold text-white text-sm
-                                 bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all shadow-md hover:shadow-lg"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                      Sign in with Stanford
-                    </Link>
-                  </div>
-                )}
-              </section>
-
-              {/* Your suggested speakers below the suggest card */}
-              <section className="bg-white dark:bg-black p-4 rounded">
-                <h2 className="text-xl font-bold text-black dark:text-white mb-2 font-serif">
-                  Your Suggested Speakers
-                </h2>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
-                  These are the speakers you&apos;ve submitted. New suggestions
-                  may take a little time to be reviewed before they appear.
-                </p>
-
-                {user ? (
-                  userSuggestions.length === 0 ? (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      You haven&apos;t suggested anyone yet.
-                    </p>
-                  ) : (
-                    <ul className="space-y-2 pr-1">
-                      {userSuggestions.map((s) => {
-                        let statusLabel = "Pending review";
-                        let statusClass =
-                          "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20";
-
-                        if (s.approved) {
-                          statusLabel = "On leaderboard";
-                          statusClass =
-                            "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20";
-                        } else if (s.reviewed && !s.approved) {
-                          if (s.duplicate) {
-                            statusLabel = "Duplicate";
-                            statusClass =
-                              "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20";
-                          } else {
-                            statusLabel = "Rejected";
-                            statusClass =
-                              "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20";
-                          }
-                        }
-
-                        return (
-                          <li
-                            key={s.id}
-                            className="flex flex-col gap-1 rounded-md px-3 py-3 bg-zinc-50 dark:bg-zinc-900"
-                          >
-                            <span className="text-sm font-medium text-black dark:text-white truncate">
-                              {s.speaker}
-                            </span>
-                            <span
-                              className={`inline-flex items-center rounded px-2 py-2 text-xs font-semibold ${statusClass}`}
-                            >
-                              {statusLabel}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )
-                ) : (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Sign in to see the speakers you&apos;ve suggested.
-                  </p>
-                )}
-              </section>
-            </aside>
-          </section>
-        </div>
-
-        {/* Mobile Layout */}
-        <div className="lg:hidden flex-1 flex flex-col py-6 px-6 max-w-sm">
-          {/* Mobile: Suggest section at the top */}
-          <section className="mb-6 rounded pb-4 shadow-sm">
-            <h2 className="text-3xl font-bold text-black dark:text-white mb-4 font-serif">
-              Suggest a Speaker
-            </h2>
-            {user ? (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-[#A80D0C] flex items-center justify-center text-xs font-semibold text-white">
-                    {userInitials}
-                  </div>
-                  <div className="text-xs">
-                    <p className="text-zinc-500 dark:text-zinc-400">
-                      Signed in as
-                    </p>
-                    <p className="text-black dark:text-white font-medium truncate max-w-[200px]">
-                      {userName || user?.email}
-                    </p>
-                  </div>
-                </div>
-
-                <SuggestForm />
-              </div>
-            ) : (
-              <div className="rounded p-4 text-center">
-                <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center mx-auto mb-3">
-                  <svg
-                    className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-semibold text-black dark:text-white mb-1">
-                  Sign in to Suggest
-                </h3>
-                <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-4">
-                  Use your Stanford account
-                </p>
-                <Link
-                  href="/api/auth/login?redirect_to=/suggest"
-                  prefetch={false}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded font-semibold text-white text-sm
-                             bg-[#A80D0C] hover:bg-[#8a0b0a] transition-all shadow-md hover:shadow-lg"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Sign in with Stanford
-                </Link>
-              </div>
-            )}
-          </section>
-
-          {/* Mobile: Your suggestions above the leaderboard */}
-          {/* <section className="mb-4">
-            <div className="rounded p-4 shadow-sm">
-              <h2 className="text-lg font-bold text-black dark:text-white mb-2 font-serif">
-                Your suggested speakers
+        <section className="relative bg-[var(--ssb-paper)] border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-start">
+            <div>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-[0.95] mb-6">
+                Our next speaker starts with a name on this list.
               </h2>
-              {user ? (
-                userSuggestions.length === 0 ? (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    You haven&apos;t suggested anyone yet.
-                  </p>
-                ) : (
-                  <ul className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    {userSuggestions.map(s => {
-                      let statusLabel = "Pending review";
-                      let statusClass = "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20";
+              <p className="font-sans text-base sm:text-lg text-zinc-400 leading-relaxed mb-10 max-w-xl">
+                We only get there because the Stanford community tells us who they actually want to hear.
+                Drop a name below and we&rsquo;ll take it from there.
+              </p>
 
-                      if (s.approved) {
-                        statusLabel = "On leaderboard";
-                        statusClass = "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20";
-                      } else if (s.reviewed && !s.approved) {
-                        statusLabel = "Rejected";
-                        statusClass = "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20";
-                      }
-
-                      return (
-                        <li
-                          key={s.id}
-                          className="flex flex-col gap-1 rounded-md border border-zinc-200 dark:border-zinc-800 px-3 py-3 bg-zinc-50 dark:bg-zinc-900"
-                        >
-                          <span className="text-sm font-medium text-black dark:text-white truncate">
-                            {s.speaker}
-                          </span>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${statusClass}`}
-                          >
-                            {statusLabel}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )
-              ) : (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Sign in to see the speakers you&apos;ve suggested.
-                </p>
-              )}
+              <ol className="space-y-7">
+                {STEPS.map((step) => (
+                  <li
+                    key={step.num}
+                    className="grid grid-cols-[auto_1fr] gap-5 sm:gap-6"
+                  >
+                    <span className="font-serif text-4xl sm:text-5xl text-[#A80D0C] leading-none">
+                      {step.num}
+                    </span>
+                    <div>
+                      <h3 className="font-serif text-xl sm:text-2xl text-white mb-1.5">
+                        {step.title}
+                      </h3>
+                      <p className="font-sans text-sm text-zinc-400 leading-relaxed max-w-md">
+                        {step.body}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
-          </section> */}
 
-          <section className="flex-1 flex flex-col">
-            <Leaderboard
-              suggestions={leaderboardData}
-              isLoggedIn={!!user}
-              userSuggestions={userSuggestions}
-            />
-          </section>
-        </div>
+            <div className="lg:sticky lg:top-28">
+              <SubmitPanel user={user} signInRedirect="/suggest" />
+            </div>
+          </div>
+        </section>
+
+        <section className="relative bg-zinc-950 border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
+                The Leaderboard
+              </p>
+              <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95]">
+                Who the community wants next
+              </h2>
+              <p className="font-sans text-base text-zinc-400 max-w-lg mx-auto mt-4">
+                Ranked by votes. Tap the upvote to move a name up the list.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 lg:gap-12">
+              <div>
+                <Leaderboard
+                  suggestions={leaderboardData}
+                  isLoggedIn={!!user}
+                />
+              </div>
+
+              <aside>
+                <div className="lg:sticky lg:top-28">
+                  <div className="flex items-center gap-4 mb-5">
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C]">
+                      Your suggestions
+                    </p>
+                    <div className="flex-1 h-px bg-zinc-800" />
+                  </div>
+                  <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
+                    New suggestions take a little time to be reviewed before
+                    they appear on the leaderboard.
+                  </p>
+                  <UserSuggestionsPanel
+                    userSuggestions={userSuggestions}
+                    isLoggedIn={!!user}
+                  />
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
