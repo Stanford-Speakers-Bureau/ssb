@@ -297,7 +297,7 @@ export default function SpeakerShowcase() {
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
       />
-      <div className="mx-auto max-w-6xl px-6 pb-8 pt-16 sm:px-12 sm:pt-20">
+      <div className="mx-auto max-w-[88rem] px-6 pb-8 pt-16 sm:px-12 sm:pt-20">
         <div className="mb-8 flex items-end justify-between gap-6">
           <div>
             <p className="mb-2 text-xs uppercase tracking-[0.3em] text-[#f19a80] sm:text-sm">
@@ -338,7 +338,7 @@ export default function SpeakerShowcase() {
       </div>
 
       <div
-        className="relative max-w-6xl mx-auto px-6 sm:px-12"
+        className="relative max-w-[88rem] mx-auto px-6 sm:px-12"
         onMouseEnter={() => (pausedRef.current = true)}
         onMouseLeave={() => (pausedRef.current = false)}
       >
@@ -364,7 +364,7 @@ export default function SpeakerShowcase() {
         <Arrow direction="next" onClick={scrollNext} />
       </div>
 
-      <div className="mx-auto flex max-w-6xl items-center justify-center px-6 pb-4 pt-1 sm:px-12 sm:py-8">
+      <div className="mx-auto flex max-w-[88rem] items-center justify-center px-6 pb-4 pt-1 sm:px-12 sm:py-8">
         <div className="flex gap-2">
           {Array.from({ length: snapCount }).map((_, i) => (
             <button
@@ -395,7 +395,7 @@ export default function SpeakerShowcase() {
         total={SPEAKERS.length}
       />
 
-      <div className="mx-auto max-w-6xl px-6 pb-10 sm:hidden">
+      <div className="mx-auto max-w-[88rem] px-6 pb-10 sm:hidden">
         <Link
           href="/past-speakers"
           prefetch={false}

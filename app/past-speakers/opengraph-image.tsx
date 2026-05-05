@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { SPOTLIGHT_SPEAKERS } from "@/app/config/speakers";
+import { getHedvigSerif } from "@/app/lib/og-fonts";
 
 export const alt = "Stanford Speakers Bureau archive";
 export const size = { width: 1200, height: 630 };
@@ -9,7 +10,8 @@ const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export default async function Image() {
   const top = SPOTLIGHT_SPEAKERS.slice(0, 3);
-  const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
+  const logoUrl = `${baseURL}/ssb_white_logo_og.png`;
+  const hedvig = await getHedvigSerif();
 
   return new ImageResponse(
     (
@@ -21,8 +23,8 @@ export default async function Image() {
           height: "100%",
           padding: "64px 80px",
           background: "linear-gradient(180deg, #0a0a0a 0%, #1a0606 100%)",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          color: "white",
+          fontFamily: '"Hedvig Letters Serif", serif',
+          color: "#fff8f1",
           justifyContent: "space-between",
         }}
       >
@@ -33,11 +35,12 @@ export default async function Image() {
             justifyContent: "space-between",
           }}
         >
-          <img src={logoUrl} width={275} height={86} alt="" />
+          <img src={logoUrl} width={297} height={90} alt="" />
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 600,
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 24,
+              fontWeight: 700,
               letterSpacing: 8,
               textTransform: "uppercase",
               color: "#db4c3a",
@@ -101,7 +104,8 @@ export default async function Image() {
                 >
                   <span
                     style={{
-                      fontSize: 13,
+                      fontFamily: "Inter, system-ui, sans-serif",
+                      fontSize: 14,
                       fontWeight: 700,
                       letterSpacing: 3,
                       color: "#f28c73",
@@ -116,9 +120,9 @@ export default async function Image() {
                   </span>
                   <span
                     style={{
-                      fontSize: 26,
-                      fontWeight: 700,
-                      color: "white",
+                      fontFamily: '"Hedvig Letters Serif", serif',
+                      fontSize: 30,
+                      color: "#fff8f1",
                       lineHeight: 1.05,
                       letterSpacing: -0.5,
                       overflow: "hidden",
@@ -132,9 +136,10 @@ export default async function Image() {
                   {s.location ? (
                     <span
                       style={{
+                        fontFamily: "Inter, system-ui, sans-serif",
                         fontSize: 13,
                         fontWeight: 500,
-                        color: "rgba(255,255,255,0.62)",
+                        color: "rgba(255,248,241,0.62)",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
@@ -156,10 +161,11 @@ export default async function Image() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            fontSize: 32,
-            color: "#d4d4d8",
+            fontFamily: '"Hedvig Letters Serif", serif',
+            fontSize: 36,
+            color: "#fff8f1",
             paddingTop: 20,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: "3px solid rgba(168, 13, 12, 0.55)",
           }}
         >
           <span>Browse the archive</span>
@@ -167,6 +173,16 @@ export default async function Image() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Hedvig Letters Serif",
+          data: hedvig,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    },
   );
 }

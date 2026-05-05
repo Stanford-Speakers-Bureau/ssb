@@ -4,10 +4,10 @@ import {
   ogMosaicSize,
 } from "@/app/lib/og-mosaic";
 
-export const alt = "Stanford Speakers Bureau";
+export const alt = "Join SSB";
 export const size = ogMosaicSize;
 export const contentType = ogMosaicContentType;
 
 export default async function Image() {
-  return mosaicOG();
+  return mosaicOG({ title: "Join SSB" });
 }

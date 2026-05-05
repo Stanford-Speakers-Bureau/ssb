@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { db, and, eq, suggest } from "@ssb/db";
+import { getHedvigSerif } from "@/app/lib/og-fonts";
 
 export const alt = "Stanford Speakers Bureau leaderboard";
 export const size = { width: 1200, height: 630 };
@@ -31,7 +32,8 @@ async function getTopThree(): Promise<Row[]> {
 
 export default async function Image() {
   const rows = await getTopThree();
-  const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
+  const logoUrl = `${baseURL}/ssb_white_logo_og.png`;
+  const hedvig = await getHedvigSerif();
   const hasRows = rows.length > 0;
 
   return new ImageResponse(
@@ -44,8 +46,8 @@ export default async function Image() {
           height: "100%",
           padding: "80px 96px",
           background: "linear-gradient(180deg, #0a0a0a 0%, #1a0606 100%)",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          color: "white",
+          fontFamily: '"Hedvig Letters Serif", serif',
+          color: "#fff8f1",
           justifyContent: "space-between",
         }}
       >
@@ -58,14 +60,15 @@ export default async function Image() {
         >
           <img
             src={logoUrl}
-            width={275}
-            height={86}
+            width={297}
+            height={90}
             alt=""
           />
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 600,
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 24,
+              fontWeight: 700,
               letterSpacing: 8,
               textTransform: "uppercase",
               color: "#db4c3a",
@@ -84,8 +87,7 @@ export default async function Image() {
                   display: "flex",
                   alignItems: "center",
                   gap: 28,
-                  fontSize: 64,
-                  fontWeight: 700,
+                  fontSize: 68,
                   lineHeight: 1.05,
                   letterSpacing: -1,
                 }}
@@ -117,15 +119,21 @@ export default async function Image() {
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div
               style={{
-                fontSize: 88,
-                fontWeight: 600,
+                fontSize: 92,
                 lineHeight: 1.04,
                 letterSpacing: -2,
+                color: "#fff8f1",
               }}
             >
               Who should speak at Stanford?
             </div>
-            <div style={{ fontSize: 32, color: "#f28c73" }}>
+            <div
+              style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: 32,
+                color: "#f28c73",
+              }}
+            >
               Drop a name. Vote on others.
             </div>
           </div>
@@ -136,10 +144,10 @@ export default async function Image() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            fontSize: 32,
-            color: "#d4d4d8",
+            fontSize: 36,
+            color: "#fff8f1",
             paddingTop: 24,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: "3px solid rgba(168, 13, 12, 0.55)",
           }}
         >
           <span>Help us decide! Who comes to Stanford next?</span>
@@ -147,6 +155,16 @@ export default async function Image() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Hedvig Letters Serif",
+          data: hedvig,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    },
   );
 }

@@ -1,13 +1,13 @@
 import {
-  mosaicOG,
+  heroOG,
   ogMosaicContentType,
   ogMosaicSize,
 } from "@/app/lib/og-mosaic";
 
-export const alt = "Stanford Speakers Bureau";
+export const alt = "Get in Touch with SSB";
 export const size = ogMosaicSize;
 export const contentType = ogMosaicContentType;
 
 export default async function Image() {
-  return mosaicOG();
+  return heroOG({ heroImage: "/og/students.jpg" });
 }

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseURL),
   title: {
     template: "%s | Stanford Speakers Bureau",
-    default: "Stanford Speakers Bureau",
+    default: "Stanford Speakers Bureau (SSB)",
   },
   description:
     "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
@@ -36,13 +36,6 @@ export const metadata: Metadata = {
     title: "Stanford Speakers Bureau (SSB)",
     description:
       "Stanford Speakers Bureau (SSB) is Stanford's largest student organization sponsor of speaking events since 1935. We meet weekly to discuss upcoming speakers and determine who is of interest to the Stanford community.",
-    images: [
-      {
-        url: `/speakers/jojo-siwa.jpg`,
-        width: 1200,
-        height: 630,
-      },
-    ],
     url: `${baseURL}`,
   },
   twitter: {
