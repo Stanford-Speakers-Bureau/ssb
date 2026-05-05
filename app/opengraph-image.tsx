@@ -98,16 +98,15 @@ export default async function Image() {
     }
   }
 
-  const eyebrow = event?.name ? "Upcoming Speaker" : "Since 1935";
-  const headline =
-    event?.name || "Stanford's largest sponsor of speaking events.";
+  const eyebrow = "Upcoming Speaker";
+  const headline = event?.name ?? "";
   const headlineSize = event?.name
     ? event.name.length > 24
       ? 48
       : event.name.length > 16
         ? 60
         : 72
-    : 40;
+    : 72;
 
   // Mode 1: Real photo of THIS upcoming speaker → full-bleed photo with a
   // compact card pinned near the bottom so the speaker's face stays visible.
@@ -182,8 +181,88 @@ export default async function Image() {
     );
   }
 
-  // Mode 2: Default — 2x2 mosaic of past spotlight speakers with the card
-  // centered. Used when there's no upcoming event or no photo for them.
+  // Mode 2: Upcoming event without a usable photo → 2x2 mosaic + centered card.
+  if (event?.name) {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            background: "#0a0a0a",
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            {CORNER_SPEAKERS.map((s) => {
+              const img = s.spotlightImage || s.image;
+              return (
+                <div
+                  key={s.slug}
+                  style={{
+                    display: "flex",
+                    width: 600,
+                    height: 315,
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={`${baseURL}${img}`}
+                    width={600}
+                    height={315}
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: "center top",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                    alt=""
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.55) 100%)",
+            }}
+          />
+
+          <Card
+            logoUrl={logoUrl}
+            eyebrow={eyebrow}
+            headline={headline}
+            headlineSize={headlineSize}
+          />
+        </div>
+      ),
+      { ...size },
+    );
+  }
+
+  // Mode 3: Nothing upcoming → just the logo, centered on a brand background.
   return new ImageResponse(
     (
       <div
@@ -191,72 +270,13 @@ export default async function Image() {
           display: "flex",
           width: "100%",
           height: "100%",
-          position: "relative",
-          background: "#0a0a0a",
-          fontFamily: "system-ui, -apple-system, sans-serif",
           alignItems: "center",
           justifyContent: "center",
+          background: "linear-gradient(180deg, #0a0a0a 0%, #1a0606 100%)",
+          fontFamily: "system-ui, -apple-system, sans-serif",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {CORNER_SPEAKERS.map((s) => {
-            const img = s.spotlightImage || s.image;
-            return (
-              <div
-                key={s.slug}
-                style={{
-                  display: "flex",
-                  width: 600,
-                  height: 315,
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={`${baseURL}${img}`}
-                  width={600}
-                  height={315}
-                  style={{
-                    objectFit: "cover",
-                    objectPosition: "center top",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                  alt=""
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.55) 100%)",
-          }}
-        />
-
-        <Card
-          logoUrl={logoUrl}
-          eyebrow={eyebrow}
-          headline={headline}
-          headlineSize={headlineSize}
-        />
+        <img src={logoUrl} width={540} height={169} alt="" />
       </div>
     ),
     { ...size },
