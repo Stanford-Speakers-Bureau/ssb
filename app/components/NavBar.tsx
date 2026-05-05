@@ -148,7 +148,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
       <nav className="sticky top-0 left-0 right-0 z-50 w-full h-0">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-8 sm:px-12 md:px-16">
           <div
-            className={`absolute left-4 right-4 top-4 flex h-[64px] flex-1 items-center gap-6 rounded-full border px-4 pb-0.5 backdrop-blur-xl sm:left-6 sm:right-6 sm:px-6 lg:left-auto lg:right-auto lg:w-full lg:max-w-5xl lg:px-5 ${glassClasses} ${mobileMenuOpen ? "z-0" : "z-10"}`}
+            className={`absolute left-4 right-4 top-4 flex h-[64px] flex-1 items-center gap-6 rounded-full border px-4 pb-0.5 backdrop-blur-xl sm:left-6 sm:right-6 sm:px-6 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-full lg:max-w-5xl lg:px-5 ${glassClasses} ${mobileMenuOpen ? "z-0" : "z-10"}`}
           >
             <motion.div
               whileHover={{ scale: 1.03 }}
@@ -237,7 +237,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
           {/* Mobile Menu Button - positioned outside frosted div to stay above menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`absolute right-4 top-[25px] z-30 rounded-full bg-white/10 p-2.5 transition-colors hover:bg-white/16 lg:hidden sm:right-8 ${hamburgerClasses}`}
+            className={`absolute right-8 top-[25px] z-30 rounded-full bg-white/10 p-2.5 transition-colors hover:bg-white/16 lg:hidden ${hamburgerClasses}`}
             aria-label="Toggle menu"
           >
             <svg
@@ -269,9 +269,9 @@ export default function NavBar({ banner }: { banner: boolean }) {
               className={`fixed inset-y-0 right-0 z-20 w-full shadow-2xl lg:hidden sm:w-80 ${mobileMenuBgClasses}`}
             >
               <div
-                className={`flex h-full flex-col px-5 sm:px-8 ${banner ? "pt-30" : "pt-20"}`}
+                className={`flex h-full flex-col items-center justify-center px-5 sm:px-8 ${banner ? "pt-30" : "pt-20"}`}
               >
-                <div className="flex flex-col space-y-2">
+                <div className="flex w-full flex-col items-center space-y-2">
                   {NAV_ITEMS.map((item) => {
                     const active = isNavItemActive(pathname, item.href);
                     const mobileLinkClasses = active
@@ -282,7 +282,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`rounded-2xl px-4 py-3 text-lg font-medium transition-colors ${mobileLinkClasses}`}
+                        className={`rounded-2xl px-4 py-3 text-lg font-medium text-center transition-colors ${mobileLinkClasses}`}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}
                       >
@@ -294,7 +294,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     (isAuthenticated ? (
                       <Link
                         href="/account"
-                        className={mobileAccountClasses}
+                        className={`${mobileAccountClasses} text-center`}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}
                       >
@@ -303,7 +303,7 @@ export default function NavBar({ banner }: { banner: boolean }) {
                     ) : (
                       <Link
                         href={`/api/auth/login?redirect_to=${encodeURIComponent(pathname)}`}
-                        className={mobileAccountClasses}
+                        className={`${mobileAccountClasses} text-center`}
                         prefetch={false}
                         onClick={() => setMobileMenuOpen(false)}
                       >
