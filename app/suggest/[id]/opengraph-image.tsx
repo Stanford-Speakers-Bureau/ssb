@@ -40,17 +40,14 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <img
-            src={logoUrl}
-            width={260}
-            height={56}
-            style={{ objectFit: "contain" }}
-            alt=""
-          />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <img src={logoUrl} width={275} height={86} alt="" />
           <div
             style={{
               fontSize: 22,
@@ -60,35 +57,65 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               color: "#db4c3a",
             }}
           >
-            Stanford Speakers Bureau
-          </div>
-          <div
-            style={{
-              fontSize: 96,
-              fontWeight: 600,
-              lineHeight: 1.04,
-              letterSpacing: -2,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 18,
-            }}
-          >
-            <span>Should</span>
-            <span style={{ color: "#f28c73" }}>{speaker}</span>
-            <span>come speak at Stanford?</span>
+            Cast Your Vote
           </div>
         </div>
 
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: 14,
-            fontSize: 28,
-            color: "#a1a1aa",
+            flexDirection: "column",
+            fontSize: 84,
+            fontWeight: 600,
+            lineHeight: 1.04,
+            letterSpacing: -2,
+            gap: 6,
           }}
         >
-          <span>Tap to vote →</span>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 18,
+            }}
+          >
+            <span>Should</span>
+            <div
+              style={{
+                display: "flex",
+                color: "white",
+                fontWeight: 700,
+                background: "#A80D0C",
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 4,
+                paddingBottom: 4,
+                borderRadius: 4,
+                transform: "rotate(-1.4deg)",
+                boxShadow:
+                  "0 0 36px rgba(168,13,12,0.45), 0 6px 0 rgba(0,0,0,0.18)",
+              }}
+            >
+              {speaker}
+            </div>
+          </div>
+          <div style={{ display: "flex" }}>come speak at Stanford?</div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 32,
+            color: "#d4d4d8",
+            paddingTop: 24,
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <span>Help us decide. Click to vote!</span>
+          <span style={{ color: "#db4c3a" }}>→</span>
         </div>
       </div>
     ),

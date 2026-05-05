@@ -11,6 +11,20 @@ export const metadata: Metadata = {
   title: "Suggest a Speaker",
   description:
     "Suggest a speaker you'd love to see at Stanford. Vote on community suggestions and help shape future events.",
+  openGraph: {
+    title: "Who should speak at Stanford?",
+    description:
+      "Submit names. Vote on others. Top picks become the leads we chase.",
+    type: "website",
+    siteName: "Stanford Speakers Bureau",
+    url: "/suggest",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Who should speak at Stanford?",
+    description:
+      "Submit names. Vote on others. Top picks become the leads we chase.",
+  },
 };
 
 const STEPS: { num: string; title: string; body: React.ReactNode }[] = [
