@@ -34,7 +34,7 @@ export default async function Image() {
 
   // If storage credentials are unavailable during the build, fall back to a
   // generic speaker image so OG image generation still succeeds.
-  const imageUrl = signedImageUrl || `${baseURL}/speakers/jojo-siwa.jpg`;
+  const imageUrl = signedImageUrl || `${baseURL}/speakers/malala-yousafzai.jpg`;
   const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
   const showUpcomingSpeakerLabel = Boolean(event?.name);
 
