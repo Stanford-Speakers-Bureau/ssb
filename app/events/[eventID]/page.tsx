@@ -142,7 +142,7 @@ export async function generateMetadata({
   const eventUrl = `/events/${event.route || eventID}`;
   const ogImageUrl = (event.img || event.mobile_img)
     ? `${baseURL}${getImageProxyUrl(event.id, event.img_version)}`
-    : `${baseURL}/speakers/jojo-siwa.jpg`;
+    : `${baseURL}/speakers/jojo-siwa-web.jpg`;
 
   return {
     title,
