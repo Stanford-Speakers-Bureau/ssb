@@ -34,21 +34,21 @@ const speakers: Speaker[] = [
     title: 'Comedian & Former "Patriot Act" Host',
     description:
       'Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and as creator and host of "Patriot Act with Hasan Minhaj."',
-    image: "/speakers/hasan-minhaj.jpg",
+    image: "/speakers/hasan-minhaj-web.jpg",
   },
   {
     name: "JoJo Siwa",
     title: "Media Icon",
     description:
       "Media icon, dancer, and singer who rose to fame through the reality show Dance Moms and her vibrant online presence.",
-    image: "/speakers/jojo-siwa.jpg",
+    image: "/speakers/jojo-siwa-web.jpg",
   },
   {
     name: "Mark Rober",
     title: "YouTube Educator, Former NASA & Apple Engineer",
     description:
       "Former NASA engineer turned YouTube star with 45+ million subscribers, known for viral science and engineering videos.",
-    image: "/speakers/mark-rober.jpeg",
+    image: "/speakers/mark-rober-web.jpeg",
   },
 ];
 
@@ -86,7 +86,7 @@ function ViewMoreCard() {
       className="relative p-6 rounded overflow-hidden min-h-[400px] h-full flex flex-col justify-center items-center group"
     >
       <Image
-        src="/speakers/john-green.jpg"
+        src="/speakers/john-green-web.jpg"
         alt="John Green speaking at Stanford University from Stanford Speakers Bureau (SSB)"
         fill
         className="object-cover transition-transform duration-500 group-hover:scale-105"

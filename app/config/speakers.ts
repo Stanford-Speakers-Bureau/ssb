@@ -79,7 +79,7 @@ export const SPEAKERS: Speaker[] = [
     location: "Memorial Auditorium",
     title: "Comedian, Writer, and Former Host of \"The Patriot Act\"",
     bio: "Hasan Minhaj is a two-time Peabody Award-Winning comedian best known for his breakout Netflix special Homecoming King and his critically acclaimed, political satire show Patriot Act With Hasan Minhaj for Netflix which won a Peabody, an Emmy, and a Television Academy Honor. His second one-hour comedy special The King's Jester premiered on Netflix in 2022. In October 2024, Hasan released his third comedy special on Netflix, titled Off With His Head. On Hasan's ongoing digital series and podcast, Hasan Minhaj Doesn't Know, he sits down with the biggest names in politics, culture, and tech with questions that are as thought provoking as they are absurd. In the debut episode, Hasan spoke with Senator Elizabeth Warren, and he's also welcomed John M. Chu, JJ Redick, Bernie Sanders, and Stacey Abrams, among many others",
-    image: "/speakers/hasan-minhaj.jpg",
+    image: "/speakers/hasan-minhaj-web.jpg",
     homeFeaturedQuote:
       "Two-time Peabody Award-winning comedian, acclaimed for his Netflix specials and Patriot Act.",
     featuredOnHome: 3,
@@ -95,7 +95,7 @@ export const SPEAKERS: Speaker[] = [
     location: "Memorial Auditorium",
     title: "YouTube Educator, Former NASA & Apple Engineer",
     bio: "Mark Rober is an American YouTuber, engineer, and inventor. Known for his viral videos that combine science, engineering, and humor, Rober has amassed a following of over 45 million subscribers on YouTube. Before becoming a full-time content creator, he worked as an engineer for NASA's Jet Propulsion Laboratory, where he contributed to the development of the Curiosity rover, and later at Apple, where he worked on product design patents. Rober is celebrated for his creative projects and his ability to make complex scientific concepts accessible and entertaining to a broad audience.",
-    image: "/speakers/mark-rober.jpeg",
+    image: "/speakers/mark-rober-web.jpeg",
     homeFeaturedQuote:
       "Former NASA engineer turned YouTube star with 45M+ subscribers, making science accessible to millions.",
     featuredOnHome: 5,
@@ -109,7 +109,7 @@ export const SPEAKERS: Speaker[] = [
     location: "Memorial Auditorium",
     title: "Media Icon",
     bio: "JoJo Siwa is a media icon, dancer, and singer who rose to fame through the reality show Dance Moms and her vibrant online presence. She has built a massive following across social media platforms, with over 16 million subscribers on YouTube and more than 41 million followers on TikTok. Known for her high-energy persona, signature bows, and empowering pop music, Siwa has successfully transitioned into a versatile entertainer. She has also made history as the first contestant to be paired with a same-sex partner on Dancing with the Stars.",
-    image: "/speakers/jojo-siwa.jpg",
+    image: "/speakers/jojo-siwa-web.jpg",
     homeFeaturedQuote:
       "Dancer, singer, and media icon with 41M+ TikTok followers who made history on Dancing with the Stars.",
     featuredOnHome: 4,
@@ -154,7 +154,7 @@ export const SPEAKERS: Speaker[] = [
     location: "CEMEX Auditorium",
     title: "Author & YouTube Educator",
     bio: "John Green is a best-selling author and YouTuber, known for his impactful novels and educational YouTube content. His breakout novel, The Fault in Our Stars (2012), became a global sensation, spending time on the New York Times Best Seller list, landing in the top 100 best-selling books ever, and later being adapted into a successful film. Alongside his brother Hank, John co-created the popular YouTube channel Crash Course, providing free educational content to millions of students.",
-    image: "/speakers/john-green.jpg",
+    image: "/speakers/john-green-web.jpg",
     homeFeaturedQuote:
       "Best-selling author of The Fault in Our Stars and co-creator of Crash Course with 15M+ subscribers.",
     featuredOnHome: 6,
