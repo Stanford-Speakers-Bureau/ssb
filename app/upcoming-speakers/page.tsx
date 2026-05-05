@@ -16,10 +16,16 @@ import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, gte, count as dbCount, events, tickets, notify } from "@ssb/db";
 
 
+const ogTitle = "Upcoming at Stanford";
+const ogDescription =
+  "See who's speaking next at Stanford. Browse upcoming events and grab your tickets.";
+
 export const metadata: Metadata = {
   title: "Upcoming Speakers",
   description:
     "See who's speaking next at Stanford. Browse upcoming events hosted by Stanford Speakers Bureau and get your tickets.",
+  openGraph: { title: ogTitle, description: ogDescription },
+  twitter: { title: ogTitle, description: ogDescription },
 };
 
 type SanitizedEvent = {

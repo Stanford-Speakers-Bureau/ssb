@@ -10,17 +10,35 @@ import { HERO_BACKGROUND_IMAGES } from "@/app/config/home-hero";
 const MotionLink = motion.create(Link);
 
 const ROTATION_INTERVAL_MS = 5500;
+const STATIC_IMAGE_SRC = "/speakers/bernie.jpg";
+const STATIC_IMAGE_INDEX = Math.max(
+  0,
+  HERO_BACKGROUND_IMAGES.indexOf(STATIC_IMAGE_SRC),
+);
 
 function HeroBackground() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(STATIC_IMAGE_INDEX);
+  const [rotateEnabled, setRotateEnabled] = useState(false);
 
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setRotateEnabled(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!rotateEnabled) {
+      setIndex(STATIC_IMAGE_INDEX);
+      return;
+    }
     if (HERO_BACKGROUND_IMAGES.length <= 1) return;
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % HERO_BACKGROUND_IMAGES.length);
     }, ROTATION_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [rotateEnabled]);
 
   const activeSrc = HERO_BACKGROUND_IMAGES[index] ?? HERO_BACKGROUND_IMAGES[0];
 
@@ -42,7 +60,7 @@ function HeroBackground() {
             src={activeSrc}
             alt=""
             fill
-            priority={index === 0}
+            priority={activeSrc === STATIC_IMAGE_SRC}
             quality={90}
             className="object-cover object-center"
             sizes="100vw"

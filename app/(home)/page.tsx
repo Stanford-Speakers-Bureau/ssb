@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db, eq, and, events, sql, isNotNull } from "@ssb/db";
-import HomeClient from "./HomeClient";
+import HomeClient from "../HomeClient";
 
 export const metadata: Metadata = {
   title: { absolute: "Stanford Speakers Bureau" },

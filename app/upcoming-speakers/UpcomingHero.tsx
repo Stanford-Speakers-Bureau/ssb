@@ -10,7 +10,7 @@ type UpcomingHeroProps = {
 
 export default function UpcomingHero({ hasEvents }: UpcomingHeroProps) {
   return (
-    <section className="relative w-full overflow-hidden bg-[var(--ssb-night)] pt-32 pb-16 sm:pt-40 sm:pb-24">
+    <section className="relative w-full overflow-hidden bg-[var(--ssb-night)] pt-32 sm:pt-40">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,240,224,0.14),transparent_30%),radial-gradient(circle_at_18%_22%,rgba(219,76,58,0.22),transparent_34%)]"

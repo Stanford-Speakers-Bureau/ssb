@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { db, eq, and, suggest } from "@ssb/db";
 import { isValidUUID } from "@/app/lib/validation";
+import { getHedvigSerif } from "@/app/lib/og-fonts";
 
 export const alt = "Should this person come speak at Stanford?";
 export const size = { width: 1200, height: 630 };
@@ -23,7 +24,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     if (row?.speaker) speaker = row.speaker;
   }
 
-  const logoUrl = `${baseURL}/wallet/logo_text2x.png`;
+  const logoUrl = `${baseURL}/ssb_white_logo_og.png`;
+  const hedvig = await getHedvigSerif();
 
   return new ImageResponse(
     (
@@ -35,8 +37,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           height: "100%",
           padding: "80px 96px",
           background: "linear-gradient(180deg, #0a0a0a 0%, #1a0606 100%)",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          color: "white",
+          fontFamily: '"Hedvig Letters Serif", serif',
+          color: "#fff8f1",
           justifyContent: "space-between",
         }}
       >
@@ -47,11 +49,12 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             justifyContent: "space-between",
           }}
         >
-          <img src={logoUrl} width={275} height={86} alt="" />
+          <img src={logoUrl} width={297} height={90} alt="" />
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 600,
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 24,
+              fontWeight: 700,
               letterSpacing: 8,
               textTransform: "uppercase",
               color: "#db4c3a",
@@ -65,11 +68,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           style={{
             display: "flex",
             flexDirection: "column",
-            fontSize: 84,
-            fontWeight: 600,
+            fontSize: 88,
             lineHeight: 1.04,
             letterSpacing: -2,
             gap: 6,
+            color: "#fff8f1",
           }}
         >
           <div
@@ -84,8 +87,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             <div
               style={{
                 display: "flex",
-                color: "white",
-                fontWeight: 700,
+                color: "#fff8f1",
                 background: "#A80D0C",
                 paddingLeft: 16,
                 paddingRight: 16,
@@ -108,10 +110,10 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            fontSize: 32,
-            color: "#d4d4d8",
+            fontSize: 36,
+            color: "#fff8f1",
             paddingTop: 24,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: "3px solid rgba(168, 13, 12, 0.55)",
           }}
         >
           <span>Help us decide. Click to vote!</span>
@@ -119,6 +121,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Hedvig Letters Serif",
+          data: hedvig,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    },
   );
 }
