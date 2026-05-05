@@ -55,22 +55,31 @@ function isValidBannerData(data: unknown): data is BannerData {
   );
 }
 
-function readCachedBanner(): BannerData | null {
+function parseCachedBanner(raw: string | null): CachedBanner | null {
+  if (!raw) return null;
   try {
-    const raw = window.localStorage.getItem(BANNER_CACHE_KEY);
-    if (!raw) return null;
-
     const cached = JSON.parse(raw) as CachedBanner;
     if (
       !cached ||
       typeof cached.cachedAt !== "number" ||
-      Date.now() - cached.cachedAt > BANNER_CACHE_MAX_AGE_MS ||
       !isValidBannerData(cached.data)
     ) {
       return null;
     }
+    return cached;
+  } catch {
+    return null;
+  }
+}
 
-    return cached.data;
+function readCachedBanner(): CachedBanner | null {
+  try {
+    const cached = parseCachedBanner(
+      window.localStorage.getItem(BANNER_CACHE_KEY),
+    );
+    if (!cached) return null;
+    if (Date.now() - cached.cachedAt > BANNER_CACHE_MAX_AGE_MS) return null;
+    return cached;
   } catch {
     return null;
   }
@@ -212,20 +221,35 @@ export default function ClientHeaderBar() {
       }
     };
 
+    const handleStorage = (event: StorageEvent) => {
+      if (!isActive || event.key !== BANNER_CACHE_KEY) return;
+
+      const cached = parseCachedBanner(event.newValue);
+      if (!cached) return;
+
+      setBannerData(cached.data);
+      setHasFreshBannerData(true);
+      lastRefreshAt = cached.cachedAt;
+      schedulePhaseRefresh(cached.data.bannerProps?.target ?? null);
+      scheduleNextRefresh();
+    };
+
     void Promise.resolve().then(() => {
       if (!isActive) return;
 
       const cached = readCachedBanner();
       if (cached) {
-        setBannerData(cached);
+        setBannerData(cached.data);
         setHasFreshBannerData(false);
-        schedulePhaseRefresh(cached.bannerProps?.target ?? null);
+        lastRefreshAt = cached.cachedAt;
+        schedulePhaseRefresh(cached.data.bannerProps?.target ?? null);
       }
 
       refreshIfDue();
     });
 
     window.addEventListener("focus", refreshIfDue);
+    window.addEventListener("storage", handleStorage);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
@@ -234,6 +258,7 @@ export default function ClientHeaderBar() {
       clearPhaseRefresh();
       clearNextRefresh();
       window.removeEventListener("focus", refreshIfDue);
+      window.removeEventListener("storage", handleStorage);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isEventRoute, isScanRoute]);
