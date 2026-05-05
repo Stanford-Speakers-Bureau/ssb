@@ -10,20 +10,8 @@ const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 type Row = { id: string; speaker: string };
 
-function ordinalSuffix(n: number): string {
-  const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 13) return "th";
-  switch (n % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
+const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"];
+const MEDAL_COLORS = ["#FFD700", "#C0C8D1", "#CD7F32"];
 
 async function getTopThree(): Promise<Row[]> {
   try {
@@ -96,36 +84,28 @@ export default async function Image() {
                   display: "flex",
                   alignItems: "center",
                   gap: 28,
-                  fontSize: 56,
-                  fontWeight: 600,
+                  fontSize: 64,
+                  fontWeight: 700,
                   lineHeight: 1.05,
                   letterSpacing: -1,
                 }}
               >
-                <div
+                <span
                   style={{
                     display: "flex",
-                    alignItems: "flex-end",
-                    width: 160,
-                    color: "#f28c73",
-                    fontWeight: 700,
+                    fontSize: 80,
                     lineHeight: 1,
                   }}
                 >
-                  <span style={{ lineHeight: 1 }}>{i + 1}</span>
-                  <span
-                    style={{ fontSize: 32, marginLeft: 4, lineHeight: 1 }}
-                  >
-                    {ordinalSuffix(i + 1)}
-                  </span>
-                </div>
+                  {MEDAL_EMOJIS[i]}
+                </span>
                 <div
                   style={{
-                    color: "white",
+                    color: MEDAL_COLORS[i],
                     overflow: "hidden",
                     whiteSpace: "nowrap",
                     textOverflow: "ellipsis",
-                    maxWidth: 820,
+                    maxWidth: 880,
                   }}
                 >
                   {r.speaker}
@@ -162,7 +142,7 @@ export default async function Image() {
             borderTop: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <span>Who comes to Stanford next?</span>
+          <span>Help us decide! Who comes to Stanford next?</span>
           <span style={{ color: "#db4c3a" }}>→</span>
         </div>
       </div>
