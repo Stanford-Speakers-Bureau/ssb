@@ -9,7 +9,7 @@ export default function cloudflareLoader({
   width,
   quality,
 }: ImageLoaderProps) {
-  const params = [`width=${width}`];
+  const params = [`width=${width}`, `format=auto`];
   if (quality) {
     params.push(`quality=${quality}`);
   }
