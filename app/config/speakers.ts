@@ -342,7 +342,8 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Hauck Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/ba-ki-moon.jpg",
   },
   {
     slug: "ken-jeong",
@@ -351,7 +352,8 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Dinkelspiel Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/ken-jeong.jpg",
   },
   {
     slug: "andre-aciman",
@@ -360,7 +362,8 @@ export const SPEAKERS: Speaker[] = [
     month: "March",
     location: "Bishop Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/andre-aciman.JPG",
   },
   {
     slug: "glen-keane",
@@ -369,7 +372,8 @@ export const SPEAKERS: Speaker[] = [
     month: "February",
     location: "CEMEX Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/glen-keane.JPG",
   },
   {
     slug: "jennifer-lopez",
@@ -378,7 +382,8 @@ export const SPEAKERS: Speaker[] = [
     month: "January",
     location: "Memorial Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/j-lo.jpeg",
   },
   {
     slug: "alex-rodriguez",
@@ -398,7 +403,8 @@ export const SPEAKERS: Speaker[] = [
     month: "October",
     location: "CEMEX Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/scott-dikkers.jpeg",
   },
   {
     slug: "hasan-minhaj-2018",
@@ -407,7 +413,8 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Dinkelspiel Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/hasan-minhaj-old.JPG",
   },
   {
     slug: "brandon-stanton",
@@ -416,7 +423,8 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "CEMEX Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/brandon-stanton.JPG",
   },
   {
     slug: "sal-khan",
@@ -425,7 +433,8 @@ export const SPEAKERS: Speaker[] = [
     month: "January",
     location: "CEMEX Auditorium",
     title: "An Evening With Sal Khan: Education Reimagined",
-    bio: ""
+    bio: "",
+    image: "/speakers/sal-khan.JPG",
   },
 
   // 2017
@@ -436,7 +445,8 @@ export const SPEAKERS: Speaker[] = [
     month: "May",
     location: "Dinkelspiel Auditorium",
     title: "",
-    bio: ""
+    bio: "",
+    image: "/speakers/daveed-diggs.JPG",
   },
   {
     slug: "kamau-bell",
