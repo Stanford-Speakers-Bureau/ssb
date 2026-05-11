@@ -312,8 +312,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2020",
     month: "January",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: "",
+    title: "YouTuber and Educator",
+    bio: "Grant Sanderson is a renowned mathematics educator and creator of the popular YouTube channel 3Blue1Brown, which boasts over 8 million subscribers. He is best known for using high-quality animated visualizations (created with his own open-source library, Manim) to make complex topics in mathematics, physics, and computer science intuitive, visual, and accessible.",
   },
 
   // 2019
@@ -332,8 +332,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "May",
     location: "Bishop Auditorium",
-    title: "",
-    bio: "",
+    title: "Actress and Activist",
+    bio: 'Rose McGowan first rose to fame as a 1990s "it-girl" with standout roles in the cult classic The Doom Generation and the blockbuster horror film Scream. She achieved widespread commercial success in the 2000s by starring as Paige Matthews in the hit series Charmed and later in the high-concept action film Grindhouse. However, her career path shifted dramatically in 2017 when she became a primary whistleblower against Harvey Weinstein. This brave stance helped ignite the global #MeToo movement and led Time magazine to name her a "Silence Breaker" for their Person of the Year. Since then, she has transitioned from acting to full-time activism and writing, chronicling her journey in the memoir Brave. Today, she remains a vocal advocate for systemic change, balancing her past as a Hollywood star with her current life as an influential social critic.',
   },
   {
     slug: "ban-ki-moon",
@@ -342,7 +342,7 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Hauck Auditorium",
     title: "Former Secretary-General of the United Nations",
-    bio: "",
+    bio: "Ban Ki-moon (반기문) is a South Korean politician and diplomat who served as the eighth Secretary-General of the United Nations (and the first Asian Secretary-General) between 2007 and 2016. Prior to his appointment as secretary-general, Ban was the South Korean minister of foreign affairs and trade between 2004 and 2006. Ban was initially considered to be a long shot for the office of Secretary-General of the United Nations; he began to campaign for the office in February 2006. As the foreign minister of South Korea, he was able to travel to all the countries on the United Nations Security Council, a manoeuvre that subsequently turned him into the campaign's front-runner.",
     image: "/speakers/ba-ki-moon.jpg",
   },
   {
@@ -352,7 +352,7 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Dinkelspiel Auditorium",
     title: "Actor and Comedian",
-    bio: "",
+    bio: "Ken Jeong is an American stand-up comedian and actor. He rose to prominence for playing Leslie Chow in The Hangover film series (2009–2013) and Ben Chang in the NBC sitcom Community (2009–2015). He created, wrote and produced the ABC sitcom Dr. Ken (2015–2017), in which he portrays the titular character, and he has appeared in the films Knocked Up (2007), Role Models (2008), Furry Vengeance (2010), The Duff (2015), Ride Along 2 (2016), Crazy Rich Asians (2018), Scoob! (2020), Tom & Jerry (2021), and KPop Demon Hunters (2025). He is a licensed physician in California but has since stopped practicing in favor of his acting career. He appears as a panelist on the American version of the singing competition show The Masked Singer and appeared on the first series of the British version. He also serves as the host of I Can See Your Voice.",
     image: "/speakers/ken-jeong.jpg",
   },
   {
@@ -362,7 +362,7 @@ export const SPEAKERS: Speaker[] = [
     month: "March",
     location: "Bishop Auditorium",
     title: "Author and Novelist",
-    bio: "",
+    bio: "André Aciman is an Italian-American author and current professor at the City University of New York. He is an expert in the history of literary theory and the works of Marcel Proust, where he has taught French literature and creative writing at Princeton, NYU, and Bard College. He is known for his novel Call Me by Your Name. The novel won a Lambda Literary Award and was made into an Academy Award-winning film. Aciman also received a Whiting Award for his memoir, Out of Egypt. In interviews, he has said that his novel Eight White Nights is his best work.",
     image: "/speakers/andre-aciman.JPG",
   },
   {
@@ -372,7 +372,7 @@ export const SPEAKERS: Speaker[] = [
     month: "February",
     location: "CEMEX Auditorium",
     title: "Animator and Director",
-    bio: "",
+    bio: "Glen Keane is an American animator and director. He is best known for his work on Disney films such as The Little Mermaid, Aladdin, and Tangled. He is also known for his work on the television series The Simpsons and Futurama. He is a two-time Academy Award winner for Best Animated Feature for his work on The Little Mermaid and Tangled.",
     image: "/speakers/glen-keane.JPG",
   },
   {
@@ -382,7 +382,7 @@ export const SPEAKERS: Speaker[] = [
     month: "January",
     location: "Memorial Auditorium",
     title: "Actor and Singer",
-    bio: "",
+    bio: 'Jennifer Lynn Lopez (born July 24, 1969), nicknamed "J. Lo," is a globally influential American singer, actress, dancer, and businesswoman who broke barriers as one of the highest-paid Latina actresses in Hollywood history. Rising from a "Fly Girl" dancer on In Living Color to stardom, she earned critical acclaim for her role in Selena (1997) and cemented her pop icon status with hits like "If You Had My Love" and "Waiting for Tonight".She achieved the rare feat of having a number-one movie and album simultaneously in 2001 with The Wedding Planner and her album J. Lo. Known for her versatility, she has starred in hit romantic comedies and films such as Monster-in-Law, Hustlers (2019), and The Mother (2023), while delivering Billboard hits including "Jenny from the Block" and "On the Floor".',
     image: "/speakers/j-lo.jpeg",
   },
   {
@@ -392,7 +392,7 @@ export const SPEAKERS: Speaker[] = [
     month: "January",
     location: "Memorial Auditorium",
     title: "Former Major League Baseball Player",
-    bio: "",
+    bio: "Alex Rodriguez, nicknamed \"A-Rod\" is an American former professional baseball shortstop and third baseman and current businessman. Rodriguez played 22 seasons in Major League Baseball (MLB) for the Seattle Mariners (1994–2000), Texas Rangers (2001–2003), and New York Yankees (2004–2013, 2015–2016). Rodriguez is the chairman and chief executive officer of A-Rod Corp as well as the chairman of Presidente beer. He owns a controlling interest in the National Basketball Association's Minnesota Timberwolves with Marc Lore. Rodriguez began his professional baseball career as one of the sport's most highly touted prospects and is considered one of the greatest baseball players of all time.",
     image: "/speakers/a-rod.jpeg",
   },
 
@@ -404,7 +404,7 @@ export const SPEAKERS: Speaker[] = [
     month: "October",
     location: "CEMEX Auditorium",
     title: "Founder of The Onion",
-    bio: "",
+    bio: "Scott Dikkers is the founder of The Onion, a satirical newspaper that has been published since 1988. He was the publication's longest-serving editor-in-chief, holding the position from 1988–1999 and again from 2005–2008. He also served as the satire newspaper's General Manager and Vice President of Creative Development from 2012–2014.",
     image: "/speakers/scott-dikkers.jpeg",
   },
   {
@@ -424,7 +424,7 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "CEMEX Auditorium",
     title: "Founder of Humans of New York",
-    bio: "",
+    bio: 'Brandon Stanton (born March 1, 1984) is an American author, photographer, and blogger. He is the author of Humans of New York (HONY), a photoblog and book. He was named to Time magazine\'s "30 Under 30 People Changing the World" list. Since 2010, Stanton has taken hundreds of portraits of people living and working primarily in New York City, accompanied by bits of conversations about their lives. He has also traveled outside of the United States, capturing people and their lives in more than 20 countries, including Iran, Iraq, Uganda, Democratic Republic of the Congo, Ukraine, Vietnam, and Mexico.',
     image: "/speakers/brandon-stanton.JPG",
   },
   {
@@ -446,7 +446,7 @@ export const SPEAKERS: Speaker[] = [
     month: "May",
     location: "Dinkelspiel Auditorium",
     title: "Actor, Writer, and Producer",
-    bio: "",
+    bio: "Daveed Diggs is an acclaimed American actor, rapper, and singer-songwriter best known for originating the dual roles of Marquis de Lafayette and Thomas Jefferson in Broadway's Hamilton (2015), winning a 2016 Tony Award and Grammy. A vocalist for experimental hip hop group Clipping, his career spans film, television, and music, including starring in Snowpiercer, Blindspotting, and Disney's live-action The Little Mermaid.",
     image: "/speakers/daveed-diggs.JPG",
   },
   {
@@ -456,7 +456,7 @@ export const SPEAKERS: Speaker[] = [
     month: "February",
     location: "CEMEX Auditorium",
     title: "Comedian, Writer, and Actor",
-    bio: "",
+    bio: "Walter Kamau Bell is an American stand-up comic and television host. He hosted the CNN series United Shades of America from 2016 to 2022, and hosted FXX television series Totally Biased with W. Kamau Bell from 2012 to 2013. He is the host of the live radio show and podcast Kamau Right Now on KALW, and also co-hosts the podcasts Denzel Washington Is the Greatest Actor of All Time Period with comedian Kevin Avery and Politically Re-Active with Hari Kondabolu. In 2022, Bell directed and produced the documentary miniseries We Need to Talk About Cosby.",
   },
   {
     slug: "anthony-doerr",
@@ -477,7 +477,7 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Dinkelspiel Auditorium",
     title: "Former Poet Laureate of the United States",
-    bio: "",
+    bio: "William James Collins is an American poet who served as the Poet Laureate of the United States from 2001 to 2003. He was a Distinguished Professor at Lehman College of the City University of New York, retiring in 2016. Collins was recognized as a Literary Lion of the New York Public Library (1992) and selected as the New York State Poet for 2004 through 2006. In 2016, Collins was inducted into the American Academy of Arts and Letters. As of 2020, he is a teacher in the MFA program at Stony Brook Southampton.",
   },
   {
     slug: "aimee-mann",
@@ -486,7 +486,7 @@ export const SPEAKERS: Speaker[] = [
     month: "April",
     location: "Dinkelspiel Auditorium",
     title: "Singer-Songwriter",
-    bio: "",
+    bio: "Aimee Mann is a highly acclaimed American singer-songwriter and bassist known for her sharp, literate lyrics and a career spanning over four decades. She first rose to fame in the 1980s as the frontwoman of the New Wave band 'Til Tuesday, who had a massive hit with 'Voices Carry'. Since going solo in 1993, she has built a reputation as one of the best living songwriters, earning multiple Grammy Awards and an Oscar nomination.",
   },
   {
     slug: "tony-schwartz",
@@ -495,7 +495,7 @@ export const SPEAKERS: Speaker[] = [
     month: "November",
     location: "Dinkelspiel Auditorium",
     title: "Author and Journalist",
-    bio: "",
+    bio: "Tony Schwartz is a renowned journalist, author, and CEO of The Energy Project, recognized for his work on sustainable high performance and workplace culture. A former reporter for The New York Times and writer for Esquire and New York Magazine, he is best known as the ghostwriter of Donald Trump’s The Art of the Deal (1987) and co-author of the bestseller The Power of Full Engagement.",
   },
 ];
 
