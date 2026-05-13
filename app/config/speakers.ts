@@ -225,7 +225,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Jimmy O. Yang",
     year: "2022",
     title: "Stand-up Comedian",
-    bio: 'Jimmy O. Yang is a Hong Kong-born American actor, stand-up comedian, and writer. He is best known for his portrayal of Jian-Yang on the HBO series "Silicon Valley." Additionally, Yang has appeared in movies such as "Crazy Rich Asians," "The Internship," and "Fantasy Island." He is also a published author, having written the memoir " How to American: An Immigrant\'s Guide to Disappointing Your Parents." With his multifaceted talent and diverse range of roles, Jimmy O. Yang has established himself as a prominent figure in the entertainment industry.',
+    bio: 'Jimmy O. Yang is a Hong Kong-born American actor, stand-up comedian, and writer. He is best known for his portrayal of Jian-Yang on the HBO series "Silicon Valley." Additionally, Yang has appeared in movies such as "Crazy Rich Asians," "The Internship," and "Fantasy Island." He is also a published author, having written the memoir "How to American: An Immigrant\'s Guide to Disappointing Your Parents." With his multifaceted talent and diverse range of roles, Jimmy O. Yang has established himself as a prominent figure in the entertainment industry.',
   },
   {
     slug: "bill-nye",
