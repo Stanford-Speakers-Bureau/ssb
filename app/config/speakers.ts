@@ -77,7 +77,7 @@ export const SPEAKERS: Speaker[] = [
     year: "2026",
     month: "January",
     location: "Memorial Auditorium",
-    title: "Comedian, Writer, and Former Host of \"The Patriot Act\"",
+    title: 'Comedian, Writer, and Former Host of "The Patriot Act"',
     bio: "Hasan Minhaj is a two-time Peabody Award-Winning comedian best known for his breakout Netflix special Homecoming King and his critically acclaimed, political satire show Patriot Act With Hasan Minhaj for Netflix which won a Peabody, an Emmy, and a Television Academy Honor. His second one-hour comedy special The King's Jester premiered on Netflix in 2022. In October 2024, Hasan released his third comedy special on Netflix, titled Off With His Head. On Hasan's ongoing digital series and podcast, Hasan Minhaj Doesn't Know, he sits down with the biggest names in politics, culture, and tech with questions that are as thought provoking as they are absurd. In the debut episode, Hasan spoke with Senator Elizabeth Warren, and he's also welcomed John M. Chu, JJ Redick, Bernie Sanders, and Stacey Abrams, among many others",
     image: "/speakers/hasan-minhaj-web.jpg",
     homeFeaturedQuote:
@@ -129,7 +129,7 @@ export const SPEAKERS: Speaker[] = [
     year: "2025",
     location: "CEMEX Auditorium",
     title: "SNL Cast Member",
-    bio: "Mikey Day is an American comedian, writer, and actor, best known for his work as a cast member on Saturday Night Live (SNL). He joined the show as a writer in 2013 and became a featured player in 2016. Day is known for his versatile impressions and memorable original characters, including his recurring roles as a game show host and a character in the \"Haunted Elevator\" sketches with Tom Hanks. Before SNL, he was a writer and performer on shows like Maya & Marty and Wild 'N Out.",
+    bio: 'Mikey Day is an American comedian, writer, and actor, best known for his work as a cast member on Saturday Night Live (SNL). He joined the show as a writer in 2013 and became a featured player in 2016. Day is known for his versatile impressions and memorable original characters, including his recurring roles as a game show host and a character in the "Haunted Elevator" sketches with Tom Hanks. Before SNL, he was a writer and performer on shows like Maya & Marty and Wild \'N Out.',
   },
 
   // 2024
@@ -145,7 +145,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Richard Sherman '10",
     year: "2024",
     title: "NFL Player",
-    bio: "Richard Sherman is a former NFL cornerback, widely recognized for his personality and exceptional skill on the field. Sherman gained prominence as a key player for the Seattle Seahawks during their Super Bowl-winning season in 2013, becoming a cornerstone of the \"Legion of Boom\" defense. Known for his intelligence and leadership, he was a fifth-round pick from Stanford who defied the odds to become one of the top players in the league. After retiring from football, Sherman transitioned into broadcasting, becoming an analyst for Amazon's Thursday Night Football in 2022. He is also an advocate for social justice and education reform.",
+    bio: 'Richard Sherman is a former NFL cornerback, widely recognized for his personality and exceptional skill on the field. Sherman gained prominence as a key player for the Seattle Seahawks during their Super Bowl-winning season in 2013, becoming a cornerstone of the "Legion of Boom" defense. Known for his intelligence and leadership, he was a fifth-round pick from Stanford who defied the odds to become one of the top players in the league. After retiring from football, Sherman transitioned into broadcasting, becoming an analyst for Amazon\'s Thursday Night Football in 2022. He is also an advocate for social justice and education reform.',
   },
   {
     slug: "john-green",
@@ -165,7 +165,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Phil Hellmuth",
     year: "2024",
     title: "17x World Poker Champion",
-    bio: "Phil Hellmuth is known by many as the best tournament poker player ever. He has captivated fans with his amazing poker skill, and his antics on and off the table. Hellmuth is celebrated by many for his \"Poker Brat\" personality, with trash talk and flash a key part of his persona. He has won over $30,000,000 in tournament poker, and is a Palo Alto resident. After his talk, Mr. Hellmuth played a game of poker with students in SSB and the Stanford Poker Club.",
+    bio: 'Phil Hellmuth is known by many as the best tournament poker player ever. He has captivated fans with his amazing poker skill, and his antics on and off the table. Hellmuth is celebrated by many for his "Poker Brat" personality, with trash talk and flash a key part of his persona. He has won over $30,000,000 in tournament poker, and is a Palo Alto resident. After his talk, Mr. Hellmuth played a game of poker with students in SSB and the Stanford Poker Club.',
   },
 
   // 2023
@@ -181,7 +181,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Stuart Weitzman",
     year: "2023",
     title: "Designer",
-    bio: "Stuart Weitzman is a major shoe designer, who is best known for the \"million dollar\" shoes he has made for Oscar nominees and red carpet appearances. He has designed shoes for Beyonce, Taylor Swift, and other top talent. Weitzman is well-known for the unique materials in his shoes, including cork, vinyl, lucite, wallpaper, and 24-karat gold. His shoes are sold in over 70 countries. Mr. Weitzman also collects stamps, and is known for his purchase of the British Guiana 1c magenta, or the world's most famous stamp.",
+    bio: 'Stuart Weitzman is a major shoe designer, who is best known for the "million dollar" shoes he has made for Oscar nominees and red carpet appearances. He has designed shoes for Beyonce, Taylor Swift, and other top talent. Weitzman is well-known for the unique materials in his shoes, including cork, vinyl, lucite, wallpaper, and 24-karat gold. His shoes are sold in over 70 countries. Mr. Weitzman also collects stamps, and is known for his purchase of the British Guiana 1c magenta, or the world\'s most famous stamp.',
   },
   {
     slug: "kal-penn",
@@ -202,7 +202,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Preacher Lawson",
     year: "2023",
     title: "Stand-Up Comedian",
-    bio: "Preacher Lawson is an American comedian and actor from Portland, Oregon. He gained national recognition as a finalist on the 12th season of \"America's Got Talent.\" Lawson has since performed on numerous TV shows, including \"The Late Late Show with James Corden,\" \"Last Call with Carson Daly,\" and \"Conan.\" He has also acted in movies and TV shows, including a recurring role on the sitcom \"Connecting...\". Known for his high-energy, observational comedy, Lawson has become a rising star in the world of comedy, captivating audiences with his dynamic stage presence and sharp humor.",
+    bio: 'Preacher Lawson is an American comedian and actor from Portland, Oregon. He gained national recognition as a finalist on the 12th season of "America\'s Got Talent." Lawson has since performed on numerous TV shows, including "The Late Late Show with James Corden," "Last Call with Carson Daly," and "Conan." He has also acted in movies and TV shows, including a recurring role on the sitcom "Connecting...". Known for his high-energy, observational comedy, Lawson has become a rising star in the world of comedy, captivating audiences with his dynamic stage presence and sharp humor.',
   },
 
   // 2022
@@ -211,7 +211,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Jennette McCurdy",
     year: "2022",
     title: "Author and Actress",
-    bio: "New York Times Bestselling Author Jennette McCurdy has been showcasing her multitude of talents for over 20 years, with more than 100 credits under her belt between film and TV. Most recently, Jennette has chronicled the unflinching details surrounding her life and rise to fame in her newly released memoir \"I'm Glad My Mom Died\", which stayed at #1 on the NYT bestseller list for eight consecutive weeks. In addition to her impressive acting resume, Jennette is an accomplished creator, and has been honored as part of the 2022 TIME100 Next list.",
+    bio: 'New York Times Bestselling Author Jennette McCurdy has been showcasing her multitude of talents for over 20 years, with more than 100 credits under her belt between film and TV. Most recently, Jennette has chronicled the unflinching details surrounding her life and rise to fame in her newly released memoir "I\'m Glad My Mom Died", which stayed at #1 on the NYT bestseller list for eight consecutive weeks. In addition to her impressive acting resume, Jennette is an accomplished creator, and has been honored as part of the 2022 TIME100 Next list.',
   },
   {
     slug: "margaret-atwood",
@@ -225,7 +225,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Jimmy O. Yang",
     year: "2022",
     title: "Stand-up Comedian",
-    bio: "Jimmy O. Yang is a Hong Kong-born American actor, stand-up comedian, and writer. He is best known for his portrayal of Jian-Yang on the HBO series \"Silicon Valley.\" Additionally, Yang has appeared in movies such as \"Crazy Rich Asians,\" \"The Internship,\" and \"Fantasy Island.\" He is also a published author, having written the memoir \" How to American: An Immigrant's Guide to Disappointing Your Parents.\" With his multifaceted talent and diverse range of roles, Jimmy O. Yang has established himself as a prominent figure in the entertainment industry.",
+    bio: 'Jimmy O. Yang is a Hong Kong-born American actor, stand-up comedian, and writer. He is best known for his portrayal of Jian-Yang on the HBO series "Silicon Valley." Additionally, Yang has appeared in movies such as "Crazy Rich Asians," "The Internship," and "Fantasy Island." He is also a published author, having written the memoir "How to American: An Immigrant\'s Guide to Disappointing Your Parents." With his multifaceted talent and diverse range of roles, Jimmy O. Yang has established himself as a prominent figure in the entertainment industry.',
   },
   {
     slug: "bill-nye",
@@ -267,7 +267,7 @@ export const SPEAKERS: Speaker[] = [
     month: "November",
     location: "CEMEX Auditorium",
     title: "Comedian, Writer, and Filmmaker",
-    bio: "Jaboukie Young-White is a comedian and filmmaker from Chicago who was previously a correspondent on \"The Daily Show with Trevor Noah.\" He has performed stand up twice on \"The Tonight Show Starring Jimmy Fallon\" and recently debuted his half-hour for \"Comedy Central Stand-Up Presents.\" Previously, Jaboukie was a staff writer on Netflix's \" American Vandal\" and the animated series \"Big Mouth.\"",
+    bio: 'Jaboukie Young-White is a comedian and filmmaker from Chicago who was previously a correspondent on "The Daily Show with Trevor Noah." He has performed stand up twice on "The Tonight Show Starring Jimmy Fallon" and recently debuted his half-hour for "Comedy Central Stand-Up Presents." Previously, Jaboukie was a staff writer on Netflix\'s " American Vandal" and the animated series "Big Mouth."',
   },
   {
     slug: "sebastian-stan",
@@ -281,7 +281,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Jonathan Van Ness",
     year: "2021",
     title: "Television Personality",
-    bio: "Jonathan Van Ness is an Emmy-nominated television personality, podcaster, and hairstylist to the stars. They can be seen starring on Netflix's Emmy Award-winning reboot series \"Queer Eye,\" where they shine as the show's groomer, hair stylist, and self-care advocate. In addition to \"Queer Eye,\" JVN starred on the Emmy-nominated series \"Gay of Thrones,\" (Funny or Die) a witty social commentary series recapping HBO's \"Game of Thrones.\" After a worldwide comedy tour in 2019, they published \"Over the Top\" their first book and memoir.",
+    bio: 'Jonathan Van Ness is an Emmy-nominated television personality, podcaster, and hairstylist to the stars. They can be seen starring on Netflix\'s Emmy Award-winning reboot series "Queer Eye," where they shine as the show\'s groomer, hair stylist, and self-care advocate. In addition to "Queer Eye," JVN starred on the Emmy-nominated series "Gay of Thrones," (Funny or Die) a witty social commentary series recapping HBO\'s "Game of Thrones." After a worldwide comedy tour in 2019, they published "Over the Top" their first book and memoir.',
   },
   {
     slug: "noam-chomsky",
@@ -302,7 +302,7 @@ export const SPEAKERS: Speaker[] = [
     name: "Ronny Chieng",
     year: "2021",
     title: "Actor and Comedian",
-    bio: "Ronny Chieng is a Malaysian actor and comedian better known for his reports in Trevor Noah's The Daily Show. Previously, he has appeared in international blockbusters such as Crazy Rich Asians and Godzilla vs. Kong. In 2019, Ronny starred in his very own Netflix stand up special titled \"Asian Comedian Destroys America!\"",
+    bio: 'Ronny Chieng is a Malaysian actor and comedian better known for his reports in Trevor Noah\'s The Daily Show. Previously, he has appeared in international blockbusters such as Crazy Rich Asians and Godzilla vs. Kong. In 2019, Ronny starred in his very own Netflix stand up special titled "Asian Comedian Destroys America!"',
   },
 
   // 2020
@@ -312,8 +312,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2020",
     month: "January",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: ""
+    title: "YouTuber and Educator",
+    bio: "Grant Sanderson is a renowned mathematics educator and creator of the popular YouTube channel 3Blue1Brown, which boasts over 8 million subscribers. He is best known for using high-quality animated visualizations (created with his own open-source library, Manim) to make complex topics in mathematics, physics, and computer science intuitive, visual, and accessible.",
   },
 
   // 2019
@@ -324,7 +324,7 @@ export const SPEAKERS: Speaker[] = [
     month: "November",
     location: "CEMEX Auditorium",
     title: "",
-    bio: ""
+    bio: "",
   },
   {
     slug: "rose-mcgowan",
@@ -332,8 +332,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "May",
     location: "Bishop Auditorium",
-    title: "",
-    bio: ""
+    title: "Actress and Activist",
+    bio: 'Rose McGowan first rose to fame as a 1990s "it-girl" with standout roles in the cult classic The Doom Generation and the blockbuster horror film Scream. She achieved widespread commercial success in the 2000s by starring as Paige Matthews in the hit series Charmed and later in the high-concept action film Grindhouse. However, her career path shifted dramatically in 2017 when she became a primary whistleblower against Harvey Weinstein. This brave stance helped ignite the global #MeToo movement and led Time magazine to name her a "Silence Breaker" for their Person of the Year. Since then, she has transitioned from acting to full-time activism and writing, chronicling her journey in the memoir Brave. Today, she remains a vocal advocate for systemic change, balancing her past as a Hollywood star with her current life as an influential social critic.',
   },
   {
     slug: "ban-ki-moon",
@@ -341,8 +341,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "April",
     location: "Hauck Auditorium",
-    title: "",
-    bio: ""
+    title: "Former Secretary-General of the United Nations",
+    bio: "Ban Ki-moon (반기문) is a South Korean politician and diplomat who served as the eighth Secretary-General of the United Nations (and the first Asian Secretary-General) between 2007 and 2016. Prior to his appointment as secretary-general, Ban was the South Korean minister of foreign affairs and trade between 2004 and 2006. Ban was initially considered to be a long shot for the office of Secretary-General of the United Nations; he began to campaign for the office in February 2006. As the foreign minister of South Korea, he was able to travel to all the countries on the United Nations Security Council, a manoeuvre that subsequently turned him into the campaign's front-runner.",
+    image: "/speakers/ba-ki-moon.jpg",
   },
   {
     slug: "ken-jeong",
@@ -350,8 +351,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "April",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: "Actor and Comedian",
+    bio: "Ken Jeong is an American stand-up comedian and actor. He rose to prominence for playing Leslie Chow in The Hangover film series (2009–2013) and Ben Chang in the NBC sitcom Community (2009–2015). He created, wrote and produced the ABC sitcom Dr. Ken (2015–2017), in which he portrays the titular character, and he has appeared in the films Knocked Up (2007), Role Models (2008), Furry Vengeance (2010), The Duff (2015), Ride Along 2 (2016), Crazy Rich Asians (2018), Scoob! (2020), Tom & Jerry (2021), and KPop Demon Hunters (2025). He is a licensed physician in California but has since stopped practicing in favor of his acting career. He appears as a panelist on the American version of the singing competition show The Masked Singer and appeared on the first series of the British version. He also serves as the host of I Can See Your Voice.",
+    image: "/speakers/ken-jeong.jpg",
   },
   {
     slug: "andre-aciman",
@@ -359,8 +361,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "March",
     location: "Bishop Auditorium",
-    title: "",
-    bio: ""
+    title: "Author and Novelist",
+    bio: "André Aciman is an Italian-American author and current professor at the City University of New York. He is an expert in the history of literary theory and the works of Marcel Proust, where he has taught French literature and creative writing at Princeton, NYU, and Bard College. He is known for his novel Call Me by Your Name. The novel won a Lambda Literary Award and was made into an Academy Award-winning film. Aciman also received a Whiting Award for his memoir, Out of Egypt. In interviews, he has said that his novel Eight White Nights is his best work.",
+    image: "/speakers/andre-aciman.JPG",
   },
   {
     slug: "glen-keane",
@@ -368,8 +371,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "February",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: ""
+    title: "Animator and Director",
+    bio: "Glen Keane is an American animator and director. He is best known for his work on Disney films such as The Little Mermaid, Aladdin, and Tangled. He is also known for his work on the television series The Simpsons and Futurama. He is a two-time Academy Award winner for Best Animated Feature for his work on The Little Mermaid and Tangled.",
+    image: "/speakers/glen-keane.JPG",
   },
   {
     slug: "jennifer-lopez",
@@ -377,8 +381,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "January",
     location: "Memorial Auditorium",
-    title: "",
-    bio: ""
+    title: "Actor and Singer",
+    bio: 'Jennifer Lynn Lopez (born July 24, 1969), nicknamed "J. Lo," is a globally influential American singer, actress, dancer, and businesswoman who broke barriers as one of the highest-paid Latina actresses in Hollywood history. Rising from a "Fly Girl" dancer on In Living Color to stardom, she earned critical acclaim for her role in Selena (1997) and cemented her pop icon status with hits like "If You Had My Love" and "Waiting for Tonight". She achieved the rare feat of having a number-one movie and album simultaneously in 2001 with The Wedding Planner and her album J. Lo. Known for her versatility, she has starred in hit romantic comedies and films such as Monster-in-Law, Hustlers (2019), and The Mother (2023), while delivering Billboard hits including "Jenny from the Block" and "On the Floor".',
+    image: "/speakers/j-lo.jpeg",
   },
   {
     slug: "alex-rodriguez",
@@ -386,8 +391,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2019",
     month: "January",
     location: "Memorial Auditorium",
-    title: "",
-    bio: ""
+    title: "Former Major League Baseball Player",
+    bio: "Alex Rodriguez, nicknamed \"A-Rod\" is an American former professional baseball shortstop and third baseman and current businessman. Rodriguez played 22 seasons in Major League Baseball (MLB) for the Seattle Mariners (1994–2000), Texas Rangers (2001–2003), and New York Yankees (2004–2013, 2015–2016). Rodriguez is the chairman and chief executive officer of A-Rod Corp as well as the chairman of Presidente beer. He owns a controlling interest in the National Basketball Association's Minnesota Timberwolves with Marc Lore. Rodriguez began his professional baseball career as one of the sport's most highly touted prospects and is considered one of the greatest baseball players of all time.",
+    image: "/speakers/a-rod.jpeg",
   },
 
   // 2018
@@ -397,8 +403,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2018",
     month: "October",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: ""
+    title: "Founder of The Onion",
+    bio: "Scott Dikkers is the founder of The Onion, a satirical newspaper that has been published since 1988. He was the publication's longest-serving editor-in-chief, holding the position from 1988–1999 and again from 2005–2008. He also served as the satire newspaper's General Manager and Vice President of Creative Development from 2012–2014.",
+    image: "/speakers/scott-dikkers.jpeg",
   },
   {
     slug: "hasan-minhaj-2018",
@@ -406,8 +413,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2018",
     month: "April",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: 'Comedian, Writer, and Former Host of "The Patriot Act"',
+    bio: "Hasan Minhaj is a two-time Peabody Award-Winning comedian best known for his breakout Netflix special Homecoming King and his critically acclaimed, political satire show Patriot Act With Hasan Minhaj for Netflix which won a Peabody, an Emmy, and a Television Academy Honor. His second one-hour comedy special The King's Jester premiered on Netflix in 2022. In October 2024, Hasan released his third comedy special on Netflix, titled Off With His Head. On Hasan's ongoing digital series and podcast, Hasan Minhaj Doesn't Know, he sits down with the biggest names in politics, culture, and tech with questions that are as thought provoking as they are absurd. In the debut episode, Hasan spoke with Senator Elizabeth Warren, and he's also welcomed John M. Chu, JJ Redick, Bernie Sanders, and Stacey Abrams, among many others",
+    image: "/speakers/hasan-minhaj-old.JPG",
   },
   {
     slug: "brandon-stanton",
@@ -415,8 +423,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2018",
     month: "April",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: ""
+    title: "Founder of Humans of New York",
+    bio: 'Brandon Stanton (born March 1, 1984) is an American author, photographer, and blogger. He is the author of Humans of New York (HONY), a photoblog and book. He was named to Time magazine\'s "30 Under 30 People Changing the World" list. Since 2010, Stanton has taken hundreds of portraits of people living and working primarily in New York City, accompanied by bits of conversations about their lives. He has also traveled outside of the United States, capturing people and their lives in more than 20 countries, including Iran, Iraq, Uganda, Democratic Republic of the Congo, Ukraine, Vietnam, and Mexico.',
+    image: "/speakers/brandon-stanton.JPG",
   },
   {
     slug: "sal-khan",
@@ -424,8 +433,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2018",
     month: "January",
     location: "CEMEX Auditorium",
-    title: "An Evening With Sal Khan: Education Reimagined",
-    bio: ""
+    title: "Founder of Khan Academy",
+    bio: "Sal Khan is the founder of Khan Academy, a non-profit organization that provides free online education to anyone, anywhere. He is also the author of the book The One World Schoolhouse: Education Reimagined, which explores the future of education and how it can be used to transform lives and communities.",
+    image: "/speakers/sal-khan.JPG",
   },
 
   // 2017
@@ -435,8 +445,9 @@ export const SPEAKERS: Speaker[] = [
     year: "2017",
     month: "May",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: "Actor, Writer, and Producer",
+    bio: "Daveed Diggs is an acclaimed American actor, rapper, and singer-songwriter best known for originating the dual roles of Marquis de Lafayette and Thomas Jefferson in Broadway's Hamilton (2015), winning a 2016 Tony Award and Grammy. A vocalist for experimental hip hop group Clipping, his career spans film, television, and music, including starring in Snowpiercer, Blindspotting, and Disney's live-action The Little Mermaid.",
+    image: "/speakers/daveed-diggs.JPG",
   },
   {
     slug: "kamau-bell",
@@ -444,8 +455,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2017",
     month: "February",
     location: "CEMEX Auditorium",
-    title: "",
-    bio: ""
+    title: "Comedian, Writer, and Actor",
+    bio: "Walter Kamau Bell is an American stand-up comic and television host. He hosted the CNN series United Shades of America from 2016 to 2022, and hosted FXX television series Totally Biased with W. Kamau Bell from 2012 to 2013. He is the host of the live radio show and podcast Kamau Right Now on KALW, and also co-hosts the podcasts Denzel Washington Is the Greatest Actor of All Time Period with comedian Kevin Avery and Politically Re-Active with Hari Kondabolu. In 2022, Bell directed and produced the documentary miniseries We Need to Talk About Cosby.",
   },
   {
     slug: "anthony-doerr",
@@ -454,7 +465,7 @@ export const SPEAKERS: Speaker[] = [
     month: "February",
     location: "Cemex Auditorium",
     title: "The Beautiful Art of Failure",
-    bio: ""
+    bio: "Anthony Doerr is an American author and journalist. He is the author of the novel The Beautiful Art of Failure, which was published in 2017. The book is a memoir of his life and career, and explores the themes of failure and success.",
   },
 
   // 2016
@@ -465,8 +476,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2016",
     month: "April",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: "Former Poet Laureate of the United States",
+    bio: "William James Collins is an American poet who served as the Poet Laureate of the United States from 2001 to 2003. He was a Distinguished Professor at Lehman College of the City University of New York, retiring in 2016. Collins was recognized as a Literary Lion of the New York Public Library (1992) and selected as the New York State Poet for 2004 through 2006. In 2016, Collins was inducted into the American Academy of Arts and Letters. As of 2020, he is a teacher in the MFA program at Stony Brook Southampton.",
   },
   {
     slug: "aimee-mann",
@@ -474,8 +485,8 @@ export const SPEAKERS: Speaker[] = [
     year: "2016",
     month: "April",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: "Singer-Songwriter",
+    bio: "Aimee Mann is a highly acclaimed American singer-songwriter and bassist known for her sharp, literate lyrics and a career spanning over four decades. She first rose to fame in the 1980s as the frontwoman of the New Wave band 'Til Tuesday, who had a massive hit with 'Voices Carry'. Since going solo in 1993, she has built a reputation as one of the best living songwriters, earning multiple Grammy Awards and an Oscar nomination.",
   },
   {
     slug: "tony-schwartz",
@@ -483,20 +494,20 @@ export const SPEAKERS: Speaker[] = [
     year: "2016",
     month: "November",
     location: "Dinkelspiel Auditorium",
-    title: "",
-    bio: ""
+    title: "Author and Journalist",
+    bio: "Tony Schwartz is a renowned journalist, author, and CEO of The Energy Project, recognized for his work on sustainable high performance and workplace culture. A former reporter for The New York Times and writer for Esquire and New York Magazine, he is best known as the ghostwriter of Donald Trump’s The Art of the Deal (1987) and co-author of the bestseller The Power of Full Engagement.",
   },
 ];
 
 // Derived views — everything below is computed from SPEAKERS above.
 
-export const FEATURED_HOME_SPEAKERS: Speaker[] = SPEAKERS
-  .filter((s) => typeof s.featuredOnHome === "number")
-  .sort((a, b) => (a.featuredOnHome ?? 0) - (b.featuredOnHome ?? 0));
+export const FEATURED_HOME_SPEAKERS: Speaker[] = SPEAKERS.filter(
+  (s) => typeof s.featuredOnHome === "number",
+).sort((a, b) => (a.featuredOnHome ?? 0) - (b.featuredOnHome ?? 0));
 
-export const SPOTLIGHT_SPEAKERS: Speaker[] = SPEAKERS
-  .filter((s) => typeof s.spotlightInArchive === "number")
-  .sort((a, b) => (a.spotlightInArchive ?? 0) - (b.spotlightInArchive ?? 0));
+export const SPOTLIGHT_SPEAKERS: Speaker[] = SPEAKERS.filter(
+  (s) => typeof s.spotlightInArchive === "number",
+).sort((a, b) => (a.spotlightInArchive ?? 0) - (b.spotlightInArchive ?? 0));
 
 export const SPEAKER_IMAGES: Record<string, string> = Object.fromEntries(
   SPEAKERS.filter((s) => s.image).map((s) => [s.slug, s.image as string]),
