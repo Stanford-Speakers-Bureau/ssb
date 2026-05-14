@@ -23,6 +23,35 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+/**
+ * Canonicalize an email for dedup. Mirrors the SQL `canonicalize_email`
+ * function in the migrations: strip +suffix for all domains, strip dots from
+ * the local part for gmail.com / googlemail.com only. Stanford uses Google
+ * Workspace but does NOT honor dot-equivalence, so it's intentionally excluded.
+ */
+export function canonicalizeEmail(email: string): string {
+  const trimmed = normalizeEmail(email);
+  if (!trimmed) return "";
+
+  const atPos = trimmed.indexOf("@");
+  if (atPos === -1) return trimmed;
+
+  let localPart = trimmed.slice(0, atPos);
+  const domain = trimmed.slice(atPos + 1);
+
+  const plusPos = localPart.indexOf("+");
+  if (plusPos > 0) {
+    localPart = localPart.slice(0, plusPos);
+  }
+
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    localPart = localPart.replace(/\./g, "");
+  }
+
+  if (!localPart) return trimmed;
+  return `${localPart}@${domain}`;
+}
+
 export function sanitizeString(
   input: string | null,
   maxLength: number = 10_000,

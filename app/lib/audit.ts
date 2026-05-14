@@ -8,7 +8,10 @@ type AuditAction =
   | "waitlist.join"
   | "waitlist.leave"
   | "waitlist.pull"
-  | "scan.fail";
+  | "scan.fail"
+  | "mailing_list.subscribe"
+  | "mailing_list.unsubscribe"
+  | "mailing_list.resubscribe";
 
 type AuditLogParams = {
   action: AuditAction;

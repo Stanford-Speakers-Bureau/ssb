@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
 import { consumeLoginState, getSession } from "@/app/lib/session";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 
 function buildFailureRedirect(
   baseUrl: string,
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
     session.user = user;
     await session.save();
     await upsertUserProfile(user);
+    await recordMailingListMember({ email: user.email, source: "login" });
 
     return NextResponse.redirect(new URL(redirectTo, baseUrl), 303);
   } catch (error) {

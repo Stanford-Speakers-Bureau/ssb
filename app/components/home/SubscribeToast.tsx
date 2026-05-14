@@ -1,0 +1,58 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+
+export default function SubscribeToast() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("subscribed") !== "1") return;
+    setVisible(true);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("subscribed");
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+
+    const timeout = setTimeout(() => setVisible(false), 6000);
+    return () => clearTimeout(timeout);
+  }, [searchParams, router, pathname]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-x-0 top-4 z-[100] mx-auto flex w-fit max-w-[90%] items-center gap-3 rounded-full border border-[#b51f1a]/40 bg-[#1a0f0e]/95 px-5 py-3 text-sm text-white shadow-[0_18px_48px_rgba(0,0,0,0.4)] backdrop-blur-sm"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[#f19a80]"
+        aria-hidden="true"
+      >
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+      <span>You&rsquo;re on the SSB mailing list.</span>
+      <button
+        type="button"
+        onClick={() => setVisible(false)}
+        aria-label="Dismiss"
+        className="ml-2 text-[#c6b6aa] hover:text-white"
+      >
+        ×
+      </button>
+    </div>
+  );
+}

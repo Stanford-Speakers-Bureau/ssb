@@ -775,7 +775,14 @@ function buildButton(href: string, label: string, opts?: { style?: string }): st
 }
 
 /** Builds the email footer */
-function buildFooter(): string {
+function buildFooter(unsub?: { url: string; label: string } | null): string {
+  const unsubLine = unsub
+    ? `
+          <p style="margin: 12px 0 0 0; color: #71717a; font-size: 12px;">
+            <a href="${unsub.url}" style="color: #a1a1aa; text-decoration: underline;">${unsub.label}</a>
+          </p>`
+    : "";
+
   return `
     <tr>
       <td align="center" class="footer" style="padding: 30px; background-color: #18181b; border-top: 1px solid #3f3f46; text-align: center;">
@@ -783,7 +790,7 @@ function buildFooter(): string {
           <p style="margin: 0 0 8px 0; color: #71717a; font-size: 12px;">Stanford Speakers Bureau</p>
           <p style="margin: 0; color: #71717a; font-size: 12px;">
             For ADA accommodations or other questions, please email <a href="mailto:${getFromEmail()}" style="color: #a1a1aa; text-decoration: none;">${getFromEmail()}</a>
-          </p>
+          </p>${unsubLine}
         ${gmailBlendEnd}
       </td>
     </tr>`;

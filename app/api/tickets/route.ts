@@ -15,6 +15,10 @@ import {
   waitlist,
 } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
+import {
+  recordMailingListMember,
+  type MailingListSource,
+} from "@/app/lib/mailing-list";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { type CancellationEmailData, type TicketEmailData } from "@/app/lib/email";
@@ -186,6 +190,12 @@ function queueReferralRecordUpdate(eventId: string, userEmail: string) {
 function queueAuditEvent(params: Parameters<typeof logAuditEvent>[0]) {
   scheduleAfterResponse("Audit log", async () => {
     await logAuditEvent(params);
+  });
+}
+
+function queueMailingListAdd(email: string, source: MailingListSource) {
+  scheduleAfterResponse("Mailing list add", async () => {
+    await recordMailingListMember({ email, source });
   });
 }
 
@@ -612,6 +622,7 @@ export async function POST(req: Request) {
         targetEmail: user.email,
         metadata: { type: "STANDBY", ticketId: standbyTicket.id },
       });
+      queueMailingListAdd(user.email, "ticket");
 
       return NextResponse.json(
         {
@@ -742,6 +753,7 @@ export async function POST(req: Request) {
       targetEmail: user.email,
       metadata: { type: "STANDARD", ticketId },
     });
+    queueMailingListAdd(user.email, "ticket");
 
     return NextResponse.json(
       {

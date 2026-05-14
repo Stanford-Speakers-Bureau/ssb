@@ -3,6 +3,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, suggest, votes, roles } from "@ssb/db";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, suggestRatelimit } from "@/app/lib/ratelimit";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -164,6 +165,8 @@ export async function POST(req: Request) {
         // Suggestion was created successfully; vote is a best-effort enhancement
       }
     }
+
+    await recordMailingListMember({ email: user.email, source: "suggest" });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

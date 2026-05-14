@@ -3,6 +3,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, suggest, votes } from "@ssb/db";
 import { voteRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 
 export const VOTE_MESSAGES = {
   SUCCESS: "Vote recorded!",
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
 
     // Insert the vote
     await db.insert(votes).values({ speakerId: speaker_id, email: user.email });
+    await recordMailingListMember({ email: user.email, source: "vote" });
 
     return NextResponse.json(
       { success: true },

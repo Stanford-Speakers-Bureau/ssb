@@ -3,6 +3,7 @@ import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { logAuditEvent } from "@/app/lib/audit";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 import { type WaitlistEmailData } from "@/app/lib/email";
 import {
   createWaitlistEmailJob,
@@ -337,6 +338,9 @@ export async function POST(req: Request) {
         position: waitlistPosition,
         referral,
       },
+    });
+    scheduleAfterResponse("Mailing list add", async () => {
+      await recordMailingListMember({ email: user.email, source: "waitlist" });
     });
 
     return NextResponse.json(
