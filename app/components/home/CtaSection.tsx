@@ -36,9 +36,8 @@ const CARDS: CtaCard[] = [
     title: "Mailing List",
     description:
       "Get notified about upcoming speakers, ticket drops, and events.",
-    href: "https://mailman.stanford.edu/mailman/listinfo/ssb-announce",
+    href: "/subscribe",
     label: "Subscribe",
-    external: true,
   },
   {
     icon: (

@@ -12,19 +12,12 @@ export default function ShareThanksModal({
   thanks,
   onClose,
 }: ShareThanksModalProps) {
-  const [copied, setCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-
-  useEffect(() => {
-    if (!thanks) {
-      setCopied(false);
-      setShareUrl("");
-      return;
-    }
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : "";
-    setShareUrl(`${origin}/suggest/${thanks.id}`);
-  }, [thanks]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [origin] = useState(() =>
+    typeof window === "undefined" ? "" : window.location.origin,
+  );
+  const shareUrl = thanks ? `${origin}/suggest/${thanks.id}` : "";
+  const copied = copiedId === thanks?.id;
 
   useEffect(() => {
     if (!thanks) return;
@@ -44,8 +37,8 @@ export default function ShareThanksModal({
     if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      setCopiedId(thanks?.id ?? null);
+      window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
       // Clipboard blocked — fall back to selecting the input below.
     }

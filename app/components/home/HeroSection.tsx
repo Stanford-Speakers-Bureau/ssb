@@ -29,10 +29,7 @@ function HeroBackground() {
   }, []);
 
   useEffect(() => {
-    if (!rotateEnabled) {
-      setIndex(STATIC_IMAGE_INDEX);
-      return;
-    }
+    if (!rotateEnabled) return;
     if (HERO_BACKGROUND_IMAGES.length <= 1) return;
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % HERO_BACKGROUND_IMAGES.length);
@@ -40,7 +37,9 @@ function HeroBackground() {
     return () => window.clearInterval(id);
   }, [rotateEnabled]);
 
-  const activeSrc = HERO_BACKGROUND_IMAGES[index] ?? HERO_BACKGROUND_IMAGES[0];
+  const activeIndex = rotateEnabled ? index : STATIC_IMAGE_INDEX;
+  const activeSrc =
+    HERO_BACKGROUND_IMAGES[activeIndex] ?? HERO_BACKGROUND_IMAGES[0];
 
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
@@ -127,10 +126,8 @@ export default function HeroSection() {
           className="flex flex-col gap-4 sm:flex-row"
         >
           <MotionLink
-            href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
+            href="/subscribe"
             prefetch={false}
-            target="_blank"
-            rel="noopener noreferrer"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             className="rounded-full bg-[#d74331] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_20px_48px_rgba(123,19,15,0.46)] transition-all hover:-translate-y-0.5 hover:bg-[#ef624b] sm:text-base"

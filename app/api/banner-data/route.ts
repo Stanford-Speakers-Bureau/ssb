@@ -46,21 +46,42 @@ export async function GET(req: Request) {
     // Show banner if there's an upcoming event
     const showBanner = !!closestEvent;
 
+    // "Happening now" = doors are open but the event hasn't ended (with grace).
+    // EVENT_STILL_ALIVE already gates closestEvent, so we just need to confirm
+    // that doors_open has passed.
+    const doorsOpenDate = closestEvent?.doors_open
+      ? new Date(closestEvent.doors_open)
+      : null;
+    const isHappeningNow =
+      !isMystery
+      && !isBeforeTicketing
+      && !!doorsOpenDate
+      && !Number.isNaN(doorsOpenDate.getTime())
+      && now >= doorsOpenDate;
+
     // Banner text and countdown target: reveal → tickets release → event
     const bannerText = isMystery
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
-      : closestEvent?.name + (closestEvent?.name?.includes("and") ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL : BANNER_MESSAGES.EVENT_MESSAGE);
+      : isHappeningNow
+        ? closestEvent?.name + (closestEvent?.name?.includes("and")
+          ? BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE_PLURAL
+          : BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE)
+        : closestEvent?.name + (closestEvent?.name?.includes("and") ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL : BANNER_MESSAGES.EVENT_MESSAGE);
 
     const countdownTarget = isMystery
       ? closestEvent?.release_date
       : isBeforeTicketing
         ? closestEvent?.ticketing_date ?? undefined
-        : closestEvent?.doors_open;
+        : isHappeningNow
+          ? null
+          : closestEvent?.doors_open;
     const prefaceLabel = isMystery
       ? BANNER_MESSAGES.COUNTDOWN_REVEAL_MESSAGE
       : isBeforeTicketing
         ? BANNER_MESSAGES.COUNTDOWN_TICKETS_MESSAGE
-        : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
+        : isHappeningNow
+          ? ""
+          : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
     const bannerHref = isMystery
       ? "/upcoming-speakers"

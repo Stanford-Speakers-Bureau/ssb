@@ -6,6 +6,7 @@ import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import UpcomingHero from "./UpcomingHero";
 import EmptyEventsState from "./EmptyEventsState";
 import {
+  EVENT_STILL_ALIVE,
   formatEventDate,
   formatTime,
   getImageProxyUrl,
@@ -13,7 +14,7 @@ import {
   serializeEvent,
 } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, gte, count as dbCount, events, tickets, notify } from "@ssb/db";
+import { db, eq, count as dbCount, tickets, notify } from "@ssb/db";
 
 
 const ogTitle = "Upcoming at Stanford";
@@ -58,11 +59,10 @@ async function getTicketCount(eventId: string): Promise<number> {
 }
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
-  const bufferDate = new Date();
-  bufferDate.setDate(bufferDate.getDate() - 2);
-
+  // Keep events visible until 6 hours past their effective end (end_time_date,
+  // or start_time_date + 12 hours when end is missing).
   const rawEvents = await db.query.events.findMany({
-    where: gte(events.startTimeDate, bufferDate),
+    where: EVENT_STILL_ALIVE,
     orderBy: (events, { asc }) => [asc(events.startTimeDate)],
   }).catch((err: unknown) => {
     const cause = (err as Error & { cause?: Error })?.cause;

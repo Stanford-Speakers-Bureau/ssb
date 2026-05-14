@@ -1,6 +1,6 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
-import { db, eq, gte, events, referrals } from "@ssb/db";
+import { db, eq, gte, events, referrals, sql } from "@ssb/db";
 import type { InferSelectModel } from "@ssb/db";
 import {
   getTicketCounts as _getTicketCounts,
@@ -120,30 +120,70 @@ export async function getClosestUpcomingEvent(): Promise<Event | null> {
 }
 
 /**
+ * SQL fragment for "the event is still alive": within 6h of its effective
+ * end. Effective end = end_time_date if set, otherwise start_time_date + 12h.
+ * Use this anywhere the banner/popup or upcoming-speakers grid wants to keep
+ * an event visible through doors and the immediate post-event window before
+ * rotating to the next one.
+ */
+export const EVENT_STILL_ALIVE = sql`
+  COALESCE(
+    ${events.endTimeDate},
+    ${events.startTimeDate} + INTERVAL '12 hours'
+  ) + INTERVAL '6 hours' > NOW()
+`;
+
+/**
  * Get the event with the nearest future milestone — release_date (if still
  * pending reveal), else ticketing_date (if tickets haven't dropped), else
  * doors_open. Used by the banner/popup so that when multiple mystery events
  * are pending reveal, we surface the one revealing first instead of the
  * one whose doors open first.
+ *
+ * Events stay in the running until 6 hours past their effective end time
+ * (end_time_date, or start_time_date + 12h when end is missing). For an
+ * event that's currently active (past doors_open), nextMilestone() returns
+ * its doors_open timestamp — which is in the past, and therefore smaller
+ * than any future milestone — so it wins over any not-yet-started event.
  */
 const getCachedNextMilestoneEvent = unstable_cache(
   async (): Promise<Event | null> => {
     const now = new Date();
-    const upcoming = await db.query.events.findMany({
-      where: gte(events.doorsOpen, now),
+    const alive = await db.query.events.findMany({
+      where: EVENT_STILL_ALIVE,
       orderBy: (events, { asc }) => [asc(events.doorsOpen)],
     });
 
-    if (upcoming.length === 0) return null;
+    if (alive.length === 0) return null;
 
-    const nextMilestone = (e: DBEvent): number => {
+    // Two-stage pick:
+    //   1) If any event is currently active (doors are open right now and
+    //      the event hasn't ended+6h), show it. With multiple actives, prefer
+    //      the one whose doors opened most recently — that's the one the
+    //      audience is at right now.
+    //   2) Otherwise, show the event with the nearest *future* milestone
+    //      (release → ticketing → doors). For that case smaller = sooner,
+    //      which is what we want.
+    const active = alive.filter(
+      (e) => e.doorsOpen && e.doorsOpen <= now,
+    );
+    if (active.length > 0) {
+      const event = active.reduce((best, cur) => {
+        const curT = cur.doorsOpen!.getTime();
+        const bestT = best.doorsOpen!.getTime();
+        return curT > bestT ? cur : best;
+      });
+      return serializeEvent(event);
+    }
+
+    const futureMilestone = (e: DBEvent): number => {
       if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
       if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
       return e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
     };
 
-    const event = upcoming.reduce((best, cur) =>
-      nextMilestone(cur) < nextMilestone(best) ? cur : best,
+    const event = alive.reduce((best, cur) =>
+      futureMilestone(cur) < futureMilestone(best) ? cur : best,
     );
     return serializeEvent(event);
   },

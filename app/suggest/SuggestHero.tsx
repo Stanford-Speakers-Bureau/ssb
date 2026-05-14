@@ -4,8 +4,6 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { POPULAR_SPEAKER_NAMES } from "@/app/config/popular-speaker-names";
 
-type StatChip = { value: string; label: string };
-
 function useTypewriterCycle(names: string[], reduce: boolean) {
   const [display, setDisplay] = useState(names[0] ?? "");
 
@@ -14,7 +12,6 @@ function useTypewriterCycle(names: string[], reduce: boolean) {
 
     if (reduce) {
       let i = 0;
-      setDisplay(names[i]);
       const id = setInterval(() => {
         i = (i + 1) % names.length;
         setDisplay(names[i]);
@@ -59,7 +56,7 @@ function useTypewriterCycle(names: string[], reduce: boolean) {
     };
   }, [names, reduce]);
 
-  return display;
+  return names.includes(display) ? display : names[0] ?? "";
 }
 
 function BlinkingCaret() {
@@ -120,8 +117,6 @@ function Marquee({
 
 export default function SuggestHero({
   topNames,
-  totalSuggestions,
-  totalVotes,
 }: {
   topNames: string[];
   totalSuggestions: number;
@@ -132,17 +127,6 @@ export default function SuggestHero({
   const half = Math.ceil(names.length / 2);
   const top = names.slice(0, half);
   const bottom = names.slice(half);
-
-  const stats: StatChip[] = [
-    {
-      value: totalSuggestions.toString(),
-      label: totalSuggestions === 1 ? "Name Submitted" : "Names Submitted",
-    },
-    {
-      value: totalVotes.toString(),
-      label: totalVotes === 1 ? "Vote Cast" : "Votes Cast",
-    },
-  ];
 
   const reduce = useReducedMotion();
   // Lead with trending user suggestions if we have enough, then fall through to curated picks.

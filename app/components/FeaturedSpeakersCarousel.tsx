@@ -182,10 +182,11 @@ export default function FeaturedSpeakersCarousel() {
 
   useEffect(() => {
     if (!emblaApi) return;
-    onSelect();
+    const frame = window.requestAnimationFrame(onSelect);
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
     return () => {
+      window.cancelAnimationFrame(frame);
       emblaApi.off("select", onSelect);
       emblaApi.off("reInit", onSelect);
     };

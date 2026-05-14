@@ -53,10 +53,11 @@ export default function WaitlistPosition({
 
   useEffect(() => {
     if (isWaitlistPositionReady) return;
-    setLoadingStep(0);
+    const t0 = setTimeout(() => setLoadingStep(0), 0);
     const t1 = setTimeout(() => setLoadingStep(1), 1400);
     const t2 = setTimeout(() => setLoadingStep(2), 3000);
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
     };
