@@ -32,6 +32,20 @@ type LiveEvent = {
   totalSold?: number;
 } | null;
 
+type ScanMode = "hold" | "always";
+
+const SCAN_MODE_STORAGE_KEY = "ssb:scan_mode";
+
+function readStoredScanMode(): ScanMode {
+  if (typeof window === "undefined") return "hold";
+  try {
+    const raw = window.localStorage.getItem(SCAN_MODE_STORAGE_KEY);
+    return raw === "always" ? "always" : "hold";
+  } catch {
+    return "hold";
+  }
+}
+
 type ErrorLike = {
   name?: string;
   message?: string;
@@ -40,6 +54,18 @@ type ErrorLike = {
 type AngleStyle = CSSProperties & {
   "--angle": string;
 };
+
+const ROTATING_BORDER_STYLE = {
+  padding: "6px",
+  background:
+    "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
+  WebkitMask:
+    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+  WebkitMaskComposite: "xor",
+  maskComposite: "exclude",
+  "--angle": "0deg",
+  willChange: "background",
+} satisfies AngleStyle;
 
 function getErrorLike(error: unknown): ErrorLike {
   if (error instanceof Error) {
@@ -68,6 +94,8 @@ export default function ScanClient() {
     "prompt" | "granted" | "denied" | "checking"
   >("prompt");
   const [cameraStarted, setCameraStarted] = useState(false);
+  const [scanMode, setScanMode] = useState<ScanMode>("hold");
+  const [isHolding, setIsHolding] = useState(false);
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
   const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
@@ -129,6 +157,21 @@ export default function ScanClient() {
   useEffect(() => {
     showConfirmationRef.current = showConfirmation;
   }, [showConfirmation]);
+
+  // Restore scan-mode preference from localStorage on mount.
+  useEffect(() => {
+    setScanMode(readStoredScanMode());
+  }, []);
+
+  // Persist mode changes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(SCAN_MODE_STORAGE_KEY, scanMode);
+    } catch {
+      // Storage might be disabled / quota — non-fatal.
+    }
+  }, [scanMode]);
 
   // Detect mobile device
   useEffect(() => {
@@ -573,7 +616,9 @@ export default function ScanClient() {
     }
   }, [cameraStarted, handleScan, liveEvent]);
 
-  // Auto-start camera when permission is granted
+  // Auto-start camera when permission is granted (always-on mode).
+  // In hold mode, the camera only runs while the user is pressing the
+  // scan area — see the pointer handlers on the qr-reader element.
   useEffect(() => {
     // If the live event gets turned off while scanning, stop the camera.
     if (!liveEvent) {
@@ -581,6 +626,7 @@ export default function ScanClient() {
     }
 
     if (
+      scanMode === "always" &&
       liveEvent &&
       cameraPermission === "granted" &&
       !cameraStarted &&
@@ -592,7 +638,54 @@ export default function ScanClient() {
     return () => {
       void stopScanner();
     };
-  }, [liveEvent, cameraPermission, cameraStarted, startCamera, stopScanner]);
+  }, [
+    scanMode,
+    liveEvent,
+    cameraPermission,
+    cameraStarted,
+    startCamera,
+    stopScanner,
+  ]);
+
+  // When the user flips to hold mode while the camera is running and they
+  // aren't actively pressing, shut the camera off so battery isn't drained
+  // until the next hold.
+  useEffect(() => {
+    if (scanMode === "hold" && cameraStarted && !isHolding) {
+      void stopScanner();
+    }
+  }, [scanMode, cameraStarted, isHolding, stopScanner]);
+
+  const handleHoldStart = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (scanMode !== "hold") return;
+      if (!liveEvent) return;
+      if (showConfirmationRef.current) return;
+      // Skip if the press landed on an interactive control (toggle, input,
+      // submit button, status overlay, etc.) — those need normal click
+      // behavior. We mark them with data-no-hold elsewhere.
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-no-hold]")) return;
+      // Capture so we still get pointerup even if the finger drifts.
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // Some browsers / pointer types don't support capture — ignore.
+      }
+      setIsHolding(true);
+      if (!cameraStarted) {
+        void startCamera();
+      }
+    },
+    [scanMode, liveEvent, cameraStarted, startCamera],
+  );
+
+  const handleHoldEnd = useCallback(() => {
+    if (scanMode !== "hold") return;
+    if (!isHolding) return;
+    setIsHolding(false);
+    void stopScanner();
+  }, [scanMode, isHolding, stopScanner]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -698,6 +791,18 @@ export default function ScanClient() {
 
   return (
     <div
+      onPointerDown={handleHoldStart}
+      onPointerUp={handleHoldEnd}
+      onPointerLeave={handleHoldEnd}
+      onPointerCancel={handleHoldEnd}
+      style={
+        scanMode === "hold" && liveEvent
+          ? {
+              touchAction: "manipulation",
+              WebkitTouchCallout: "none",
+            }
+          : undefined
+      }
       className={`flex h-screen flex-col items-center font-sans transition-colors duration-500 overflow-hidden ${
         status ? getStatusOverlay() : "bg-[var(--ssb-paper)]"
       }`}
@@ -784,7 +889,7 @@ export default function ScanClient() {
 
           {/* Camera Permission Request */}
           {liveEvent && cameraPermission === "prompt" && !cameraStarted && (
-            <div className="mb-3 sm:mb-4 text-center">
+            <div data-no-hold className="mb-3 sm:mb-4 text-center">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -819,6 +924,7 @@ export default function ScanClient() {
           {/* Camera Denied Message */}
           {liveEvent && cameraPermission === "denied" && (
             <div
+              data-no-hold
               className={`mb-3 sm:mb-4 text-center p-4 sm:p-6 rounded-xl ${
                 status
                   ? "bg-transparent border-0"
@@ -851,6 +957,45 @@ export default function ScanClient() {
               >
                 Try Again
               </motion.button>
+            </div>
+          )}
+
+          {/* Scan mode toggle */}
+          {liveEvent && (
+            <div
+              data-no-hold
+              className="mb-2 sm:mb-3 flex items-center justify-center"
+            >
+              <div
+                role="group"
+                aria-label="Scan mode"
+                className="inline-flex rounded-full border border-zinc-700 bg-zinc-900/60 p-0.5 text-xs sm:text-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => setScanMode("hold")}
+                  className={`px-3 py-1.5 rounded-full transition-colors touch-manipulation ${
+                    scanMode === "hold"
+                      ? "bg-[#A80D0C] text-white shadow"
+                      : "text-zinc-300 hover:text-white"
+                  }`}
+                  aria-pressed={scanMode === "hold"}
+                >
+                  Hold to scan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScanMode("always")}
+                  className={`px-3 py-1.5 rounded-full transition-colors touch-manipulation ${
+                    scanMode === "always"
+                      ? "bg-[#A80D0C] text-white shadow"
+                      : "text-zinc-300 hover:text-white"
+                  }`}
+                  aria-pressed={scanMode === "always"}
+                >
+                  Always on
+                </button>
+              </div>
             </div>
           )}
 
@@ -905,18 +1050,7 @@ export default function ScanClient() {
                   <motion.div
                     key={spinTime}
                     className="absolute inset-0 rounded-xl pointer-events-none z-1"
-                    style={{
-                      padding: "6px",
-                      background:
-                        "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
-                      WebkitMask:
-                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                      WebkitMaskComposite: "xor",
-                      maskComposite: "exclude",
-                      // Animate the gradient angle (not a transform) to avoid loop flicker/snapping.
-                      "--angle": "0deg",
-                      willChange: "background",
-                    } satisfies AngleStyle}
+                    style={ROTATING_BORDER_STYLE}
                     animate={{ ["--angle" as const]: "360deg" }}
                     transition={{
                       duration: spinTime,
@@ -924,7 +1058,7 @@ export default function ScanClient() {
                       ease: "linear",
                     }}
                   />
-                  <div className="border-blob-content">
+                  <div className="border-blob-content relative">
                     <div
                       id="qr-reader"
                       ref={scanAreaRef}
@@ -932,6 +1066,33 @@ export default function ScanClient() {
                         isLoading ? "blur-md" : ""
                       }`}
                     />
+                    {/* Hold-to-scan overlay (only when off in hold mode) */}
+                    {scanMode === "hold"
+                      && !cameraStarted
+                      && !isLoading
+                      && cameraPermission !== "denied" && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-zinc-900/95 text-center px-6 pointer-events-none select-none">
+                        <svg
+                          className="w-12 h-12 sm:w-14 sm:h-14 text-[#A80D0C] mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-white text-base sm:text-lg font-semibold mb-1">
+                          Press and hold anywhere to scan
+                        </p>
+                        <p className="text-zinc-400 text-xs sm:text-sm">
+                          Camera stays off until you press — saves battery.
+                        </p>
+                      </div>
+                    )}
                     {isLoading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
                         <div className="text-center">
@@ -978,7 +1139,7 @@ export default function ScanClient() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div data-no-hold className="flex items-center gap-2">
                 <input
                   id="referral-code-input"
                   type="text"
@@ -1005,6 +1166,7 @@ export default function ScanClient() {
           <AnimatePresence mode="wait">
             {status && (
               <motion.div
+                data-no-hold
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -1096,6 +1258,7 @@ export default function ScanClient() {
           <AnimatePresence>
             {showConfirmation && pendingTicket && (
               <motion.div
+                data-no-hold
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
