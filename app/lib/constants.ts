@@ -31,6 +31,8 @@ export const BANNER_MESSAGES = {
   NOTIFY_MESSAGE: "GET EARLY ACCESS TO OUR NEXT SPEAKER!!",
   EVENT_MESSAGE: " is coming to Stanford!",
   EVENT_MESSAGE_PLURAL: " are coming to Stanford!",
+  EVENT_HAPPENING_NOW_MESSAGE: " is at Stanford right now!",
+  EVENT_HAPPENING_NOW_MESSAGE_PLURAL: " are at Stanford right now!",
   COUNTDOWN_REVEAL_MESSAGE: "Speaker Reveal in",
   COUNTDOWN_TICKETS_MESSAGE: "FREE Tickets Go Live in",
   COUNTDOWN_EVENT_MESSAGE: "Event starts in",

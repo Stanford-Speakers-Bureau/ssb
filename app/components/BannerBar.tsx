@@ -120,17 +120,25 @@ export default function BannerBar({
           ) : (
             <span className="underline">{text}</span>
           ))}
-        {hasText && <span className="opacity-40">|</span>}
-        <span className="text-sm font-medium">{prefaceLabel}</span>
-        <div className="flex items-center gap-1 font-mono text-sm">
-          <TimeUnit value={String(timeLeft.days)} />
-          <span className="opacity-60">:</span>
-          <TimeUnit value={String(timeLeft.hours)} />
-          <span className="opacity-60">:</span>
-          <TimeUnit value={String(timeLeft.minutes)} />
-          <span className="opacity-60">:</span>
-          <TimeUnit value={String(timeLeft.seconds)} />
-        </div>
+        {(prefaceLabel.trim().length > 0 || targetTime != null) && (
+          <>
+            {hasText && <span className="opacity-40">|</span>}
+            {prefaceLabel.trim().length > 0 && (
+              <span className="text-sm font-medium">{prefaceLabel}</span>
+            )}
+            {targetTime != null && (
+              <div className="flex items-center gap-1 font-mono text-sm">
+                <TimeUnit value={String(timeLeft.days)} />
+                <span className="opacity-60">:</span>
+                <TimeUnit value={String(timeLeft.hours)} />
+                <span className="opacity-60">:</span>
+                <TimeUnit value={String(timeLeft.minutes)} />
+                <span className="opacity-60">:</span>
+                <TimeUnit value={String(timeLeft.seconds)} />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

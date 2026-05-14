@@ -156,14 +156,34 @@ const getCachedNextMilestoneEvent = unstable_cache(
 
     if (alive.length === 0) return null;
 
-    const nextMilestone = (e: DBEvent): number => {
+    // Two-stage pick:
+    //   1) If any event is currently active (doors are open right now and
+    //      the event hasn't ended+6h), show it. With multiple actives, prefer
+    //      the one whose doors opened most recently — that's the one the
+    //      audience is at right now.
+    //   2) Otherwise, show the event with the nearest *future* milestone
+    //      (release → ticketing → doors). For that case smaller = sooner,
+    //      which is what we want.
+    const active = alive.filter(
+      (e) => e.doorsOpen && e.doorsOpen <= now,
+    );
+    if (active.length > 0) {
+      const event = active.reduce((best, cur) => {
+        const curT = cur.doorsOpen!.getTime();
+        const bestT = best.doorsOpen!.getTime();
+        return curT > bestT ? cur : best;
+      });
+      return serializeEvent(event);
+    }
+
+    const futureMilestone = (e: DBEvent): number => {
       if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
       if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
       return e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
     };
 
     const event = alive.reduce((best, cur) =>
-      nextMilestone(cur) < nextMilestone(best) ? cur : best,
+      futureMilestone(cur) < futureMilestone(best) ? cur : best,
     );
     return serializeEvent(event);
   },
