@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 export default function SubscribeToast() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [visible, setVisible] = useState(false);
+  const showSubscribedToast = searchParams.get("subscribed") === "1";
+  const [visible, setVisible] = useState(showSubscribedToast);
+  const cleanedUrlRef = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get("subscribed") !== "1") return;
-    setVisible(true);
+    if (!showSubscribedToast || cleanedUrlRef.current) return;
+    cleanedUrlRef.current = true;
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("subscribed");
@@ -20,7 +22,7 @@ export default function SubscribeToast() {
 
     const timeout = setTimeout(() => setVisible(false), 6000);
     return () => clearTimeout(timeout);
-  }, [searchParams, router, pathname]);
+  }, [showSubscribedToast, searchParams, router, pathname]);
 
   if (!visible) return null;
 

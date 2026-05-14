@@ -1,7 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { LIVESTREAM_STARTS_SOON_MS } from "@/app/lib/constants";
 
-function getTimeUntil(dateString: string): string | null {
-  const now = Date.now();
+function getTimeUntil(dateString: string, now: number): string | null {
   const target = new Date(dateString).getTime();
   const diff = target - now;
   if (diff <= 0) return null;
@@ -25,9 +27,11 @@ export default function LivestreamBanner({
   livestreamUrl,
   eventStartTime,
 }: LivestreamBannerProps) {
+  const [nowMs] = useState(() => Date.now());
   const showLinks =
     eventStartTime &&
-    new Date(eventStartTime).getTime() - Date.now() <= LIVESTREAM_STARTS_SOON_MS;
+    new Date(eventStartTime).getTime() - nowMs <= LIVESTREAM_STARTS_SOON_MS;
+  const timeUntil = eventStartTime ? getTimeUntil(eventStartTime, nowMs) : null;
 
   if (showLinks) {
     return (
@@ -81,9 +85,9 @@ export default function LivestreamBanner({
         <div className="flex-1 min-w-0">
           <p className="text-sm sm:text-base font-bold text-white leading-snug">
             This event will be livestreamed to the public!
-            {eventStartTime && getTimeUntil(eventStartTime) && (
+            {timeUntil && (
               <span className="font-normal text-white/80">
-                {" "}in {getTimeUntil(eventStartTime)}
+                {" "}in {timeUntil}
               </span>
             )}
           </p>

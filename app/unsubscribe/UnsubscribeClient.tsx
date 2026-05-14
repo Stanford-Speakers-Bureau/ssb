@@ -161,14 +161,14 @@ export default function UnsubscribeClient({
         {phase === "done" && (
           <>
             <h1 className="text-xl font-semibold text-white mb-3">
-              You've been unsubscribed
+              You&rsquo;ve been unsubscribed
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
               <span className="text-zinc-500">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-              You'll no longer receive {scopeLabel}.
+              You&rsquo;ll no longer receive {scopeLabel}.
             </p>
 
             {error && (
@@ -189,10 +189,10 @@ export default function UnsubscribeClient({
         {phase === "resubscribed" && (
           <>
             <h1 className="text-xl font-semibold text-white mb-3">
-              You're resubscribed
+              You&rsquo;re resubscribed
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              We'll resume sending {scopeLabel} to{" "}
+              We&rsquo;ll resume sending {scopeLabel} to{" "}
               <span className="text-zinc-200">{email}</span>.
             </p>
           </>

@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type CSSProperties,
+} from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -25,6 +31,32 @@ type LiveEvent = {
   scanned?: number;
   totalSold?: number;
 } | null;
+
+type ErrorLike = {
+  name?: string;
+  message?: string;
+};
+
+type AngleStyle = CSSProperties & {
+  "--angle": string;
+};
+
+function getErrorLike(error: unknown): ErrorLike {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message };
+  }
+  if (typeof error === "object" && error !== null) {
+    const record = error as Record<string, unknown>;
+    return {
+      name: typeof record.name === "string" ? record.name : undefined,
+      message: typeof record.message === "string" ? record.message : undefined,
+    };
+  }
+  if (typeof error === "string") {
+    return { message: error };
+  }
+  return {};
+}
 
 export default function ScanClient() {
   const [status, setStatus] = useState<TicketStatus>(null);
@@ -63,8 +95,9 @@ export default function ScanClient() {
       try {
         // `stop()` can throw if not running; ignore those cases.
         await scanner.stop();
-      } catch (err: any) {
-        const msg = String(err?.message || err || "");
+      } catch (err: unknown) {
+        const errorInfo = getErrorLike(err);
+        const msg = String(errorInfo.message || err || "");
         if (
           !msg.toLowerCase().includes("not running") &&
           !msg.toLowerCase().includes("already stopped")
@@ -451,27 +484,28 @@ export default function ScanClient() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         // Stop the test stream immediately - we just needed permission
         stream.getTracks().forEach((track) => track.stop());
-      } catch (permError: any) {
+      } catch (permError: unknown) {
+        const errorInfo = getErrorLike(permError);
         setCameraStarted(false);
         // Handle different error types
         if (
-          permError?.name === "NotAllowedError" ||
-          permError?.name === "PermissionDeniedError"
+          errorInfo.name === "NotAllowedError" ||
+          errorInfo.name === "PermissionDeniedError"
         ) {
           setCameraPermission("denied");
           setCameraError(
             "Camera permission denied. Please enable camera access in your browser settings.",
           );
-        } else if (permError?.name === "NotFoundError") {
+        } else if (errorInfo.name === "NotFoundError") {
           setCameraPermission("denied");
           setCameraError("No camera found on this device.");
-        } else if (permError?.name === "NotReadableError") {
+        } else if (errorInfo.name === "NotReadableError") {
           setCameraPermission("denied");
           setCameraError("Camera is already in use by another application.");
         } else {
           setCameraPermission("denied");
           setCameraError(
-            permError?.message ||
+            errorInfo.message ||
               "Failed to access camera. Please check permissions.",
           );
         }
@@ -514,24 +548,25 @@ export default function ScanClient() {
       // Only set the ref once the scanner is actually running.
       scannerRef.current = scanner;
       setCameraPermission("granted");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorInfo = getErrorLike(error);
       console.error("Camera error:", error);
       setCameraStarted(false);
       if (
-        error?.message?.includes("permission") ||
-        error?.name === "NotAllowedError" ||
-        error?.name === "PermissionDeniedError"
+        errorInfo.message?.includes("permission") ||
+        errorInfo.name === "NotAllowedError" ||
+        errorInfo.name === "PermissionDeniedError"
       ) {
         setCameraPermission("denied");
         setCameraError(
           "Camera permission denied. Please enable camera access in your browser settings.",
         );
-      } else if (error?.name === "NotFoundError") {
+      } else if (errorInfo.name === "NotFoundError") {
         setCameraPermission("denied");
         setCameraError("No camera found on this device.");
       } else {
         setCameraError(
-          error?.message ||
+          errorInfo.message ||
             "Failed to access camera. Please check permissions.",
         );
       }
@@ -879,9 +914,9 @@ export default function ScanClient() {
                       WebkitMaskComposite: "xor",
                       maskComposite: "exclude",
                       // Animate the gradient angle (not a transform) to avoid loop flicker/snapping.
-                      ["--angle" as any]: "0deg",
+                      "--angle": "0deg",
                       willChange: "background",
-                    }}
+                    } satisfies AngleStyle}
                     animate={{ ["--angle" as const]: "360deg" }}
                     transition={{
                       duration: spinTime,
