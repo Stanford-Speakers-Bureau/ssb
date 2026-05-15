@@ -69,6 +69,7 @@ export const events = pgTable(
       .notNull()
       .default(false),
     externalTicketingUrl: text("external_ticketing_url"),
+    bannerEligible: boolean("banner_eligible").notNull().default(true),
   },
   (t) => [
     index("events_route_idx").on(t.route),

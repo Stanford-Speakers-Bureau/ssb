@@ -1,6 +1,6 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
-import { db, eq, gte, events, referrals, sql } from "@ssb/db";
+import { db, eq, gte, and, events, referrals, sql } from "@ssb/db";
 import type { InferSelectModel } from "@ssb/db";
 import {
   getTicketCounts as _getTicketCounts,
@@ -48,6 +48,7 @@ export type Event = {
   ticketing_roles?: string[];
   external_ticketing_enabled?: boolean;
   external_ticketing_url?: string | null;
+  banner_eligible?: boolean;
 };
 
 /**
@@ -84,6 +85,7 @@ export function serializeEvent(e: DBEvent): Event {
     standby_enabled: e.standbyEnabled ?? false,
     external_ticketing_enabled: e.externalTicketingEnabled ?? false,
     external_ticketing_url: e.externalTicketingUrl ?? null,
+    banner_eligible: e.bannerEligible ?? true,
   };
 }
 
@@ -134,36 +136,26 @@ export const EVENT_STILL_ALIVE = sql`
 `;
 
 /**
- * Get the event with the nearest future milestone — release_date (if still
- * pending reveal), else ticketing_date (if tickets haven't dropped), else
- * doors_open. Used by the banner/popup so that when multiple mystery events
- * are pending reveal, we surface the one revealing first instead of the
- * one whose doors open first.
+ * Get the next event to surface in the banner/popup — the one whose
+ * doors_open is soonest. The banner-data API then picks the appropriate
+ * phase (mystery → pre-ticketing → ticketing-open) for that event.
  *
  * Events stay in the running until 6 hours past their effective end time
- * (end_time_date, or start_time_date + 12h when end is missing). For an
- * event that's currently active (past doors_open), nextMilestone() returns
- * its doors_open timestamp — which is in the past, and therefore smaller
- * than any future milestone — so it wins over any not-yet-started event.
+ * (end_time_date, or start_time_date + 12h when end is missing). When
+ * multiple events are simultaneously active (doors already open, not yet
+ * timed out), we surface whichever opened most recently — that's the one
+ * the audience is at right now.
  */
 const getCachedNextMilestoneEvent = unstable_cache(
   async (): Promise<Event | null> => {
     const now = new Date();
     const alive = await db.query.events.findMany({
-      where: EVENT_STILL_ALIVE,
+      where: and(EVENT_STILL_ALIVE, eq(events.bannerEligible, true)),
       orderBy: (events, { asc }) => [asc(events.doorsOpen)],
     });
 
     if (alive.length === 0) return null;
 
-    // Two-stage pick:
-    //   1) If any event is currently active (doors are open right now and
-    //      the event hasn't ended+6h), show it. With multiple actives, prefer
-    //      the one whose doors opened most recently — that's the one the
-    //      audience is at right now.
-    //   2) Otherwise, show the event with the nearest *future* milestone
-    //      (release → ticketing → doors). For that case smaller = sooner,
-    //      which is what we want.
     const active = alive.filter(
       (e) => e.doorsOpen && e.doorsOpen <= now,
     );
@@ -176,14 +168,15 @@ const getCachedNextMilestoneEvent = unstable_cache(
       return serializeEvent(event);
     }
 
-    const futureMilestone = (e: DBEvent): number => {
-      if (e.releaseDate && e.releaseDate > now) return e.releaseDate.getTime();
-      if (e.ticketingDate && e.ticketingDate > now) return e.ticketingDate.getTime();
-      return e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
-    };
+    // Pick by doors_open only. Don't leapfrog priority based on a later
+    // event's release_date or ticketing_date being sooner than this event's
+    // doors_open — that surfaces event B's reveal countdown while event A
+    // is the one actually happening next.
+    const doorsTime = (e: DBEvent): number =>
+      e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
 
     const event = alive.reduce((best, cur) =>
-      futureMilestone(cur) < futureMilestone(best) ? cur : best,
+      doorsTime(cur) < doorsTime(best) ? cur : best,
     );
     return serializeEvent(event);
   },
