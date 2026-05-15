@@ -116,14 +116,14 @@ function JoinHero() {
           className="flex flex-col sm:flex-row gap-4"
         >
           <MotionA
-            href={MAILING_LIST_URL}
+            href="https://forms.gle/82WaYv3C6oQC8bHU7"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="rounded-full px-8 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
           >
-            Get notified when apps open
+            Request Membership Information
           </MotionA>
           <MotionA
             href={`mailto:${CO_PRES_EMAIL}`}
