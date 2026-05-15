@@ -116,14 +116,14 @@ function JoinHero() {
           className="flex flex-col sm:flex-row gap-4"
         >
           <MotionA
-            href={MAILING_LIST_URL}
+            href="https://forms.gle/82WaYv3C6oQC8bHU7"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="rounded-full px-8 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
           >
-            Get notified when apps open
+            Request Membership Information
           </MotionA>
           <MotionA
             href={`mailto:${CO_PRES_EMAIL}`}
@@ -301,21 +301,13 @@ function FinalCta() {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] max-w-[540px] max-h-[540px] rounded-full bg-[#A80D0C]/10 blur-3xl pointer-events-none"
       />
       <div className="relative max-w-3xl mx-auto text-center">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-4"
-        >
-          Stay in the loop
-        </motion.p>
         <motion.h2
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.15 }}
           className="font-serif text-3xl sm:text-5xl text-white leading-[0.95] mb-5"
         >
-          We&rsquo;ll tell you the moment applications open.
+          Ready to join?
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -323,8 +315,7 @@ function FinalCta() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="font-sans text-base sm:text-lg text-zinc-300 max-w-xl mx-auto leading-relaxed mb-10"
         >
-          In the meantime, come to an event, suggest a speaker, and we&rsquo;ll
-          see you in the fall.
+          Fill out the form below to request membership information.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -333,14 +324,14 @@ function FinalCta() {
           className="flex flex-col sm:flex-row gap-3 justify-center"
         >
           <MotionA
-            href={MAILING_LIST_URL}
+            href="https://forms.gle/82WaYv3C6oQC8bHU7"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-[#A80D0C] px-7 py-3 text-sm font-semibold text-white shadow-md shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
           >
-            Join the Mailing List
+            Request Membership Information
           </MotionA>
           <MotionLink
             href="/suggest"

@@ -3,7 +3,11 @@ import { db, eq, events } from "@ssb/db";
 import { verifyUnsubscribeToken } from "@/app/lib/unsubscribe-links";
 import { recordSelfUnsubscribe } from "@/app/lib/mailing-list";
 
-const REQUIRED_PHRASE = "i confirm";
+const ANNOUNCE_PHRASE = "speakers bureau";
+
+function normalize(s: string) {
+  return s.trim().replace(/\s+/g, " ").toLowerCase();
+}
 
 export async function POST(req: Request) {
   let body: { token?: unknown; confirmation?: unknown };
@@ -22,13 +26,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "token required" }, { status: 400 });
   }
 
-  if (confirmation.trim().toLowerCase() !== REQUIRED_PHRASE) {
-    return NextResponse.json(
-      { error: 'You must type "i confirm" to unsubscribe' },
-      { status: 400 },
-    );
-  }
-
   const claims = await verifyUnsubscribeToken(token);
   if (!claims) {
     return NextResponse.json(
@@ -44,6 +41,19 @@ export async function POST(req: Request) {
       columns: { name: true },
     });
     eventName = event?.name ?? null;
+  }
+
+  const requiredPhrase = claims.scope === "announce"
+    ? ANNOUNCE_PHRASE
+    : eventName;
+
+  if (!requiredPhrase || normalize(confirmation) !== normalize(requiredPhrase)) {
+    return NextResponse.json(
+      {
+        error: `You must type "${requiredPhrase ?? ""}" to unsubscribe`,
+      },
+      { status: 400 },
+    );
   }
 
   try {
