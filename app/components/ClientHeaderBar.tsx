@@ -87,14 +87,14 @@ export default function ClientHeaderBar() {
 
       phaseTimeoutId = window.setTimeout(
         () => {
-          void refreshBanner();
+          void refreshBanner({ fresh: true });
           scheduleNextRefresh();
         },
         Math.min(delay, MAX_TIMEOUT_MS),
       );
     };
 
-    async function refreshBanner() {
+    async function refreshBanner({ fresh = false }: { fresh?: boolean } = {}) {
       if (inFlightController || document.visibilityState !== "visible") {
         return;
       }
@@ -104,9 +104,12 @@ export default function ClientHeaderBar() {
       lastRefreshAt = Date.now();
 
       try {
-        const response = await fetch("/api/banner-data", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          fresh ? "/api/banner-data?fresh=1" : "/api/banner-data",
+          {
+            signal: controller.signal,
+          },
+        );
         if (!response.ok) return;
 
         const data = (await response.json()) as BannerData;

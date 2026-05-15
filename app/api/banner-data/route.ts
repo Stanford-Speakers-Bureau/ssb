@@ -16,7 +16,9 @@ export async function GET(req: Request) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const closestEvent = await getNextMilestoneEvent();
+    const url = new URL(req.url);
+    const fresh = url.searchParams.get("fresh") === "1";
+    const closestEvent = await getNextMilestoneEvent({ fresh });
 
     // Determine phase: mystery (before release) | before ticketing | event countdown
     // LOCAL_EVENTS_ENABLED=true means all events are treated as released (never mystery)
