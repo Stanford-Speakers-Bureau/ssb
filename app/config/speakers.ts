@@ -30,6 +30,16 @@ export type Speaker = {
 export const SPEAKERS: Speaker[] = [
   // 2026
   {
+    slug: "arden-cho",
+    name: "Arden Cho",
+    year: "2026",
+    month: "May",
+    location: "CEMEX Auditorium",
+    title: "Actor",
+    bio: "Arden Cho is a Korean American actress best known as Kira Yukimura on Teen Wolf and as Rumi, a K-pop idol turned demon hunter in K-Pop: Demon Hunters. Beyond her screen roles, Cho is also a singer and dedicated advocate for Asian American representation, consistently using her platform to speak out against anti-Asian hate, uplift underrepresented voices in Hollywood, and push for more inclusive storytelling in mainstream media.",
+    image: "/speakers/arden-cho.jpg",
+  },
+  {
     slug: "malala-yousafzai",
     name: "Malala Yousafzai",
     year: "2026",
