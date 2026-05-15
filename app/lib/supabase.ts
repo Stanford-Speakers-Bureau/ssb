@@ -146,45 +146,50 @@ export const EVENT_STILL_ALIVE = sql`
  * timed out), we surface whichever opened most recently — that's the one
  * the audience is at right now.
  */
-const getCachedNextMilestoneEvent = unstable_cache(
-  async (): Promise<Event | null> => {
-    const now = new Date();
-    const alive = await db.query.events.findMany({
-      where: and(EVENT_STILL_ALIVE, eq(events.bannerEligible, true)),
-      orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+async function computeNextMilestoneEvent(): Promise<Event | null> {
+  const now = new Date();
+  const alive = await db.query.events.findMany({
+    where: and(EVENT_STILL_ALIVE, eq(events.bannerEligible, true)),
+    orderBy: (events, { asc }) => [asc(events.doorsOpen)],
+  });
+
+  if (alive.length === 0) return null;
+
+  const active = alive.filter(
+    (e) => e.doorsOpen && e.doorsOpen <= now,
+  );
+  if (active.length > 0) {
+    const event = active.reduce((best, cur) => {
+      const curT = cur.doorsOpen!.getTime();
+      const bestT = best.doorsOpen!.getTime();
+      return curT > bestT ? cur : best;
     });
-
-    if (alive.length === 0) return null;
-
-    const active = alive.filter(
-      (e) => e.doorsOpen && e.doorsOpen <= now,
-    );
-    if (active.length > 0) {
-      const event = active.reduce((best, cur) => {
-        const curT = cur.doorsOpen!.getTime();
-        const bestT = best.doorsOpen!.getTime();
-        return curT > bestT ? cur : best;
-      });
-      return serializeEvent(event);
-    }
-
-    // Pick by doors_open only. Don't leapfrog priority based on a later
-    // event's release_date or ticketing_date being sooner than this event's
-    // doors_open — that surfaces event B's reveal countdown while event A
-    // is the one actually happening next.
-    const doorsTime = (e: DBEvent): number =>
-      e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
-
-    const event = alive.reduce((best, cur) =>
-      doorsTime(cur) < doorsTime(best) ? cur : best,
-    );
     return serializeEvent(event);
-  },
+  }
+
+  // Pick by doors_open only. Don't leapfrog priority based on a later
+  // event's release_date or ticketing_date being sooner than this event's
+  // doors_open — that surfaces event B's reveal countdown while event A
+  // is the one actually happening next.
+  const doorsTime = (e: DBEvent): number =>
+    e.doorsOpen?.getTime() ?? Number.POSITIVE_INFINITY;
+
+  const event = alive.reduce((best, cur) =>
+    doorsTime(cur) < doorsTime(best) ? cur : best,
+  );
+  return serializeEvent(event);
+}
+
+const getCachedNextMilestoneEvent = unstable_cache(
+  computeNextMilestoneEvent,
   ["next-milestone-event"],
   { revalidate: 60 },
 );
 
-export async function getNextMilestoneEvent(): Promise<Event | null> {
+export async function getNextMilestoneEvent(
+  options?: { fresh?: boolean },
+): Promise<Event | null> {
+  if (options?.fresh) return computeNextMilestoneEvent();
   return getCachedNextMilestoneEvent();
 }
 
