@@ -1,0 +1,6 @@
+[install]
+# Only install package versions that are at least 7 days old.
+# Protects against supply-chain attacks via freshly-published malicious versions.
+# Existing entries in bun.lock are trusted; this only gates new resolutions.
+# Override per-invocation with: bun install --minimum-release-age=0
+minimumReleaseAge = 604800
