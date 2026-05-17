@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-type Scope = "announce" | "event";
+type Scope = "announce" | "event" | "newsletter";
 
 function normalize(s: string) {
   return s.trim().replace(/\s+/g, " ").toLowerCase();
@@ -32,19 +32,27 @@ export default function UnsubscribeClient({
 
   const headline = scope === "announce"
     ? "Unsubscribe from Stanford Speakers Bureau announcements"
-    : `Unsubscribe from emails about ${eventName ?? "this event"}`;
+    : scope === "newsletter"
+      ? "Unsubscribe from the Stanford Speakers Bureau newsletter"
+      : `Unsubscribe from emails about ${eventName ?? "this event"}`;
 
   const description = scope === "announce"
     ? "You'll stop receiving all promotional emails about future events — announcements, \"tickets available\" notices, and general newsletters. You'll still get reminders and confirmations for events you've already got tickets to."
-    : `You'll stop receiving promotional emails about ${eventName ?? "this event"} — announcements and "tickets available" notices. If you have a ticket to this event you'll still get your reminders and confirmations, and you'll keep getting emails about other events.`;
+    : scope === "newsletter"
+      ? "You'll stop receiving our newsletter. You'll still get new speaker announcements and reminders/confirmations for any events you have tickets to."
+      : `You'll stop receiving promotional emails about ${eventName ?? "this event"} — announcements and "tickets available" notices. If you have a ticket to this event you'll still get your reminders and confirmations, and you'll keep getting emails about other events.`;
 
   const scopeLabel = scope === "announce"
     ? "promotional SSB emails about future events"
-    : `emails about ${eventName ?? "this event"}`;
+    : scope === "newsletter"
+      ? "the Stanford Speakers Bureau newsletter"
+      : `emails about ${eventName ?? "this event"}`;
 
   const requiredPhrase = scope === "announce"
     ? "speakers bureau"
-    : (eventName ?? "");
+    : scope === "newsletter"
+      ? "newsletter"
+      : (eventName ?? "");
 
   const isPhraseValid = useMemo(
     () =>

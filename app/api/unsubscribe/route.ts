@@ -4,6 +4,7 @@ import { verifyUnsubscribeToken } from "@/app/lib/unsubscribe-links";
 import { recordSelfUnsubscribe } from "@/app/lib/mailing-list";
 
 const ANNOUNCE_PHRASE = "speakers bureau";
+const NEWSLETTER_PHRASE = "newsletter";
 
 function normalize(s: string) {
   return s.trim().replace(/\s+/g, " ").toLowerCase();
@@ -45,7 +46,9 @@ export async function POST(req: Request) {
 
   const requiredPhrase = claims.scope === "announce"
     ? ANNOUNCE_PHRASE
-    : eventName;
+    : claims.scope === "newsletter"
+      ? NEWSLETTER_PHRASE
+      : eventName;
 
   if (!requiredPhrase || normalize(confirmation) !== normalize(requiredPhrase)) {
     return NextResponse.json(

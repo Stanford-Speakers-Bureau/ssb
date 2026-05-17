@@ -380,11 +380,11 @@ export const emailUnsubscribes = pgTable(
     index("email_unsubscribes_scope_event_idx").on(t.scope, t.eventId),
     check(
       "email_unsubscribes_scope_check",
-      sql`${t.scope} in ('announce', 'event')`,
+      sql`${t.scope} in ('announce', 'event', 'newsletter')`,
     ),
     check(
       "email_unsubscribes_scope_event_check",
-      sql`(${t.scope} = 'announce' AND ${t.eventId} IS NULL) OR (${t.scope} = 'event' AND ${t.eventId} IS NOT NULL)`,
+      sql`(${t.scope} = 'announce' AND ${t.eventId} IS NULL) OR (${t.scope} = 'newsletter' AND ${t.eventId} IS NULL) OR (${t.scope} = 'event' AND ${t.eventId} IS NOT NULL)`,
     ),
   ],
 );
