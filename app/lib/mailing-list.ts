@@ -9,7 +9,7 @@ import {
 import { logAuditEvent } from "@/app/lib/audit";
 import { canonicalizeEmail } from "@/app/lib/validation";
 
-export type UnsubscribeScope = "announce" | "event";
+export type UnsubscribeScope = "announce" | "event" | "newsletter";
 
 export type MailingListSource =
   | "backfill"
@@ -129,16 +129,16 @@ export async function recordSelfResubscribe(opts: {
     throw new Error("eventId required for event scope");
   }
 
-  const where = opts.scope === "announce"
+  const where = opts.scope === "event"
     ? and(
-      eq(emailUnsubscribes.email, email),
-      eq(emailUnsubscribes.scope, "announce"),
-      isNull(emailUnsubscribes.eventId),
-    )
-    : and(
       eq(emailUnsubscribes.email, email),
       eq(emailUnsubscribes.scope, "event"),
       eq(emailUnsubscribes.eventId, opts.eventId!),
+    )
+    : and(
+      eq(emailUnsubscribes.email, email),
+      eq(emailUnsubscribes.scope, opts.scope),
+      isNull(emailUnsubscribes.eventId),
     );
 
   const result = await db

@@ -88,7 +88,8 @@ export default async function SuggestionDeepLinkPage({
               come speak at Stanford?
             </h1>
             <p className="mt-5 font-sans text-base sm:text-lg text-zinc-400 leading-relaxed">
-              Upvote <strong>{suggestion.speaker}</strong> below, and while you&rsquo;re here,
+              Upvote <strong>{suggestion.speaker}</strong>{" "}
+              below, and while you&rsquo;re here,
               add other names you&rsquo;d love to see and help us pick the rest
               of the lineup.
             </p>

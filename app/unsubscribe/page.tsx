@@ -35,16 +35,16 @@ export default async function UnsubscribePage({ searchParams }: PageProps) {
   }
 
   const existing = await db.query.emailUnsubscribes.findFirst({
-    where: claims.scope === "announce"
+    where: claims.scope === "event"
       ? and(
-        eq(emailUnsubscribes.email, claims.email),
-        eq(emailUnsubscribes.scope, "announce"),
-        isNull(emailUnsubscribes.eventId),
-      )
-      : and(
         eq(emailUnsubscribes.email, claims.email),
         eq(emailUnsubscribes.scope, "event"),
         eq(emailUnsubscribes.eventId, claims.eventId),
+      )
+      : and(
+        eq(emailUnsubscribes.email, claims.email),
+        eq(emailUnsubscribes.scope, claims.scope),
+        isNull(emailUnsubscribes.eventId),
       ),
     columns: { id: true },
   });
