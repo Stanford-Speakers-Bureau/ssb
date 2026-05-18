@@ -20,6 +20,8 @@ export type MailingListSource =
   | "notify"
   | "suggest"
   | "vote"
+  | "event_question"
+  | "event_question_vote"
   | "manual";
 
 /**

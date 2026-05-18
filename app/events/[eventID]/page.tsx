@@ -24,6 +24,7 @@ import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
 import LivestreamBanner from "./LivestreamBanner";
 import EventFeedbackCard from "./EventFeedbackCard";
+import QuestionsBar from "./QuestionsBar";
 import { NoticeBanner } from "./ui";
 
 interface PageProps {
@@ -349,6 +350,16 @@ export default async function EventPage({
         doorsOpen={event.doors_open}
         venue={event.venue}
         venueLink={event.venue_link}
+      />
+
+      <QuestionsBar
+        event={{
+          id: event.id,
+          doors_open: event.doors_open,
+          start_time_date: event.start_time_date,
+          questions_enabled: event.questions_enabled,
+        }}
+        eventRoute={event.route || eventID}
       />
 
       {/* ─── Content section on solid background ─── */}

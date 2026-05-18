@@ -108,6 +108,8 @@ export const ticketRatelimit = disabledRatelimit;
 export const referralValidateRatelimit = disabledRatelimit;
 export const bannerRatelimit = disabledRatelimit;
 export const imageRatelimit = disabledRatelimit;
+export const questionRatelimit = disabledRatelimit;
+export const questionVoteRatelimit = disabledRatelimit;
 
 /**
  * Check rate limit and return error response if exceeded
