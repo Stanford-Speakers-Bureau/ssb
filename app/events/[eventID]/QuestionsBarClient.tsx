@@ -345,9 +345,30 @@ export default function QuestionsBarClient({
 
   const canVote = lifecycleState === "open";
 
-  const duration = useMemo(() => {
-    const totalChars = questions.reduce((acc, q) => acc + q.question.length, 0);
-    return Math.max(28, Math.min(140, Math.round(totalChars / 5)));
+  // Target sweep speed in pixels per second. Constant regardless of font
+  // size, breakpoint, or content length.
+  const TARGET_PX_PER_SEC = 180;
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  // Conservative initial guess so the animation has a duration before the
+  // first measurement lands. Updated below from the actual rendered width.
+  const [duration, setDuration] = useState(20);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const measure = () => {
+      // The track has the question list duplicated so the marquee can loop
+      // seamlessly; animated distance is half the rendered scrollWidth.
+      const animated = el.scrollWidth / 2;
+      if (animated > 0) {
+        setDuration(Math.max(4, animated / TARGET_PX_PER_SEC));
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [questions]);
 
   if (questions.length === 0 && lifecycleState === "open") {
@@ -408,6 +429,7 @@ export default function QuestionsBarClient({
           }
         `}</style>
         <div
+          ref={trackRef}
           className="ssb-q-marquee-track flex items-center gap-6 whitespace-nowrap will-change-transform py-2"
           style={
             {

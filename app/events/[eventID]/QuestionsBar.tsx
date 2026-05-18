@@ -29,8 +29,16 @@ export default async function QuestionsBar({
   if (questions.length === 0 && lifecycleState !== "open") return null;
 
   return (
-    <section className="w-full bg-zinc-950 border-y border-zinc-900/60">
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-3 sm:py-4">
+    <section className="relative w-full bg-gradient-to-b from-zinc-950 via-[#1a0606] to-zinc-950 my-6 sm:my-8">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#A80D0C]/60 to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#A80D0C]/60 to-transparent"
+      />
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-4 sm:py-5">
         <div className="flex items-center gap-4">
           <span className="hidden sm:inline-flex items-center gap-2 shrink-0 text-xs font-sans uppercase tracking-[0.3em] text-[#A80D0C]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#A80D0C] animate-pulse" />
