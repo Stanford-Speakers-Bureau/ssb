@@ -7,12 +7,16 @@ type Props = {
   open: { id: string; question: string } | null;
   onClose: () => void;
   eventRoute: string;
+  // Where to land after SSO. Defaults to the dedicated /questions page (used by
+  // the leaderboard); the inline event-page card passes the event page itself.
+  redirectTo?: string;
 };
 
 export default function QuestionSignInModal({
   open,
   onClose,
   eventRoute,
+  redirectTo,
 }: Props) {
   useEffect(() => {
     if (!open) return;
@@ -30,7 +34,7 @@ export default function QuestionSignInModal({
 
   const ssoHref = open
     ? `/api/auth/login?redirect_to=${encodeURIComponent(
-        `/events/${eventRoute}/questions`,
+        redirectTo ?? `/events/${eventRoute}/questions`,
       )}`
     : "#";
 

@@ -12,6 +12,7 @@ import QuestionsHero from "./QuestionsHero";
 import QuestionsLeaderboard from "./QuestionsLeaderboard";
 import QuestionSubmitPanel from "./QuestionSubmitPanel";
 import UserQuestionsPanel from "./UserQuestionsPanel";
+import ScrollToHash from "./ScrollToHash";
 import { getEventQuestions, getUserEventQuestions } from "./data";
 import { getQuestionsLifecycleState } from "./lifecycle";
 
@@ -30,9 +31,9 @@ export async function generateMetadata({
   const { eventID } = await params;
   const event = await getCachedEvent(eventID);
   if (!event || isEventMystery(event)) {
-    return { title: "Q&A" };
+    return { title: "Moderator Q&A" };
   }
-  const title = `Q&A · ${event.name}`;
+  const title = `Moderator Q&A · ${event.name}`;
   const description = `Suggest and upvote questions for ${event.name}.`;
   return {
     title,
@@ -76,6 +77,7 @@ export default async function EventQuestionsPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans">
+      <ScrollToHash />
       <main className="flex w-full flex-col">
         <QuestionsHero
           eventName={event.name}
@@ -96,12 +98,14 @@ export default async function EventQuestionsPage({
               </div>
 
               <aside className="lg:sticky lg:top-28 space-y-8">
-                <QuestionSubmitPanel
-                  user={user}
-                  eventId={event.id}
-                  eventRoute={event.route || eventID}
-                  lifecycleState={lifecycleState}
-                />
+                <div id="ask" className="scroll-mt-24 sm:scroll-mt-28">
+                  <QuestionSubmitPanel
+                    user={user}
+                    eventId={event.id}
+                    eventRoute={event.route || eventID}
+                    lifecycleState={lifecycleState}
+                  />
+                </div>
 
                 <UserQuestionsPanel
                   userQuestions={userQuestions}
