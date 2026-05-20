@@ -70,6 +70,7 @@ export const events = pgTable(
       .default(false),
     externalTicketingUrl: text("external_ticketing_url"),
     bannerEligible: boolean("banner_eligible").notNull().default(true),
+    questionsEnabled: boolean("questions_enabled").notNull().default(false),
   },
   (t) => [
     index("events_route_idx").on(t.route),
@@ -179,6 +180,70 @@ export const votes = pgTable(
     uniqueIndex("votes_email_speaker_unique").on(t.email, t.speakerId),
     index("votes_email_idx").on(t.email),
     index("votes_speaker_id_idx").on(t.speakerId),
+  ],
+);
+
+// ── Event Questions ─────────────────────────────────────────────────────────
+export const eventQuestions = pgTable(
+  "event_questions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    email: text("email").notNull(),
+    question: text("question").notNull(),
+    approved: boolean("approved").notNull().default(false),
+    reviewed: boolean("reviewed").notNull().default(false),
+    duplicate: boolean("duplicate").notNull().default(false),
+    hidden: boolean("hidden").notNull().default(false),
+    votes: bigint("votes", { mode: "number" }).notNull().default(0),
+  },
+  (t) => [
+    index("event_questions_event_id_idx").on(t.eventId),
+    index("event_questions_event_public_idx").on(
+      t.eventId,
+      t.approved,
+      t.hidden,
+      t.votes,
+    ),
+    index("event_questions_reviewed_idx").on(t.reviewed),
+    index("event_questions_email_idx").on(t.email),
+    check(
+      "event_questions_length_check",
+      sql`char_length(trim(${t.question})) BETWEEN 4 AND 280`,
+    ),
+  ],
+);
+
+export const eventQuestionVotes = pgTable(
+  "event_question_votes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => eventQuestions.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    email: text("email").notNull(),
+  },
+  (t) => [
+    uniqueIndex("event_question_votes_email_question_unique").on(
+      t.email,
+      t.questionId,
+    ),
+    index("event_question_votes_question_id_idx").on(t.questionId),
+    index("event_question_votes_email_idx").on(t.email),
   ],
 );
 
@@ -398,7 +463,29 @@ export const eventsRelations = relations(events, ({ many }) => ({
   notifyList: many(notify),
   feedbackList: many(eventFeedback),
   unsubscribes: many(emailUnsubscribes),
+  questionList: many(eventQuestions),
 }));
+
+export const eventQuestionsRelations = relations(
+  eventQuestions,
+  ({ one, many }) => ({
+    event: one(events, {
+      fields: [eventQuestions.eventId],
+      references: [events.id],
+    }),
+    voteList: many(eventQuestionVotes),
+  }),
+);
+
+export const eventQuestionVotesRelations = relations(
+  eventQuestionVotes,
+  ({ one }) => ({
+    question: one(eventQuestions, {
+      fields: [eventQuestionVotes.questionId],
+      references: [eventQuestions.id],
+    }),
+  }),
+);
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
   event: one(events, { fields: [tickets.eventId], references: [events.id] }),
