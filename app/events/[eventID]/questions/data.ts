@@ -35,6 +35,7 @@ export async function getEventQuestions(
       eq(eventQuestions.eventId, eventId),
       eq(eventQuestions.approved, true),
       eq(eventQuestions.hidden, false),
+      eq(eventQuestions.duplicate, false),
     ),
     columns: {
       id: true,

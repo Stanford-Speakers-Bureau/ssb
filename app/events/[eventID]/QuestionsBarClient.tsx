@@ -80,8 +80,9 @@ export default function QuestionsBarClient({
       return "error";
     } finally {
       setPendingById((p) => {
-        const { [id]: _drop, ...rest } = p;
-        return rest;
+        const next = { ...p };
+        delete next[id];
+        return next;
       });
     }
   }

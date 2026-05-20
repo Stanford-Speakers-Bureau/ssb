@@ -32,6 +32,7 @@ async function getTopThree(eventId: string) {
         eq(eventQuestions.eventId, eventId),
         eq(eventQuestions.approved, true),
         eq(eventQuestions.hidden, false),
+        eq(eventQuestions.duplicate, false),
       ),
       columns: { id: true, question: true },
       orderBy: (q, { desc, asc }) => [desc(q.votes), asc(q.createdAt)],
@@ -50,9 +51,10 @@ function truncate(s: string, max: number) {
 export default async function Image({
   params,
 }: {
-  params: { eventID: string };
+  params: Promise<{ eventID: string }>;
 }) {
-  const event = await resolveEvent(params.eventID);
+  const { eventID } = await params;
+  const event = await resolveEvent(eventID);
   const eventName = event?.name ?? "Stanford Speakers Bureau";
   const rows = event ? await getTopThree(event.id) : [];
   const logoUrl = `${baseURL}/ssb_white_logo_og.png`;
