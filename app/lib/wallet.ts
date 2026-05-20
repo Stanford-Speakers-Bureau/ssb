@@ -22,6 +22,30 @@ type TicketWalletData = {
 
 const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
 
+function toValidDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatPacificTime(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(date);
+}
+
+function formatPacificDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(date);
+}
+
 export async function getAppleWalletPass(
   image_buffer: Buffer,
   ticket: TicketWalletData,
@@ -141,27 +165,21 @@ export async function getAppleWalletPass(
   // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
   // produces a UTC "Z" string — parse directly rather than re-applying a
   // Pacific offset via fromZonedTime, which would double-shift the time.
-  const doorTimeUTC = new Date(ticket.eventDoorTime);
-  const startTimeUTC = new Date(ticket.start_time_date);
+  // Missing/invalid timestamps yield null so date-dependent fields are skipped
+  // rather than throwing when formatted (Intl throws on an Invalid Date).
+  const doorTime = toValidDate(ticket.eventDoorTime);
+  const startTime = toValidDate(ticket.start_time_date);
 
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
-  pass.headerFields.push({
-    key: "date-time",
-    label: new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: PACIFIC_TIMEZONE,
-    }).format(doorTimeUTC),
-    value: new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: PACIFIC_TIMEZONE,
-    }).format(doorTimeUTC),
-    textAlignment: "PKTextAlignmentLeft",
-  });
+  if (doorTime) {
+    pass.headerFields.push({
+      key: "date-time",
+      label: formatPacificTime(doorTime),
+      value: formatPacificDate(doorTime),
+      textAlignment: "PKTextAlignmentLeft",
+    });
+  }
   pass.secondaryFields.push(
     {
       key: "event",
@@ -209,36 +227,29 @@ export async function getAppleWalletPass(
       label: "Event",
       value: ticket.eventName,
     },
-    {
-      key: "back-start-time",
-      label: "Start Time",
-      value: new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(startTimeUTC),
-    },
-    {
-      key: "back-door-time",
-      label: "Doors Open",
-      value: new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(doorTimeUTC),
-    },
-    {
-      key: "back-date",
-      label: "Date",
-      value: new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(doorTimeUTC),
-    },
+    ...(startTime
+      ? [
+          {
+            key: "back-start-time",
+            label: "Start Time",
+            value: formatPacificTime(startTime),
+          },
+        ]
+      : []),
+    ...(doorTime
+      ? [
+          {
+            key: "back-door-time",
+            label: "Doors Open",
+            value: formatPacificTime(doorTime),
+          },
+          {
+            key: "back-date",
+            label: "Date",
+            value: formatPacificDate(doorTime),
+          },
+        ]
+      : []),
     {
       key: "back-type",
       label: "Ticket Type",
@@ -259,28 +270,34 @@ export async function getAppleWalletPass(
       label: "Location",
       value: ticket.eventVenue,
     },
-    {
-      key: "back-loc-link",
-      label: "Directions",
-      value: ticket.eventVenueLink,
-    },
+    ...(ticket.eventVenueLink
+      ? [
+          {
+            key: "back-loc-link",
+            label: "Directions",
+            value: ticket.eventVenueLink,
+          },
+        ]
+      : []),
     {
       key: "back-event-link",
       label: "Event Details",
       value: ticket.eventLink,
     },
   );
-  pass.setExpirationDate(new Date(doorTimeUTC.getTime() + 86_400_000));
   // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
   // pass.setLocations({
   //   latitude: ticket.eventLat,
   //   longitude: ticket.eventLng,
   // });
-  pass.setRelevantDates([
-    {
-      relevantDate: doorTimeUTC,
-    },
-  ]);
+  if (doorTime) {
+    pass.setExpirationDate(new Date(doorTime.getTime() + 86_400_000));
+    pass.setRelevantDates([
+      {
+        relevantDate: doorTime,
+      },
+    ]);
+  }
 
   return pass.getAsBuffer();
 }

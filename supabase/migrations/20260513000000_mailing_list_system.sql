@@ -147,17 +147,17 @@ SELECT
   MIN(combined.created_at) AS created_at,
   now() AS updated_at
 FROM (
-  SELECT email, created_at FROM tickets WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."tickets" WHERE email IS NOT NULL
   UNION ALL
-  SELECT email, created_at FROM waitlist WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."waitlist" WHERE email IS NOT NULL
   UNION ALL
-  SELECT email, created_at FROM user_profiles WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."user_profiles" WHERE email IS NOT NULL
   UNION ALL
-  SELECT email, created_at FROM notify WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."notify" WHERE email IS NOT NULL
   UNION ALL
-  SELECT email, created_at FROM suggest WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."suggest" WHERE email IS NOT NULL
   UNION ALL
-  SELECT email, created_at FROM votes WHERE email IS NOT NULL
+  SELECT email, created_at FROM "public"."votes" WHERE email IS NOT NULL
 ) AS combined
 WHERE combined.email IS NOT NULL
   AND public.canonicalize_email(combined.email) <> ''
