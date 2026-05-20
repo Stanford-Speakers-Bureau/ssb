@@ -1,4 +1,3 @@
-import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
 import {
   CALENDAR_DEFAULT_DURATION_MS,
@@ -939,24 +938,128 @@ function generateICalContent(data: TicketEmailData): string {
 }
 
 // ============================================================================
-// QR Code generation (unchanged)
+// QR Code generation
 // ============================================================================
+//
+// `qrcode`'s `toBuffer` only exists in its Node ("server") build. Cloudflare
+// Workers resolves the package's `browser` field, which omits `toBuffer`, so we
+// encode the PNG ourselves: `QRCode.create` (present in both builds) yields the
+// module matrix, and the Web-standard CompressionStream produces the
+// zlib-compressed IDAT payload. Pure JS — no pngjs, no Node streams.
+
+const PNG_SIGNATURE = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) {
+    crc = CRC32_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+// PNG chunk: length + type + data + CRC32(type+data), all big-endian.
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const chunk = new Uint8Array(12 + data.length);
+  const view = new DataView(chunk.buffer);
+  view.setUint32(0, data.length);
+  for (let i = 0; i < 4; i++) {
+    chunk[4 + i] = type.charCodeAt(i);
+  }
+  chunk.set(data, 8);
+  view.setUint32(8 + data.length, crc32(chunk.subarray(4, 8 + data.length)));
+  return chunk;
+}
+
+// CompressionStream("deflate") emits a zlib stream (RFC 1950) — exactly the
+// format a PNG IDAT chunk expects.
+async function deflateToZlib(input: Uint8Array): Promise<Uint8Array> {
+  const cs = new CompressionStream("deflate");
+  const writer = cs.writable.getWriter();
+  void writer.write(input as BufferSource);
+  void writer.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
 
 async function generateQRCodePngBuffer(
   ticketId: string,
 ): Promise<Buffer | null> {
   try {
-    const options: QRCodeToBufferOptions = {
-      errorCorrectionLevel: "H",
-      type: "png",
-      width: 400,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#FFFFFF",
-      },
-    };
-    return await QRCode.toBuffer(ticketId, options);
+    const dark: [number, number, number] = [0, 0, 0]; // #000000
+    const light: [number, number, number] = [255, 255, 255]; // #FFFFFF
+    const margin = 2; // quiet-zone width, in modules
+    const targetWidth = 400; // desired image width, in px
+
+    const qr = QRCode.create(ticketId, { errorCorrectionLevel: "H" });
+    const count = qr.modules.size;
+    const modules = qr.modules.data;
+    // Integer scale keeps every module a uniform, crisp size.
+    const scale = Math.max(1, Math.floor(targetWidth / (count + margin * 2)));
+    const dim = (count + margin * 2) * scale;
+
+    // Raw image: each row is one filter byte (0 = None, left as the array's
+    // zero-init) followed by RGB triplets.
+    const rowBytes = 1 + dim * 3;
+    const raw = new Uint8Array(rowBytes * dim);
+    for (let y = 0; y < dim; y++) {
+      const my = Math.floor(y / scale) - margin;
+      const rowStart = y * rowBytes;
+      for (let x = 0; x < dim; x++) {
+        const mx = Math.floor(x / scale) - margin;
+        const isDark =
+          my >= 0 &&
+          my < count &&
+          mx >= 0 &&
+          mx < count &&
+          modules[my * count + mx] !== 0;
+        const color = isDark ? dark : light;
+        const px = rowStart + 1 + x * 3;
+        raw[px] = color[0];
+        raw[px + 1] = color[1];
+        raw[px + 2] = color[2];
+      }
+    }
+
+    const ihdr = new Uint8Array(13);
+    const ihdrView = new DataView(ihdr.buffer);
+    ihdrView.setUint32(0, dim); // width
+    ihdrView.setUint32(4, dim); // height
+    ihdr[8] = 8; // bit depth
+    ihdr[9] = 2; // color type 2 = truecolor RGB
+    // bytes 10-12 (compression / filter / interlace) stay 0
+
+    const idat = await deflateToZlib(raw);
+
+    const ihdrChunk = pngChunk("IHDR", ihdr);
+    const idatChunk = pngChunk("IDAT", idat);
+    const iendChunk = pngChunk("IEND", new Uint8Array(0));
+
+    const png = new Uint8Array(
+      PNG_SIGNATURE.length +
+        ihdrChunk.length +
+        idatChunk.length +
+        iendChunk.length,
+    );
+    let offset = 0;
+    for (const part of [PNG_SIGNATURE, ihdrChunk, idatChunk, iendChunk]) {
+      png.set(part, offset);
+      offset += part.length;
+    }
+
+    return Buffer.from(png);
   } catch (error) {
     console.error("Error generating QR code buffer:", error);
     return null;
