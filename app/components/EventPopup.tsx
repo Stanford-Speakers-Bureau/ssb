@@ -165,6 +165,15 @@ function isSuppressedRoute(pathname: string): boolean {
   return SUPPRESSED_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
+// ─── Auto-action URL helper ───
+// Appends an auto-action query param (e.g. ?notify=true / ?ticket=true) that the
+// destination page (event page via useTicketActions, or this popup for mystery)
+// reads on arrival to complete the action without a second click.
+function withAutoAction(url: string, action: "notify" | "ticket"): string {
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}${action}=true`;
+}
+
 // ─── Main Component ───
 
 export default function EventPopup({
@@ -185,6 +194,7 @@ export default function EventPopup({
     "idle" | "loading" | "success" | "error"
   >("idle");
   const confettiFiredRef = useRef(false);
+  const autoNotifyFiredRef = useRef(false);
 
   const targetMs = useMemo(() => {
     if (!target) return null;
@@ -228,48 +238,119 @@ export default function EventPopup({
     setVisible(false);
   }, [eventId]);
 
-  // ─── Notify handler ───
+  const isMystery = phase === "mystery";
+
+  // ─── Action handlers ───
+  //
+  // Pattern: clicking a CTA should land the user on a page with the action done,
+  // not leave them staring at the same popup.
+  //
+  //  • Mystery phase has no public event page yet, so we keep them on the popup:
+  //    sign them up inline (logged in), or send them through login with a notify
+  //    flag so the popup auto-completes the signup on return (no second click).
+  //  • Pre-ticketing: navigate to the event page with ?notify=true; the page
+  //    signs them up on arrival. Logged-out users get a login hop first.
+  //  • Ticketing open: navigate to the event page (no auto-action) so they go
+  //    through the "Get Ticket" → "no bags" confirmation there; we never skip it.
+
+  const redirectToLogin = useCallback((destination: string) => {
+    window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(destination)}`;
+  }, []);
 
   const handleNotify = useCallback(async () => {
+    if (isMystery) {
+      // Stay on the popup. Logged-out users complete the signup after login via
+      // the ?notify=true flag picked up by the auto-complete effect below.
+      if (!isLoggedIn) {
+        const here =
+          window.location.pathname +
+          window.location.search +
+          window.location.hash;
+        redirectToLogin(withAutoAction(here, "notify"));
+        return;
+      }
+
+      setNotifyStatus("loading");
+      try {
+        const res = await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ speaker_id: eventId }),
+        });
+        if (res.status === 401) {
+          const here =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
+          redirectToLogin(withAutoAction(here, "notify"));
+          return;
+        }
+        setNotifyStatus(res.ok ? "success" : "error");
+      } catch {
+        setNotifyStatus("error");
+      }
+      return;
+    }
+
+    // Pre-ticketing: send them to the event page, which signs them up on arrival.
+    setNotifyStatus("loading");
+    const dest = withAutoAction(href, "notify");
     if (!isLoggedIn) {
-      const redirectUrl =
-        window.location.pathname +
-        window.location.search +
-        window.location.hash;
-      window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
+      redirectToLogin(dest);
+    } else {
+      window.location.href = dest;
+    }
+  }, [isMystery, isLoggedIn, eventId, href, redirectToLogin]);
+
+  const handleGetTickets = useCallback(() => {
+    // Send them to the event page to get a ticket. We deliberately do NOT
+    // auto-create it (?ticket=true) — the event page's "Get Ticket" button gates
+    // creation behind the "no bags" confirmation, which must not be skipped.
+    // Logged-out users get a login hop first so they land ready in the
+    // logged-in "Get Ticket" state.
+    setNotifyStatus("loading");
+    if (!isLoggedIn) {
+      redirectToLogin(href);
+    } else {
+      window.location.href = href;
+    }
+  }, [isLoggedIn, href, redirectToLogin]);
+
+  // Auto-complete a notify signup after returning from login on the mystery popup
+  // (the only phase whose destination is a page where this popup is mounted).
+  useEffect(() => {
+    if (autoNotifyFiredRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("notify") !== "true") return;
+    autoNotifyFiredRef.current = true;
+
+    // Strip the flag so a refresh doesn't re-trigger it.
+    params.delete("notify");
+    const qs = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash,
+    );
+
+    if (!isLoggedIn) return; // can't sign up; popup will show the notify button
+    if (initialIsNotified) {
+      setNotifyStatus("success");
       return;
     }
 
     setNotifyStatus("loading");
-    try {
-      const res = await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ speaker_id: eventId }),
-      });
-
-      if (res.status === 401) {
-        const redirectUrl =
-          window.location.pathname +
-          window.location.search +
-          window.location.hash;
-        window.location.href = `/api/auth/login?redirect_to=${encodeURIComponent(redirectUrl)}`;
-        return;
-      }
-
-      if (res.ok) {
-        setNotifyStatus("success");
-      } else {
-        setNotifyStatus("error");
-      }
-    } catch {
-      setNotifyStatus("error");
-    }
-  }, [eventId, isLoggedIn]);
+    void fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ speaker_id: eventId }),
+    })
+      .then((res) => setNotifyStatus(res.ok ? "success" : "error"))
+      .catch(() => setNotifyStatus("error"));
+  }, [eventId, isLoggedIn, initialIsNotified]);
 
   // ─── Phase-dependent content ───
 
-  const isMystery = phase === "mystery";
   const isTicketingOpen = phase === "ticketing-open";
   const alreadyNotified = initialIsNotified || notifyStatus === "success";
 
@@ -422,8 +503,45 @@ export default function EventPopup({
                 transition={{ delay: 0.45, duration: 0.4 }}
                 className="w-full flex flex-col items-center gap-2.5"
               >
-                {isTicketingOpen || alreadyNotified ? (
-                  /* Already notified or ticketing open — link to event page */
+                {isTicketingOpen ? (
+                  /* Ticketing open — send them to the event page to grab a ticket */
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGetTickets}
+                    disabled={notifyStatus === "loading"}
+                    animate={{
+                      boxShadow: [
+                        "0 0 0px rgba(168,13,12,0)",
+                        "0 0 24px rgba(168,13,12,0.35)",
+                        "0 0 0px rgba(168,13,12,0)",
+                      ],
+                    }}
+                    transition={{
+                      boxShadow: {
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      },
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {notifyStatus === "loading" ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                        </svg>
+                        {ctaLabel}
+                      </>
+                    )}
+                  </motion.button>
+                ) : alreadyNotified ? (
+                  /* Already signed up — just link through to the event page */
                   <Link
                     href={href}
                     onClick={dismiss}
@@ -449,15 +567,9 @@ export default function EventPopup({
                       }}
                       className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
                     >
-                      {alreadyNotified && !isTicketingOpen ? (
-                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                        </svg>
-                      )}
+                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                       {ctaLabel}
                     </motion.div>
                   </Link>
