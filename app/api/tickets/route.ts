@@ -60,7 +60,7 @@ const TICKET_MESSAGES = {
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
+    "According to ASSU records, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. Please contact ASSU for further details. We encourage you to show up to the venue early to join the standby line instead.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
