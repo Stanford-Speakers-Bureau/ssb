@@ -70,7 +70,7 @@ export const events = pgTable(
       .default(false),
     externalTicketingUrl: text("external_ticketing_url"),
     bannerEligible: boolean("banner_eligible").notNull().default(true),
-    questionsEnabled: boolean("questions_enabled").notNull().default(true),
+    questionsEnabled: boolean("questions_enabled").notNull().default(false),
   },
   (t) => [
     index("events_route_idx").on(t.route),

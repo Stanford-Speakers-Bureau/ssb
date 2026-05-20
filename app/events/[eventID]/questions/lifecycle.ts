@@ -17,7 +17,8 @@ function toDate(value: string | Date | null | undefined): Date | null {
 }
 
 /**
- * Question voting is "open" by default for announced events. It closes when:
+ * Question voting is "closed" by default for announced events. It opens only
+ * when enabled by an admin, then closes when:
  * - the admin disabled questions for this event (`questions_enabled = false`)
  * - or doors have opened (falls back to start_time_date if doors_open is null)
  *
@@ -28,7 +29,7 @@ export function getQuestionsLifecycleState(
   event: LifecycleEvent,
   now: Date = new Date(),
 ): QuestionsLifecycleState {
-  const enabled = event.questions_enabled ?? event.questionsEnabled ?? true;
+  const enabled = event.questions_enabled ?? event.questionsEnabled ?? false;
   if (!enabled) return "closed";
 
   const doorsOpen =

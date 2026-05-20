@@ -333,19 +333,18 @@ export default function EventPopup({
       window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash,
     );
 
-    if (!isLoggedIn) return; // can't sign up; popup will show the notify button
-    if (initialIsNotified) {
-      setNotifyStatus("success");
-      return;
-    }
+    if (!isLoggedIn || initialIsNotified) return;
 
-    setNotifyStatus("loading");
-    void fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ speaker_id: eventId }),
-    })
-      .then((res) => setNotifyStatus(res.ok ? "success" : "error"))
+    void Promise.resolve()
+      .then(async () => {
+        setNotifyStatus("loading");
+        const res = await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ speaker_id: eventId }),
+        });
+        setNotifyStatus(res.ok ? "success" : "error");
+      })
       .catch(() => setNotifyStatus("error"));
   }, [eventId, isLoggedIn, initialIsNotified]);
 

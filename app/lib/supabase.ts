@@ -87,7 +87,7 @@ export function serializeEvent(e: DBEvent): Event {
     external_ticketing_enabled: e.externalTicketingEnabled ?? false,
     external_ticketing_url: e.externalTicketingUrl ?? null,
     banner_eligible: e.bannerEligible ?? true,
-    questions_enabled: e.questionsEnabled ?? true,
+    questions_enabled: e.questionsEnabled ?? false,
   };
 }
 
