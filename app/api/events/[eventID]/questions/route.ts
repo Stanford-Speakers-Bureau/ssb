@@ -36,6 +36,7 @@ async function resolveEvent(routeOrId: string) {
       doorsOpen: true,
       startTimeDate: true,
       questionsEnabled: true,
+      questionsRankingsHidden: true,
     },
   });
 }
@@ -60,6 +61,7 @@ export async function GET(
       questionsEnabled: event.questionsEnabled,
     });
 
+    const rankingsHidden = event.questionsRankingsHidden ?? false;
     const rows = await db.query.eventQuestions.findMany({
       where: and(
         eq(eventQuestions.eventId, event.id),
@@ -73,8 +75,16 @@ export async function GET(
         votes: true,
         createdAt: true,
       },
-      orderBy: (q, { desc, asc }) => [desc(q.votes), asc(q.createdAt)],
+      orderBy: (q, { desc, asc }) =>
+        rankingsHidden ? [asc(q.createdAt)] : [desc(q.votes), asc(q.createdAt)],
     });
+
+    if (rankingsHidden) {
+      for (let i = rows.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rows[i], rows[j]] = [rows[j], rows[i]];
+      }
+    }
 
     const user = await getSessionUser();
     let userVotedIds: string[] = [];
@@ -90,7 +100,7 @@ export async function GET(
       questions: rows.map((r, i) => ({
         id: r.id,
         question: r.question,
-        rank: i + 1,
+        rank: rankingsHidden ? null : i + 1,
         createdAt:
           r.createdAt instanceof Date
             ? r.createdAt.toISOString()
@@ -98,6 +108,7 @@ export async function GET(
       })),
       userVotedIds,
       lifecycleState,
+      rankingsHidden,
     });
   } catch (error) {
     console.error("GET event questions error:", error);

@@ -29,6 +29,7 @@ export type UserEventQuestion = {
 export async function getEventQuestions(
   eventId: string,
   userEmail: string | null,
+  rankingsHidden = false,
 ): Promise<EventQuestion[]> {
   const rows = await db.query.eventQuestions.findMany({
     where: and(
@@ -43,8 +44,21 @@ export async function getEventQuestions(
       votes: true,
       createdAt: true,
     },
-    orderBy: (q, { desc, asc }) => [desc(q.votes), asc(q.createdAt)],
+    // When rankings are hidden from the public we deliberately don't order by
+    // votes — they're shuffled below so no ranking signal leaks. Otherwise the
+    // top-voted questions lead, with oldest-first as the tiebreaker.
+    orderBy: (q, { desc, asc }) =>
+      rankingsHidden ? [asc(q.createdAt)] : [desc(q.votes), asc(q.createdAt)],
   });
+
+  // Fisher–Yates shuffle, re-rolled on every request so the public never sees a
+  // stable order they could mistake for a ranking.
+  if (rankingsHidden) {
+    for (let i = rows.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rows[i], rows[j]] = [rows[j], rows[i]];
+    }
+  }
 
   let userVotes = new Set<string>();
   if (userEmail) {

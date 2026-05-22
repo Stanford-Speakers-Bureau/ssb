@@ -440,8 +440,9 @@ export async function POST(req: Request) {
     ];
     const isStandbyRequest = ticketType === "STANDBY";
 
-    // Keep the ASSU guidance for standard online ticketing, but still allow the
-    // standby flow to proceed to the broader affiliation eligibility check.
+    // Standby tickets are open to anyone who shows up — we deliberately skip
+    // both the ASSU fee-waiver guard and the affiliation/ticketing-role guard
+    // for standby requests. Standard online ticketing still enforces both.
     if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",
@@ -463,7 +464,10 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
+    if (
+      !isStandbyRequest &&
+      !isTicketingEligible(userAffiliations, event.ticketingRoles)
+    ) {
       const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
 
       queueAuditEvent({
