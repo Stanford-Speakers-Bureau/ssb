@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/supabase";
 import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
+import { verifyEventImageToken } from "@/app/lib/image-links";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Cache headers for successful responses
@@ -28,6 +29,9 @@ export async function GET(
   const requestedVariant = url.searchParams.get("variant") === "mobile"
     ? "mobile"
     : "default";
+  // Signed token (minted by admin emails) authorizing access to an unreleased
+  // event's image. Not part of the cache key.
+  const imageToken = url.searchParams.get("t");
 
   // R2 cache key: images/{eventId}/{variant}/v{version}
   const r2Key = `images/${eventId}/${requestedVariant}/v${requestedVersion}`;
@@ -79,8 +83,12 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  // Check if mystery - return 404
-  if (isEventMystery(event)) {
+  // Hide images for unreleased ("mystery") events, unless the request carries a
+  // valid signed token (used by admin ticket/campaign emails). A bypassed
+  // mystery image is NOT written to the R2 cache below, so it can never leak to
+  // untokened public requests via a cache hit.
+  const mystery = isEventMystery(event);
+  if (mystery && !verifyEventImageToken(eventId, imageToken)) {
     return new NextResponse("Not found", { status: 404 });
   }
 
@@ -117,8 +125,11 @@ export async function GET(
   const imageBuffer = await imageResponse.arrayBuffer();
   const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
-  // Store in R2 cache for future requests (non-blocking)
-  if (bucket) {
+  // Store in R2 cache for future requests (non-blocking).
+  // Never cache a token-bypassed mystery image: the cache lookup above runs
+  // before the mystery check, so caching it would expose it to untokened
+  // public requests until release.
+  if (bucket && !mystery) {
     try {
       await bucket.put(r2Key, imageBuffer, {
         httpMetadata: {
