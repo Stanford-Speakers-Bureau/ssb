@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        // Allow the image proxy so link-unfurlers (Slack, etc.) can fetch og:image,
+        // which lives under /api/. More specific Allow takes precedence over Disallow.
+        allow: ["/", "/api/images/"],
         disallow: ["/api/", "/account", "/scan"],
       },
     ],
