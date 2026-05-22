@@ -37,7 +37,7 @@ export default function ClientHeaderBar() {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
 
   useEffect(() => {
-    if (isScanRoute || isEventRoute) {
+    if (isScanRoute) {
       return;
     }
 
@@ -167,14 +167,10 @@ export default function ClientHeaderBar() {
       window.removeEventListener("focus", refreshIfDue);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isEventRoute, isScanRoute]);
+  }, [isScanRoute]);
 
   if (isScanRoute) {
     return null;
-  }
-
-  if (isEventRoute) {
-    return <NavBar banner={false} />;
   }
 
   if (!bannerData) {
@@ -199,7 +195,9 @@ export default function ClientHeaderBar() {
         />
       )}
       <NavBar banner={bannerData.showBanner} />
-      {bannerData.showBanner && bp?.eventId && bp.phase && (
+      {/* Banner shows on event pages, but the popup modal does not: a ticket
+          holder landing on an event page should not get a modal over it. */}
+      {!isEventRoute && bannerData.showBanner && bp?.eventId && bp.phase && (
         <EventPopup
           eventId={bp.eventId}
           text={bp.text}
