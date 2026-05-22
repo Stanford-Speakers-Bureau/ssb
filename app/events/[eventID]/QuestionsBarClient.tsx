@@ -13,6 +13,7 @@ type Props = {
   isSignedIn: boolean;
   eventRoute: string;
   eventId: string;
+  rankingsHidden: boolean;
 };
 
 type VoteOutcome = "ok" | "already-voted" | "error";
@@ -24,6 +25,7 @@ export default function QuestionsBarClient({
   isSignedIn,
   eventRoute,
   eventId,
+  rankingsHidden,
 }: Props) {
   // Optimistic vote state, keyed by question id.
   const [votedById, setVotedById] = useState<Record<string, boolean>>(() => {
@@ -181,9 +183,18 @@ export default function QuestionsBarClient({
           const pending = !!pendingById[q.id];
           return (
             <li key={q.id} className="flex items-center gap-3 py-2 sm:py-2.5">
-              <span className="shrink-0 w-4 text-center font-serif text-sm sm:text-base text-[#A80D0C] tabular-nums">
-                {idx + 1}
-              </span>
+              {rankingsHidden ? (
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 w-4 flex justify-center text-[#A80D0C]"
+                >
+                  <span className="h-1 w-1 rounded-full bg-current" />
+                </span>
+              ) : (
+                <span className="shrink-0 w-4 text-center font-serif text-sm sm:text-base text-[#A80D0C] tabular-nums">
+                  {idx + 1}
+                </span>
+              )}
               <span className="flex-1 min-w-0 truncate font-serif text-sm sm:text-base text-zinc-100">
                 {q.question}
               </span>

@@ -358,6 +358,7 @@ export default async function EventPage({
           doors_open: event.doors_open,
           start_time_date: event.start_time_date,
           questions_enabled: event.questions_enabled,
+          questions_rankings_hidden: event.questions_rankings_hidden,
         }}
         eventRoute={event.route || eventID}
       />

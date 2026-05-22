@@ -13,6 +13,7 @@ type Props = {
   lifecycleState: QuestionsLifecycleState;
   eventId: string;
   eventRoute: string;
+  rankingsHidden: boolean;
 };
 
 function rankColor(globalIndex: number): string {
@@ -26,6 +27,7 @@ export default function QuestionsLeaderboard({
   lifecycleState,
   eventId,
   eventRoute,
+  rankingsHidden,
 }: Props) {
   const router = useRouter();
   const [questions, setQuestions] = useState(initial);
@@ -67,20 +69,23 @@ export default function QuestionsLeaderboard({
         return;
       }
       startTransition(() => {
-        setQuestions((prev) =>
-          prev
-            .map((q) =>
-              q.id === id
-                ? {
-                    ...q,
-                    hasVoted: !hasVoted,
-                    votes: q.votes + (hasVoted ? -1 : 1),
-                  }
-                : q,
-            )
+        setQuestions((prev) => {
+          const updated = prev.map((q) =>
+            q.id === id
+              ? {
+                  ...q,
+                  hasVoted: !hasVoted,
+                  votes: q.votes + (hasVoted ? -1 : 1),
+                }
+              : q,
+          );
+          // When rankings are hidden we keep the existing (shuffled) order so a
+          // vote never reorders the list and leaks ranking to the public.
+          if (rankingsHidden) return updated;
+          return updated
             .sort((a, b) => b.votes - a.votes)
-            .map((q, i) => ({ ...q, rank: i + 1 })),
-        );
+            .map((q, i) => ({ ...q, rank: i + 1 }));
+        });
       });
       router.refresh();
     } catch {
@@ -127,15 +132,24 @@ export default function QuestionsLeaderboard({
                 transition={{ duration: 0.2 }}
                 className="group flex items-start gap-3 sm:gap-5 py-4 px-3 sm:px-6 transition-colors hover:bg-zinc-950"
               >
-                <span
-                  className={`font-serif w-9 sm:w-14 text-right shrink-0 leading-none ${
-                    isTopThree
-                      ? "text-3xl sm:text-5xl"
-                      : "text-xl sm:text-2xl"
-                  } ${rankColor(idx)}`}
-                >
-                  {idx + 1}
-                </span>
+                {rankingsHidden ? (
+                  <span
+                    aria-hidden="true"
+                    className="w-9 sm:w-14 shrink-0 flex justify-center pt-2"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#A80D0C]" />
+                  </span>
+                ) : (
+                  <span
+                    className={`font-serif w-9 sm:w-14 text-right shrink-0 leading-none ${
+                      isTopThree
+                        ? "text-3xl sm:text-5xl"
+                        : "text-xl sm:text-2xl"
+                    } ${rankColor(idx)}`}
+                  >
+                    {idx + 1}
+                  </span>
+                )}
                 <div className="flex-1 min-w-0 pt-1">
                   <p className="font-serif text-white leading-snug text-base sm:text-xl">
                     {q.question}

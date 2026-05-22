@@ -64,8 +64,9 @@ export default async function EventQuestionsPage({
   if (isEventMystery(event)) notFound();
 
   const user = await getSessionUser();
+  const rankingsHidden = !!event.questions_rankings_hidden;
   const [questions, userQuestions] = await Promise.all([
-    getEventQuestions(event.id, user?.email ?? null),
+    getEventQuestions(event.id, user?.email ?? null, rankingsHidden),
     getUserEventQuestions(event.id, user?.email ?? null),
   ]);
 
@@ -94,6 +95,7 @@ export default async function EventQuestionsPage({
                   lifecycleState={lifecycleState}
                   eventId={event.id}
                   eventRoute={event.route || eventID}
+                  rankingsHidden={rankingsHidden}
                 />
               </div>
 
