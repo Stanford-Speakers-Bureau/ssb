@@ -20,6 +20,31 @@
 			"service": "ssb",
 		},
 	],
+	// Durable Objects backing OpenNext caching: the ISR revalidation queue
+	// and the sharded tag cache. (No BucketCachePurge — cachePurge is not
+	// configured in open-next.config.ts.)
+	// see https://opennext.js.org/cloudflare/caching
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "NEXT_CACHE_DO_QUEUE",
+				"class_name": "DOQueueHandler",
+			},
+			{
+				"name": "NEXT_TAG_CACHE_DO_SHARDED",
+				"class_name": "DOShardedTagCache",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"DOQueueHandler",
+				"DOShardedTagCache",
+			],
+		},
+	],
 	"queues": {
 		"producers": [
 			{

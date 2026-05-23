@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, and, eq, walletRegistrations } from "@ssb/db";
 import { verifyApplePassAuth } from "@/app/lib/wallet-pass-builder";
+import { logWalletAudit } from "@/app/lib/wallet-audit";
 
 type Params = {
   params: Promise<{
@@ -54,25 +55,45 @@ export async function POST(req: NextRequest, { params }: Params) {
     serialNumber,
     pushToken,
   });
+  // Audit only first-time installs — re-registrations (200 above) are routine
+  // push-token refreshes, not new installs.
+  await logWalletAudit({
+    action: "wallet.install",
+    serialNumber,
+    deviceLibraryId: deviceLibraryIdentifier,
+    passTypeId: passTypeIdentifier,
+  });
   return new NextResponse(null, { status: 201 });
 }
 
 // DELETE .../registrations/{passType}/{serial}
 // Device removed the pass; stop pushing to it.
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { deviceLibraryIdentifier, serialNumber } = await params;
+  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } =
+    await params;
 
   if (!(await verifyApplePassAuth(req, serialNumber))) {
     return new NextResponse(null, { status: 401 });
   }
 
-  await db
+  const deleted = await db
     .delete(walletRegistrations)
     .where(
       and(
         eq(walletRegistrations.deviceLibraryId, deviceLibraryIdentifier),
         eq(walletRegistrations.serialNumber, serialNumber),
       ),
-    );
+    )
+    .returning({ id: walletRegistrations.id });
+
+  // Only audit a real uninstall (a row existed); Apple may retry DELETEs.
+  if (deleted.length > 0) {
+    await logWalletAudit({
+      action: "wallet.uninstall",
+      serialNumber,
+      deviceLibraryId: deviceLibraryIdentifier,
+      passTypeId: passTypeIdentifier,
+    });
+  }
   return new NextResponse(null, { status: 200 });
 }
