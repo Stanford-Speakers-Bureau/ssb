@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  type CSSProperties,
-} from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -51,21 +45,13 @@ type ErrorLike = {
   message?: string;
 };
 
-type AngleStyle = CSSProperties & {
-  "--angle": string;
-};
+function isStandbyType(type: string | null | undefined): boolean {
+  return (type ?? "").toLowerCase().trim() === "standby";
+}
 
-const ROTATING_BORDER_STYLE = {
-  padding: "6px",
-  background:
-    "conic-gradient(from var(--angle), transparent 0deg, transparent 70deg, rgba(168, 13, 12, 0.55) 90deg, rgba(168, 13, 12, 0.55) 112deg, transparent 130deg, transparent 240deg, #A80D0C 270deg, #A80D0C 300deg, transparent 330deg, transparent 360deg)",
-  WebkitMask:
-    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-  WebkitMaskComposite: "xor",
-  maskComposite: "exclude",
-  "--angle": "0deg",
-  willChange: "background",
-} satisfies AngleStyle;
+function isVipType(type: string | null | undefined): boolean {
+  return (type ?? "").toLowerCase().trim() === "vip";
+}
 
 function getErrorLike(error: unknown): ErrorLike {
   if (error instanceof Error) {
@@ -88,7 +74,6 @@ export default function ScanClient() {
   const [status, setStatus] = useState<TicketStatus>(null);
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [spinTime, setSpinTime] = useState<number>(2.0);
   const [isLoading, setIsLoading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<
     "prompt" | "granted" | "denied" | "checking"
@@ -99,6 +84,7 @@ export default function ScanClient() {
   const [liveEvent, setLiveEvent] = useState<LiveEvent>(null);
   const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
+  const [showManualEntry, setShowManualEntry] = useState(false);
   const [pendingTicket, setPendingTicket] = useState<TicketInfo | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -298,7 +284,6 @@ export default function ScanClient() {
     setTicketInfo(null);
 
     setIsLoading(true);
-    setSpinTime(0.5);
     try {
       // Step 1: GET lookup only (no side effects)
       const response = await fetch(
@@ -342,7 +327,6 @@ export default function ScanClient() {
       }, 3000);
     } finally {
       setIsLoading(false);
-      setSpinTime(2.0);
     }
   }, []);
 
@@ -356,10 +340,10 @@ export default function ScanClient() {
       statusTimeoutRef.current = null;
     }
 
+    setShowManualEntry(false);
     setStatus(null);
     setTicketInfo(null);
     setIsLoading(true);
-    setSpinTime(0.5);
     try {
       // Step 1: GET lookup only (no side effects)
       const response = await fetch(
@@ -405,7 +389,6 @@ export default function ScanClient() {
       }, 3000);
     } finally {
       setIsLoading(false);
-      setSpinTime(2.0);
     }
   }, [emailSUNET, liveEvent?.id]);
 
@@ -696,19 +679,6 @@ export default function ScanClient() {
     };
   }, []);
 
-  const getStatusText = () => {
-    if (status === "scanned") {
-      if (ticketInfo?.type?.toLowerCase().trim() === "vip") {
-        return "✓ VIP Ticket - Scanned";
-      }
-      return "✓ Valid Ticket - Scanned";
-    }
-    if (status === "already_scanned") return "⚠ Already Scanned";
-    if (status === "invalid") return "✗ Invalid Ticket";
-    if (status === "id_mismatch") return "✗ ID Does Not Match";
-    return "Ready to Scan";
-  };
-
   const formatScanTime = (scanTime: string | null) => {
     if (!scanTime) return null;
     const date = new Date(scanTime);
@@ -723,68 +693,68 @@ export default function ScanClient() {
     });
   };
 
-  // Get background color based on scan status (subtle overlay matching site style)
-  const getStatusOverlay = () => {
-    if (status === "scanned") {
-      if (ticketInfo?.type?.toLowerCase() === "vip") {
-        return "bg-teal-600/90";
-      }
-      return "bg-green-600/90";
-    }
-    if (status === "already_scanned") {
-      return "bg-yellow-600/90";
-    }
-    if (status === "invalid") {
-      return "bg-red-600/90";
-    }
-    if (status === "id_mismatch") {
-      return "bg-red-600/90";
-    }
-    return "";
-  };
+  // --- Derived result presentation -----------------------------------------
 
-  // Get text color - always white when status is set for readability
-  const getTextColor = () => {
-    return status ? "text-white" : "";
+  const ticketIsVip = isVipType(ticketInfo?.type);
+  const ticketIsStandby = isStandbyType(ticketInfo?.type);
+  const pendingIsStandby = isStandbyType(pendingTicket?.type);
+
+  // Full-screen result theme: bold, unmissable color + icon for door staff.
+  const resultTheme = (() => {
+    switch (status) {
+      case "scanned":
+        return ticketIsVip
+          ? { bg: "bg-teal-600", icon: "check", title: "VIP Admitted" }
+          : ticketIsStandby
+            ? { bg: "bg-green-600", icon: "check", title: "Standby Admitted" }
+            : { bg: "bg-green-600", icon: "check", title: "Admitted" };
+      case "already_scanned":
+        return { bg: "bg-amber-500", icon: "warn", title: "Already Scanned" };
+      case "invalid":
+        return { bg: "bg-red-600", icon: "x", title: "Invalid Ticket" };
+      case "id_mismatch":
+        return { bg: "bg-red-600", icon: "x", title: "Send to Standby Line" };
+      default:
+        return null;
+    }
+  })();
+
+  const dismissResult = () => {
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = null;
+    }
+    setStatus(null);
+    setTicketInfo(null);
   };
 
   // Show desktop message if not on mobile
   if (!isMobile) {
     return (
-      <div className="flex min-h-screen flex-col items-center font-sans bg-[var(--ssb-paper)]">
-        <main className="flex w-full flex-1 justify-center bg-[var(--ssb-paper)] pt-16">
-          <section className="w-full max-w-5xl flex flex-col py-6 lg:py-8 px-6 sm:px-12 md:px-16">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl sm:text-4xl text-[#A80D0C] mb-4 font-serif">
-                SSB Scanner
-              </h1>
-            </div>
-            <div className="bg-zinc-900 rounded-xl p-8 sm:p-12 text-center border border-zinc-800">
-              <svg
-                className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 text-zinc-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
-              <h2 className="text-2xl sm:text-3xl text-white mb-4 font-serif">
-                Please Use Mobile Device
-              </h2>
-              <p className="text-zinc-300 text-base sm:text-lg mb-2">
-                The scanner is optimized for mobile devices.
-              </p>
-              <p className="text-zinc-400 text-sm sm:text-base">
-                Please open this page on your phone or tablet to scan tickets.
-              </p>
-            </div>
-          </section>
-        </main>
+      <div className="flex min-h-screen flex-col items-center justify-center font-sans bg-[var(--ssb-paper)] px-6">
+        <div className="w-full max-w-md bg-zinc-900 rounded-2xl p-8 sm:p-12 text-center border border-zinc-800">
+          <h1 className="text-3xl text-[#A80D0C] mb-6 font-serif">SSB Scanner</h1>
+          <svg
+            className="w-16 h-16 mx-auto mb-6 text-zinc-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+          <h2 className="text-2xl text-white mb-3 font-serif">
+            Open on your phone
+          </h2>
+          <p className="text-zinc-400 text-base">
+            The scanner is built for mobile. Open this page on your phone or
+            tablet to scan tickets.
+          </p>
+        </div>
       </div>
     );
   }
@@ -800,536 +770,548 @@ export default function ScanClient() {
           ? {
               touchAction: "manipulation",
               WebkitTouchCallout: "none",
+              // Stop Safari from highlighting/selecting text while the
+              // user holds down to scan.
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              WebkitTapHighlightColor: "transparent",
             }
-          : undefined
+          : { WebkitTapHighlightColor: "transparent" }
       }
-      className={`flex h-screen flex-col items-center font-sans transition-colors duration-500 overflow-hidden ${
-        status ? getStatusOverlay() : "bg-[var(--ssb-paper)]"
-      }`}
+      className="relative h-[100dvh] w-full overflow-hidden bg-black font-sans"
     >
-      <main
-        className={`flex w-full flex-1 justify-center transition-colors duration-500 pt-6 overflow-y-auto ${
-          status ? getStatusOverlay() : "bg-[var(--ssb-paper)]"
-        }`}
-      >
-        <section className="w-full max-w-5xl flex flex-col py-2 sm:py-4 lg:py-6 px-4 sm:px-6 md:px-12 lg:px-16">
-          <div className="text-center mb-2 sm:mb-4">
-            <h1
-              className={`text-4xl mb-1 sm:mb-2 font-serif ${
-                status ? getTextColor() : "text-[#A80D0C]"
-              }`}
-            >
-              SSB Scanner
-            </h1>
-            {liveEvent ? (
-              <div className="mt-1 sm:mt-2">
-                <p
-                  className={`text-md md:text-lg ${
-                    status ? getTextColor() : "text-white"
-                  }`}
-                >
-                  Event:{" "}
-                  <span
-                    className={`text-md font-semibold ${
-                      status ? getTextColor() : "text-white"
-                    }`}
-                  >
-                    {liveEvent.name} @
-                  </span>
-                  {liveEvent.venue && (
-                    <>
-                      {" "}
-                      <span
-                        className={`text-md italic font-semibold ${status ? getTextColor() : "text-white"}`}
-                      >
-                        {liveEvent.venue}
-                      </span>
-                    </>
-                  )}
-                </p>
-                {liveEvent.scanned !== undefined &&
-                  liveEvent.totalSold !== undefined && (
-                    <p
-                      className={`text-sm mt-1 ${
-                        status ? getTextColor() : "text-zinc-300"
-                      }`}
-                    >
-                      Tickets: {liveEvent.scanned} / {liveEvent.totalSold}{" "}
-                      scanned
-                    </p>
-                  )}
-              </div>
-            ) : (
-              <div className="mt-2 sm:mt-4">
-                <div
-                  className={`text-center p-4 sm:p-6 rounded-xl ${
-                    status
-                      ? "bg-transparent border-0"
-                      : "bg-zinc-900 border border-zinc-800"
-                  }`}
-                >
-                  <p
-                    className={`font-semibold mb-2 text-base sm:text-lg ${
-                      status ? getTextColor() : "text-yellow-400"
-                    }`}
-                  >
-                    No Live Event
-                  </p>
-                  <p
-                    className={`text-sm sm:text-base ${
-                      status ? getTextColor() : "text-zinc-300"
-                    }`}
-                  >
-                    No event is currently live. Scanning is disabled.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+      {/* html5-qrcode chrome cleanup */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            #qr-reader__dashboard_section_swaplink,
+            #qr-reader__status_span,
+            #qr-reader__camera_selection,
+            #qr-reader__dashboard_section_csr,
+            #qr-reader__dashboard_section,
+            #qr-reader__camera_permission_button_id,
+            #qr-reader__camera_permission_denied_id { display: none !important; }
+            #qr-reader__scan_region { border: none !important; box-shadow: none !important; }
+            #qr-reader, #qr-reader video { width: 100% !important; height: 100% !important; }
+            #qr-reader video { object-fit: cover !important; }
+          `,
+        }}
+      />
 
-          {/* Camera Permission Request */}
-          {liveEvent && cameraPermission === "prompt" && !cameraStarted && (
-            <div data-no-hold className="mb-3 sm:mb-4 text-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startCamera}
-                className="inline-flex items-center gap-2 rounded px-6 py-3 text-base sm:text-lg font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211] mb-2 touch-manipulation"
-              >
+      {/* ============================ NO LIVE EVENT ============================ */}
+      {!liveEvent && (
+        <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+          <h1 className="text-3xl text-[#A80D0C] mb-8 font-serif">SSB Scanner</h1>
+          <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/15">
+              <span className="h-3 w-3 rounded-full bg-yellow-400" />
+            </div>
+            <p className="mb-1 text-lg font-semibold text-yellow-400">
+              No live event
+            </p>
+            <p className="text-sm text-zinc-400">
+              Scanning is disabled until an event goes live.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================== CAMERA ================================ */}
+      {liveEvent && (
+        <>
+          {/* Camera fills the screen */}
+          <div
+            id="qr-reader"
+            ref={scanAreaRef}
+            className={`absolute inset-0 bg-black transition-all duration-300 ${
+              isLoading ? "blur-md" : ""
+            }`}
+          />
+
+          {/* Idle scrim — camera off (hold mode, or before permission) */}
+          {!cameraStarted && !isLoading && cameraPermission !== "denied" && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-950/92 px-8 text-center">
+              {cameraPermission === "prompt" ? (
+                <>
+                  <CameraIcon className="mb-4 h-14 w-14 text-[#A80D0C]" />
+                  <p className="mb-1 text-xl font-semibold text-white">
+                    Enable your camera
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    Tap the button below to allow camera access.
+                  </p>
+                </>
+              ) : scanMode === "hold" ? (
+                <>
+                  <FingerIcon className="mb-4 h-16 w-16 text-[#A80D0C]" />
+                  <p className="mb-1 text-2xl font-bold text-white">
+                    Press &amp; hold to scan
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    Hold anywhere on the screen. Release to stop.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CameraIcon className="mb-4 h-14 w-14 text-[#A80D0C]" />
+                  <p className="text-lg font-semibold text-white">
+                    Starting camera…
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Active scan reticle */}
+          {cameraStarted && !isLoading && !status && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+              <div className="relative h-[68vw] max-h-[320px] w-[68vw] max-w-[320px]">
+                <Corner className="left-0 top-0" />
+                <Corner className="right-0 top-0 rotate-90" />
+                <Corner className="bottom-0 right-0 rotate-180" />
+                <Corner className="bottom-0 left-0 -rotate-90" />
+                <motion.div
+                  className="absolute inset-x-3 h-0.5 rounded-full bg-[#A80D0C] shadow-[0_0_12px_2px_rgba(168,13,12,0.7)]"
+                  initial={{ top: "8%" }}
+                  animate={{ top: ["8%", "92%", "8%"] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Loading spinner */}
+          {isLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="flex flex-col items-center">
                 <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  className="h-10 w-10 animate-spin text-white"
+                  xmlns="http://www.w3.org/2000/svg"
                   fill="none"
-                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Enable Camera
-              </motion.button>
-              <p
-                className={`text-sm sm:text-base ${
-                  status ? getTextColor() : "text-zinc-300"
-                }`}
-              >
-                Camera access is required to scan QR codes
-              </p>
+                <p className="mt-3 text-lg font-semibold text-white">Checking…</p>
+              </div>
             </div>
           )}
 
-          {/* Camera Denied Message */}
-          {liveEvent && cameraPermission === "denied" && (
-            <div
-              data-no-hold
-              className={`mb-3 sm:mb-4 text-center p-4 sm:p-6 rounded-xl ${
-                status
-                  ? "bg-transparent border-0"
-                  : "bg-zinc-900 border border-red-500/50"
-              }`}
-            >
-              <p
-                className={`font-semibold mb-2 text-base sm:text-lg ${
-                  status ? getTextColor() : "text-red-400"
-                }`}
-              >
-                Camera Access Denied
-              </p>
-              <p
-                className={`text-sm sm:text-base mb-3 sm:mb-4 ${
-                  status ? getTextColor() : "text-zinc-300"
-                }`}
-              >
-                Please enable camera permissions in your browser settings to
-                scan tickets.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setCameraPermission("prompt");
-                  setCameraError(null);
-                }}
-                className="inline-flex items-center gap-2 rounded px-6 py-3 text-base sm:text-lg font-semibold text-white bg-[#A80D0C] shadow-lg transition-colors hover:bg-[#C11211] touch-manipulation"
-              >
-                Try Again
-              </motion.button>
+          {/* ----------------------------- TOP BAR --------------------------- */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-black/80 to-transparent px-4 pb-8"
+            style={{ paddingTop: "max(env(safe-area-inset-top), 0.75rem)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold text-white">
+                  {liveEvent.name || "Live event"}
+                </p>
+                {liveEvent.venue && (
+                  <p className="truncate text-xs text-zinc-300">
+                    {liveEvent.venue}
+                  </p>
+                )}
+              </div>
+              {liveEvent.scanned !== undefined &&
+                liveEvent.totalSold !== undefined && (
+                  <div className="shrink-0 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-white backdrop-blur-sm">
+                    {liveEvent.scanned}
+                    <span className="text-zinc-400"> / {liveEvent.totalSold}</span>
+                  </div>
+                )}
             </div>
-          )}
+          </div>
 
-          {/* Scan mode toggle */}
-          {liveEvent && (
-            <div
-              data-no-hold
-              className="mb-2 sm:mb-3 flex items-center justify-center"
-            >
+          {/* --------------------------- BOTTOM BAR -------------------------- */}
+          <div
+            data-no-hold
+            className="absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/85 to-transparent px-4 pt-10"
+            style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1rem)" }}
+          >
+            {cameraPermission === "prompt" && (
+              <button
+                type="button"
+                onClick={startCamera}
+                className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#A80D0C] py-4 text-lg font-semibold text-white shadow-lg transition-colors active:bg-[#C11211]"
+              >
+                <CameraIcon className="h-6 w-6" />
+                Enable camera
+              </button>
+            )}
+
+            {cameraPermission === "denied" && (
+              <div className="mb-3 rounded-xl border border-red-500/40 bg-red-950/60 p-4 text-center backdrop-blur-sm">
+                <p className="mb-1 text-sm font-semibold text-red-300">
+                  Camera access denied
+                </p>
+                <p className="mb-3 text-xs text-zinc-300">
+                  Enable camera permissions in your browser settings, then retry.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCameraPermission("prompt");
+                    setCameraError(null);
+                  }}
+                  className="rounded-lg bg-[#A80D0C] px-5 py-2 text-sm font-semibold text-white active:bg-[#C11211]"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {cameraError && cameraPermission !== "denied" && (
+              <p className="mb-3 text-center text-sm text-red-300">{cameraError}</p>
+            )}
+
+            <div className="flex items-center gap-2">
+              {/* Mode toggle */}
               <div
                 role="group"
                 aria-label="Scan mode"
-                className="inline-flex rounded-full border border-zinc-700 bg-zinc-900/60 p-0.5 text-xs sm:text-sm"
+                className="flex flex-1 rounded-full border border-white/15 bg-black/40 p-1 backdrop-blur-sm"
               >
                 <button
                   type="button"
                   onClick={() => setScanMode("hold")}
-                  className={`px-3 py-1.5 rounded-full transition-colors touch-manipulation ${
-                    scanMode === "hold"
-                      ? "bg-[#A80D0C] text-white shadow"
-                      : "text-zinc-300 hover:text-white"
-                  }`}
                   aria-pressed={scanMode === "hold"}
+                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+                    scanMode === "hold"
+                      ? "bg-[#A80D0C] text-white"
+                      : "text-zinc-300"
+                  }`}
                 >
-                  Hold to scan
+                  Hold
                 </button>
                 <button
                   type="button"
                   onClick={() => setScanMode("always")}
-                  className={`px-3 py-1.5 rounded-full transition-colors touch-manipulation ${
-                    scanMode === "always"
-                      ? "bg-[#A80D0C] text-white shadow"
-                      : "text-zinc-300 hover:text-white"
-                  }`}
                   aria-pressed={scanMode === "always"}
+                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+                    scanMode === "always"
+                      ? "bg-[#A80D0C] text-white"
+                      : "text-zinc-300"
+                  }`}
                 >
                   Always on
                 </button>
               </div>
-            </div>
-          )}
 
-          {/* Camera View */}
-          {liveEvent && (
-            <>
-              <style
-                dangerouslySetInnerHTML={{
-                  __html: `
-                #qr-reader__dashboard_section_swaplink,
-                #qr-reader__status_span,
-                #qr-reader__camera_selection,
-                #qr-reader__dashboard_section_csr {
-                  display: none !important;
-                }
-                #qr-reader__dashboard_section {
-                  padding: 0 !important;
-                  margin: 0 !important;
-                }
-                #qr-reader__scan_region {
-                  border: none !important;
-                  box-shadow: none !important;
-                }
-                #qr-reader__camera_permission_button_id,
-                #qr-reader__camera_permission_denied_id {
-                  display: none !important;
-                }
-                video {
-                  object-fit: cover !important;
-                }
-                ${
-                  isLoading
-                    ? `
-                  #qr-reader video {
-                    filter: blur(12px) !important;
-                  }
-                `
-                    : ""
-                }
-                .border-blob-wrapper {
-                  position: relative;
-                }
-                .border-blob-content {
-                  position: relative;
-                  z-index: 0;
-                }
-              `,
+              {/* Manual entry */}
+              <button
+                type="button"
+                onClick={() => setShowManualEntry(true)}
+                aria-label="Enter email or SUNET manually"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur-sm active:bg-white/10"
+              >
+                <KeyboardIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* =========================== RESULT OVERLAY =========================== */}
+      <AnimatePresence>
+        {status && resultTheme && (
+          <motion.div
+            data-no-hold
+            key="result"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={dismissResult}
+            className={`absolute inset-0 z-40 flex flex-col items-center justify-center px-6 text-center text-white ${resultTheme.bg}`}
+          >
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 320, damping: 18 }}
+              className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-white/20"
+            >
+              <ResultIcon kind={resultTheme.icon} />
+            </motion.div>
+
+            <h2 className="mb-2 font-serif text-3xl sm:text-4xl">
+              {resultTheme.title}
+            </h2>
+
+            {ticketInfo?.name && (
+              <p className="text-2xl font-bold">{ticketInfo.name}</p>
+            )}
+
+            <div className="mt-4 w-full max-w-xs space-y-1 text-sm text-white/90">
+              {ticketInfo?.email && (
+                <p className="break-all">{ticketInfo.email}</p>
+              )}
+              {ticketInfo?.type && (
+                <p className="font-semibold uppercase tracking-wide">
+                  {ticketInfo.type} ticket
+                </p>
+              )}
+              {status === "already_scanned" && ticketInfo?.scan_time && (
+                <p>Scanned {formatScanTime(ticketInfo.scan_time)}</p>
+              )}
+              {status === "already_scanned" && ticketInfo?.scan_user && (
+                <p>by {ticketInfo.scan_user}</p>
+              )}
+            </div>
+
+            <p className="absolute bottom-10 text-sm text-white/70">
+              Tap anywhere to continue
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================= MANUAL ENTRY SHEET ========================= */}
+      <AnimatePresence>
+        {showManualEntry && liveEvent && (
+          <motion.div
+            data-no-hold
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowManualEntry(false)}
+            className="absolute inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-5"
+              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.25rem)" }}
+            >
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-zinc-700" />
+              <p className="mb-3 text-center text-base font-semibold text-white">
+                Look up by email or SUNET
+              </p>
+              <input
+                id="referral-code-input"
+                type="text"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                value={emailSUNET}
+                onChange={(e) => setEmailSUNET(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleEmailSubmit();
                 }}
+                placeholder="Enter email or SUNET"
+                autoFocus
+                style={{ userSelect: "text", WebkitUserSelect: "text" }}
+                className="mb-3 w-full rounded-xl bg-white/10 px-4 py-3 text-base text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
               />
-              <div className="mb-2 sm:mb-3 shrink-0 relative">
-                <div className="w-full max-w-md mx-auto border-blob-wrapper rounded-xl">
-                  <motion.div
-                    key={spinTime}
-                    className="absolute inset-0 rounded-xl pointer-events-none z-1"
-                    style={ROTATING_BORDER_STYLE}
-                    animate={{ ["--angle" as const]: "360deg" }}
-                    transition={{
-                      duration: spinTime,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                  <div className="border-blob-content relative">
-                    <div
-                      id="qr-reader"
-                      ref={scanAreaRef}
-                      className={`w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900 h-[280px] sm:h-[350px] md:h-[400px] transition-all duration-300 relative ${
-                        isLoading ? "blur-md" : ""
-                      }`}
-                    />
-                    {/* Hold-to-scan overlay (only when off in hold mode) */}
-                    {scanMode === "hold"
-                      && !cameraStarted
-                      && !isLoading
-                      && cameraPermission !== "denied" && (
-                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-zinc-900/95 text-center px-6 pointer-events-none select-none">
-                        <svg
-                          className="w-12 h-12 sm:w-14 sm:h-14 text-[#A80D0C] mb-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <p className="text-white text-base sm:text-lg font-semibold mb-1">
-                          Press and hold anywhere to scan
-                        </p>
-                        <p className="text-zinc-400 text-xs sm:text-sm">
-                          Camera stays off until you press — saves battery.
-                        </p>
-                      </div>
-                    )}
-                    {isLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl z-10">
-                        <div className="text-center">
-                          <div className="inline-flex items-center gap-3 mb-2">
-                            <svg
-                              className="animate-spin h-8 w-8 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                          </div>
-                          <p className="text-white text-xl sm:text-2xl font-bold">
-                            Processing...
-                          </p>
-                          <p className="text-white/80 text-sm sm:text-base mt-1">
-                            Please wait
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {cameraError && (
-                  <p
-                    className={`mt-1 text-center text-sm sm:text-base ${
-                      status ? getTextColor() : "text-red-400"
-                    }`}
-                  >
-                    {cameraError}
+              <button
+                type="button"
+                onClick={handleEmailSubmit}
+                disabled={isLoading || !emailSUNET.trim()}
+                className="w-full rounded-xl bg-[#A80D0C] py-3.5 text-base font-semibold text-white transition-colors active:bg-[#C11211] disabled:opacity-50"
+              >
+                Look up ticket
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ====================== IDENTITY / STANDBY MODAL ====================== */}
+      <AnimatePresence>
+        {showConfirmation && pendingTicket && (
+          <motion.div
+            data-no-hold
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center"
+            onClick={handleCancel}
+          >
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", duration: 0.32, bounce: 0.12 }}
+              className="w-full max-w-sm rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-6 shadow-2xl sm:rounded-2xl sm:border"
+              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.5rem)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-center font-serif text-xl text-white">
+                Verify identity
+              </h3>
+              <p className="mb-4 text-center text-sm text-zinc-400">
+                Does this name match their photo ID?
+              </p>
+
+              <div className="mb-4 rounded-xl bg-zinc-800 p-4 text-center">
+                <p className="mb-1 text-2xl font-bold text-white">
+                  {pendingTicket.name || "No name on ticket"}
+                </p>
+                {pendingTicket.email && (
+                  <p className="break-all text-sm text-zinc-400">
+                    {pendingTicket.email}
+                  </p>
+                )}
+                {pendingTicket.type && (
+                  <p className="mt-1 text-xs uppercase tracking-wide text-zinc-500">
+                    {pendingTicket.type} ticket
                   </p>
                 )}
               </div>
-              <div data-no-hold className="flex items-center gap-2">
-                <input
-                  id="referral-code-input"
-                  type="text"
-                  value={emailSUNET}
-                  onChange={(e) => {
-                    setEmailSUNET(e.target.value);
-                  }}
-                  placeholder="Enter email or SUNET"
-                  className={`w-full min-w-[200px] rounded px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-white bg-white/10 backdrop-blur-sm focus:outline-none  placeholder:text-zinc-200`}
-                />
-                <motion.button
-                  whileHover={isLoading ? {} : { scale: 1.05 }}
-                  whileTap={isLoading ? {} : { scale: 0.95 }}
-                  onClick={handleEmailSubmit}
-                  disabled={isLoading}
-                  className="rounded px-4 py-2 text-sm font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211] disabled:opacity-50 disabled:cursor-not-allowed w-auto"
-                >
-                  ✓
-                </motion.button>
-              </div>
-            </>
-          )}
 
-          <AnimatePresence mode="wait">
-            {status && (
-              <motion.div
-                data-no-hold
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`mt-2 sm:mt-3 p-3 sm:p-4 md:p-6 rounded-xl transition-colors duration-500 shrink-0 bg-transparent cursor-pointer`}
-                onClick={() => {
-                  if (statusTimeoutRef.current) {
-                    clearTimeout(statusTimeoutRef.current);
-                    statusTimeoutRef.current = null;
-                  }
-                  setStatus(null);
-                  setTicketInfo(null);
-                }}
-              >
-                <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl mb-2 sm:mb-3 md:mb-4 font-serif text-white">
-                    {getStatusText()}
-                  </h2>
-
-                  {status === "id_mismatch" && (
-                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3">
-                      Send to Standby Line
+              {/* Blue standby warning */}
+              {pendingIsStandby && (
+                <div className="mb-4 flex gap-3 rounded-xl border border-blue-400/50 bg-blue-950/60 p-4">
+                  <InfoIcon className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-blue-200">
+                      Standby ticket
                     </p>
-                  )}
-
-                  {ticketInfo && (
-                    <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
-                      {ticketInfo.name && (
-                        <p className="text-base sm:text-lg md:text-xl font-semibold text-white">
-                          {ticketInfo.name}
-                        </p>
-                      )}
-                      {ticketInfo.email && (
-                        <p className="text-sm sm:text-base wrap-break-word">
-                          <span className="text-zinc-300">Email:</span>{" "}
-                          <span className="font-medium text-white">
-                            {ticketInfo.email}
-                          </span>
-                        </p>
-                      )}
-                      {ticketInfo.type && (
-                        <p className="text-sm sm:text-base">
-                          <span className="text-zinc-300">Ticket Type:</span>{" "}
-                          <span className="font-medium capitalize text-white">
-                            {ticketInfo.type}
-                          </span>
-                        </p>
-                      )}
-                      <p className="text-sm sm:text-base break-all">
-                        <span className="text-zinc-300">Ticket ID:</span>{" "}
-                        <span className="font-mono text-xs sm:text-sm text-white">
-                          {ticketInfo.id}
-                        </span>
-                      </p>
-                      {ticketInfo.scan_time && (
-                        <p className="text-sm sm:text-base">
-                          <span className="text-zinc-300">Scanned at:</span>{" "}
-                          <span className="text-white">
-                            {formatScanTime(ticketInfo.scan_time)}
-                          </span>
-                        </p>
-                      )}
-                      {status === "already_scanned" && ticketInfo.scan_user && (
-                        <p className="text-sm sm:text-base">
-                          <span className="text-zinc-300">Scanned by:</span>{" "}
-                          <span className="font-medium text-white">
-                            {ticketInfo.scan_user}
-                          </span>
-                        </p>
-                      )}
-                      {status === "already_scanned" &&
-                        ticketInfo.scan_email && (
-                          <p className="text-sm sm:text-base wrap-break-word">
-                            <span className="text-zinc-300">
-                              Scanner email:
-                            </span>{" "}
-                            <span className="font-medium text-white">
-                              {ticketInfo.scan_email}
-                            </span>
-                          </p>
-                        )}
-                    </div>
-                  )}
+                    <p className="text-xs text-blue-200/80">
+                      Admission is not guaranteed. Only admit if there is space.
+                      Confirm you want to admit this guest.
+                    </p>
+                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
 
-          {/* ID Verification Confirmation Modal */}
-          <AnimatePresence>
-            {showConfirmation && pendingTicket && (
-              <motion.div
-                data-no-hold
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                onClick={handleCancel}
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                  transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-                  className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isConfirming}
+                  className="flex-1 rounded-xl border border-zinc-600 bg-zinc-700 py-4 text-lg font-semibold text-white transition-colors active:bg-zinc-600 disabled:opacity-50"
                 >
-                  <h3 className="text-xl text-white mb-1 font-serif text-center">
-                    Verify Identity
-                  </h3>
-                  <p className="text-zinc-400 text-sm text-center mb-4">
-                    Does this name match their photo ID?
-                  </p>
-                  <div className="bg-zinc-800 rounded-xl p-4 mb-5 text-center">
-                    <p className="text-2xl font-bold text-white mb-1">
-                      {pendingTicket.name || "No name on ticket"}
-                    </p>
-                    {pendingTicket.email && (
-                      <p className="text-sm text-zinc-400 break-all">
-                        {pendingTicket.email}
-                      </p>
-                    )}
-                    {pendingTicket.type && (
-                      <p className="text-xs text-zinc-500 mt-1 uppercase tracking-wide">
-                        {pendingTicket.type} ticket
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-3">
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleCancel}
-                      disabled={isConfirming}
-                      className="flex-1 rounded-xl py-4 text-lg font-semibold text-white bg-zinc-700 border border-zinc-600 transition-colors active:bg-zinc-600 disabled:opacity-50 touch-manipulation"
-                    >
-                      No
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleConfirm}
-                      disabled={isConfirming}
-                      className="flex-1 rounded-xl py-4 text-lg font-semibold text-white bg-green-600 transition-colors active:bg-green-500 disabled:opacity-50 touch-manipulation"
-                    >
-                      {isConfirming ? "..." : "Yes"}
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {!status && liveEvent && (
-            <div className="mt-2 sm:mt-3 text-center shrink-0">
-              <p
-                className={`text-sm sm:text-base ${
-                  status ? getTextColor() : "text-zinc-300"
-                }`}
-              >
-                Point camera at QR code to scan
-              </p>
-            </div>
-          )}
-        </section>
-      </main>
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirm}
+                  disabled={isConfirming}
+                  className={`flex-1 rounded-xl py-4 text-lg font-semibold text-white transition-colors disabled:opacity-50 ${
+                    pendingIsStandby
+                      ? "bg-blue-600 active:bg-blue-500"
+                      : "bg-green-600 active:bg-green-500"
+                  }`}
+                >
+                  {isConfirming
+                    ? "…"
+                    : pendingIsStandby
+                      ? "Admit standby"
+                      : "Admit"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// --- Small presentational helpers -------------------------------------------
+
+function Corner({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`absolute h-7 w-7 border-l-4 border-t-4 border-[#A80D0C] ${className}`}
+    />
+  );
+}
+
+function ResultIcon({ kind }: { kind: string }) {
+  const common = {
+    className: "h-12 w-12",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 3,
+    viewBox: "0 0 24 24",
+  } as const;
+  if (kind === "check") {
+    return (
+      <svg {...common}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    );
+  }
+  if (kind === "x") {
+    return (
+      <svg {...common}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    );
+  }
+  // warn
+  return (
+    <svg {...common}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+      />
+    </svg>
+  );
+}
+
+function CameraIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+      />
+    </svg>
+  );
+}
+
+function FingerIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.6}
+        d="M9 11V6a2 2 0 114 0v5m0 0V4a2 2 0 114 0v7m0 0a2 2 0 114 0v3a8 8 0 01-8 8h-2a8 8 0 01-7-4l-2.5-4.5a2 2 0 013.5-2L9 13"
+      />
+    </svg>
+  );
+}
+
+function KeyboardIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <rect x="2" y="6" width="20" height="12" rx="2" strokeWidth={1.8} />
+      <path
+        strokeLinecap="round"
+        strokeWidth={1.8}
+        d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"
+      />
+    </svg>
+  );
+}
+
+function InfoIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" strokeWidth={1.8} />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M12 11v5m0-8h.01" />
+    </svg>
   );
 }
