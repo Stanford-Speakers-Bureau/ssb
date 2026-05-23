@@ -85,6 +85,9 @@ export default function ScanClient() {
   const [emailSUNET, setEmailSUNET] = useState<string>("");
   const [isMobile, setIsMobile] = useState(true);
   const [showManualEntry, setShowManualEntry] = useState(false);
+  const [searchResults, setSearchResults] = useState<TicketInfo[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchAbortRef = useRef<AbortController | null>(null);
   const [pendingTicket, setPendingTicket] = useState<TicketInfo | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -330,67 +333,85 @@ export default function ScanClient() {
     }
   }, []);
 
-  const handleEmailSubmit = useCallback(async () => {
-    if (!emailSUNET.trim()) return;
-    if (showConfirmationRef.current) return;
+  // Open the manual lookup sheet, resetting any previous query/results.
+  const openManualEntry = useCallback(() => {
+    setEmailSUNET("");
+    setSearchResults([]);
+    setIsSearching(false);
+    setShowManualEntry(true);
+  }, []);
 
-    // Clear any existing timeout
+  const closeManualEntry = useCallback(() => {
+    searchAbortRef.current?.abort();
+    setShowManualEntry(false);
+    setIsSearching(false);
+    setSearchResults([]);
+    setEmailSUNET("");
+  }, []);
+
+  // Live, debounced search by name / email / SUNET while the sheet is open.
+  useEffect(() => {
+    if (!showManualEntry) return;
+    const q = emailSUNET.trim();
+
+    if (q.length < 2) {
+      searchAbortRef.current?.abort();
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const handle = setTimeout(async () => {
+      // Cancel any in-flight request so results never arrive out of order.
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+      try {
+        const response = await fetch(
+          `/api/scan/search?q=${encodeURIComponent(q)}`,
+          { signal: controller.signal },
+        );
+        const data = (await response.json()) as { results?: TicketInfo[] };
+        if (controller.signal.aborted) return;
+        setSearchResults(data.results ?? []);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        if (!controller.signal.aborted) setIsSearching(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(handle);
+  }, [emailSUNET, showManualEntry]);
+
+  // Pick a search result: scanned tickets show their status, unscanned ones
+  // go straight to the identity / standby confirmation.
+  const handleSelectResult = useCallback((ticket: TicketInfo) => {
+    closeManualEntry();
+
     if (statusTimeoutRef.current) {
       clearTimeout(statusTimeoutRef.current);
       statusTimeoutRef.current = null;
     }
 
-    setShowManualEntry(false);
-    setStatus(null);
-    setTicketInfo(null);
-    setIsLoading(true);
-    try {
-      // Step 1: GET lookup only (no side effects)
-      const response = await fetch(
-        `/api/scan?emailSUNET=${encodeURIComponent(emailSUNET.toLowerCase().trim())}&event_id=${encodeURIComponent(liveEvent?.id ?? "")}`,
-      );
-
-      const data = (await response.json()) as {
-        status?: TicketStatus;
-        ticket?: TicketInfo;
-      };
-
-      const ticketStatus = data.status ?? "invalid";
-      setEmailSUNET("");
-
-      if (ticketStatus === "valid" && data.ticket) {
-        // Step 2: Show confirmation modal for valid tickets
-        setPendingTicket(data.ticket);
-        pendingTicketIdRef.current = data.ticket.id;
-        setShowConfirmation(true);
-      } else {
-        // Already scanned or invalid - show immediate feedback
-        setStatus(ticketStatus === "valid" ? null : ticketStatus);
-        setTicketInfo(data.ticket ?? null);
-        await fetchLiveEvent();
-
-        statusTimeoutRef.current = setTimeout(() => {
-          setStatus(null);
-          setTicketInfo(null);
-          statusTimeoutRef.current = null;
-        }, 10000);
-      }
-    } catch (error) {
-      console.error("Scan error:", error);
-      setStatus("invalid");
-      setTicketInfo(null);
-      setEmailSUNET("");
-      await fetchLiveEvent();
-
+    if (ticket.scanned) {
+      setStatus("already_scanned");
+      setTicketInfo(ticket);
       statusTimeoutRef.current = setTimeout(() => {
         setStatus(null);
         setTicketInfo(null);
         statusTimeoutRef.current = null;
-      }, 3000);
-    } finally {
-      setIsLoading(false);
+      }, 6000);
+      return;
     }
-  }, [emailSUNET, liveEvent?.id]);
+
+    setPendingTicket(ticket);
+    pendingTicketIdRef.current = ticket.id;
+    setShowConfirmation(true);
+  }, [closeManualEntry]);
 
   // Confirm scan - POST to mark ticket as scanned
   const handleConfirm = useCallback(async () => {
@@ -676,6 +697,7 @@ export default function ScanClient() {
       if (statusTimeoutRef.current) {
         clearTimeout(statusTimeoutRef.current);
       }
+      searchAbortRef.current?.abort();
     };
   }, []);
 
@@ -763,12 +785,15 @@ export default function ScanClient() {
     <div
       onPointerDown={handleHoldStart}
       onPointerUp={handleHoldEnd}
-      onPointerLeave={handleHoldEnd}
       onPointerCancel={handleHoldEnd}
       style={
         scanMode === "hold" && liveEvent
           ? {
-              touchAction: "manipulation",
+              // `none` (not `manipulation`) so a small finger drag isn't read
+              // as a pan/scroll — that gesture would fire pointercancel and
+              // drop the hold. Combined with pointer capture, the press stays
+              // active until the finger actually lifts.
+              touchAction: "none",
               WebkitTouchCallout: "none",
               // Stop Safari from highlighting/selecting text while the
               // user holds down to scan.
@@ -1010,14 +1035,14 @@ export default function ScanClient() {
                 </button>
               </div>
 
-              {/* Manual entry */}
+              {/* Manual lookup */}
               <button
                 type="button"
-                onClick={() => setShowManualEntry(true)}
-                aria-label="Enter email or SUNET manually"
+                onClick={openManualEntry}
+                aria-label="Look up by name, email, or SUNET"
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur-sm active:bg-white/10"
               >
-                <KeyboardIcon className="h-5 w-5" />
+                <SearchIcon className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -1078,7 +1103,7 @@ export default function ScanClient() {
         )}
       </AnimatePresence>
 
-      {/* ========================= MANUAL ENTRY SHEET ========================= */}
+      {/* ========================== MANUAL LOOKUP SHEET ====================== */}
       <AnimatePresence>
         {showManualEntry && liveEvent && (
           <motion.div
@@ -1086,7 +1111,7 @@ export default function ScanClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowManualEntry(false)}
+            onClick={closeManualEntry}
             className="absolute inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm"
           >
             <motion.div
@@ -1095,37 +1120,103 @@ export default function ScanClient() {
               exit={{ y: "100%" }}
               transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-5"
-              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.25rem)" }}
+              className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-4"
+              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1rem)" }}
             >
-              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-zinc-700" />
-              <p className="mb-3 text-center text-base font-semibold text-white">
-                Look up by email or SUNET
-              </p>
-              <input
-                id="referral-code-input"
-                type="text"
-                inputMode="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                value={emailSUNET}
-                onChange={(e) => setEmailSUNET(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleEmailSubmit();
-                }}
-                placeholder="Enter email or SUNET"
-                autoFocus
-                style={{ userSelect: "text", WebkitUserSelect: "text" }}
-                className="mb-3 w-full rounded-xl bg-white/10 px-4 py-3 text-base text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
-              />
-              <button
-                type="button"
-                onClick={handleEmailSubmit}
-                disabled={isLoading || !emailSUNET.trim()}
-                className="w-full rounded-xl bg-[#A80D0C] py-3.5 text-base font-semibold text-white transition-colors active:bg-[#C11211] disabled:opacity-50"
-              >
-                Look up ticket
-              </button>
+              <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
+
+              <div className="relative shrink-0">
+                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
+                <input
+                  id="ticket-search-input"
+                  type="text"
+                  inputMode="search"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  value={emailSUNET}
+                  onChange={(e) => setEmailSUNET(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchResults.length > 0) {
+                      handleSelectResult(searchResults[0]);
+                    }
+                  }}
+                  placeholder="Search name, email, or SUNET"
+                  autoFocus
+                  style={{ userSelect: "text", WebkitUserSelect: "text" }}
+                  className="w-full rounded-xl bg-white/10 py-3 pl-10 pr-10 text-base text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+                />
+                {emailSUNET && (
+                  <button
+                    type="button"
+                    onClick={() => setEmailSUNET("")}
+                    aria-label="Clear"
+                    className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-zinc-400 active:bg-white/10"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Results */}
+              <div className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                {emailSUNET.trim().length < 2 ? (
+                  <p className="py-8 text-center text-sm text-zinc-500">
+                    Type at least 2 characters to search.
+                  </p>
+                ) : isSearching && searchResults.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-zinc-400">
+                    Searching…
+                  </p>
+                ) : searchResults.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-zinc-400">
+                    No matching tickets.
+                  </p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {searchResults.map((t) => (
+                      <li key={t.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectResult(t)}
+                          className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-3 text-left transition-colors active:bg-white/10"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold text-white">
+                              {t.name || t.email || "Unknown"}
+                            </p>
+                            {t.email && t.name && (
+                              <p className="truncate text-xs text-zinc-400">
+                                {t.email}
+                              </p>
+                            )}
+                            <div className="mt-0.5 flex items-center gap-2">
+                              {t.type && (
+                                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                                  {t.type}
+                                </span>
+                              )}
+                              {isStandbyType(t.type) && (
+                                <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300">
+                                  Standby
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {t.scanned ? (
+                            <span className="shrink-0 rounded-full bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-300">
+                              Scanned
+                            </span>
+                          ) : (
+                            <span className="shrink-0 rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">
+                              Admit
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -1294,15 +1385,11 @@ function FingerIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function KeyboardIcon({ className = "" }: { className?: string }) {
+function SearchIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <rect x="2" y="6" width="20" height="12" rx="2" strokeWidth={1.8} />
-      <path
-        strokeLinecap="round"
-        strokeWidth={1.8}
-        d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"
-      />
+      <circle cx="11" cy="11" r="7" strokeWidth={1.8} />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M21 21l-4.3-4.3" />
     </svg>
   );
 }
