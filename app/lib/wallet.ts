@@ -181,15 +181,41 @@ export async function getAppleWalletPass(
   const doorTime = toValidDate(ticket.eventDoorTime);
   const startTime = toValidDate(ticket.start_time_date);
 
+  // Shared semantic tags. These let iOS surface native event intelligence
+  // (smart date headers, one-tap Get Directions, time-to-leave, richer
+  // lock-screen relevance) without changing the visible layout.
+  const eventSemantics: Record<string, unknown> = {
+    eventName: ticket.eventName,
+    eventType: "PKEventTypeGeneric",
+  };
+  if (startTime) eventSemantics.eventStartDate = startTime.toISOString();
+  if (doorTime) {
+    eventSemantics.eventEndDate = new Date(
+      doorTime.getTime() + 86_400_000,
+    ).toISOString();
+  }
+  const venueSemantics: Record<string, unknown> = { venueName: ticket.eventVenue };
+  if (ticket.eventLat && ticket.eventLng) {
+    venueSemantics.venueLocation = {
+      latitude: ticket.eventLat,
+      longitude: ticket.eventLng,
+    };
+  }
+
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
+  // changeMessage lives on exactly ONE field per logical attribute (the
+  // user-facing front field). The back-of-pass mirrors below update silently.
+  // If two fields with a changeMessage changed in the same update, iOS can't
+  // pick one line and falls back to the generic "<pass style> changed" banner.
   if (doorTime) {
     pass.headerFields.push({
       key: "date-time",
       label: formatPacificTime(doorTime),
       value: formatPacificDate(doorTime),
-      changeMessage: "Event date changed to %@.",
+      changeMessage: "Heads up — the event is now %@.",
       textAlignment: "PKTextAlignmentLeft",
+      semantics: eventSemantics,
     });
   }
   pass.secondaryFields.push(
@@ -197,33 +223,35 @@ export async function getAppleWalletPass(
       key: "event",
       label: "Event",
       value: ticket.eventName,
-      changeMessage: "Event changed to %@.",
+      changeMessage: "Event updated to %@.",
       textAlignment: "PKTextAlignmentLeft",
+      semantics: { eventName: ticket.eventName },
     },
     {
       key: "loc",
       label: "Location",
       value: ticket.eventVenue,
-      changeMessage: "Location changed to %@.",
+      changeMessage: "📍 New location: %@.",
       textAlignment: "PKTextAlignmentLeft",
+      semantics: venueSemantics,
     },
   );
   pass.auxiliaryFields.push({
     key: "type",
     label: "Type",
     value: ticket.ticketType,
-    changeMessage: "Ticket type changed to %@.",
+    changeMessage: "Your ticket is now %@.",
     textAlignment: "PKTextAlignmentLeft",
   });
-  if (ticket.name) {
-    pass.auxiliaryFields.push({
-      key: "attendee",
-      label: "Attendee",
-      value: ticket.name,
-      changeMessage: "Attendee changed to %@.",
-      textAlignment: "PKTextAlignmentRight",
-    });
-  }
+  // Always render the attendee field (placeholder when empty) so its key never
+  // appears/disappears — a structural change also triggers the generic banner.
+  pass.auxiliaryFields.push({
+    key: "attendee",
+    label: "Attendee",
+    value: ticket.name || "—",
+    changeMessage: "This ticket is now under the name %@.",
+    textAlignment: "PKTextAlignmentRight",
+  });
   pass.setBarcodes({
     format: "PKBarcodeFormatQR",
     message: ticket.ticketId,
@@ -243,18 +271,18 @@ export async function getAppleWalletPass(
       value: "This ticket has been cancelled and is no longer valid for entry.",
     });
   }
+  // Back-of-pass mirrors update silently (no changeMessage) so they don't
+  // compete with the front fields for the notification banner.
   pass.backFields.push({
     key: "back-name",
     label: "Name",
     value: ticket.name ?? "Not provided",
-    changeMessage: "Attendee changed to %@.",
   });
   pass.backFields.push(
     {
       key: "back-event",
       label: "Event",
       value: ticket.eventName,
-      changeMessage: "Event changed to %@.",
     },
     ...(startTime
       ? [
@@ -262,7 +290,6 @@ export async function getAppleWalletPass(
             key: "back-start-time",
             label: "Start Time",
             value: formatPacificTime(startTime),
-            changeMessage: "Start time changed to %@.",
           },
         ]
       : []),
@@ -272,13 +299,11 @@ export async function getAppleWalletPass(
             key: "back-door-time",
             label: "Doors Open",
             value: formatPacificTime(doorTime),
-            changeMessage: "Doors open changed to %@.",
           },
           {
             key: "back-date",
             label: "Date",
             value: formatPacificDate(doorTime),
-            changeMessage: "Event date changed to %@.",
           },
         ]
       : []),
@@ -286,7 +311,6 @@ export async function getAppleWalletPass(
       key: "back-type",
       label: "Ticket Type",
       value: ticket.ticketType,
-      changeMessage: "Ticket type changed to %@.",
     },
     {
       key: "back-id",
@@ -302,7 +326,6 @@ export async function getAppleWalletPass(
       key: "back-loc",
       label: "Location",
       value: ticket.eventVenue,
-      changeMessage: "Location changed to %@.",
     },
     ...(ticket.eventVenueLink
       ? [
@@ -317,7 +340,6 @@ export async function getAppleWalletPass(
       key: "back-event-link",
       label: "Event Details",
       value: ticket.eventLink,
-      changeMessage: "Event details link changed to %@.",
     },
   );
   // Surface the pass on the lock screen near the venue. Note: iOS gets stricter
@@ -333,9 +355,8 @@ export async function getAppleWalletPass(
   if (doorTime) {
     pass.setExpirationDate(new Date(doorTime.getTime() + 86_400_000));
     pass.setRelevantDates([
-      {
-        relevantDate: doorTime,
-      },
+      { relevantDate: doorTime },
+      ...(startTime ? [{ relevantDate: startTime }] : []),
     ]);
   }
 

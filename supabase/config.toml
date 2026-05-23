@@ -1,5 +1,11 @@
 project_id = "ssb-local"
 
+# The apns-push function authenticates callers itself via the x-wallet-push-secret
+# header, so the platform JWT gateway is redundant here. Disabling it lets the
+# admin app (and direct calls) invoke it with just the shared secret.
+[functions.apns-push]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
