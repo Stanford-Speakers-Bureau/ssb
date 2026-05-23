@@ -75,6 +75,7 @@ export const events = pgTable(
       .notNull()
       .default(true),
     allowAdmittingStandby: boolean("allow_admitting_standby")
+    questionsRankingsHidden: boolean("questions_rankings_hidden")
       .notNull()
       .default(false),
   },

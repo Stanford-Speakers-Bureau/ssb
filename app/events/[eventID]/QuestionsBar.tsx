@@ -8,6 +8,7 @@ type EventInput = {
   doors_open?: string | Date | null;
   start_time_date?: string | Date | null;
   questions_enabled?: boolean | null;
+  questions_rankings_hidden?: boolean | null;
 };
 
 // How many top-voted questions to surface in the inline strip. The rest live on
@@ -22,9 +23,14 @@ export default async function QuestionsBar({
   eventRoute: string;
 }) {
   const lifecycleState = getQuestionsLifecycleState(event);
+  const rankingsHidden = !!event.questions_rankings_hidden;
 
   const user = await getSessionUser();
-  const all = await getEventQuestions(event.id, user?.email ?? null);
+  const all = await getEventQuestions(
+    event.id,
+    user?.email ?? null,
+    rankingsHidden,
+  );
   const total = all.length;
   const questions = all.slice(0, TOP_N);
 
@@ -50,6 +56,7 @@ export default async function QuestionsBar({
           isSignedIn={!!user?.email}
           eventRoute={eventRoute}
           eventId={event.id}
+          rankingsHidden={rankingsHidden}
         />
       </div>
     </section>

@@ -50,6 +50,7 @@ export type Event = {
   external_ticketing_url?: string | null;
   banner_eligible?: boolean;
   questions_enabled?: boolean;
+  questions_rankings_hidden?: boolean;
 };
 
 /**
@@ -88,6 +89,7 @@ export function serializeEvent(e: DBEvent): Event {
     external_ticketing_url: e.externalTicketingUrl ?? null,
     banner_eligible: e.bannerEligible ?? true,
     questions_enabled: e.questionsEnabled ?? false,
+    questions_rankings_hidden: e.questionsRankingsHidden ?? false,
   };
 }
 
