@@ -1,5 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
+	"account_id": "dad1029008e31e3b1823336f3651910b",
 	"main": "worker.js",
 	"name": "ssb",
 	"compatibility_date": "2025-12-16",

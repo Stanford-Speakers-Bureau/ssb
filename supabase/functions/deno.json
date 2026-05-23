@@ -1,0 +1,9 @@
+{
+  "lock": false,
+  "tasks": {
+    "check": "deno check apns-push/index.ts"
+  },
+  "compilerOptions": {
+    "strict": true
+  }
+}

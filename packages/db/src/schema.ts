@@ -104,6 +104,9 @@ export const tickets = pgTable(
     scanUser: text("scan_user"),
     scanEmail: text("scan_email"),
     name: text("name"),
+    // Bumped whenever a wallet-visible field changes, so the PassKit web
+    // service can answer If-Modified-Since / passesUpdatedSince correctly.
+    walletUpdatedAt: timestamp("wallet_updated_at", { withTimezone: true }),
   },
   (t) => [
     index("tickets_email_idx").on(t.email),
@@ -113,6 +116,53 @@ export const tickets = pgTable(
     index("tickets_scanned_idx").on(t.scanned),
     uniqueIndex("tickets_event_email_unique").on(t.eventId, t.email),
   ],
+);
+
+// ── Wallet pass registrations (Apple PassKit web service) ───────────────────
+// One row per (device, pass) the user has installed and asked us to keep
+// updated. We push to push_token via APNs when the underlying ticket changes.
+export const walletRegistrations = pgTable(
+  "wallet_registrations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    passTypeId: text("pass_type_id").notNull(),
+    serialNumber: text("serial_number").notNull(),
+    deviceLibraryId: text("device_library_id").notNull(),
+    pushToken: text("push_token").notNull(),
+  },
+  (t) => [
+    uniqueIndex("wallet_registrations_device_serial_unique").on(
+      t.deviceLibraryId,
+      t.serialNumber,
+    ),
+    index("wallet_registrations_serial_idx").on(t.serialNumber),
+    index("wallet_registrations_device_idx").on(t.deviceLibraryId, t.passTypeId),
+  ],
+);
+
+// ── Wallet voided-pass tombstones ───────────────────────────────────────────
+// Cancelling a ticket hard-deletes the row, leaving the web service nothing to
+// serve. We drop a tombstone here so an installed pass can still be fetched and
+// shown as voided/CANCELLED (then pushed). The event row still exists, so the
+// voided pass renders with real event info. Safe to prune after the pass's
+// expiration date has passed.
+export const walletVoidedPasses = pgTable(
+  "wallet_voided_passes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    voidedAt: timestamp("voided_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    serialNumber: text("serial_number").notNull(),
+    email: text("email").notNull(),
+    name: text("name"),
+    ticketType: text("ticket_type").notNull(),
+    eventId: uuid("event_id"),
+  },
+  (t) => [uniqueIndex("wallet_voided_passes_serial_unique").on(t.serialNumber)],
 );
 
 // ── Waitlist ────────────────────────────────────────────────────────────────

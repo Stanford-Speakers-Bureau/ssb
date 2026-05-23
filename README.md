@@ -98,6 +98,7 @@ plus Cloudflare secrets (anything sensitive is set with `wrangler secret put`).
 | `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | SES sender |
 | `SES_FROM_EMAIL` | From-address for transactional mail |
 | `APPLE_WALLET_KEY` / `APPLE_WALLET_CERT` / `APPLE_WALLET_G4` | PKPass signing chain (base64-PEM) |
+| `APPLE_WALLET_SECRET` | Long-lived Apple Wallet pass update auth secret |
 | `GOOGLE_WALLET_EMAIL` / `GOOGLE_WALLET_KEY` | Google Wallet service account |
 
 Dev-only toggles:
