@@ -67,6 +67,7 @@ async function renderPass(args: {
   ticketType: string;
   event: EventPassFields;
   cancelled: boolean;
+  checkedIn: boolean;
 }): Promise<Buffer | null> {
   const { event } = args;
   const imgUrl = await getSignedImageUrl(event.appleWalletImg || event.img, 3600);
@@ -91,6 +92,7 @@ async function renderPass(args: {
     eventAddress: event.address ?? "",
     start_time_date: event.startTimeDate?.toISOString() ?? "",
     cancelled: args.cancelled,
+    checkedIn: args.checkedIn,
   });
   return (buffer as Buffer) ?? null;
 }
@@ -114,6 +116,7 @@ export async function buildApplePassForTicket(
       email: true,
       name: true,
       type: true,
+      scanned: true,
       walletUpdatedAt: true,
       createdAt: true,
     },
@@ -128,6 +131,7 @@ export async function buildApplePassForTicket(
       ticketType: ticket.type,
       event: ticket.event,
       cancelled: false,
+      checkedIn: ticket.scanned,
     });
     if (!buffer) return null;
     return { buffer, lastModified: ticket.walletUpdatedAt ?? ticket.createdAt };
@@ -159,6 +163,7 @@ export async function buildApplePassForTicket(
     ticketType: tombstone.ticketType,
     event,
     cancelled: true,
+    checkedIn: false,
   });
   if (!buffer) return null;
   return { buffer, lastModified: tombstone.voidedAt };

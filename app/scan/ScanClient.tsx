@@ -4,7 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
-type TicketStatus = "scanned" | "already_scanned" | "invalid" | "valid" | "id_mismatch" | null;
+type TicketStatus =
+  | "scanned"
+  | "already_scanned"
+  | "invalid"
+  | "valid"
+  | "id_mismatch"
+  | "standby_blocked"
+  | null;
 
 type TicketInfo = {
   id: string;
@@ -24,6 +31,8 @@ type LiveEvent = {
   start_time_date: string | null;
   scanned?: number;
   totalSold?: number;
+  identity_verification_enabled?: boolean;
+  allow_admitting_standby?: boolean;
 } | null;
 
 type ScanMode = "hold" | "always";
@@ -93,6 +102,9 @@ export default function ScanClient() {
   const [isConfirming, setIsConfirming] = useState(false);
   const showConfirmationRef = useRef(false);
   const pendingTicketIdRef = useRef<string | null>(null);
+  // Mirror the live event so the (stable) QR scan callback can read the
+  // per-event scan toggles without being re-created on every poll.
+  const liveEventRef = useRef<LiveEvent>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
   const stopInFlightRef = useRef<Promise<void> | null>(null);
@@ -146,6 +158,10 @@ export default function ScanClient() {
   useEffect(() => {
     showConfirmationRef.current = showConfirmation;
   }, [showConfirmation]);
+
+  useEffect(() => {
+    liveEventRef.current = liveEvent;
+  }, [liveEvent]);
 
   // Restore scan-mode preference from localStorage on mount.
   useEffect(() => {
@@ -258,6 +274,93 @@ export default function ScanClient() {
   const lastScannedRef = useRef<string | null>(null);
   const scanCooldownRef = useRef<number>(0);
 
+  // POST to mark a ticket scanned and show the result overlay. Shared by the
+  // identity-confirmation modal and the direct-admit path (when identity
+  // verification is disabled for the event).
+  const performAdmit = useCallback(async (ticketId: string) => {
+    try {
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      });
+      const data = (await response.json()) as {
+        status?: TicketStatus;
+        ticket?: TicketInfo;
+      };
+
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+
+      setStatus(data.status ?? "invalid");
+      setTicketInfo(data.ticket ?? null);
+      await fetchLiveEvent();
+
+      const dismissMs =
+        data.status === "already_scanned"
+          ? 6000
+          : data.status === "standby_blocked"
+            ? 5000
+            : 3000;
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, dismissMs);
+    } catch (error) {
+      console.error("Admit error:", error);
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+      setStatus("invalid");
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
+    }
+  }, []);
+
+  // Decide what to do with a valid, unscanned ticket: hard-error standby when
+  // the event hasn't enabled standby admission, otherwise either prompt for
+  // identity verification or admit straight away.
+  const routeValidTicket = useCallback(
+    (ticket: TicketInfo) => {
+      const isStandby = isStandbyType(ticket.type);
+      const allowStandby = liveEventRef.current?.allow_admitting_standby ?? false;
+
+      if (isStandby && !allowStandby) {
+        if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+        setStatus("standby_blocked");
+        setTicketInfo(ticket);
+        statusTimeoutRef.current = setTimeout(() => {
+          setStatus(null);
+          setTicketInfo(null);
+          statusTimeoutRef.current = null;
+        }, 5000);
+        return;
+      }
+
+      // Identity verification defaults on; standby admissions always confirm so
+      // staff acknowledge the "only if there's space" warning.
+      const requireConfirm =
+        (liveEventRef.current?.identity_verification_enabled ?? true) ||
+        isStandby;
+
+      if (requireConfirm) {
+        setPendingTicket(ticket);
+        pendingTicketIdRef.current = ticket.id;
+        setShowConfirmation(true);
+      } else {
+        void performAdmit(ticket.id);
+      }
+    },
+    [performAdmit],
+  );
+
   // Handle scan results - GET lookup first, then confirm before marking scanned
   const handleScan = useCallback(async (id: string) => {
     if (!id.trim()) return;
@@ -301,10 +404,8 @@ export default function ScanClient() {
       const ticketStatus = data.status ?? "invalid";
 
       if (ticketStatus === "valid" && data.ticket) {
-        // Step 2: Show confirmation modal for valid tickets
-        setPendingTicket(data.ticket);
-        pendingTicketIdRef.current = data.ticket.id;
-        setShowConfirmation(true);
+        // Step 2: standby gating / identity confirmation / direct admit
+        routeValidTicket(data.ticket);
       } else {
         // Already scanned or invalid - show immediate feedback
         setStatus(ticketStatus === "valid" ? null : ticketStatus);
@@ -331,7 +432,7 @@ export default function ScanClient() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [routeValidTicket]);
 
   // Open the manual lookup sheet, resetting any previous query/results.
   const openManualEntry = useCallback(() => {
@@ -408,57 +509,20 @@ export default function ScanClient() {
       return;
     }
 
-    setPendingTicket(ticket);
-    pendingTicketIdRef.current = ticket.id;
-    setShowConfirmation(true);
-  }, [closeManualEntry]);
+    routeValidTicket(ticket);
+  }, [closeManualEntry, routeValidTicket]);
 
   // Confirm scan - POST to mark ticket as scanned
   const handleConfirm = useCallback(async () => {
-    if (!pendingTicket) return;
+    const ticketId = pendingTicketIdRef.current;
+    if (!ticketId) return;
     setIsConfirming(true);
     try {
-      const response = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: pendingTicketIdRef.current }),
-      });
-      const data = (await response.json()) as {
-        status?: TicketStatus;
-        ticket?: TicketInfo;
-      };
-
-      // Dismiss confirmation modal
-      setShowConfirmation(false);
-      setPendingTicket(null);
-      pendingTicketIdRef.current = null;
-
-      // Show success/failure overlay
-      setStatus(data.status ?? "invalid");
-      setTicketInfo(data.ticket ?? null);
-      await fetchLiveEvent();
-
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
-    } catch (error) {
-      console.error("Confirm scan error:", error);
-      setShowConfirmation(false);
-      setPendingTicket(null);
-      pendingTicketIdRef.current = null;
-      setStatus("invalid");
-
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
+      await performAdmit(ticketId);
     } finally {
       setIsConfirming(false);
     }
-  }, [pendingTicket]);
+  }, [performAdmit]);
 
   // Cancel scan - log failed ID check, show standby message
   const handleCancel = useCallback(() => {
@@ -736,6 +800,8 @@ export default function ScanClient() {
         return { bg: "bg-red-600", icon: "x", title: "Invalid Ticket" };
       case "id_mismatch":
         return { bg: "bg-red-600", icon: "x", title: "Send to Standby Line" };
+      case "standby_blocked":
+        return { bg: "bg-amber-500", icon: "warn", title: "Standby — Not Yet" };
       default:
         return null;
     }
@@ -1098,6 +1164,11 @@ export default function ScanClient() {
               )}
               {status === "already_scanned" && ticketInfo?.scan_user && (
                 <p>by {ticketInfo.scan_user}</p>
+              )}
+              {status === "standby_blocked" && (
+                <p className="font-semibold">
+                  Standby isn&apos;t being admitted yet. Ask them to wait.
+                </p>
               )}
             </div>
 
