@@ -9,6 +9,7 @@ type AuditAction =
   | "waitlist.leave"
   | "waitlist.pull"
   | "scan.fail"
+  | "wallet.push"
   | "mailing_list.subscribe"
   | "mailing_list.unsubscribe"
   | "mailing_list.resubscribe";

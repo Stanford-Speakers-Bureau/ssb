@@ -71,6 +71,12 @@ export const events = pgTable(
     externalTicketingUrl: text("external_ticketing_url"),
     bannerEligible: boolean("banner_eligible").notNull().default(true),
     questionsEnabled: boolean("questions_enabled").notNull().default(false),
+    identityVerificationEnabled: boolean("identity_verification_enabled")
+      .notNull()
+      .default(true),
+    allowAdmittingStandby: boolean("allow_admitting_standby")
+      .notNull()
+      .default(false),
     questionsRankingsHidden: boolean("questions_rankings_hidden")
       .notNull()
       .default(false),

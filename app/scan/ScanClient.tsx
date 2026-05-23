@@ -4,7 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 
-type TicketStatus = "scanned" | "already_scanned" | "invalid" | "valid" | "id_mismatch" | null;
+type TicketStatus =
+  | "scanned"
+  | "already_scanned"
+  | "invalid"
+  | "valid"
+  | "id_mismatch"
+  | "standby_blocked"
+  | null;
 
 type TicketInfo = {
   id: string;
@@ -24,6 +31,8 @@ type LiveEvent = {
   start_time_date: string | null;
   scanned?: number;
   totalSold?: number;
+  identity_verification_enabled?: boolean;
+  allow_admitting_standby?: boolean;
 } | null;
 
 type ScanMode = "hold" | "always";
@@ -93,6 +102,9 @@ export default function ScanClient() {
   const [isConfirming, setIsConfirming] = useState(false);
   const showConfirmationRef = useRef(false);
   const pendingTicketIdRef = useRef<string | null>(null);
+  // Mirror the live event so the (stable) QR scan callback can read the
+  // per-event scan toggles without being re-created on every poll.
+  const liveEventRef = useRef<LiveEvent>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaRef = useRef<HTMLDivElement>(null);
   const stopInFlightRef = useRef<Promise<void> | null>(null);
@@ -146,6 +158,10 @@ export default function ScanClient() {
   useEffect(() => {
     showConfirmationRef.current = showConfirmation;
   }, [showConfirmation]);
+
+  useEffect(() => {
+    liveEventRef.current = liveEvent;
+  }, [liveEvent]);
 
   // Restore scan-mode preference from localStorage on mount.
   useEffect(() => {
@@ -258,6 +274,93 @@ export default function ScanClient() {
   const lastScannedRef = useRef<string | null>(null);
   const scanCooldownRef = useRef<number>(0);
 
+  // POST to mark a ticket scanned and show the result overlay. Shared by the
+  // identity-confirmation modal and the direct-admit path (when identity
+  // verification is disabled for the event).
+  const performAdmit = useCallback(async (ticketId: string) => {
+    try {
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      });
+      const data = (await response.json()) as {
+        status?: TicketStatus;
+        ticket?: TicketInfo;
+      };
+
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+
+      setStatus(data.status ?? "invalid");
+      setTicketInfo(data.ticket ?? null);
+      await fetchLiveEvent();
+
+      const dismissMs =
+        data.status === "already_scanned"
+          ? 6000
+          : data.status === "standby_blocked"
+            ? 5000
+            : 3000;
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, dismissMs);
+    } catch (error) {
+      console.error("Admit error:", error);
+      setShowConfirmation(false);
+      setPendingTicket(null);
+      pendingTicketIdRef.current = null;
+      setStatus("invalid");
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = setTimeout(() => {
+        setStatus(null);
+        setTicketInfo(null);
+        statusTimeoutRef.current = null;
+      }, 3000);
+    }
+  }, []);
+
+  // Decide what to do with a valid, unscanned ticket: hard-error standby when
+  // the event hasn't enabled standby admission, otherwise either prompt for
+  // identity verification or admit straight away.
+  const routeValidTicket = useCallback(
+    (ticket: TicketInfo) => {
+      const isStandby = isStandbyType(ticket.type);
+      const allowStandby = liveEventRef.current?.allow_admitting_standby ?? false;
+
+      if (isStandby && !allowStandby) {
+        if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+        setStatus("standby_blocked");
+        setTicketInfo(ticket);
+        statusTimeoutRef.current = setTimeout(() => {
+          setStatus(null);
+          setTicketInfo(null);
+          statusTimeoutRef.current = null;
+        }, 5000);
+        return;
+      }
+
+      // Identity verification defaults on; standby admissions always confirm so
+      // staff acknowledge the "only if there's space" warning.
+      const requireConfirm =
+        (liveEventRef.current?.identity_verification_enabled ?? true) ||
+        isStandby;
+
+      if (requireConfirm) {
+        setPendingTicket(ticket);
+        pendingTicketIdRef.current = ticket.id;
+        setShowConfirmation(true);
+      } else {
+        void performAdmit(ticket.id);
+      }
+    },
+    [performAdmit],
+  );
+
   // Handle scan results - GET lookup first, then confirm before marking scanned
   const handleScan = useCallback(async (id: string) => {
     if (!id.trim()) return;
@@ -301,10 +404,8 @@ export default function ScanClient() {
       const ticketStatus = data.status ?? "invalid";
 
       if (ticketStatus === "valid" && data.ticket) {
-        // Step 2: Show confirmation modal for valid tickets
-        setPendingTicket(data.ticket);
-        pendingTicketIdRef.current = data.ticket.id;
-        setShowConfirmation(true);
+        // Step 2: standby gating / identity confirmation / direct admit
+        routeValidTicket(data.ticket);
       } else {
         // Already scanned or invalid - show immediate feedback
         setStatus(ticketStatus === "valid" ? null : ticketStatus);
@@ -331,7 +432,7 @@ export default function ScanClient() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [routeValidTicket]);
 
   // Open the manual lookup sheet, resetting any previous query/results.
   const openManualEntry = useCallback(() => {
@@ -408,57 +509,20 @@ export default function ScanClient() {
       return;
     }
 
-    setPendingTicket(ticket);
-    pendingTicketIdRef.current = ticket.id;
-    setShowConfirmation(true);
-  }, [closeManualEntry]);
+    routeValidTicket(ticket);
+  }, [closeManualEntry, routeValidTicket]);
 
   // Confirm scan - POST to mark ticket as scanned
   const handleConfirm = useCallback(async () => {
-    if (!pendingTicket) return;
+    const ticketId = pendingTicketIdRef.current;
+    if (!ticketId) return;
     setIsConfirming(true);
     try {
-      const response = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_id: pendingTicketIdRef.current }),
-      });
-      const data = (await response.json()) as {
-        status?: TicketStatus;
-        ticket?: TicketInfo;
-      };
-
-      // Dismiss confirmation modal
-      setShowConfirmation(false);
-      setPendingTicket(null);
-      pendingTicketIdRef.current = null;
-
-      // Show success/failure overlay
-      setStatus(data.status ?? "invalid");
-      setTicketInfo(data.ticket ?? null);
-      await fetchLiveEvent();
-
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
-    } catch (error) {
-      console.error("Confirm scan error:", error);
-      setShowConfirmation(false);
-      setPendingTicket(null);
-      pendingTicketIdRef.current = null;
-      setStatus("invalid");
-
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
+      await performAdmit(ticketId);
     } finally {
       setIsConfirming(false);
     }
-  }, [pendingTicket]);
+  }, [performAdmit]);
 
   // Cancel scan - log failed ID check, show standby message
   const handleCancel = useCallback(() => {
@@ -736,6 +800,8 @@ export default function ScanClient() {
         return { bg: "bg-red-600", icon: "x", title: "Invalid Ticket" };
       case "id_mismatch":
         return { bg: "bg-red-600", icon: "x", title: "Send to Standby Line" };
+      case "standby_blocked":
+        return { bg: "bg-amber-500", icon: "warn", title: "Standby — Not Yet" };
       default:
         return null;
     }
@@ -870,10 +936,15 @@ export default function ScanClient() {
                 <>
                   <FingerIcon className="mb-4 h-16 w-16 text-[#A80D0C]" />
                   <p className="mb-1 text-2xl font-bold text-white">
-                    Press &amp; hold to scan
+                    Hold or tap to scan
                   </p>
                   <p className="text-sm text-zinc-400">
-                    Hold anywhere on the screen. Release to stop.
+                    Hold anywhere and release, or tap to start and tap again to
+                    stop.
+                  </p>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
+                    <BatteryIcon className="h-4 w-4" />
+                    Camera stays off between scans to save battery
                   </p>
                 </>
               ) : (
@@ -1094,6 +1165,11 @@ export default function ScanClient() {
               {status === "already_scanned" && ticketInfo?.scan_user && (
                 <p>by {ticketInfo.scan_user}</p>
               )}
+              {status === "standby_blocked" && (
+                <p className="font-semibold">
+                  Standby isn&apos;t being admitted yet. Ask them to wait.
+                </p>
+              )}
             </div>
 
             <p className="absolute bottom-10 text-sm text-white/70">
@@ -1112,18 +1188,20 @@ export default function ScanClient() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeManualEntry}
-            className="absolute inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 z-50 flex items-start bg-black/70 backdrop-blur-sm"
           >
+            {/* Anchored to the top so the iOS keyboard (which slides up from the
+                bottom and overlays the viewport) can't cover the input. */}
             <motion.div
-              initial={{ y: "100%" }}
+              initial={{ y: "-100%" }}
               animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              exit={{ y: "-100%" }}
               transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
               onClick={(e) => e.stopPropagation()}
-              className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-4"
-              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1rem)" }}
+              className="flex max-h-[80dvh] w-full flex-col rounded-b-2xl border-b border-zinc-700 bg-zinc-900 px-4 pb-4"
+              style={{ paddingTop: "max(env(safe-area-inset-top), 0.75rem)" }}
             >
-              <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
+              <div className="mx-auto mb-3 mt-1 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
 
               <div className="relative shrink-0">
                 <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
@@ -1381,6 +1459,16 @@ function FingerIcon({ className = "" }: { className?: string }) {
         strokeWidth={1.6}
         d="M9 11V6a2 2 0 114 0v5m0 0V4a2 2 0 114 0v7m0 0a2 2 0 114 0v3a8 8 0 01-8 8h-2a8 8 0 01-7-4l-2.5-4.5a2 2 0 013.5-2L9 13"
       />
+    </svg>
+  );
+}
+
+function BatteryIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <rect x="2" y="8" width="16" height="8" rx="2" strokeWidth={1.8} />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M21 11v2" />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M6 10v4" />
     </svg>
   );
 }

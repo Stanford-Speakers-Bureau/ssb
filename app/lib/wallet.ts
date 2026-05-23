@@ -21,6 +21,7 @@ type TicketWalletData = {
   eventAddress: string;
   start_time_date: string;
   cancelled?: boolean | null;
+  checkedIn?: boolean | null;
 };
 
 const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
@@ -146,7 +147,15 @@ export async function getAppleWalletPass(
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
   const isCancelled = ticket.cancelled === true;
-  const statusValue = isCancelled ? "Cancelled" : "Active";
+  // A scanned (checked-in) ticket is "used": it's voided like a cancellation so
+  // iOS greys it out at the door, but it carries a welcoming status, not a
+  // cancellation note. Cancellation wins if both are somehow set.
+  const isCheckedIn = ticket.checkedIn === true && !isCancelled;
+  const statusValue = isCancelled
+    ? "Cancelled"
+    : isCheckedIn
+      ? "Checked In ✓"
+      : "Active";
   // webServiceURL + authenticationToken make the pass updatable: the device
   // registers with our PassKit web service and we push refreshes via APNs.
   // Only passes issued with these fields can ever receive remote updates.
@@ -158,7 +167,7 @@ export async function getAppleWalletPass(
     organizationName: "Stanford Speakers Bureau",
     webServiceURL: `${baseUrl}/api/wallet`,
     authenticationToken,
-    voided: isCancelled,
+    voided: isCancelled || isCheckedIn,
 
     description: ticket.ticketType,
     backgroundColor: isVIP
@@ -263,7 +272,12 @@ export async function getAppleWalletPass(
     key: "back-status",
     label: "Status",
     value: statusValue,
-    changeMessage: "Ticket status changed to %@.",
+    // The check-in push rides on this single, always-present field so iOS shows
+    // our welcome line rather than the generic "<pass> changed" banner. (Adding
+    // a new back field on scan would be a structural change and suppress it.)
+    changeMessage: isCheckedIn
+      ? "✅ %@ — welcome to the event!"
+      : "Ticket status changed to %@.",
   });
   if (isCancelled) {
     pass.backFields.push({
