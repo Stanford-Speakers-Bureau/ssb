@@ -23,6 +23,11 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-hedvig-letters-serif);
   --font-mono: var(--font-inter);
+  /* Display faces used by the upcoming-speakers theme explorations. */
+  --font-display-soft: var(--font-fraunces);
+  --font-display-poster: var(--font-bricolage);
+  --font-display-arcade: var(--font-space-grotesk);
+  --font-marquee: var(--font-anton);
 }
 
 @media (prefers-color-scheme: dark) {

@@ -40,6 +40,9 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // Dev-only: allow the ui.sh theme picker to load its script/assets.
+    // In production `uish` is empty, so the CSP is byte-identical to before.
+    const uish = process.env.NODE_ENV === "production" ? "" : " https://ui.sh";
     return [
       {
         source: "/:path*",
@@ -59,11 +62,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://*.googleusercontent.com https://*.supabase.co",
-              "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co",
+              `script-src 'self' 'unsafe-inline' 'unsafe-eval'${uish}`,
+              `style-src 'self' 'unsafe-inline'${uish}`,
+              `img-src 'self' data: blob: https://*.googleusercontent.com https://*.supabase.co${uish}`,
+              `font-src 'self' data:${uish}`,
+              `connect-src 'self' https://*.supabase.co${uish}`,
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

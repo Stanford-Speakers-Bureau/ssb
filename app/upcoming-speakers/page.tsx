@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import UpcomingSpeakerCard from "@/app/components/UpcomingSpeakerCard";
 import NotifyHandler from "./NotifyHandler";
-import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
-import UpcomingHero from "./UpcomingHero";
-import EmptyEventsState from "./EmptyEventsState";
+import EditorialTheme from "./themes/EditorialTheme";
+import EmberTheme from "./themes/EmberTheme";
+import PressTheme from "./themes/PressTheme";
+import ArcadeTheme from "./themes/ArcadeTheme";
+import MarqueeTheme from "./themes/MarqueeTheme";
+import type { SpeakerCardVM } from "./themes/shared";
+import { SAMPLE_VMS } from "./themes/sampleData";
 import {
   EVENT_STILL_ALIVE,
   formatEventDate,
@@ -131,111 +134,78 @@ async function getUserNotificationState(): Promise<{
   }
 }
 
+/** Map a sanitized event to a theme-agnostic, presentation-ready view model. */
+function toCardVM(e: SanitizedEvent, isAlreadyNotified: boolean): SpeakerCardVM {
+  return {
+    id: e.id,
+    mystery: e.isMystery,
+    name: e.isMystery ? "" : e.name ?? "",
+    header: e.isMystery ? "" : e.tagline ?? "",
+    dateText: formatEventDate(e.isMystery ? e.doors_open : e.start_time_date),
+    doorsOpenText: e.doors_open ? `Doors open ${formatTime(e.doors_open)}` : "",
+    eventTimeText:
+      !e.isMystery && e.start_time_date
+        ? `Starts at ${formatTime(e.start_time_date)}`
+        : "",
+    locationName: e.isMystery ? "" : e.venue ?? "",
+    locationUrl: e.isMystery ? "" : e.venue_link ?? "",
+    imageUrl: e.isMystery ? "" : e.signedImageUrl ?? "",
+    ctaHref: e.isMystery ? "" : `/events/${e.route}`,
+    ctaText: e.isMystery ? "" : "Get Tickets",
+    revealDateRaw: e.isMystery ? e.release_date : null,
+    capacity: e.isMystery ? null : e.capacity,
+    ticketsSold: e.isMystery ? null : e.ticketsSold,
+    reserved: e.isMystery ? null : e.reserved,
+    isAlreadyNotified,
+  };
+}
+
 export default async function UpcomingSpeakers() {
   const [events, userNotificationState] = await Promise.all([
     getUpcomingEvents(),
     getUserNotificationState(),
   ]);
 
-  const hasEvents = events.length > 0;
+  const realVms = events.map((e) =>
+    toCardVM(e, userNotificationState.notifications.has(e.id)),
+  );
+
+  // In dev, fall back to sample speakers so the theme picker is previewable
+  // even with no live events. Never used in production.
+  const vms =
+    realVms.length === 0 && process.env.NODE_ENV === "development"
+      ? SAMPLE_VMS
+      : realVms;
+
+  const hasEvents = vms.length > 0;
+  const isLoggedIn = userNotificationState.isLoggedIn;
+  const themeProps = { vms, hasEvents, isLoggedIn };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--ssb-paper)] font-sans text-[var(--ssb-ink)]">
-      <UpcomingHero hasEvents={hasEvents} />
-
+    <>
       <Suspense fallback={null}>
         <NotifyHandler />
       </Suspense>
 
-      {hasEvents ? (
-        <section className="px-6 py-16 sm:py-20 sm:px-12">
-          <div className="mx-auto flex max-w-5xl flex-col gap-12">
-            {events.map((event, i) => (
-              <UpcomingSpeakerCard
-                key={event.id}
-                index={i}
-                name={event.isMystery ? "???" : event.name || "???"}
-                header={
-                  event.isMystery
-                    ? "Speaker: To Be Announced"
-                    : event.tagline || ""
-                }
-                dateText={formatEventDate(event.isMystery ? event.doors_open : event.start_time_date)}
-                doorsOpenText={
-                  event.doors_open
-                    ? `Doors open ${formatTime(event.doors_open)}`
-                    : ""
-                }
-                eventTimeText={
-                  !event.isMystery && event.start_time_date
-                    ? `Starts at ${formatTime(event.start_time_date)}`
-                    : ""
-                }
-                locationName={event.isMystery ? "" : event.venue || ""}
-                locationUrl={event.isMystery ? "" : event.venue_link || ""}
-                backgroundImageUrl={
-                  event.isMystery
-                    ? ""
-                    : event.signedImageUrl || ""
-                }
-                ctaHref={event.isMystery ? "" : `/events/${event.route}`}
-                ctaText={event.isMystery ? "" : "Get Tickets"}
-                mystery={event.isMystery}
-                eventDateRaw={event.isMystery ? event.release_date : null}
-                eventId={event.id}
-                isAlreadyNotified={userNotificationState.notifications.has(event.id)}
-                isLoggedIn={userNotificationState.isLoggedIn}
-                capacity={event.capacity}
-                ticketsSold={event.ticketsSold}
-                reserved={event.reserved}
-              />
-            ))}
-          </div>
-        </section>
-      ) : (
-        <EmptyEventsState />
-      )}
-
-      <section className="border-t border-white/10 bg-[var(--ssb-paper-strong)] px-6 py-16 sm:py-24 sm:px-12">
-        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <p className="mb-3 text-xs font-sans uppercase tracking-[0.3em] text-[#A80D0C] sm:text-sm">
-            Don&rsquo;t see them?
-          </p>
-          <h2 className="font-serif text-3xl text-white leading-[1.05] sm:text-5xl">
-            Suggest a speaker.
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl font-sans text-base leading-relaxed text-[#f5e8dc]/80 sm:text-lg">
-            Drop a name. Top picks become the outreach list for our booking
-            team. Your suggestion is what fills the calendar above.
-          </p>
-          <div className="mt-8">
-            <SuggestSpeakerButton />
-          </div>
+      {/* Theme exploration — pick a direction in the ui.sh toolbar.
+          All directions are dark; cardinal red is kept across every option. */}
+      <div data-uidotsh-pick="Speaker page theme" className="contents">
+        <div data-uidotsh-option="Editorial Dark (current)" className="contents" hidden>
+          <EditorialTheme {...themeProps} />
         </div>
-      </section>
-
-      <section className="border-t border-white/10 bg-[var(--ssb-paper)] px-6 py-16 sm:py-24 sm:px-12">
-        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <p className="mb-3 text-xs font-sans uppercase tracking-[0.3em] text-[#A80D0C] sm:text-sm">
-            Stay in the loop
-          </p>
-          <h2 className="font-serif text-3xl text-white leading-[1.05] sm:text-5xl">
-            Hear about every upcoming speaker.
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl font-sans text-base leading-relaxed text-[#f5e8dc]/80 sm:text-lg">
-            One email per event. We don&rsquo;t spam. We just tell you
-            who&rsquo;s coming and when tickets drop.
-          </p>
-          <a
-            href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 inline-flex rounded-full border border-[#f2ded0]/50 bg-[#fff8f1] px-8 py-3.5 text-sm font-semibold text-[#1c1614] shadow-[0_12px_35px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-0.5 hover:bg-white sm:text-base"
-          >
-            Join the Mailing List
-          </a>
+        <div data-uidotsh-option="Ember (warm dark)" className="contents">
+          <EmberTheme {...themeProps} />
         </div>
-      </section>
-    </div>
+        <div data-uidotsh-option="Press (screenprint)" className="contents" hidden>
+          <PressTheme {...themeProps} />
+        </div>
+        <div data-uidotsh-option="Midnight Arcade (neon glow)" className="contents" hidden>
+          <ArcadeTheme {...themeProps} />
+        </div>
+        <div data-uidotsh-option="Marquee Ticket" className="contents" hidden>
+          <MarqueeTheme {...themeProps} />
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
-import { Great_Vibes, Hedvig_Letters_Serif, Inter } from "next/font/google";
+import {
+  Anton,
+  Bricolage_Grotesque,
+  Fraunces,
+  Great_Vibes,
+  Hedvig_Letters_Serif,
+  Inter,
+  Space_Grotesk,
+} from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
 import ClientFooter from "./components/ClientFooter";
@@ -17,6 +26,28 @@ const hedvigLettersSerif = Hedvig_Letters_Serif({
 
 const greatVibes = Great_Vibes({
   variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+// Display faces for the upcoming-speakers theme explorations.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+});
+
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
+const anton = Anton({
+  variable: "--font-anton",
   subsets: ["latin"],
   weight: ["400"],
 });
@@ -55,11 +86,16 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} antialiased`}
+        className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} ${fraunces.variable} ${bricolage.variable} ${spaceGrotesk.variable} ${anton.variable} antialiased`}
       >
         <ClientHeaderBar />
         {children}
         <ClientFooter />
+        {/* Temporary: ui.sh theme picker for the upcoming-speakers redesign.
+            Dev-only so it never ships to production; removed at finalize. */}
+        {process.env.NODE_ENV === "development" && (
+          <Script src="https://ui.sh/ui-picker.js" />
+        )}
       </body>
     </html>
   );
