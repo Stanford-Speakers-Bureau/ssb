@@ -4,6 +4,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import { formatInTimeZone } from "date-fns-tz";
 import { fetchWithTimeout } from "./fetch";
 import { deriveAppleWalletAuthToken } from "./wallet-links";
+import { generateGoogleCalendarUrl } from "./utils";
 
 type TicketWalletData = {
   email: string;
@@ -271,6 +272,27 @@ export async function getAppleWalletPass(
       value: "This ticket has been cancelled and is no longer valid for entry.",
     });
   }
+  // Tappable action links for the back of the pass.
+  const mapsDirections =
+    ticket.eventLat && ticket.eventLng
+      ? `https://maps.apple.com/?daddr=${ticket.eventLat},${ticket.eventLng}` +
+        (ticket.eventVenue ? `&q=${encodeURIComponent(ticket.eventVenue)}` : "")
+      : null;
+  const directionsUrl = ticket.eventVenueLink || mapsDirections;
+  const calendarUrl =
+    generateGoogleCalendarUrl({
+      eventName: ticket.eventName,
+      eventStartTime: ticket.start_time_date || null,
+      eventVenue: ticket.eventVenue,
+      ticketId: ticket.ticketId,
+      ticketEmail: ticket.email,
+      ticketType: ticket.ticketType,
+    }) || null;
+  // Plain email address: Wallet's data detector linkifies it into a mail
+  // composer. A full mailto:?subject= URI would render as literal text instead.
+  const supportEmail =
+    process.env.SES_FROM_EMAIL || "tickets@stanfordspeakersbureau.com";
+
   // Back-of-pass mirrors update silently (no changeMessage) so they don't
   // compete with the front fields for the notification banner.
   pass.backFields.push({
@@ -327,12 +349,14 @@ export async function getAppleWalletPass(
       label: "Location",
       value: ticket.eventVenue,
     },
-    ...(ticket.eventVenueLink
+    // Prefer the venue's own directions link; otherwise route to the
+    // coordinates in Apple Maps. Wallet renders these URLs as tappable links.
+    ...(directionsUrl
       ? [
           {
             key: "back-loc-link",
             label: "Directions",
-            value: ticket.eventVenueLink,
+            value: directionsUrl,
           },
         ]
       : []),
@@ -340,6 +364,20 @@ export async function getAppleWalletPass(
       key: "back-event-link",
       label: "Event Details",
       value: ticket.eventLink,
+    },
+    ...(calendarUrl
+      ? [
+          {
+            key: "back-calendar",
+            label: "Add to Calendar",
+            value: calendarUrl,
+          },
+        ]
+      : []),
+    {
+      key: "back-contact",
+      label: "Questions?",
+      value: supportEmail,
     },
   );
   // Surface the pass on the lock screen near the venue. Note: iOS gets stricter
