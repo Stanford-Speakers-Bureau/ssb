@@ -870,10 +870,15 @@ export default function ScanClient() {
                 <>
                   <FingerIcon className="mb-4 h-16 w-16 text-[#A80D0C]" />
                   <p className="mb-1 text-2xl font-bold text-white">
-                    Press &amp; hold to scan
+                    Hold or tap to scan
                   </p>
                   <p className="text-sm text-zinc-400">
-                    Hold anywhere on the screen. Release to stop.
+                    Hold anywhere and release, or tap to start and tap again to
+                    stop.
+                  </p>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
+                    <BatteryIcon className="h-4 w-4" />
+                    Camera stays off between scans to save battery
                   </p>
                 </>
               ) : (
@@ -1112,18 +1117,20 @@ export default function ScanClient() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeManualEntry}
-            className="absolute inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 z-50 flex items-start bg-black/70 backdrop-blur-sm"
           >
+            {/* Anchored to the top so the iOS keyboard (which slides up from the
+                bottom and overlays the viewport) can't cover the input. */}
             <motion.div
-              initial={{ y: "100%" }}
+              initial={{ y: "-100%" }}
               animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              exit={{ y: "-100%" }}
               transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
               onClick={(e) => e.stopPropagation()}
-              className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-4"
-              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1rem)" }}
+              className="flex max-h-[80dvh] w-full flex-col rounded-b-2xl border-b border-zinc-700 bg-zinc-900 px-4 pb-4"
+              style={{ paddingTop: "max(env(safe-area-inset-top), 0.75rem)" }}
             >
-              <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
+              <div className="mx-auto mb-3 mt-1 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
 
               <div className="relative shrink-0">
                 <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
@@ -1381,6 +1388,16 @@ function FingerIcon({ className = "" }: { className?: string }) {
         strokeWidth={1.6}
         d="M9 11V6a2 2 0 114 0v5m0 0V4a2 2 0 114 0v7m0 0a2 2 0 114 0v3a8 8 0 01-8 8h-2a8 8 0 01-7-4l-2.5-4.5a2 2 0 013.5-2L9 13"
       />
+    </svg>
+  );
+}
+
+function BatteryIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <rect x="2" y="8" width="16" height="8" rx="2" strokeWidth={1.8} />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M21 11v2" />
+      <path strokeLinecap="round" strokeWidth={1.8} d="M6 10v4" />
     </svg>
   );
 }
