@@ -3,6 +3,7 @@ import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import { SignJWT, importPKCS8 } from "jose";
 import { formatInTimeZone } from "date-fns-tz";
 import { fetchWithTimeout } from "./fetch";
+import { deriveAppleWalletAuthToken } from "./wallet-links";
 
 type TicketWalletData = {
   email: string;
@@ -18,6 +19,7 @@ type TicketWalletData = {
   eventLng: number;
   eventAddress: string;
   start_time_date: string;
+  cancelled?: boolean | null;
 };
 
 const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
@@ -142,11 +144,20 @@ export async function getAppleWalletPass(
 
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
+  const isCancelled = ticket.cancelled === true;
+  const statusValue = isCancelled ? "Cancelled" : "Active";
+  // webServiceURL + authenticationToken make the pass updatable: the device
+  // registers with our PassKit web service and we push refreshes via APNs.
+  // Only passes issued with these fields can ever receive remote updates.
+  const authenticationToken = await deriveAppleWalletAuthToken(ticket.ticketId);
   const props = {
     passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
     teamIdentifier: "SNC2X5N2CY",
     serialNumber: ticket.ticketId,
     organizationName: "Stanford Speakers Bureau",
+    webServiceURL: `${baseUrl}/api/wallet`,
+    authenticationToken,
+    voided: isCancelled,
 
     description: ticket.ticketType,
     backgroundColor: isVIP
@@ -177,6 +188,7 @@ export async function getAppleWalletPass(
       key: "date-time",
       label: formatPacificTime(doorTime),
       value: formatPacificDate(doorTime),
+      changeMessage: "Event date changed to %@.",
       textAlignment: "PKTextAlignmentLeft",
     });
   }
@@ -185,12 +197,14 @@ export async function getAppleWalletPass(
       key: "event",
       label: "Event",
       value: ticket.eventName,
+      changeMessage: "Event changed to %@.",
       textAlignment: "PKTextAlignmentLeft",
     },
     {
       key: "loc",
       label: "Location",
       value: ticket.eventVenue,
+      changeMessage: "Location changed to %@.",
       textAlignment: "PKTextAlignmentLeft",
     },
   );
@@ -198,6 +212,7 @@ export async function getAppleWalletPass(
     key: "type",
     label: "Type",
     value: ticket.ticketType,
+    changeMessage: "Ticket type changed to %@.",
     textAlignment: "PKTextAlignmentLeft",
   });
   if (ticket.name) {
@@ -205,6 +220,7 @@ export async function getAppleWalletPass(
       key: "attendee",
       label: "Attendee",
       value: ticket.name,
+      changeMessage: "Attendee changed to %@.",
       textAlignment: "PKTextAlignmentRight",
     });
   }
@@ -214,18 +230,31 @@ export async function getAppleWalletPass(
     messageEncoding: "iso-8859-1",
     altText: ticket.name || ticket.email,
   });
-  if (ticket.name) {
+  pass.backFields.push({
+    key: "back-status",
+    label: "Status",
+    value: statusValue,
+    changeMessage: "Ticket status changed to %@.",
+  });
+  if (isCancelled) {
     pass.backFields.push({
-      key: "back-name",
-      label: "Name",
-      value: ticket.name,
+      key: "back-cancelled-note",
+      label: "Cancellation",
+      value: "This ticket has been cancelled and is no longer valid for entry.",
     });
   }
+  pass.backFields.push({
+    key: "back-name",
+    label: "Name",
+    value: ticket.name ?? "Not provided",
+    changeMessage: "Attendee changed to %@.",
+  });
   pass.backFields.push(
     {
       key: "back-event",
       label: "Event",
       value: ticket.eventName,
+      changeMessage: "Event changed to %@.",
     },
     ...(startTime
       ? [
@@ -233,6 +262,7 @@ export async function getAppleWalletPass(
             key: "back-start-time",
             label: "Start Time",
             value: formatPacificTime(startTime),
+            changeMessage: "Start time changed to %@.",
           },
         ]
       : []),
@@ -242,11 +272,13 @@ export async function getAppleWalletPass(
             key: "back-door-time",
             label: "Doors Open",
             value: formatPacificTime(doorTime),
+            changeMessage: "Doors open changed to %@.",
           },
           {
             key: "back-date",
             label: "Date",
             value: formatPacificDate(doorTime),
+            changeMessage: "Event date changed to %@.",
           },
         ]
       : []),
@@ -254,6 +286,7 @@ export async function getAppleWalletPass(
       key: "back-type",
       label: "Ticket Type",
       value: ticket.ticketType,
+      changeMessage: "Ticket type changed to %@.",
     },
     {
       key: "back-id",
@@ -269,6 +302,7 @@ export async function getAppleWalletPass(
       key: "back-loc",
       label: "Location",
       value: ticket.eventVenue,
+      changeMessage: "Location changed to %@.",
     },
     ...(ticket.eventVenueLink
       ? [
@@ -283,13 +317,19 @@ export async function getAppleWalletPass(
       key: "back-event-link",
       label: "Event Details",
       value: ticket.eventLink,
+      changeMessage: "Event details link changed to %@.",
     },
   );
-  // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
-  // pass.setLocations({
-  //   latitude: ticket.eventLat,
-  //   longitude: ticket.eventLng,
-  // });
+  // Surface the pass on the lock screen near the venue. Note: iOS gets stricter
+  // about lock-screen relevance when both location and time are present and
+  // tends to favor one signal at a time — both are still valid to set.
+  if (ticket.eventLat && ticket.eventLng) {
+    pass.setLocations({
+      latitude: ticket.eventLat,
+      longitude: ticket.eventLng,
+      relevantText: `${ticket.eventName} is here`,
+    });
+  }
   if (doorTime) {
     pass.setExpirationDate(new Date(doorTime.getTime() + 86_400_000));
     pass.setRelevantDates([
