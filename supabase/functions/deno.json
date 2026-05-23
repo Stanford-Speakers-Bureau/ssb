@@ -1,5 +1,5 @@
 {
-  "lock": "deno.lock",
+  "lock": false,
   "tasks": {
     "check": "deno check apns-push/index.ts"
   },
