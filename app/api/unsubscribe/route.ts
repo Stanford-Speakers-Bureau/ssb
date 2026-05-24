@@ -11,7 +11,7 @@ function normalize(s: string) {
 }
 
 export async function POST(req: Request) {
-  let body: { token?: unknown; confirmation?: unknown };
+  let body: { token?: unknown; confirmation?: unknown; alsoAnnounce?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const confirmation = typeof body.confirmation === "string"
     ? body.confirmation
     : "";
+  const alsoAnnounce = body.alsoAnnounce === true;
 
   if (!token) {
     return NextResponse.json({ error: "token required" }, { status: 400 });
@@ -33,6 +34,38 @@ export async function POST(req: Request) {
       { error: "Invalid or expired token" },
       { status: 400 },
     );
+  }
+
+  // Opt-out from all future speaker events (announcements list), offered from an
+  // event-scope unsubscribe link. Requires the same typed phrase as the primary
+  // announce unsubscribe flow.
+  if (alsoAnnounce) {
+    if (claims.scope !== "event") {
+      return NextResponse.json(
+        { error: "alsoAnnounce is only valid for event unsubscribe links" },
+        { status: 400 },
+      );
+    }
+    if (normalize(confirmation) !== normalize(ANNOUNCE_PHRASE)) {
+      return NextResponse.json(
+        { error: `You must type "${ANNOUNCE_PHRASE}" to unsubscribe` },
+        { status: 400 },
+      );
+    }
+    try {
+      const { created } = await recordSelfUnsubscribe({
+        email: claims.email,
+        scope: "announce",
+        source: "unsubscribe_link",
+      });
+      return NextResponse.json({ ok: true, created, scope: "announce" });
+    } catch (err) {
+      console.error("[unsubscribe] announce opt-out failed:", err);
+      return NextResponse.json(
+        { error: "Failed to unsubscribe" },
+        { status: 500 },
+      );
+    }
   }
 
   let eventName: string | null = null;
