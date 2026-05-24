@@ -21,7 +21,7 @@ export default function TimelineView({
   if (sections.every((s) => s.speakers.length === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-24 text-center">
-        <p className="font-serif text-2xl text-zinc-400">
+        <p className="font-display text-2xl text-[var(--ssb-muted)]">
           No speakers match that search.
         </p>
       </div>
@@ -33,7 +33,7 @@ export default function TimelineView({
       {/* Center spine */}
       <div
         aria-hidden="true"
-        className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#A80D0C]/20 via-[#A80D0C]/75 to-[#A80D0C]/20"
+        className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-[var(--ssb-accent)] to-transparent"
       />
 
       {sections.map((section) => {
@@ -45,9 +45,9 @@ export default function TimelineView({
               <div className="relative">
                 <span
                   aria-hidden="true"
-                  className="block font-serif text-[5rem] sm:text-[8rem] leading-none text-transparent"
+                  className="block font-display text-[5rem] sm:text-[8rem] leading-none text-transparent"
                   style={{
-                    WebkitTextStroke: "2px #A80D0C",
+                    WebkitTextStroke: "2px var(--ssb-accent)",
                   }}
                 >
                   {section.year}
@@ -74,7 +74,7 @@ export default function TimelineView({
                     {/* Dot on spine */}
                     <div
                       aria-hidden="true"
-                      className={`hidden md:block absolute top-6 h-3 w-3 rounded-full bg-[#A80D0C] ${
+                      className={`hidden md:block absolute top-6 h-3 w-3 rounded-full bg-[var(--ssb-accent)] ${
                         isLeft ? "-right-[7px]" : "-left-[7px]"
                       }`}
                     />
@@ -82,10 +82,10 @@ export default function TimelineView({
                     <button
                       type="button"
                       onClick={() => onOpen(speaker.slug)}
-                      className="group block w-full text-left rounded border border-zinc-900 bg-zinc-950 p-5 sm:p-6 transition-all hover:border-[#A80D0C] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+                      className="group block w-full text-left rounded border border-[var(--ssb-border)] bg-[var(--ssb-card)] p-5 sm:p-6 transition-all hover:border-[var(--ssb-accent)] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--ssb-accent)]"
                     >
                       {image && (
-                        <div className="relative w-full h-72 sm:h-80 mb-5 rounded overflow-hidden bg-zinc-900">
+                        <div className="relative w-full h-72 sm:h-80 mb-5 rounded overflow-hidden bg-[var(--ssb-card-strong)]">
                           <Image
                             src={image}
                             alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -95,15 +95,15 @@ export default function TimelineView({
                           />
                         </div>
                       )}
-                      <h3 className="font-serif text-2xl sm:text-3xl text-white leading-tight mb-2">
+                      <h3 className="font-display text-2xl sm:text-3xl text-[var(--ssb-ink-strong)] leading-tight mb-2">
                         {speaker.name}
                       </h3>
                       {speaker.title && (
-                        <p className="font-sans text-xs uppercase tracking-[0.15em] text-[#A80D0C] mb-3">
+                        <p className="font-sans text-xs uppercase tracking-[0.15em] text-[var(--ssb-accent-text)] mb-3">
                           {speaker.title}
                         </p>
                       )}
-                      <p className="font-sans text-sm text-zinc-400 leading-relaxed line-clamp-3">
+                      <p className="font-sans text-sm text-[var(--ssb-muted)] leading-relaxed line-clamp-3">
                         {speaker.bio}
                       </p>
                     </button>

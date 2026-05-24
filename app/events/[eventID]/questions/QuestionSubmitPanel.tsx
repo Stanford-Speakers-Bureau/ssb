@@ -37,17 +37,17 @@ export default function QuestionSubmitPanel({
   if (user) {
     const initials = initialsFrom(user.displayName ?? null, user.email ?? null);
     return (
-      <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 shadow-lg p-5 sm:p-6">
+      <div className="rounded-xl border border-[var(--ssb-border)] bg-[var(--ssb-card)] shadow-lg p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="shrink-0 w-8 h-8 rounded-full bg-[#A80D0C] flex items-center justify-center text-[11px] font-semibold text-white">
+          <div className="shrink-0 w-8 h-8 rounded-full bg-[var(--ssb-accent)] flex items-center justify-center text-[11px] font-semibold text-[var(--ssb-accent-contrast)]">
             {initials}
           </div>
-          <p className="text-xs text-zinc-400 truncate">
+          <p className="text-xs text-[var(--ssb-muted)] truncate">
             {user.displayName || user.email}
           </p>
         </div>
         {closed ? (
-          <p className="rounded-xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-400">
+          <p className="rounded-xl border border-[var(--ssb-border)] bg-[var(--ssb-card-strong)] px-4 py-3 text-sm text-[var(--ssb-muted)]">
             Submissions closed.
           </p>
         ) : (
@@ -58,13 +58,13 @@ export default function QuestionSubmitPanel({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 shadow-lg p-6 text-center">
+    <div className="rounded-xl border border-[var(--ssb-border)] bg-[var(--ssb-card)] shadow-lg p-6 text-center">
       <Link
         href={`/api/auth/login?redirect_to=${encodeURIComponent(
           `/events/${eventRoute}/questions`,
         )}`}
         prefetch={false}
-        className="inline-flex items-center gap-2 rounded-full bg-[#A80D0C] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211]"
+        className="inline-flex items-center gap-2 rounded-full bg-[var(--ssb-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-lg shadow-[var(--ssb-accent)]/20 transition-colors hover:bg-[var(--ssb-accent-strong)]"
       >
         Sign in to suggest
         <svg

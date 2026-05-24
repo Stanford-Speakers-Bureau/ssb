@@ -39,14 +39,14 @@ export default async function QuestionsBar({
   if (questions.length === 0 && lifecycleState !== "open") return null;
 
   return (
-    <section className="relative w-full bg-gradient-to-b from-zinc-950 via-[#1a0606] to-zinc-950 my-6 sm:my-8">
+    <section className="relative w-full bg-gradient-to-b from-[var(--ssb-bg)] via-[var(--ssb-accent)]/15 to-[var(--ssb-bg)] my-6 sm:my-8">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#A80D0C]/60 to-transparent"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--ssb-accent)]/60 to-transparent"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#A80D0C]/60 to-transparent"
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[var(--ssb-accent)]/60 to-transparent"
       />
       <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-4 sm:py-5">
         <QuestionsBarClient

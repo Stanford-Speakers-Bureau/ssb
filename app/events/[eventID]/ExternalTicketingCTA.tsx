@@ -23,7 +23,7 @@ export default function ExternalTicketingCTA({
         >
           Get Tickets
         </motion.a>
-        <p className="mt-3 text-center text-xs text-zinc-400">
+        <p className="mt-3 text-center text-xs text-[var(--ssb-muted)]">
           Tickets for this event are handled off-platform.
         </p>
       </div>

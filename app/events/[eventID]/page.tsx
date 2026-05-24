@@ -202,7 +202,7 @@ export default async function EventPage({
 
   if (isMysteryEvent) {
     return (
-      <div className="relative flex min-h-screen flex-col font-sans bg-zinc-950">
+      <div className="relative flex min-h-screen flex-col font-sans bg-[var(--ssb-bg)]">
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-5">
             <EventFeedbackCard eventId={event.id} />
@@ -333,7 +333,7 @@ export default async function EventPage({
     : null;
 
   return (
-    <div className="relative flex flex-col font-sans min-h-screen bg-zinc-950">
+    <div className="relative flex flex-col font-sans min-h-screen bg-[var(--ssb-bg)]">
       {jsonLd && (
         <script
           type="application/ld+json"
@@ -371,8 +371,8 @@ export default async function EventPage({
 
             {/* Description */}
             {event.desc && (
-              <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/70 p-5 sm:p-6">
-                <div className="prose prose-sm prose-zinc prose-invert prose-p:text-zinc-300 prose-p:leading-[1.75] prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
+              <div className="rounded-xl bg-[var(--ssb-card)] border border-[var(--ssb-border)] p-5 sm:p-6">
+                <div className="prose prose-sm prose-zinc prose-invert prose-p:text-[var(--ssb-muted)] prose-p:leading-[1.75] prose-a:text-[var(--ssb-accent-text)] prose-a:underline prose-a:underline-offset-2 max-w-none">
                   <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{event.desc}</ReactMarkdown>
                 </div>
               </div>
@@ -384,7 +384,7 @@ export default async function EventPage({
                 href={calendarUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-800/60 hover:text-white hover:border-zinc-700 active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-[var(--ssb-card)] border border-[var(--ssb-border)] px-5 py-3.5 text-sm font-medium text-[var(--ssb-muted)] transition-all hover:bg-[var(--ssb-card-strong)] hover:text-[var(--ssb-ink-strong)] hover:border-[var(--ssb-border-strong)] active:scale-[0.98]"
               >
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -462,12 +462,12 @@ export default async function EventPage({
         </div>
 
         {/* ADA notice */}
-        <div className="mt-10 pt-6 border-t border-zinc-800/50">
-          <p className="text-center text-xs sm:text-sm text-zinc-500 leading-relaxed">
+        <div className="mt-10 pt-6 border-t border-[var(--ssb-border)]">
+          <p className="text-center text-xs sm:text-sm text-[var(--ssb-faint)] leading-relaxed">
             For ADA accommodations or other questions, please email{" "}
             <a
               href="mailto:tickets@stanfordspeakersbureau.com"
-              className="text-zinc-400 underline underline-offset-2 decoration-zinc-600 hover:text-zinc-300 transition-colors"
+              className="text-[var(--ssb-muted)] underline underline-offset-2 decoration-[var(--ssb-border-strong)] hover:text-[var(--ssb-ink)] transition-colors"
             >
               tickets@stanfordspeakersbureau.com
             </a>

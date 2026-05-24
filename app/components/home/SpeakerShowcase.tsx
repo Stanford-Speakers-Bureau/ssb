@@ -31,7 +31,7 @@ function ArchiveSlide() {
     <Link
       href="/past-speakers"
       prefetch={false}
-      className="relative block h-[300px] w-full overflow-hidden rounded-[30px] border border-white/12 bg-gradient-to-br from-[#f0decd]/18 via-[#7f1613]/14 to-[#161211] shadow-[0_25px_80px_rgba(0,0,0,0.18)] transition-colors hover:border-[#e58c72]/60 focus:outline-none focus:ring-2 focus:ring-[#db4c3a] sm:h-[560px]"
+      className="relative block h-[300px] w-full overflow-hidden rounded-[30px] border border-[var(--ssb-border)] bg-gradient-to-br from-[#f0decd]/18 via-[var(--ssb-accent-soft)] to-[var(--ssb-night)] shadow-[0_25px_80px_rgba(0,0,0,0.18)] transition-colors hover:border-[var(--ssb-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--ssb-accent-strong)] sm:h-[560px]"
     >
       <div
         aria-hidden="true"
@@ -44,25 +44,25 @@ function ArchiveSlide() {
       />
       <div
         aria-hidden="true"
-        className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#e56a53]/28 blur-3xl"
+        className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[var(--ssb-accent-soft)] blur-3xl"
       />
 
       <div className="relative h-full flex flex-col justify-between p-6 sm:p-8">
         <div>
-          <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-white/78 backdrop-blur-md">
+          <span className="mb-6 inline-block rounded-full border border-[var(--ssb-border-strong)] bg-[var(--ssb-card)] px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-[var(--ssb-muted)] backdrop-blur-md">
             Explore more
           </span>
-          <h3 className="font-serif text-4xl sm:text-5xl text-white leading-[0.95] mb-4">
-            90 years of <span className="text-[#f08f74]">voices</span>{" "}
+          <h3 className="font-display text-4xl sm:text-5xl text-[var(--ssb-ink-strong)] leading-[0.95] mb-4">
+            90 years of <span className="text-[var(--ssb-accent-text)]">voices</span>{" "}
             <span className="hidden sm:inline">on our stage</span>.
           </h3>
-          <p className="max-w-sm font-sans text-sm leading-relaxed text-[#f2e3d6]/82 sm:text-base">
+          <p className="max-w-sm font-sans text-sm leading-relaxed text-[var(--ssb-muted)] sm:text-base">
             From Nobel laureates to comedians, view every speaker who has graced
             an SSB stage.
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-2 self-start rounded-full bg-[#fff8f1] px-6 py-3 text-sm font-semibold text-[#181210] shadow-[0_12px_30px_rgba(0,0,0,0.22)] transition-colors group-hover:bg-white">
+        <span className="inline-flex items-center gap-2 self-start rounded-full bg-[var(--ssb-ink-strong)] px-6 py-3 text-sm font-semibold text-[var(--ssb-night)] shadow-[0_12px_30px_rgba(0,0,0,0.22)] transition-colors group-hover:bg-white">
           Enter The Archive
           <svg
             width="16"
@@ -96,7 +96,7 @@ function Slide({
       type="button"
       onClick={onOpen}
       aria-label={`More info about ${speaker.name}`}
-      className="relative h-[300px] w-full overflow-hidden rounded-[30px] text-left shadow-[0_22px_70px_rgba(0,0,0,0.16)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#db4c3a] sm:h-[560px]"
+      className="relative h-[300px] w-full overflow-hidden rounded-[30px] text-left shadow-[0_22px_70px_rgba(0,0,0,0.16)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ssb-accent-strong)] sm:h-[560px]"
     >
       <Image
         src={speaker.image}
@@ -112,16 +112,16 @@ function Slide({
         <span className="mb-3 inline-block rounded-full border border-white/18 bg-white/10 px-3 py-1 text-[10px] font-sans uppercase tracking-[0.2em] text-white/78 backdrop-blur-md">
           {speaker.year} · {speaker.location ?? "Stanford"}
         </span>
-        <h3 className="font-serif text-3xl sm:text-4xl text-white leading-[0.95] mb-2">
+        <h3 className="font-display text-3xl sm:text-4xl text-[var(--ssb-ink-strong)] leading-[0.95] mb-2">
           {speaker.name}
         </h3>
-        <p className="mb-3 font-sans text-sm italic text-[#f1ded1]/86">
+        <p className="mb-3 font-sans text-sm italic text-[var(--ssb-muted)]">
           {speaker.title}
         </p>
-        <p className="hidden font-sans text-sm leading-relaxed text-[#fff4ec]/88 line-clamp-3 sm:block">
+        <p className="hidden font-sans text-sm leading-relaxed text-[var(--ssb-ink)] line-clamp-3 sm:block">
           {speaker.quote}
         </p>
-        <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-sans uppercase tracking-[0.2em] text-white/82 transition-colors group-hover:text-[#ffb8a7]">
+        <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-muted)] transition-colors group-hover:text-[var(--ssb-accent-text)]">
           More info
           <svg
             width="12"
@@ -155,7 +155,7 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={`${direction === "prev" ? "Previous" : "Next"} speaker`}
-      className={`absolute top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#f4d8cd]/60 bg-[#fff8f1] text-[#181210] shadow-[0_18px_36px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-[52%] hover:bg-white lg:flex ${direction === "prev" ? "left-2" : "right-2"
+      className={`absolute top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--ssb-border-strong)] bg-[var(--ssb-ink-strong)] text-[var(--ssb-night)] shadow-[0_18px_36px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-[52%] hover:bg-white lg:flex ${direction === "prev" ? "left-2" : "right-2"
         }`}
     >
       <svg
@@ -292,21 +292,21 @@ export default function SpeakerShowcase() {
       };
 
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_32%),linear-gradient(180deg,#1a1412_0%,#211816_100%)] text-white">
+    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,var(--ssb-accent-soft),transparent_32%),linear-gradient(180deg,var(--ssb-paper)_0%,var(--ssb-paper-strong)_100%)] text-[var(--ssb-ink-strong)]">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--ssb-border)] to-transparent"
       />
       <div className="mx-auto max-w-[88rem] px-6 pb-8 pt-16 sm:px-12 sm:pt-20">
         <div className="mb-8 flex items-end justify-between gap-6">
           <div>
-            <p className="mb-2 text-xs uppercase tracking-[0.3em] text-[#f19a80] sm:text-sm">
+            <p className="mb-2 text-xs uppercase tracking-[0.3em] text-[var(--ssb-accent-text)] sm:text-sm">
               Featured
             </p>
-            <h2 className="font-serif text-3xl sm:text-5xl text-white">
+            <h2 className="font-display text-3xl sm:text-5xl text-[var(--ssb-ink-strong)]">
               Who&rsquo;s Spoken at Stanford
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#e7d5c9]/78 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--ssb-muted)] sm:text-base">
               A few of the voices that have made an SSB stage feel
               unforgettable.
             </p>
@@ -315,7 +315,7 @@ export default function SpeakerShowcase() {
             <Link
               href="/past-speakers"
               prefetch={false}
-              className="hidden items-center gap-2 rounded-full border border-white/16 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(0,0,0,0.16)] transition-colors hover:bg-white/16 sm:inline-flex"
+              className="hidden items-center gap-2 rounded-full border border-[var(--ssb-border)] bg-[var(--ssb-card)] px-5 py-2.5 text-sm font-semibold text-[var(--ssb-ink-strong)] shadow-[0_12px_28px_rgba(0,0,0,0.16)] transition-colors hover:bg-[var(--ssb-card-strong)] sm:inline-flex"
             >
               Explore The Archive
               <svg
@@ -373,8 +373,8 @@ export default function SpeakerShowcase() {
               onClick={() => scrollTo(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${i === selected
-                ? "w-8 bg-[#f08f74]"
-                : "w-4 bg-white/20 hover:bg-white/38"
+                ? "w-8 bg-[var(--ssb-accent-text)]"
+                : "w-4 bg-[var(--ssb-faint)] hover:bg-[var(--ssb-muted)]"
                 }`}
             />
           ))}
@@ -399,7 +399,7 @@ export default function SpeakerShowcase() {
         <Link
           href="/past-speakers"
           prefetch={false}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#ffb8a7] hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ssb-accent-text)] hover:underline"
         >
           Explore The Archive
           <svg

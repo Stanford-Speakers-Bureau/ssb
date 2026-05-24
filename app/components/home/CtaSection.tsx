@@ -90,7 +90,7 @@ export default function CtaSection() {
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_28%),linear-gradient(180deg,#140f0e_0%,#0f0b0a_100%)] py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,var(--ssb-accent-soft),transparent_28%),linear-gradient(180deg,var(--ssb-night)_0%,var(--ssb-bg)_100%)] py-20 sm:py-28">
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-[0.04]"
@@ -102,18 +102,18 @@ export default function CtaSection() {
       />
       <div
         aria-hidden="true"
-        className="absolute right-[-120px] top-12 h-72 w-72 rounded-full bg-[#c93f2d]/24 blur-3xl"
+        className="absolute right-[-120px] top-12 h-72 w-72 rounded-full bg-[var(--ssb-accent-soft)] blur-3xl"
       />
 
       <div ref={ref} className="relative z-10 mx-auto max-w-6xl px-6 sm:px-12">
         <div className="mb-14 text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[#f19a80] sm:text-sm">
+          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[var(--ssb-accent-text)] sm:text-sm">
             Get Involved
           </p>
-          <h2 className="mb-4 font-serif text-3xl text-white sm:text-5xl">
+          <h2 className="mb-4 font-display text-3xl text-[var(--ssb-ink-strong)] sm:text-5xl">
             Join the Community
           </h2>
-          <p className="mx-auto max-w-lg font-sans text-base text-[#c6b6aa]">
+          <p className="mx-auto max-w-lg font-sans text-base text-[var(--ssb-muted)]">
             Whether you want to attend events, suggest speakers, or partner with
             us, there&rsquo;s a place for you at SSB.
           </p>
@@ -126,15 +126,15 @@ export default function CtaSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
-              className="group relative rounded-[28px] border border-white/10 bg-[rgba(24,19,17,0.9)] p-8 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-[#b51f1a]/50 hover:shadow-[0_24px_60px_rgba(181,31,26,0.14)]"
+              className="group relative rounded-[28px] border border-[var(--ssb-border)] bg-[var(--ssb-card)] p-8 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-[var(--ssb-accent)] hover:shadow-[0_24px_60px_rgba(181,31,26,0.14)]"
             >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#b51f1a]/12 text-[#f19a80] transition-colors group-hover:bg-[#b51f1a]/20">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--ssb-accent-soft)] text-[var(--ssb-accent-text)] transition-colors group-hover:bg-[var(--ssb-accent-soft)]">
                 {card.icon}
               </div>
-              <h3 className="mb-2 font-serif text-xl text-white">
+              <h3 className="mb-2 font-display text-xl text-[var(--ssb-ink-strong)]">
                 {card.title}
               </h3>
-              <p className="mb-6 font-sans text-sm leading-relaxed text-[#b9a79b]">
+              <p className="mb-6 font-sans text-sm leading-relaxed text-[var(--ssb-muted)]">
                 {card.description}
               </p>
               <MotionLink
@@ -144,7 +144,7 @@ export default function CtaSection() {
                 rel={card.external ? "noopener noreferrer" : undefined}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-full bg-[#b51f1a] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d24634]"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--ssb-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--ssb-accent-contrast)] transition-colors hover:bg-[var(--ssb-accent-strong)]"
               >
                 {card.label}
                 <svg

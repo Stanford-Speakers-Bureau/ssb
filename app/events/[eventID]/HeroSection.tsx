@@ -72,11 +72,11 @@ export default function HeroSection({
 
       {/* Hero content – anchored bottom-left */}
       <div className="relative z-10 flex flex-col sm:justify-end sm:min-h-[78vh] lg:min-h-[85vh] max-w-6xl mx-auto w-full px-5 sm:px-8 lg:px-12 pt-5 sm:pt-28 pb-6 sm:pb-14">
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl text-white font-serif tracking-tight leading-tight sm:leading-[1.1] drop-shadow-lg">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl text-white font-display tracking-tight leading-tight sm:leading-[1.1] drop-shadow-lg">
           {name}
         </h1>
         {tagline && (
-          <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
+          <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc prose-invert prose-p:m-0 prose-a:text-[var(--ssb-accent-text)] prose-a:underline prose-a:underline-offset-2 max-w-none">
             <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{tagline}</ReactMarkdown>
           </div>
         )}

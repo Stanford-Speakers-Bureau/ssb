@@ -53,7 +53,7 @@ export default function CountdownTimer({
   return (
     <div className="flex flex-col items-center gap-2">
       {label && (
-        <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">
+        <p className="text-[10px] uppercase tracking-wider text-[var(--ssb-muted)] font-medium">
           {label}
         </p>
       )}
@@ -61,17 +61,17 @@ export default function CountdownTimer({
         {segments.map((seg, i) => (
           <div key={seg.label} className="flex items-center gap-1.5 sm:gap-2">
             {i > 0 && (
-              <span className="text-xl font-bold text-zinc-600 -mt-4">
+              <span className="text-xl font-bold text-[var(--ssb-faint)] -mt-4">
                 :
               </span>
             )}
             <div className="flex flex-col items-center">
-              <div className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 sm:px-3 py-1.5 sm:py-2 min-w-[3rem] sm:min-w-[3.5rem] flex items-center justify-center">
-                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-white">
+              <div className="rounded-lg bg-white/[0.06] border border-[var(--ssb-border)] px-2.5 sm:px-3 py-1.5 sm:py-2 min-w-[3rem] sm:min-w-[3.5rem] flex items-center justify-center">
+                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-[var(--ssb-ink-strong)]">
                   {String(seg.value).padStart(2, "0")}
                 </span>
               </div>
-              <span className="text-[10px] uppercase tracking-wider text-zinc-400 mt-1">
+              <span className="text-[10px] uppercase tracking-wider text-[var(--ssb-muted)] mt-1">
                 {seg.label}
               </span>
             </div>

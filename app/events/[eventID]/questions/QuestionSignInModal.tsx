@@ -54,7 +54,7 @@ export default function QuestionSignInModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 8 }}
             transition={{ type: "spring", duration: 0.45, bounce: 0.25 }}
-            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[var(--ssb-card)] p-5 sm:p-7 shadow-2xl"
+            className="relative w-full max-w-md rounded-2xl border border-[var(--ssb-border)] bg-[var(--ssb-card)] p-5 sm:p-7 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -63,7 +63,7 @@ export default function QuestionSignInModal({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[var(--ssb-ink-strong)] transition-colors hover:bg-white/20"
             >
               <svg
                 width="14"
@@ -82,16 +82,16 @@ export default function QuestionSignInModal({
               </svg>
             </button>
 
-            <h2 className="font-serif text-2xl text-white leading-tight">
+            <h2 className="font-display text-2xl text-[var(--ssb-ink-strong)] leading-tight">
               Sign in to vote
             </h2>
-            <p className="mt-3 font-sans text-sm text-zinc-300 leading-relaxed line-clamp-3 italic">
+            <p className="mt-3 font-sans text-sm text-[var(--ssb-muted)] leading-relaxed line-clamp-3 italic">
               &ldquo;{open.question}&rdquo;
             </p>
 
             <a
               href={ssoHref}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#A80D0C] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-[#A80D0C]/10 transition-colors hover:bg-[#C11211]"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--ssb-accent)] px-5 py-3 text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-md shadow-[var(--ssb-accent)]/10 transition-colors hover:bg-[var(--ssb-accent-strong)]"
             >
               Continue with Stanford SSO
               <svg
@@ -114,7 +114,7 @@ export default function QuestionSignInModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-4 w-full text-center text-xs font-sans uppercase tracking-[0.2em] text-zinc-500 transition-colors hover:text-zinc-300"
+              className="mt-4 w-full text-center text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-faint)] transition-colors hover:text-[var(--ssb-muted)]"
             >
               Cancel
             </button>

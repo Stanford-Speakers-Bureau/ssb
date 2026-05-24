@@ -2,21 +2,21 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative z-30 overflow-hidden border-t border-white/8 bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_34%),linear-gradient(180deg,#14100f_0%,#0f0b0a_100%)]">
+    <footer className="relative z-30 overflow-hidden border-t border-[var(--ssb-border)] bg-[radial-gradient(circle_at_top,var(--ssb-accent-soft),transparent_34%),linear-gradient(180deg,var(--ssb-night)_0%,var(--ssb-bg)_100%)]">
       <div
         aria-hidden="true"
-        className="absolute right-[-120px] top-10 h-72 w-72 rounded-full bg-[#c93f2d]/22 blur-3xl"
+        className="absolute right-[-120px] top-10 h-72 w-72 rounded-full bg-[var(--ssb-accent-soft)] blur-3xl"
       />
       <div className="mx-auto max-w-5xl px-8 py-10 sm:px-12 md:px-16">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#b51f1a]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--ssb-accent-text)]">
               Stanford Speakers Bureau
             </p>
-            <p className="mt-3 font-serif text-2xl text-white">
+            <p className="mt-3 font-display text-2xl text-[var(--ssb-ink-strong)]">
               Bringing unforgettable voices to campus since 1935.
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-[#b9a79b]">
+            <p className="mt-3 text-sm leading-relaxed text-[var(--ssb-muted)]">
               Student-led speaker events, community programs, and nights that
               feel a little bigger than usual.
             </p>
@@ -25,37 +25,37 @@ export default function Footer() {
           <nav className="flex flex-col gap-2 md:flex-row md:flex-wrap md:gap-x-6 md:gap-y-2">
             <Link
               href="/upcoming-speakers"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Upcoming Speakers
             </Link>
             <Link
               href="/past-speakers"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Past Speakers
             </Link>
             <Link
               href="/suggest"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Suggest
             </Link>
             <Link
               href="/event-sponsorship"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Event Sponsorship
             </Link>
             <Link
               href="/team"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Team
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="text-sm text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
             >
               Contact
             </Link>
@@ -66,7 +66,7 @@ export default function Footer() {
               href="https://mailman.stanford.edu/mailman/listinfo/ssb-announce"
               target="_blank"
               rel="noopener noreferrer"
-              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="-m-2 p-2 text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
               aria-label="Join our mailing list"
             >
               <svg
@@ -89,7 +89,7 @@ export default function Footer() {
               href="https://www.instagram.com/stanfordspeakersbureau/"
               target="_blank"
               rel="noopener noreferrer"
-              className="-m-2 p-2 text-[#b9a79b] transition-colors hover:text-[#f19a80]"
+              className="-m-2 p-2 text-[var(--ssb-muted)] transition-colors hover:text-[var(--ssb-accent-text)]"
               aria-label="Follow us on Instagram"
             >
               <svg
@@ -108,8 +108,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/8 pt-6">
-          <p className="text-sm text-[#8f7d73]">
+        <div className="mt-8 border-t border-[var(--ssb-border)] pt-6">
+          <p className="text-sm text-[var(--ssb-faint)]">
             &copy; {new Date().getFullYear()} Stanford Speakers Bureau. All
             rights reserved.
           </p>

@@ -91,11 +91,11 @@ export default function QuestionForm({
               ? disabledMessage || "Submissions are closed."
               : "Suggest a question…"
           }
-          className="w-full px-4 py-3 rounded-lg border border-zinc-800 bg-[var(--ssb-paper)] text-white placeholder:text-zinc-500
-                     focus:outline-none focus:ring-2 focus:ring-[#A80D0C]/30 focus:border-[#A80D0C]
+          className="w-full px-4 py-3 rounded-lg border border-[var(--ssb-border)] bg-[var(--ssb-paper)] text-[var(--ssb-ink-strong)] placeholder:text-[var(--ssb-faint)]
+                     focus:outline-none focus:ring-2 focus:ring-[var(--ssb-accent)]/30 focus:border-[var(--ssb-accent)]
                      transition-all resize-none disabled:opacity-60 disabled:cursor-not-allowed"
         />
-        <p className="text-xs text-zinc-500 mt-1.5 text-right">
+        <p className="text-xs text-[var(--ssb-faint)] mt-1.5 text-right">
           {value.trim().length}/{MAX_LEN}
         </p>
       </div>
@@ -129,9 +129,9 @@ export default function QuestionForm({
         whileHover={isDisabled ? {} : { scale: 1.02 }}
         whileTap={isDisabled ? {} : { scale: 0.98 }}
         className="w-full inline-flex items-center justify-center gap-2 rounded-full
-                   bg-[#A80D0C] px-6 py-3.5 font-sans text-sm font-semibold text-white
-                   shadow-lg shadow-[#A80D0C]/20
-                   transition-colors hover:bg-[#C11211]
+                   bg-[var(--ssb-accent)] px-6 py-3.5 font-sans text-sm font-semibold text-[var(--ssb-accent-contrast)]
+                   shadow-lg shadow-[var(--ssb-accent)]/20
+                   transition-colors hover:bg-[var(--ssb-accent-strong)]
                    disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === "submitting" ? "Submitting…" : "Submit question"}

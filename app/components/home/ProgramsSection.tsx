@@ -60,7 +60,7 @@ function ProgramCard({ program, index }: { program: Program; index: number }) {
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
-      className={`group relative overflow-hidden rounded-[30px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.22)] ${
+      className={`group relative overflow-hidden rounded-[30px] border border-[var(--ssb-border)] shadow-[0_25px_80px_rgba(0,0,0,0.22)] ${
         index === 0
           ? "md:col-span-2 md:row-span-2 min-h-[320px] sm:min-h-[420px]"
           : "min-h-[260px] sm:min-h-[320px]"
@@ -81,14 +81,14 @@ function ProgramCard({ program, index }: { program: Program; index: number }) {
 
       <div className="absolute inset-0 flex flex-col justify-end p-7 sm:p-9">
         <h3
-          className={`font-serif text-white leading-tight mb-3 ${
+          className={`font-display text-[var(--ssb-ink-strong)] leading-tight mb-3 ${
             index === 0 ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"
           }`}
         >
           {program.title}
         </h3>
         <p
-          className={`font-sans text-zinc-200 leading-relaxed mb-5 ${
+          className={`font-sans text-[var(--ssb-ink)] leading-relaxed mb-5 ${
             index === 0 ? "text-base max-w-lg" : "text-sm max-w-sm line-clamp-3"
           }`}
         >
@@ -101,7 +101,7 @@ function ProgramCard({ program, index }: { program: Program; index: number }) {
           rel={program.external ? "noopener noreferrer" : undefined}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-[#b51f1a] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_14px_35px_rgba(181,31,26,0.25)] transition-colors hover:bg-[#d24634]"
+          className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--ssb-accent)] px-6 py-2.5 text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-[0_14px_35px_rgba(181,31,26,0.25)] transition-colors hover:bg-[var(--ssb-accent-strong)]"
         >
           {program.linkLabel}
           <svg
@@ -126,20 +126,20 @@ function ProgramCard({ program, index }: { program: Program; index: number }) {
 
 export default function ProgramsSection() {
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_30%),linear-gradient(180deg,#1b1412_0%,#140f0e_100%)] py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,var(--ssb-accent-soft),transparent_30%),linear-gradient(180deg,var(--ssb-paper)_0%,var(--ssb-night)_100%)] py-20 sm:py-28">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/14 to-transparent"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--ssb-border)] to-transparent"
       />
       <div className="mx-auto max-w-6xl px-6 sm:px-12">
         <div className="mb-12 text-center sm:mb-16">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[#f19a80] sm:text-sm">
+          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[var(--ssb-accent-text)] sm:text-sm">
             Beyond the Stage
           </p>
-          <h2 className="font-serif text-3xl text-white sm:text-5xl">
+          <h2 className="font-display text-3xl text-[var(--ssb-ink-strong)] sm:text-5xl">
             Our Programs
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#c6b6aa] sm:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[var(--ssb-muted)] sm:text-base">
             SSB is more than a lecture night. These programs create
             lighter-touch, more personal ways to bring ideas and people together
             on campus.

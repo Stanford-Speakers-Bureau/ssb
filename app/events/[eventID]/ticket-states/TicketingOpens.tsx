@@ -24,8 +24,8 @@ export default function TicketingOpens({
   return (
     <div className="flex flex-col items-center text-center">
       {/* Bell icon */}
-      <div className="w-12 h-12 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center mb-4">
-        <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <div className="w-12 h-12 rounded-full bg-white/[0.06] border border-[var(--ssb-border)] flex items-center justify-center mb-4">
+        <svg className="w-5 h-5 text-[var(--ssb-muted)]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         </svg>
       </div>
@@ -33,10 +33,10 @@ export default function TicketingOpens({
       {/* Date or "Coming Soon" */}
       {hideTicketingDate ? (
         <>
-          <p className="text-sm sm:text-base font-semibold text-white mb-1">
+          <p className="text-sm sm:text-base font-semibold text-[var(--ssb-ink-strong)] mb-1">
             Ticketing Opens Soon!
           </p>
-          <p className="text-sm text-zinc-400 mt-1 mb-4">
+          <p className="text-sm text-[var(--ssb-muted)] mt-1 mb-4">
             Register to be notified when tickets are available. You will only know when tickets are available if you register.
           </p>
         </>
@@ -47,7 +47,7 @@ export default function TicketingOpens({
               <CountdownTimer targetDate={ticketingOpensAt} label="Ticketing opens in" />
             </div>
           )}
-          <p className="text-xs text-zinc-500 mb-4">
+          <p className="text-xs text-[var(--ssb-faint)] mb-4">
             {formatTicketingOpensAt(ticketingOpensAt!)} &middot; Date & time are subject to change.
           </p>
         </>
@@ -59,7 +59,7 @@ export default function TicketingOpens({
         disabled={isLoadingNotify || isNotified}
         className={`w-full rounded-lg px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-not-allowed ${isNotified
           ? "bg-green-500/10 border border-green-500/20 text-green-300"
-          : "bg-[#A80D0C] text-white hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50"
+          : "bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)] hover:bg-[var(--ssb-accent-strong)] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50"
           }`}
       >
         {isLoadingNotify ? (

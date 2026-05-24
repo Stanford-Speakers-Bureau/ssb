@@ -80,26 +80,26 @@ export default function ReferralShare({
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1">
-          <p className="text-white text-base sm:text-lg font-semibold mb-1">
+          <p className="text-[var(--ssb-ink-strong)] text-base sm:text-lg font-semibold mb-1">
             Share your referral code:{" "}
-            <span className="text-red-400">{referralCode}</span>
+            <span className="text-[var(--ssb-accent-text)]">{referralCode}</span>
           </p>
-          <p className="text-zinc-300 text-sm sm:text-base">
+          <p className="text-[var(--ssb-muted)] text-sm sm:text-base">
             {REFERRAL_MESSAGE}{" "}
             {referralCount !== null && (
-              <span className="text-white font-medium">
+              <span className="text-[var(--ssb-ink-strong)] font-medium">
                 ({referralCount}{" "}
                 {referralCount === 1 ? "referral" : "referrals"})
               </span>
             )}
           </p>
-          <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+          <p className="text-[var(--ssb-muted)] text-xs sm:text-sm mt-1">
             Note: all referrals must be checked in to earn your front row seat!
           </p>
         </div>
         <button
           onClick={handleCopy}
-          className="px-4 py-2 bg-[#A80D0C] hover:bg-[#C11211] text-white text-sm sm:text-base font-semibold rounded transition-colors cursor-pointer whitespace-nowrap"
+          className="px-4 py-2 bg-[var(--ssb-accent)] hover:bg-[var(--ssb-accent-strong)] text-[var(--ssb-accent-contrast)] text-sm sm:text-base font-semibold rounded transition-colors cursor-pointer whitespace-nowrap"
         >
           {copied ? "Copied!" : "Copy Link"}
         </button>

@@ -17,8 +17,8 @@ type Props = {
 };
 
 function rankColor(globalIndex: number): string {
-  if (globalIndex <= 2) return "text-[#A80D0C]";
-  return "text-zinc-700";
+  if (globalIndex <= 2) return "text-[var(--ssb-accent-text)]";
+  return "text-[var(--ssb-faint)]";
 }
 
 export default function QuestionsLeaderboard({
@@ -112,15 +112,15 @@ export default function QuestionsLeaderboard({
 
       {questions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="font-serif text-2xl text-zinc-500 mb-2">
+          <p className="font-display text-2xl text-[var(--ssb-faint)] mb-2">
             No questions yet.
           </p>
-          <p className="font-sans text-sm text-zinc-500 max-w-xs">
+          <p className="font-sans text-sm text-[var(--ssb-faint)] max-w-xs">
             Be the first to submit one.
           </p>
         </div>
       ) : (
-        <ol className="divide-y divide-zinc-900 border border-zinc-900 bg-[var(--ssb-card)] rounded-lg overflow-hidden">
+        <ol className="divide-y divide-[var(--ssb-border)] border border-[var(--ssb-border)] bg-[var(--ssb-card)] rounded-lg overflow-hidden">
           {questions.map((q, idx) => {
             const isTopThree = idx <= 2;
             return (
@@ -130,18 +130,18 @@ export default function QuestionsLeaderboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="group flex items-start gap-3 sm:gap-5 py-4 px-3 sm:px-6 transition-colors hover:bg-zinc-950"
+                className="group flex items-start gap-3 sm:gap-5 py-4 px-3 sm:px-6 transition-colors hover:bg-[var(--ssb-card-strong)]"
               >
                 {rankingsHidden ? (
                   <span
                     aria-hidden="true"
                     className="w-9 sm:w-14 shrink-0 flex justify-center pt-2"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#A80D0C]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--ssb-accent)]" />
                   </span>
                 ) : (
                   <span
-                    className={`font-serif w-9 sm:w-14 text-right shrink-0 leading-none ${
+                    className={`font-display w-9 sm:w-14 text-right shrink-0 leading-none ${
                       isTopThree
                         ? "text-3xl sm:text-5xl"
                         : "text-xl sm:text-2xl"
@@ -151,7 +151,7 @@ export default function QuestionsLeaderboard({
                   </span>
                 )}
                 <div className="flex-1 min-w-0 pt-1">
-                  <p className="font-serif text-white leading-snug text-base sm:text-xl">
+                  <p className="font-display text-[var(--ssb-ink-strong)] leading-snug text-base sm:text-xl">
                     {q.question}
                   </p>
                 </div>
@@ -164,8 +164,8 @@ export default function QuestionsLeaderboard({
                       whileTap={canVote ? { scale: 0.97 } : {}}
                       className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 sm:px-4 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         q.hasVoted
-                          ? "border border-[#A80D0C] text-[#A80D0C] bg-transparent hover:bg-[#A80D0C]/5"
-                          : "bg-[#A80D0C] text-white shadow-md shadow-[#A80D0C]/10 hover:bg-[#C11211]"
+                          ? "border border-[var(--ssb-accent)] text-[var(--ssb-accent-text)] bg-transparent hover:bg-[var(--ssb-accent)]/5"
+                          : "bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)] shadow-md shadow-[var(--ssb-accent)]/10 hover:bg-[var(--ssb-accent-strong)]"
                       }`}
                       aria-pressed={q.hasVoted}
                     >
@@ -196,7 +196,7 @@ export default function QuestionsLeaderboard({
                       }
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#A80D0C] px-3 sm:px-4 text-xs font-semibold text-white shadow-md shadow-[#A80D0C]/10 transition-colors hover:bg-[#C11211]"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[var(--ssb-accent)] px-3 sm:px-4 text-xs font-semibold text-[var(--ssb-accent-contrast)] shadow-md shadow-[var(--ssb-accent)]/10 transition-colors hover:bg-[var(--ssb-accent-strong)]"
                     >
                       Vote
                     </motion.button>

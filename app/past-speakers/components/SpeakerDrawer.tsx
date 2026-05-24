@@ -71,7 +71,7 @@ export default function SpeakerDrawer({
           />
 
           <motion.aside
-            className="absolute right-0 top-0 h-full w-full sm:w-[min(580px,92vw)] bg-zinc-950 shadow-2xl flex flex-col"
+            className="absolute right-0 top-0 h-full w-full sm:w-[min(580px,92vw)] bg-[var(--ssb-card)] shadow-2xl flex flex-col"
             variants={slideVariants}
             initial="initial"
             animate="animate"
@@ -79,8 +79,8 @@ export default function SpeakerDrawer({
             transition={{ type: "spring", stiffness: 260, damping: 32 }}
           >
             {/* Header controls */}
-            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-zinc-900 shrink-0">
-              <p className="text-xs font-sans uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-[var(--ssb-border)] shrink-0">
+              <p className="text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-muted)]">
                 {position} / {total} · {speaker.year}
               </p>
               <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default function SpeakerDrawer({
                   type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
+                  className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ssb-border)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent)] hover:text-[var(--ssb-accent-text)] transition-colors"
                 >
                   <svg
                     width="16"
@@ -121,7 +121,7 @@ export default function SpeakerDrawer({
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto">
               {image && (
-                <div className="relative w-full h-72 bg-zinc-900">
+                <div className="relative w-full h-72 bg-[var(--ssb-card-strong)]">
                   <Image
                     src={image}
                     alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -133,22 +133,22 @@ export default function SpeakerDrawer({
               )}
 
               <div className="px-6 sm:px-10 py-8">
-                <p className="text-xs font-sans uppercase tracking-[0.2em] text-[#A80D0C] mb-3">
+                <p className="text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-accent-text)] mb-3">
                   {speaker.year} · Stanford Speakers Bureau
                 </p>
                 <h2
                   id="speaker-drawer-title"
-                  className="font-serif text-4xl sm:text-5xl text-white leading-[0.95] mb-3"
+                  className="font-display text-4xl sm:text-5xl text-[var(--ssb-ink-strong)] leading-[0.95] mb-3"
                 >
                   {speaker.name}
                 </h2>
                 {speaker.title && (
-                  <p className="font-sans text-base sm:text-lg italic text-zinc-400 mb-6">
+                  <p className="font-sans text-base sm:text-lg italic text-[var(--ssb-muted)] mb-6">
                     {speaker.title}
                   </p>
                 )}
-                <div className="h-px bg-gradient-to-r from-[#A80D0C] via-[#A80D0C]/30 to-transparent mb-6" />
-                <p className="font-sans text-base text-zinc-300 leading-relaxed whitespace-pre-line">
+                <div className="h-px bg-gradient-to-r from-[var(--ssb-accent)] via-[var(--ssb-accent-soft)] to-transparent mb-6" />
+                <p className="font-sans text-base text-[var(--ssb-muted)] leading-relaxed whitespace-pre-line">
                   {speaker.bio}
                 </p>
 
@@ -157,7 +157,7 @@ export default function SpeakerDrawer({
                     href={speaker.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#A80D0C] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#C11211]"
+                    className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--ssb-accent)] px-6 py-3 text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-lg transition-colors hover:bg-[var(--ssb-accent-strong)]"
                   >
                     <svg
                       width="18"
@@ -172,7 +172,7 @@ export default function SpeakerDrawer({
                   </a>
                 )}
 
-                <p className="mt-10 text-xs font-sans uppercase tracking-[0.2em] text-zinc-400">
+                <p className="mt-10 text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-muted)]">
                   Use ← → to navigate · Esc to close
                 </p>
               </div>
@@ -198,7 +198,7 @@ function NavButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C] transition-colors"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ssb-border)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent)] hover:text-[var(--ssb-accent-text)] transition-colors"
     >
       <svg
         width="16"

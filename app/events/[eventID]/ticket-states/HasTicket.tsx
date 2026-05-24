@@ -19,11 +19,11 @@ export default function HasTicket({
     <button
       onClick={openCancelModal}
       disabled={isLoading}
-      className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-800/60 hover:text-white hover:border-zinc-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full"
+      className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-[var(--ssb-card)] border border-[var(--ssb-border)] px-5 py-3.5 text-sm font-medium text-[var(--ssb-muted)] transition-all hover:bg-[var(--ssb-card-strong)] hover:text-[var(--ssb-ink-strong)] hover:border-[var(--ssb-border-strong)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full"
     >
       {isLoading ? (
         <>
-          <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--ssb-muted)] border-t-[var(--ssb-faint)] rounded-full animate-spin" />
           {TICKET_MESSAGES.CANCELLING}
         </>
       ) : (

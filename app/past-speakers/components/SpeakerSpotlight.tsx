@@ -34,21 +34,21 @@ function Slide({
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/10" />
       <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-14">
         <div className="max-w-3xl">
-          <span className="inline-block mb-3 sm:mb-4 rounded-full bg-[#A80D0C] px-3 py-1 text-[10px] sm:text-xs font-sans uppercase tracking-[0.2em] text-white">
+          <span className="inline-block mb-3 sm:mb-4 rounded-full bg-[var(--ssb-accent)] px-3 py-1 text-[10px] sm:text-xs font-sans uppercase tracking-[0.2em] text-[var(--ssb-accent-contrast)]">
             {speaker.year} · {speaker.location ?? "Stanford"}
           </span>
-          <h2 className="font-serif text-3xl sm:text-6xl text-white leading-[0.95] mb-2 sm:mb-3">
+          <h2 className="font-display text-3xl sm:text-6xl text-[var(--ssb-ink-strong)] leading-[0.95] mb-2 sm:mb-3">
             {speaker.name}
           </h2>
           {speaker.title && (
-            <p className="font-sans text-sm sm:text-lg italic text-zinc-200 mb-3 sm:mb-4">
+            <p className="font-sans text-sm sm:text-lg italic text-[var(--ssb-muted)] mb-3 sm:mb-4">
               {speaker.title}
             </p>
           )}
-          <p className="hidden sm:block font-sans text-sm sm:text-base text-zinc-100 leading-relaxed max-w-2xl line-clamp-3">
+          <p className="hidden sm:block font-sans text-sm sm:text-base text-[var(--ssb-ink)] leading-relaxed max-w-2xl line-clamp-3">
             {pullQuote}
           </p>
-          <span className="mt-1.5 sm:mt-5 inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-sans sm:font-semibold uppercase sm:normal-case tracking-[0.2em] sm:tracking-normal text-white/80 sm:text-white underline-offset-4 group-hover:underline">
+          <span className="mt-1.5 sm:mt-5 inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-sans sm:font-semibold uppercase sm:normal-case tracking-[0.2em] sm:tracking-normal text-[var(--ssb-muted)] sm:text-[var(--ssb-ink-strong)] underline-offset-4 group-hover:underline">
             Read the full story
             <svg
               width="12"
@@ -99,7 +99,7 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={direction === "prev" ? "Previous spotlight" : "Next spotlight"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "left-2 lg:-left-8" : "right-2 lg:-right-8"
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)] shadow-lg transition-all hover:bg-[var(--ssb-accent-strong)] ${direction === "prev" ? "left-2 lg:-left-8" : "right-2 lg:-right-8"
         }`}
     >
       <svg
@@ -185,21 +185,21 @@ export default function SpeakerSpotlight({
 
   return (
     <section
-      className="relative border-y border-zinc-900 bg-[var(--ssb-paper)]"
+      className="relative border-y border-[var(--ssb-border)] bg-[var(--ssb-paper)]"
       onMouseEnter={() => (pausedRef.current = true)}
       onMouseLeave={() => (pausedRef.current = false)}
     >
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-12 sm:py-16">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[var(--ssb-accent-text)] mb-2">
               In Focus
             </p>
-            <h2 className="font-serif text-3xl sm:text-4xl text-white">
+            <h2 className="font-display text-3xl sm:text-4xl text-[var(--ssb-ink-strong)]">
               Spotlight
             </h2>
           </div>
-          <p className="hidden sm:block text-sm text-zinc-400">
+          <p className="hidden sm:block text-sm text-[var(--ssb-muted)]">
             {selected + 1} / {speakers.length}
           </p>
         </div>
@@ -228,8 +228,8 @@ export default function SpeakerSpotlight({
                 onClick={() => scrollTo(i)}
                 aria-label={`Go to spotlight ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${i === selected
-                  ? "w-8 bg-[#A80D0C]"
-                  : "w-4 bg-zinc-600 hover:bg-zinc-400"
+                  ? "w-8 bg-[var(--ssb-accent)]"
+                  : "w-4 bg-[var(--ssb-faint)] hover:bg-[var(--ssb-muted)]"
                   }`}
               />
             ))}

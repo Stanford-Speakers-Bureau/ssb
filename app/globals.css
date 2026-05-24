@@ -1,20 +1,58 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ---------------------------------------------------------------------------
+ * Site theme tokens. :root holds the "Editorial Dark (current)" values, so the
+ * site looks unchanged by default. The .theme-* classes (further down) override
+ * these tokens to re-skin the entire site; a single class on <html> selects the
+ * active theme. Cardinal red is kept as the accent in every theme.
+ * ------------------------------------------------------------------------- */
 :root {
   --background: #0f0b0a;
   --foreground: #f3e7dc;
+
+  /* Surfaces (deep → raised) */
+  --ssb-bg: #0f0b0a;
   --ssb-paper: #15100f;
   --ssb-paper-strong: #1d1513;
   --ssb-card: #1a1412;
+  --ssb-card-strong: #211816;
+  --ssb-night: #161211;
+  --ssb-night-soft: #211918;
+
+  /* Text */
   --ssb-ink: #f6ede4;
+  --ssb-ink-strong: #fff8f1;
   --ssb-muted: #b9a79b;
+  --ssb-faint: #8c7d72;
+
+  /* Borders */
   --ssb-border: rgba(255, 236, 224, 0.1);
+  --ssb-border-strong: rgba(255, 236, 224, 0.18);
+
+  /* Accent — cardinal red (kept in every theme) */
   --ssb-accent: #b51f1a;
   --ssb-accent-strong: #db4c3a;
   --ssb-accent-soft: rgba(219, 76, 58, 0.14);
-  --ssb-night: #161211;
-  --ssb-night-soft: #211918;
+  --ssb-accent-contrast: #ffffff;
+  --ssb-accent-text: #e8836e;
+
+  /* Secondary accent (theme personality) */
+  --ssb-accent2: #db4c3a;
+  --ssb-accent2-text: #e8836e;
+
+  /* Shape */
+  --ssb-radius: 28px;
+  --ssb-radius-sm: 16px;
+  --ssb-border-width: 1px;
+  --ssb-shadow: 0 25px 80px rgba(0, 0, 0, 0.22);
+  --ssb-shadow-accent: 0 18px 45px rgba(181, 31, 26, 0.35);
+
+  /* Display type */
+  --ssb-font-display: var(--font-hedvig-letters-serif), serif;
+  --ssb-display-weight: 400;
+  --ssb-display-tracking: -0.02em;
+  --ssb-display-transform: none;
 }
 
 @theme inline {
@@ -26,8 +64,16 @@
   /* Display faces used by the upcoming-speakers theme explorations. */
   --font-display-soft: var(--font-fraunces);
   --font-display-poster: var(--font-bricolage);
-  --font-display-arcade: var(--font-space-grotesk);
   --font-marquee: var(--font-anton);
+}
+
+/* Theme-aware heading utility: family, weight, tracking and case all follow the
+   active theme's tokens, so any heading using `font-display` re-skins per theme. */
+@utility font-display {
+  font-family: var(--ssb-font-display);
+  font-weight: var(--ssb-display-weight, 600);
+  letter-spacing: var(--ssb-display-tracking, -0.01em);
+  text-transform: var(--ssb-display-transform, none);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,18 +83,129 @@
   }
 }
 
+/* === Theme: Ember — warm dark, cozy editorial. Fraunces, amber + cardinal. === */
+.theme-ember {
+  --ssb-bg: #161210;
+  --ssb-paper: #161210;
+  --ssb-paper-strong: #1e1714;
+  --ssb-card: #1e1714;
+  --ssb-card-strong: #241b17;
+  --ssb-night: #120e0c;
+  --ssb-night-soft: #1e1714;
+  --ssb-ink: #f3e7dc;
+  --ssb-ink-strong: #f6efe7;
+  --ssb-muted: #b9a79b;
+  --ssb-faint: #8c7b6e;
+  --ssb-border: rgba(243, 231, 220, 0.1);
+  --ssb-border-strong: rgba(243, 231, 220, 0.18);
+  --ssb-accent: #c2261c;
+  --ssb-accent-strong: #e0492f;
+  --ssb-accent-soft: rgba(224, 73, 47, 0.14);
+  --ssb-accent-contrast: #ffffff;
+  --ssb-accent-text: #f08a6f;
+  --ssb-accent2: #e8a33d;
+  --ssb-accent2-text: #e8a33d;
+  --ssb-radius: 28px;
+  --ssb-radius-sm: 18px;
+  --ssb-border-width: 1px;
+  --ssb-shadow: 0 40px 90px -40px rgba(224, 73, 47, 0.4);
+  --ssb-shadow-accent: 0 18px 40px -14px rgba(224, 73, 47, 0.8);
+  --ssb-font-display: var(--font-fraunces), serif;
+  --ssb-display-weight: 500;
+  --ssb-display-tracking: -0.01em;
+  --ssb-display-transform: none;
+}
+
+/* === Theme: Press — dark screenprint. Bricolage, chunky light borders, cobalt. === */
+.theme-press {
+  --ssb-bg: #141210;
+  --ssb-paper: #141210;
+  --ssb-paper-strong: #1c1a17;
+  --ssb-card: #1c1a17;
+  --ssb-card-strong: #141210;
+  --ssb-night: #0e0d0b;
+  --ssb-night-soft: #1c1a17;
+  --ssb-ink: #f2ece0;
+  --ssb-ink-strong: #f8f3ea;
+  --ssb-muted: #c9bfae;
+  --ssb-faint: #9a8f7e;
+  --ssb-border: #f2ece0;
+  --ssb-border-strong: #f2ece0;
+  --ssb-accent: #e0492f;
+  --ssb-accent-strong: #ff6a4d;
+  --ssb-accent-soft: rgba(224, 73, 47, 0.16);
+  --ssb-accent-contrast: #ffffff;
+  --ssb-accent-text: #ff6a4d;
+  --ssb-accent2: #5b8cff;
+  --ssb-accent2-text: #7fa5ff;
+  --ssb-radius: 22px;
+  --ssb-radius-sm: 12px;
+  --ssb-border-width: 3px;
+  --ssb-shadow: 8px 8px 0 0 #e0492f;
+  --ssb-shadow-accent: 4px 4px 0 0 #f2ece0;
+  --ssb-font-display: var(--font-bricolage), sans-serif;
+  --ssb-display-weight: 800;
+  --ssb-display-tracking: -0.02em;
+  --ssb-display-transform: uppercase;
+}
+
+/* === Theme: Marquee — dark theatre. Anton, gold + cardinal. === */
+.theme-marquee {
+  --ssb-bg: #17120f;
+  --ssb-paper: #17120f;
+  --ssb-paper-strong: #1f1712;
+  --ssb-card: #241a15;
+  --ssb-card-strong: #2c201a;
+  --ssb-night: #120d0a;
+  --ssb-night-soft: #1f1712;
+  --ssb-ink: #f3e7dc;
+  --ssb-ink-strong: #f6efe7;
+  --ssb-muted: #b9a79b;
+  --ssb-faint: #8c7b6e;
+  --ssb-border: rgba(243, 231, 220, 0.1);
+  --ssb-border-strong: rgba(243, 231, 220, 0.2);
+  --ssb-accent: #b0231c;
+  --ssb-accent-strong: #e0492f;
+  --ssb-accent-soft: rgba(224, 73, 47, 0.14);
+  --ssb-accent-contrast: #ffffff;
+  --ssb-accent-text: #f08a6f;
+  --ssb-accent2: #e0b341;
+  --ssb-accent2-text: #e0b341;
+  --ssb-radius: 24px;
+  --ssb-radius-sm: 14px;
+  --ssb-border-width: 1px;
+  --ssb-shadow: 0 36px 70px -34px rgba(0, 0, 0, 0.8);
+  --ssb-shadow-accent: 0 16px 30px -12px rgba(224, 73, 47, 0.9);
+  --ssb-font-display: var(--font-anton), sans-serif;
+  --ssb-display-weight: 400;
+  --ssb-display-tracking: 0em;
+  --ssb-display-transform: uppercase;
+}
+
+/* Showcase (upcoming-speakers) renders all four bespoke variants; show only the
+   one matching the active theme. `display: contents` keeps the wrapper layout-neutral. */
+[data-theme-variant] {
+  display: none;
+}
+.theme-editorial [data-theme-variant="editorial"],
+.theme-ember [data-theme-variant="ember"],
+.theme-press [data-theme-variant="press"],
+.theme-marquee [data-theme-variant="marquee"] {
+  display: contents;
+}
+
 body {
   background:
-    radial-gradient(circle at top, rgba(219, 76, 58, 0.16), transparent 34%),
-    linear-gradient(180deg, #17110f 0%, var(--ssb-paper) 100%);
-  color: var(--foreground);
+    radial-gradient(circle at top, var(--ssb-accent-soft), transparent 34%),
+    linear-gradient(180deg, var(--ssb-night) 0%, var(--ssb-paper) 100%);
+  color: var(--ssb-ink);
   font-family: var(--font-inter), sans-serif;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(181, 31, 26, 0.18);
-  color: #fff7f2;
+  background: var(--ssb-accent-soft);
+  color: var(--ssb-ink-strong);
 }
 
 @keyframes archive-marquee-left {

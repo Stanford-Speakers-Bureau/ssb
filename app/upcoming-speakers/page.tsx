@@ -4,7 +4,6 @@ import NotifyHandler from "./NotifyHandler";
 import EditorialTheme from "./themes/EditorialTheme";
 import EmberTheme from "./themes/EmberTheme";
 import PressTheme from "./themes/PressTheme";
-import ArcadeTheme from "./themes/ArcadeTheme";
 import MarqueeTheme from "./themes/MarqueeTheme";
 import type { SpeakerCardVM } from "./themes/shared";
 import { SAMPLE_VMS } from "./themes/sampleData";
@@ -187,22 +186,20 @@ export default async function UpcomingSpeakers() {
         <NotifyHandler />
       </Suspense>
 
-      {/* Theme exploration — pick a direction in the ui.sh toolbar.
-          All directions are dark; cardinal red is kept across every option. */}
-      <div data-uidotsh-pick="Speaker page theme" className="contents">
-        <div data-uidotsh-option="Editorial Dark (current)" className="contents" hidden>
+      {/* The showcase keeps a bespoke design per theme; CSS in globals.css shows
+          only the variant matching the active <html> theme class (set by the
+          dev ThemeSwitcher). All directions are dark; cardinal red is kept. */}
+      <div className="contents">
+        <div data-theme-variant="editorial" className="contents">
           <EditorialTheme {...themeProps} />
         </div>
-        <div data-uidotsh-option="Ember (warm dark)" className="contents">
+        <div data-theme-variant="ember" className="contents">
           <EmberTheme {...themeProps} />
         </div>
-        <div data-uidotsh-option="Press (screenprint)" className="contents" hidden>
+        <div data-theme-variant="press" className="contents">
           <PressTheme {...themeProps} />
         </div>
-        <div data-uidotsh-option="Midnight Arcade (neon glow)" className="contents" hidden>
-          <ArcadeTheme {...themeProps} />
-        </div>
-        <div data-uidotsh-option="Marquee Ticket" className="contents" hidden>
+        <div data-theme-variant="marquee" className="contents">
           <MarqueeTheme {...themeProps} />
         </div>
       </div>

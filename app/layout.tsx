@@ -8,10 +8,10 @@ import {
   Inter,
   Space_Grotesk,
 } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
 import ClientFooter from "./components/ClientFooter";
+import ThemeSwitcher from "./components/ThemeSwitcher";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -84,18 +84,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark theme-editorial">
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} ${fraunces.variable} ${bricolage.variable} ${spaceGrotesk.variable} ${anton.variable} antialiased`}
       >
+        {/* Dev-only: apply the saved theme before paint to avoid a flash. */}
+        {process.env.NODE_ENV === "development" && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html:
+                "try{var t=localStorage.getItem('ssb-theme')||'editorial';var c=['theme-editorial','theme-ember','theme-press','theme-marquee'];var d=document.documentElement;c.forEach(function(x){d.classList.remove(x)});d.classList.add('theme-'+t)}catch(e){}",
+            }}
+          />
+        )}
         <ClientHeaderBar />
         {children}
         <ClientFooter />
-        {/* Temporary: ui.sh theme picker for the upcoming-speakers redesign.
-            Dev-only so it never ships to production; removed at finalize. */}
-        {process.env.NODE_ENV === "development" && (
-          <Script src="https://ui.sh/ui-picker.js" />
-        )}
+        {/* Dev-only: site-wide theme switcher. Removed at finalize once a theme is chosen. */}
+        {process.env.NODE_ENV === "development" && <ThemeSwitcher />}
       </body>
     </html>
   );

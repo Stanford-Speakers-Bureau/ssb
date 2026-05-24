@@ -87,8 +87,8 @@ function FeedbackForm({
     if (isCard && !feedbackToken) return null;
     return (
       <div id={wrapperId} className={wrapperClass}>
-        <div className="flex items-center gap-3 text-sm text-zinc-400">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-100" />
+        <div className="flex items-center gap-3 text-sm text-[var(--ssb-muted)]">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ssb-border)] border-t-[var(--ssb-ink-strong)]" />
           Loading your feedback form...
         </div>
       </div>
@@ -110,7 +110,7 @@ function FeedbackForm({
     if (isCard && (!feedbackToken || !message)) return null;
     return (
       <div id={wrapperId} className={wrapperClass}>
-        <p className="text-sm font-medium text-white">
+        <p className="text-sm font-medium text-[var(--ssb-ink-strong)]">
           {message ?? "Feedback isn't available right now."}
         </p>
       </div>
@@ -133,7 +133,7 @@ function FeedbackForm({
       <div className="flex flex-col gap-4">
         <div>
           <h3
-            className={`font-semibold text-white${isCard ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
+            className={`font-semibold text-[var(--ssb-ink-strong)]${isCard ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
               }`}
           >
             How likely are you to recommend Stanford Speakers Bureau events to a friend?
@@ -153,21 +153,21 @@ function FeedbackForm({
         )}
 
         {scoreLocked && existingFeedback ? (
-          <div className="rounded-xl border px-5 py-5 border-zinc-700/70 bg-zinc-800/40">
+          <div className="rounded-xl border px-5 py-5 border-[var(--ssb-border)] bg-[var(--ssb-card-strong)]">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--ssb-accent-text)]">
                   Your rating
                 </p>
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-[var(--ssb-muted)]">
                   Saved {formatTimestamp(existingFeedback.updatedAt)}
                 </p>
               </div>
               <div className="flex items-baseline">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-[var(--ssb-ink-strong)]">
                   {existingFeedback.score}
                 </span>
-                <span className="text-xl font-semibold text-zinc-500">
+                <span className="text-xl font-semibold text-[var(--ssb-faint)]">
                   /10
                 </span>
               </div>
@@ -187,8 +187,8 @@ function FeedbackForm({
                     disabled={submitting}
                     aria-label={isPending ? `Saving ${score} out of 10` : `Rate ${score} out of 10`}
                     className={`rounded-xl border px-0 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${isActive
-                      ? "border-[#A80D0C] bg-[#A80D0C] text-white"
-                      : "disabled:opacity-50 border-zinc-700 bg-zinc-900/70 text-zinc-200 hover:border-[#A80D0C] hover:bg-[#A80D0C]/15"
+                      ? "border-[var(--ssb-accent)] bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)]"
+                      : "disabled:opacity-50 border-[var(--ssb-border)] bg-[var(--ssb-card-strong)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent)] hover:bg-[var(--ssb-accent)]/15"
                       }`}
                   >
                     <span className="flex h-5 items-center justify-center">
@@ -198,7 +198,7 @@ function FeedbackForm({
                 );
               })}
             </div>
-            <div className="flex items-center justify-between text-xs text-zinc-400">
+            <div className="flex items-center justify-between text-xs text-[var(--ssb-muted)]">
               <span>Not likely</span>
               <span>Extremely likely</span>
             </div>
@@ -209,7 +209,7 @@ function FeedbackForm({
           <div>
             <label
               htmlFor={`feedback-comment-${eventId}-${variant}`}
-              className="mb-2 block text-sm font-medium text-zinc-300"
+              className="mb-2 block text-sm font-medium text-[var(--ssb-muted)]"
             >
               Comment
             </label>
@@ -220,9 +220,9 @@ function FeedbackForm({
               rows={4}
               maxLength={1500}
               placeholder="What stood out, or what should we improve next time?"
-              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-colors border-zinc-700 bg-zinc-900/70 text-white placeholder:text-zinc-500"
+              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-colors border-[var(--ssb-border)] bg-[var(--ssb-card-strong)] text-[var(--ssb-ink-strong)] placeholder:text-[var(--ssb-faint)]"
             />
-            <p className="mt-2 text-right text-xs text-zinc-400">
+            <p className="mt-2 text-right text-xs text-[var(--ssb-muted)]">
               {comment.length}/1500
             </p>
           </div>
@@ -240,11 +240,11 @@ function FeedbackForm({
         )}
 
         {existingFeedback && (
-          <div className="rounded-xl border px-4 py-3 text-sm border-zinc-700/70 bg-zinc-800/40 text-zinc-300">
+          <div className="rounded-xl border px-4 py-3 text-sm border-[var(--ssb-border)] bg-[var(--ssb-card-strong)] text-[var(--ssb-muted)]">
             Want to help shape who we book next?{" "}
             <Link
               href="/suggest"
-              className="font-semibold underline underline-offset-2 text-red-400 hover:text-red-300"
+              className="font-semibold underline underline-offset-2 text-[var(--ssb-accent-text)] hover:text-[var(--ssb-accent-strong)]"
             >
               Suggest a speaker or upvote ideas →
             </Link>

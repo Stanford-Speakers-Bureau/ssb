@@ -114,20 +114,20 @@ export default function NavBar({ banner }: { banner: boolean }) {
   }, [pathname]);
 
   const glassClasses = isOverlayNavPage
-    ? "border-white/16 bg-[rgba(24,19,17,0.38)] shadow-[0_22px_60px_rgba(0,0,0,0.24)]"
-    : "border-white/10 bg-[rgba(18,14,13,0.88)] shadow-[0_18px_50px_rgba(0,0,0,0.2)]";
+    ? "border-[var(--ssb-border-strong)] bg-[var(--ssb-night)] shadow-[0_22px_60px_rgba(0,0,0,0.24)]"
+    : "border-[var(--ssb-border)] bg-[var(--ssb-night)] shadow-[0_18px_50px_rgba(0,0,0,0.2)]";
 
-  const logoClasses = "text-xl font-bold text-white";
+  const logoClasses = "text-xl font-bold text-[var(--ssb-ink-strong)]";
 
   const mobileMenuBgClasses =
-    "border-l border-white/10 bg-[rgba(19,15,14,0.94)] text-white backdrop-blur-2xl";
+    "border-l border-[var(--ssb-border)] bg-[var(--ssb-night)] text-[var(--ssb-ink-strong)] backdrop-blur-2xl";
 
-  const hamburgerClasses = "text-white";
+  const hamburgerClasses = "text-[var(--ssb-ink-strong)]";
 
   const accountClasses =
-    "rounded-full bg-white/12 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/18";
+    "rounded-full bg-white/12 px-4 py-2 text-sm font-semibold text-[var(--ssb-ink-strong)] transition-colors hover:bg-white/18";
   const mobileAccountClasses =
-    "mt-4 rounded-full bg-white/12 px-4 py-3 text-lg font-semibold text-white transition-colors hover:bg-white/18";
+    "mt-4 rounded-full bg-white/12 px-4 py-3 text-lg font-semibold text-[var(--ssb-ink-strong)] transition-colors hover:bg-white/18";
 
   // Disable body scroll when mobile menu is open
   useEffect(() => {
@@ -168,8 +168,8 @@ export default function NavBar({ banner }: { banner: boolean }) {
               {NAV_ITEMS.map((item) => {
                 const active = isNavItemActive(pathname, item.href);
                 const navItemClasses = active
-                  ? "bg-white/14 text-white"
-                  : "text-white/84 hover:bg-white/10 hover:text-white";
+                  ? "bg-white/14 text-[var(--ssb-ink-strong)]"
+                  : "text-[var(--ssb-muted)] hover:bg-white/10 hover:text-[var(--ssb-ink-strong)]";
 
                 return (
                   <motion.div
@@ -275,8 +275,8 @@ export default function NavBar({ banner }: { banner: boolean }) {
                   {NAV_ITEMS.map((item) => {
                     const active = isNavItemActive(pathname, item.href);
                     const mobileLinkClasses = active
-                      ? "bg-white/12 text-white"
-                      : "text-white/88 hover:bg-white/8 hover:text-white";
+                      ? "bg-white/12 text-[var(--ssb-ink-strong)]"
+                      : "text-[var(--ssb-muted)] hover:bg-white/8 hover:text-[var(--ssb-ink-strong)]";
 
                     return (
                       <Link

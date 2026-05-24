@@ -98,21 +98,21 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className="mb-8 max-w-4xl font-serif text-5xl leading-[0.94] text-[#fff8f1] drop-shadow-[0_16px_42px_rgba(0,0,0,0.72)] sm:text-6xl md:text-7xl lg:text-8xl"
+          className="mb-8 max-w-4xl font-display text-5xl leading-[0.94] text-[var(--ssb-ink-strong)] drop-shadow-[0_16px_42px_rgba(0,0,0,0.72)] sm:text-6xl md:text-7xl lg:text-8xl"
           style={{
             WebkitTextStroke: "0.4px rgba(18, 12, 11, 0.58)",
             textShadow:
               "0 16px 38px rgba(0, 0, 0, 0.62), 0 3px 8px rgba(0, 0, 0, 0.5)",
           }}
         >
-          Stanford <span className="text-[#ffaf9d]">Speakers</span> Bureau
+          Stanford <span className="text-[var(--ssb-accent-text)]">Speakers</span> Bureau
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6, ease: EASE }}
-          className="mb-10 max-w-2xl font-sans text-base leading-relaxed text-[#fff1e8] drop-shadow-[0_8px_24px_rgba(0,0,0,0.58)] sm:text-lg md:text-xl"
+          className="mb-10 max-w-2xl font-sans text-base leading-relaxed text-[var(--ssb-ink)] drop-shadow-[0_8px_24px_rgba(0,0,0,0.58)] sm:text-lg md:text-xl"
         >
           Stanford&rsquo;s largest student organization sponsor of speaking
           events. We bring Nobel laureates, artists, leaders, and creators to
@@ -130,7 +130,7 @@ export default function HeroSection() {
             prefetch={false}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full bg-[#d74331] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_20px_48px_rgba(123,19,15,0.46)] transition-all hover:-translate-y-0.5 hover:bg-[#ef624b] sm:text-base"
+            className="rounded-full bg-[var(--ssb-accent)] px-8 py-3.5 text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-[0_20px_48px_rgba(123,19,15,0.46)] transition-all hover:-translate-y-0.5 hover:bg-[var(--ssb-accent-strong)] sm:text-base"
           >
             Join the Mailing List
           </MotionLink>
@@ -139,7 +139,7 @@ export default function HeroSection() {
             prefetch={false}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full border border-[#f2ded0]/70 bg-[#fff8f1] px-8 py-3.5 text-sm font-semibold text-[#1c1614] shadow-[0_16px_42px_rgba(0,0,0,0.28)] transition-all hover:-translate-y-0.5 hover:bg-white sm:text-base"
+            className="rounded-full border border-[var(--ssb-border-strong)] bg-[var(--ssb-ink-strong)] px-8 py-3.5 text-sm font-semibold text-[var(--ssb-night)] shadow-[0_16px_42px_rgba(0,0,0,0.28)] transition-all hover:-translate-y-0.5 hover:bg-white sm:text-base"
           >
             Suggest a Speaker
           </MotionLink>

@@ -11,13 +11,13 @@ import { sanitizeSchema } from "@/app/lib/sanitize";
 // ─── Design token constants ───
 
 export const glassPanel =
-  "rounded-xl bg-zinc-900/50 border border-zinc-800/70 shadow-lg";
+  "rounded-xl bg-[var(--ssb-card)] border border-[var(--ssb-border)] shadow-lg";
 
 export const redButtonBase =
-  "rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-all hover:bg-[#C11211] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
+  "rounded-lg px-6 py-3 text-sm sm:text-base font-semibold text-[var(--ssb-accent-contrast)] bg-[var(--ssb-accent)] transition-all hover:bg-[var(--ssb-accent-strong)] hover:shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
 const secondaryButtonBase =
-  "rounded-lg border border-white/15 bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 disabled:opacity-50 disabled:cursor-not-allowed";
+  "rounded-lg border border-[var(--ssb-border)] bg-white/[0.06] px-6 py-3 text-sm sm:text-base font-semibold text-[var(--ssb-muted)] transition-all hover:bg-white/[0.1] hover:text-[var(--ssb-ink-strong)] hover:border-[var(--ssb-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed";
 
 // ─── Spinner ───
 
@@ -136,14 +136,14 @@ export function RedButton({
 // ─── NoticeBanner ───
 
 const noticeBannerColors = {
-  red: "bg-red-500/[0.06] border-red-500/20 text-red-200",
+  red: "bg-[var(--ssb-accent-soft)] border-[var(--ssb-accent)]/40 text-[var(--ssb-accent-text)]",
   amber: "bg-amber-500/[0.06] border-amber-500/20 text-amber-200",
   blue: "bg-blue-500/[0.06] border-blue-500/20 text-blue-200",
   zinc: "bg-zinc-500/[0.06] border-zinc-500/20 text-zinc-200",
 } as const;
 
 const noticeBannerIconColors = {
-  red: "text-red-400",
+  red: "text-[var(--ssb-accent-text)]",
   amber: "text-amber-400",
   blue: "text-blue-400",
   zinc: "text-zinc-400",
@@ -202,7 +202,7 @@ export function NoBagsModalChildren({
 }) {
   return (
     <>
-      <p className="text-zinc-300 mb-5 text-sm sm:text-base font-medium">
+      <p className="text-[var(--ssb-muted)] mb-5 text-sm sm:text-base font-medium">
         Type &quot;no bags&quot; below to confirm you understand:
       </p>
       <input
@@ -210,7 +210,7 @@ export function NoBagsModalChildren({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Type 'no bags' to confirm"
-        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-white bg-white/[0.06] border border-white/15 focus:ring-2 focus:ring-red-500/50 focus:outline-none placeholder:text-zinc-600 mb-5 transition-colors"
+        className="w-full rounded-lg px-4 py-2.5 text-sm sm:text-base text-[var(--ssb-ink-strong)] bg-white/[0.06] border border-[var(--ssb-border)] focus:ring-2 focus:ring-red-500/50 focus:outline-none placeholder:text-[var(--ssb-faint)] mb-5 transition-colors"
         onKeyDown={(e) => {
           if (e.key === "Enter" && value.toLowerCase().trim() === "no bags") {
             onConfirm();
@@ -250,14 +250,14 @@ export function FeedbackModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-            className="relative bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-7 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative bg-[var(--ssb-card)] backdrop-blur-xl border border-[var(--ssb-border)] rounded-2xl p-7 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute top-4 right-4 rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-white/[0.08] hover:text-white"
+              className="absolute top-4 right-4 rounded-full p-1.5 text-[var(--ssb-muted)] transition-colors hover:bg-white/[0.08] hover:text-[var(--ssb-ink-strong)]"
             >
               <svg
                 className="w-5 h-5"
@@ -322,13 +322,13 @@ export function ConfirmationModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
-            className="bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl"
+            className="bg-[var(--ssb-card)] backdrop-blur-xl border border-[var(--ssb-border)] rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-3">
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--ssb-ink-strong)] mb-3">
               {title}
             </h3>
-            <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed">
+            <p className="text-[var(--ssb-muted)] mb-4 text-sm sm:text-base leading-relaxed">
               {description}
             </p>
             {children}

@@ -85,7 +85,7 @@ export default async function EventQuestionsPage({
           eventRoute={event.route || eventID}
         />
 
-        <section className="relative bg-zinc-950 border-t border-zinc-900 py-12 sm:py-16 px-6 sm:px-12">
+        <section className="relative bg-[var(--ssb-bg)] border-t border-[var(--ssb-border)] py-12 sm:py-16 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 lg:gap-12 items-start">
               <div>

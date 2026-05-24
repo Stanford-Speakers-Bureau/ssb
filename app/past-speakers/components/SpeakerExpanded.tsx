@@ -21,7 +21,7 @@ export default function SpeakerExpanded({
   if (sections.every((s) => s.speakers.length === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-24 text-center">
-        <p className="font-serif text-2xl text-zinc-400">
+        <p className="font-display text-2xl text-[var(--ssb-muted)]">
           No speakers match that search.
         </p>
       </div>
@@ -49,10 +49,10 @@ export default function SpeakerExpanded({
         return (
           <section key={section.year} className="mb-16 last:mb-0">
             <div className="flex items-baseline gap-4 mb-6">
-              <h2 className="font-serif text-4xl sm:text-5xl text-white">
+              <h2 className="font-display text-4xl sm:text-5xl text-[var(--ssb-ink-strong)]">
                 {section.year}
               </h2>
-              <span className="h-px flex-1 bg-zinc-800" />
+              <span className="h-px flex-1 bg-[var(--ssb-border)]" />
             </div>
 
             <div className="space-y-6">
@@ -96,7 +96,7 @@ function ExpandedCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
+      className="group relative overflow-hidden rounded-xl border border-[var(--ssb-border)] bg-[var(--ssb-card)]"
     >
       <div
         className={`grid ${image ? "md:grid-cols-2" : "grid-cols-1"} ${
@@ -104,7 +104,7 @@ function ExpandedCard({
         }`}
       >
         {image && (
-          <div className="relative h-72 md:h-[420px] bg-zinc-900 overflow-hidden">
+          <div className="relative h-72 md:h-[420px] bg-[var(--ssb-card-strong)] overflow-hidden">
             <Image
               src={image}
               alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
@@ -133,31 +133,31 @@ function ExpandedCard({
           {!image && hasMeta && (
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-4">
               {speaker.month && (
-                <span className="font-sans text-[10px] uppercase tracking-[0.25em] text-white/60">
+                <span className="font-sans text-[10px] uppercase tracking-[0.25em] text-[var(--ssb-muted)]">
                   {speaker.month}
                 </span>
               )}
               {speaker.location && (
-                <span className="font-sans text-sm font-semibold text-white/90">
+                <span className="font-sans text-sm font-semibold text-[var(--ssb-ink)]">
                   {speaker.location}
                 </span>
               )}
             </div>
           )}
-          <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-[1.05] mb-3">
+          <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--ssb-ink-strong)] leading-[1.05] mb-3">
             {speaker.name}
           </h3>
           {speaker.title && (
-            <p className="font-serif italic text-base sm:text-lg text-[#D64645] mb-5">
+            <p className="font-display italic text-base sm:text-lg text-[var(--ssb-accent-text)] mb-5">
               {speaker.title}
             </p>
           )}
           <span
             aria-hidden="true"
-            className="block h-px w-12 bg-[#A80D0C] mb-5"
+            className="block h-px w-12 bg-[var(--ssb-accent)] mb-5"
           />
           <p
-            className={`font-sans text-sm sm:text-base text-zinc-300 leading-relaxed mb-6 ${
+            className={`font-sans text-sm sm:text-base text-[var(--ssb-muted)] leading-relaxed mb-6 ${
               image ? "line-clamp-4" : ""
             }`}
           >
@@ -166,7 +166,7 @@ function ExpandedCard({
           <button
             type="button"
             onClick={() => onOpen(speaker.slug)}
-            className="inline-flex items-center gap-2 self-start rounded-md border border-[#A80D0C] px-5 py-2.5 text-sm font-semibold text-[#D64645] transition-colors hover:bg-[#A80D0C] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A80D0C]"
+            className="inline-flex items-center gap-2 self-start rounded-md border border-[var(--ssb-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--ssb-accent-text)] transition-colors hover:bg-[var(--ssb-accent)] hover:text-[var(--ssb-accent-contrast)] focus:outline-none focus:ring-2 focus:ring-[var(--ssb-accent)]"
           >
             View profile
             <svg

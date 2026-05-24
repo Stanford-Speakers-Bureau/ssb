@@ -106,9 +106,9 @@ export default function QuestionsBarClient({
       <Link
         href={`/events/${eventRoute}/questions#ask`}
         prefetch={false}
-        className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-[#A80D0C]/15 to-[#A80D0C]/5 border border-[#A80D0C]/30 px-4 py-3 transition-all hover:from-[#A80D0C]/25 hover:to-[#A80D0C]/10 hover:border-[#A80D0C]/50"
+        className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-[var(--ssb-accent)]/15 to-[var(--ssb-accent)]/5 border border-[var(--ssb-accent)]/30 px-4 py-3 transition-all hover:from-[var(--ssb-accent)]/25 hover:to-[var(--ssb-accent)]/10 hover:border-[var(--ssb-accent)]/50"
       >
-        <span className="text-sm font-serif text-zinc-100">
+        <span className="text-sm font-display text-[var(--ssb-ink)]">
           Be the first to suggest a question.
         </span>
         <svg
@@ -136,8 +136,8 @@ export default function QuestionsBarClient({
     <>
       {/* Top bar: label on the left, inline actions on the right. */}
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-xs font-sans uppercase tracking-[0.25em] sm:tracking-[0.3em] text-[#A80D0C]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#A80D0C] motion-safe:animate-pulse" />
+        <span className="inline-flex items-center gap-2 text-xs font-sans uppercase tracking-[0.25em] sm:tracking-[0.3em] text-[var(--ssb-accent-text)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--ssb-accent)] motion-safe:animate-pulse" />
           Moderator Q&amp;A
         </span>
         <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold">
@@ -145,7 +145,7 @@ export default function QuestionsBarClient({
             <Link
               href={`/events/${eventRoute}/questions#ask`}
               prefetch={false}
-              className="inline-flex items-center gap-1 rounded-full bg-[#A80D0C] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm shadow-[#A80D0C]/20 transition-all hover:bg-[#C11211] active:scale-95"
+              className="inline-flex items-center gap-1 rounded-full bg-[var(--ssb-accent)] px-3.5 py-1.5 text-xs font-semibold text-[var(--ssb-accent-contrast)] shadow-sm shadow-[var(--ssb-accent)]/20 transition-all hover:bg-[var(--ssb-accent-strong)] active:scale-95"
             >
               + Ask
             </Link>
@@ -154,7 +154,7 @@ export default function QuestionsBarClient({
             <Link
               href={`/events/${eventRoute}/questions`}
               prefetch={false}
-              className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 active:scale-95"
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--ssb-border)] bg-white/[0.06] px-3.5 py-1.5 text-xs font-semibold text-[var(--ssb-muted)] transition-all hover:bg-white/[0.1] hover:text-[var(--ssb-ink-strong)] hover:border-[var(--ssb-border-strong)] active:scale-95"
             >
               See all
               <svg
@@ -177,7 +177,7 @@ export default function QuestionsBarClient({
       </div>
 
       {/* Compact one-line rows. */}
-      <ol className="mt-2 sm:mt-2.5 divide-y divide-white/10">
+      <ol className="mt-2 sm:mt-2.5 divide-y divide-[var(--ssb-border)]">
         {questions.map((q, idx) => {
           const voted = votedById[q.id] ?? q.hasVoted;
           const pending = !!pendingById[q.id];
@@ -186,16 +186,16 @@ export default function QuestionsBarClient({
               {rankingsHidden ? (
                 <span
                   aria-hidden="true"
-                  className="shrink-0 w-4 flex justify-center text-[#A80D0C]"
+                  className="shrink-0 w-4 flex justify-center text-[var(--ssb-accent-text)]"
                 >
                   <span className="h-1 w-1 rounded-full bg-current" />
                 </span>
               ) : (
-                <span className="shrink-0 w-4 text-center font-serif text-sm sm:text-base text-[#A80D0C] tabular-nums">
+                <span className="shrink-0 w-4 text-center font-display text-sm sm:text-base text-[var(--ssb-accent-text)] tabular-nums">
                   {idx + 1}
                 </span>
               )}
-              <span className="flex-1 min-w-0 truncate font-serif text-sm sm:text-base text-zinc-100">
+              <span className="flex-1 min-w-0 truncate font-display text-sm sm:text-base text-[var(--ssb-ink)]">
                 {q.question}
               </span>
               {canVote && (
@@ -207,8 +207,8 @@ export default function QuestionsBarClient({
                   aria-label={voted ? "Remove vote" : "Vote"}
                   className={`shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed ${
                     voted
-                      ? "bg-[#A80D0C] text-white border border-[#A80D0C] shadow-sm shadow-[#A80D0C]/30 hover:bg-[#C11211]"
-                      : "border border-[#A80D0C]/40 text-[#A80D0C] bg-[#A80D0C]/[0.06] hover:bg-[#A80D0C]/15 hover:border-[#A80D0C]/70"
+                      ? "bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)] border border-[var(--ssb-accent)] shadow-sm shadow-[var(--ssb-accent)]/30 hover:bg-[var(--ssb-accent-strong)]"
+                      : "border border-[var(--ssb-accent)]/40 text-[var(--ssb-accent-text)] bg-[var(--ssb-accent)]/[0.06] hover:bg-[var(--ssb-accent)]/15 hover:border-[var(--ssb-accent)]/70"
                   }`}
                 >
                   {voted ? (

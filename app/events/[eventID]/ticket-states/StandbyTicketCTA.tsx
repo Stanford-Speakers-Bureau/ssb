@@ -31,10 +31,10 @@ export default function StandbyTicketCTA({
         <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Admitting Now</span>
       </span>
 
-      <p className="text-md font-semibold text-white mb-1.5">
+      <p className="text-md font-semibold text-[var(--ssb-ink-strong)] mb-1.5">
         The standby line is open!
       </p>
-      <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
+      <p className="text-xs sm:text-sm text-[var(--ssb-muted)] leading-relaxed mb-5">
         Grab a standby ticket below and head to the venue.
         You&apos;ll be admitted as spots become available. No guarantee, but many people get in.
       </p>
@@ -74,10 +74,10 @@ export default function StandbyTicketCTA({
       <div className="flex flex-wrap gap-x-4 gap-y-2 mb-5">
         {["Get your standby ticket", "Head to the venue", "Join the standby line"].map((step, i) => (
           <div key={i} className="flex items-center gap-2">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-white/[0.08] border border-white/10 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-zinc-400">{i + 1}</span>
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-white/[0.08] border border-[var(--ssb-border)] flex items-center justify-center">
+              <span className="text-[10px] font-bold text-[var(--ssb-muted)]">{i + 1}</span>
             </div>
-            <p className="text-xs text-zinc-500">{step}</p>
+            <p className="text-xs text-[var(--ssb-faint)]">{step}</p>
           </div>
         ))}
       </div>

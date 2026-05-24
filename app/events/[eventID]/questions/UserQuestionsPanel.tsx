@@ -32,10 +32,10 @@ export default function UserQuestionsPanel({
         return (
           <li
             key={q.id}
-            className="flex flex-col gap-2 rounded-xl border border-zinc-800 bg-[var(--ssb-card)] px-4 py-3"
+            className="flex flex-col gap-2 rounded-xl border border-[var(--ssb-border)] bg-[var(--ssb-card)] px-4 py-3"
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="font-sans text-sm text-white leading-snug">
+              <p className="font-sans text-sm text-[var(--ssb-ink-strong)] leading-snug">
                 {q.question}
               </p>
               <span

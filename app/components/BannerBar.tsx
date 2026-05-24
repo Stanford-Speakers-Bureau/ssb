@@ -91,7 +91,7 @@ export default function BannerBar({
   }, [targetTime]);
 
   return (
-    <div className="relative z-50 flex items-center justify-center gap-3 bg-[linear-gradient(90deg,#8f1a18_0%,#b92821_36%,#d84a38_52%,#b92821_68%,#8f1a18_100%)] px-4 py-2 text-center text-sm font-semibold text-white shadow-[0_12px_28px_rgba(143,26,24,0.28)] md:h-10 md:py-0">
+    <div className="relative z-50 flex items-center justify-center gap-3 bg-[linear-gradient(90deg,var(--ssb-accent)_0%,var(--ssb-accent)_36%,var(--ssb-accent-strong)_52%,var(--ssb-accent)_68%,var(--ssb-accent)_100%)] px-4 py-2 text-center text-sm font-semibold text-[var(--ssb-accent-contrast)] shadow-[0_12px_28px_rgba(143,26,24,0.28)] md:h-10 md:py-0">
       {/* Mobile version - simplified */}
       {hasText &&
         (hasHref ? (

@@ -20,13 +20,13 @@ export default function ArchiveToolbar({
   years: string[];
 }) {
   return (
-    <div className="sticky top-0 z-20 border-b border-zinc-900 bg-black/85 backdrop-blur-md">
+    <div className="sticky top-0 z-20 border-b border-[var(--ssb-border)] bg-[var(--ssb-paper)] backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-4">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           {/* Search */}
           <div className="relative lg:w-72 shrink-0">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ssb-muted)]"
               width="18"
               height="18"
               viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ export default function ArchiveToolbar({
               onChange={(e) => onQueryChange(e.target.value)}
               placeholder="Search speakers…"
               aria-label="Search speakers"
-              className="w-full rounded-full border border-zinc-800 bg-zinc-950 py-2 pl-10 pr-4 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#A80D0C] focus:border-transparent"
+              className="w-full rounded-full border border-[var(--ssb-border)] bg-[var(--ssb-card)] py-2 pl-10 pr-4 text-sm text-[var(--ssb-ink-strong)] placeholder:text-[var(--ssb-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--ssb-accent)] focus:border-transparent"
             />
           </div>
 
@@ -74,7 +74,7 @@ export default function ArchiveToolbar({
           {/* View toggle */}
           <div className="flex items-center shrink-0">
             <div
-              className="flex rounded-full border border-zinc-800 p-0.5"
+              className="flex rounded-full border border-[var(--ssb-border)] p-0.5"
               role="tablist"
               aria-label="View mode"
             >
@@ -150,8 +150,8 @@ function ViewButton({
       aria-label={`${label} view`}
       className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-sans font-medium transition-all ${
         active
-          ? "bg-[#A80D0C] text-white"
-          : "text-zinc-400 hover:text-white"
+          ? "bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)]"
+          : "text-[var(--ssb-muted)] hover:text-[var(--ssb-ink-strong)]"
       }`}
     >
       {children}
@@ -177,8 +177,8 @@ function Chip({
       aria-selected={active}
       className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-sans transition-all ${
         active
-          ? "bg-[#A80D0C] text-white border border-[#A80D0C]"
-          : "border border-zinc-800 text-zinc-300 hover:border-[#A80D0C] hover:text-[#A80D0C]"
+          ? "bg-[var(--ssb-accent)] text-[var(--ssb-accent-contrast)] border border-[var(--ssb-accent)]"
+          : "border border-[var(--ssb-border)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent)] hover:text-[var(--ssb-accent-text)]"
       }`}
     >
       {label}
