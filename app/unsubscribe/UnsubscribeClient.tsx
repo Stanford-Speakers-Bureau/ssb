@@ -23,12 +23,15 @@ export default function UnsubscribeClient({
   eventName,
   alreadyUnsubscribed,
 }: Props) {
-  const [phase, setPhase] = useState<"form" | "done" | "resubscribed">(
-    alreadyUnsubscribed ? "done" : "form",
-  );
+  const [phase, setPhase] = useState<
+    "form" | "done" | "resubscribed" | "announce-confirm" | "announce-done"
+  >(alreadyUnsubscribed ? "done" : "form");
   const [confirmation, setConfirmation] = useState("");
+  const [announceConfirmation, setAnnounceConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const ANNOUNCE_PHRASE = "speakers bureau";
 
   const headline = scope === "announce"
     ? "Unsubscribe from Stanford Speakers Bureau announcements"
@@ -60,6 +63,17 @@ export default function UnsubscribeClient({
       normalize(confirmation) === normalize(requiredPhrase),
     [confirmation, requiredPhrase],
   );
+
+  const isAnnouncePhraseValid = useMemo(
+    () => normalize(announceConfirmation) === normalize(ANNOUNCE_PHRASE),
+    [announceConfirmation],
+  );
+
+  function startAnnounce() {
+    setError(null);
+    setAnnounceConfirmation("");
+    setPhase("announce-confirm");
+  }
 
   async function handleUnsubscribe() {
     if (!isPhraseValid || submitting) return;
@@ -102,6 +116,34 @@ export default function UnsubscribeClient({
         throw new Error(payload.error ?? "Failed to resubscribe");
       }
       setPhase("resubscribed");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleAlsoAnnounce() {
+    if (!isAnnouncePhraseValid || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/unsubscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          token,
+          alsoAnnounce: true,
+          confirmation: announceConfirmation,
+        }),
+      });
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(payload.error ?? "Failed to unsubscribe");
+      }
+      setPhase("announce-done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -169,6 +211,22 @@ export default function UnsubscribeClient({
               {submitting ? "Unsubscribing…" : "Unsubscribe"}
             </button>
 
+            {scope === "event" && (
+              <div className="mt-6 border-t border-zinc-800 pt-5">
+                <p className="text-xs text-zinc-500 leading-relaxed mb-3">
+                  Don&rsquo;t want to hear about any future events either?
+                </p>
+                <button
+                  type="button"
+                  onClick={startAnnounce}
+                  disabled={submitting}
+                  className="w-full rounded-lg border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-300 text-sm font-medium px-4 py-2 transition-colors"
+                >
+                  Unsubscribe from all future events
+                </button>
+              </div>
+            )}
+
             <p className="mt-6 text-xs text-zinc-500">
               Changed your mind? Just close this page.
             </p>
@@ -200,6 +258,93 @@ export default function UnsubscribeClient({
             >
               {submitting ? "Resubscribing…" : "Resubscribe"}
             </button>
+
+            {scope === "event" && (
+              <div className="mt-6 border-t border-zinc-800 pt-5">
+                <p className="text-xs text-zinc-500 leading-relaxed mb-3">
+                  Don&rsquo;t want to hear about any future events either?
+                </p>
+                <button
+                  type="button"
+                  onClick={startAnnounce}
+                  disabled={submitting}
+                  className="w-full rounded-lg border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-300 text-sm font-medium px-4 py-2 transition-colors"
+                >
+                  Unsubscribe from all future events
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {phase === "announce-confirm" && (
+          <>
+            <h1 className="text-xl font-semibold text-white mb-3">
+              Unsubscribe from all future events
+            </h1>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-2">
+              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-200">{email}</span>
+            </p>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+              You&rsquo;ll stop receiving all promotional emails about future
+              events — announcements, &ldquo;tickets available&rdquo; notices,
+              and general newsletters. You&rsquo;ll still get reminders and
+              confirmations for events you&rsquo;ve already got tickets to.
+            </p>
+
+            <label
+              htmlFor="announce-confirm"
+              className="block text-sm font-medium text-zinc-300 mb-2"
+            >
+              Type{" "}
+              <span className="font-mono text-white">{ANNOUNCE_PHRASE}</span>
+              {" "}to unsubscribe
+            </label>
+            <input
+              id="announce-confirm"
+              type="text"
+              autoComplete="off"
+              value={announceConfirmation}
+              onChange={(e) => setAnnounceConfirmation(e.target.value)}
+              className="w-full rounded-lg bg-zinc-950 border border-zinc-700 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500"
+              placeholder={ANNOUNCE_PHRASE}
+              disabled={submitting}
+            />
+
+            {error && (
+              <p className="mt-3 text-sm text-rose-400">{error}</p>
+            )}
+
+            <button
+              type="button"
+              onClick={handleAlsoAnnounce}
+              disabled={!isAnnouncePhraseValid || submitting}
+              className="mt-6 w-full rounded-lg bg-rose-600 hover:bg-rose-500 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white font-medium px-4 py-2.5 transition-colors"
+            >
+              {submitting ? "Unsubscribing…" : "Unsubscribe"}
+            </button>
+
+            <p className="mt-6 text-xs text-zinc-500">
+              Changed your mind? Just close this page.
+            </p>
+          </>
+        )}
+
+        {phase === "announce-done" && (
+          <>
+            <h1 className="text-xl font-semibold text-white mb-3">
+              You&rsquo;ve been unsubscribed
+            </h1>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-2">
+              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-200">{email}</span>
+            </p>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              You&rsquo;ll no longer receive promotional emails about future
+              events. You&rsquo;ll still get reminders and confirmations for
+              events you already have tickets to.
+            </p>
           </>
         )}
 
