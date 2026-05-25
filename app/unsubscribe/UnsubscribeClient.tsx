@@ -213,16 +213,13 @@ export default function UnsubscribeClient({
 
             {scope === "event" && (
               <div className="mt-6 border-t border-zinc-800 pt-5">
-                <p className="text-xs text-zinc-500 leading-relaxed mb-3">
-                  Don&rsquo;t want to hear about any future events either?
-                </p>
                 <button
                   type="button"
                   onClick={startAnnounce}
                   disabled={submitting}
-                  className="w-full rounded-lg border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-300 text-sm font-medium px-4 py-2 transition-colors"
+                  className="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 >
-                  Unsubscribe from all future events
+                  Don&rsquo;t want to hear about any future events either?
                 </button>
               </div>
             )}
