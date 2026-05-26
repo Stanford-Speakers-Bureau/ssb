@@ -22,6 +22,7 @@ type TicketWalletData = {
   start_time_date: string;
   cancelled?: boolean | null;
   checkedIn?: boolean | null;
+  admittingStandby?: boolean | null;
 };
 
 const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
@@ -146,16 +147,26 @@ export async function getAppleWalletPass(
 
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
+  const isStandby = ticket.ticketType?.toUpperCase().trim() === "STANDBY";
   const isCancelled = ticket.cancelled === true;
   // A scanned (checked-in) ticket is "used": it's voided like a cancellation so
   // iOS greys it out at the door, but it carries a welcoming status, not a
   // cancellation note. Cancellation wins if both are somehow set.
   const isCheckedIn = ticket.checkedIn === true && !isCancelled;
+  // Standby passes flip from "please wait" to "entry permitted" when staff open
+  // standby admission for the event (allow_admitting_standby). The change rides
+  // on the single back-status field below so iOS shows our custom banner.
+  const isStandbyAdmitting =
+    isStandby && ticket.admittingStandby === true && !isCancelled && !isCheckedIn;
   const statusValue = isCancelled
     ? "Cancelled"
     : isCheckedIn
       ? "Checked In ✓"
-      : "Active";
+      : isStandby
+        ? isStandbyAdmitting
+          ? "Entry Permitted ✓"
+          : "Standby — please wait"
+        : "Active";
   // webServiceURL + authenticationToken make the pass updatable: the device
   // registers with our PassKit web service and we push refreshes via APNs.
   // Only passes issued with these fields can ever receive remote updates.
@@ -262,12 +273,20 @@ export async function getAppleWalletPass(
     changeMessage: "This ticket is now under the name %@.",
     textAlignment: "PKTextAlignmentRight",
   });
-  pass.setBarcodes({
-    format: "PKBarcodeFormatQR",
-    message: ticket.ticketId,
-    messageEncoding: "iso-8859-1",
-    altText: ticket.name || ticket.email,
-  });
+  // A standby ticket carries no scannable code until staff open admission — the
+  // QR only appears once admitting (or if it's already checked in / cancelled,
+  // where the pass is voided anyway). When admission opens the barcode appears
+  // alongside the back-status flip, so the user still gets the custom banner.
+  const hideStandbyBarcode =
+    isStandby && ticket.admittingStandby !== true && !isCheckedIn && !isCancelled;
+  if (!hideStandbyBarcode) {
+    pass.setBarcodes({
+      format: "PKBarcodeFormatQR",
+      message: ticket.ticketId,
+      messageEncoding: "iso-8859-1",
+      altText: ticket.name || ticket.email,
+    });
+  }
   pass.backFields.push({
     key: "back-status",
     label: "Status",
@@ -277,7 +296,9 @@ export async function getAppleWalletPass(
     // a new back field on scan would be a structural change and suppress it.)
     changeMessage: isCheckedIn
       ? "✅ %@ — welcome to the event!"
-      : "Ticket status changed to %@.",
+      : isStandbyAdmitting
+        ? "🎉 Standby entry is now open — head to the door!"
+        : "Ticket status changed to %@.",
   });
   if (isCancelled) {
     pass.backFields.push({

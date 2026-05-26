@@ -20,6 +20,7 @@ type TicketWalletData = {
   eventLat: number;
   eventLng: number;
   eventAddress: string;
+  admittingStandby?: boolean | null;
 };
 
 const APPLE_WALLET_IMAGE_FETCH_TIMEOUT_MS = 10_000;
@@ -103,6 +104,7 @@ export async function GET(req: NextRequest) {
             latitude: true,
             longitude: true,
             address: true,
+            allowAdmittingStandby: true,
           },
         },
       },
@@ -165,6 +167,7 @@ export async function GET(req: NextRequest) {
       eventLng: Number(event.longitude),
       eventAddress: event.address ?? "",
       start_time_date: event.startTimeDate?.toISOString() ?? "",
+      admittingStandby: event.allowAdmittingStandby,
     };
 
     const passBuf = await getAppleWalletPass(imgBuffer, ticketData);

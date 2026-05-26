@@ -27,6 +27,7 @@ const EVENT_PASS_COLUMNS = {
   latitude: true,
   longitude: true,
   address: true,
+  allowAdmittingStandby: true,
 } as const;
 
 type EventPassFields = {
@@ -41,6 +42,7 @@ type EventPassFields = {
   latitude: string;
   longitude: string;
   address: string;
+  allowAdmittingStandby: boolean;
 };
 
 /**
@@ -93,6 +95,7 @@ async function renderPass(args: {
     start_time_date: event.startTimeDate?.toISOString() ?? "",
     cancelled: args.cancelled,
     checkedIn: args.checkedIn,
+    admittingStandby: event.allowAdmittingStandby,
   });
   return (buffer as Buffer) ?? null;
 }

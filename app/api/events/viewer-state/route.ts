@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
 import { isValidUUID } from "@/app/lib/validation";
-import { db, and, eq, notify, tickets, waitlist } from "@ssb/db";
+import { db, and, eq, events, notify, tickets, waitlist } from "@ssb/db";
 
 export async function GET(req: Request) {
   try {
@@ -36,12 +36,13 @@ export async function GET(req: Request) {
           isOnWaitlist: false,
           waitlistPosition: null,
           isNotified: false,
+          allowAdmittingStandby: false,
         },
         { status: 200 },
       );
     }
 
-    const [ticket, waitlistEntry, notifyEntry] = await Promise.all([
+    const [ticket, waitlistEntry, notifyEntry, event] = await Promise.all([
       db.query.tickets.findFirst({
         where: and(eq(tickets.eventId, eventId), eq(tickets.email, user.email)),
         columns: {
@@ -64,6 +65,12 @@ export async function GET(req: Request) {
           id: true,
         },
       }),
+      db.query.events.findFirst({
+        where: eq(events.id, eventId),
+        columns: {
+          allowAdmittingStandby: true,
+        },
+      }),
     ]);
 
     return NextResponse.json(
@@ -77,6 +84,7 @@ export async function GET(req: Request) {
         isOnWaitlist: !!waitlistEntry,
         waitlistPosition: waitlistEntry?.position ?? null,
         isNotified: !!notifyEntry,
+        allowAdmittingStandby: event?.allowAdmittingStandby ?? false,
       },
       { status: 200 },
     );

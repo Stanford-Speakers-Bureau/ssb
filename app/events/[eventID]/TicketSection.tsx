@@ -49,6 +49,7 @@ type ViewerEventStateResponse = {
   isOnWaitlist?: boolean;
   waitlistPosition?: number | null;
   isNotified?: boolean;
+  allowAdmittingStandby?: boolean;
 };
 
 export default function TicketSection({
@@ -98,8 +99,9 @@ export default function TicketSection({
   const [viewerStateRequestKey, setViewerStateRequestKey] = useState(0);
 
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
-  const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
+  const [admittingStandby, setAdmittingStandby] = useState(false);
+  const [standbyAdmissionOpened, setStandbyAdmissionOpened] = useState(false);
 
   const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
 
@@ -178,6 +180,7 @@ export default function TicketSection({
             : null,
         );
         setIsNotified(!!data.isNotified);
+        setAdmittingStandby(!!data.allowAdmittingStandby);
       } catch (error) {
         console.error("Failed to load viewer event state:", error);
         if (!ignore) {
@@ -198,6 +201,34 @@ export default function TicketSection({
       ignore = true;
     };
   }, [eventId, viewerStateRequestKey]);
+
+  // While a standby holder is waiting (admission not yet open), poll for the
+  // flip so we can prompt them to refresh and reveal their QR. The QR itself is
+  // only rendered after a re-fetch, so we surface a refresh CTA rather than
+  // swapping it in silently.
+  useEffect(() => {
+    if (!isStandbyTicket || admittingStandby) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/events/viewer-state?eventId=${encodeURIComponent(eventId)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as ViewerEventStateResponse;
+        if (!cancelled && data.allowAdmittingStandby) {
+          setStandbyAdmissionOpened(true);
+        }
+      } catch {
+        // Ignore transient poll failures; the next tick retries.
+      }
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isStandbyTicket, admittingStandby, eventId]);
 
   useEffect(() => {
     if (
@@ -414,6 +445,46 @@ export default function TicketSection({
               )}
 
               <div className="relative">
+                {/* A standby ticket has no scannable QR until staff open
+                    admission for the event. Until then we render a placeholder
+                    instead of the real code (not just an overlay over it). */}
+                {isStandbyTicket && !admittingStandby ? (
+                  <div
+                    className={`flex flex-col items-center justify-center rounded-lg ${standbyAdmissionOpened ? "bg-emerald-950" : "bg-zinc-900"}`}
+                    style={{ width: 190, height: 190 }}
+                  >
+                    {standbyAdmissionOpened ? (
+                      <>
+                        <svg className="w-10 h-10 text-emerald-400 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        <p className="text-sm font-semibold text-emerald-300 text-center px-4">
+                          Standby admission is open!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setStandbyAdmissionOpened(false);
+                            setViewerStateRequestKey((k) => k + 1);
+                          }}
+                          className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-sm font-semibold cursor-pointer hover:bg-emerald-500/25 transition-colors"
+                        >
+                          Refresh to reveal QR
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-10 h-10 text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
+                        </svg>
+                        <p className="text-sm font-semibold text-zinc-400 text-center px-4">
+                          QR unlocks when standby admission opens
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                <>
                 <TicketQRCode
                   ticketId={ticketId}
                   size={190}
@@ -422,25 +493,6 @@ export default function TicketSection({
                   attendeeName={ticketName}
                   eventStartTime={eventStartTime ?? doorsOpen}
                 />
-
-                {/* Standby ticket overlay — tap to reveal */}
-                <AnimatePresence>
-                  {isStandbyTicket && !qrRevealed && (
-                    <motion.button
-                      initial={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      onClick={() => setQrRevealed(true)}
-                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900 rounded-lg cursor-pointer"
-                    >
-                      <svg className="w-10 h-10 text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
-                      </svg>
-                      <p className="text-sm font-semibold text-zinc-400">Tap to reveal standby ticket</p>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
 
                 {/* Scanned ticket overlay — tap to reveal */}
                 <AnimatePresence>
@@ -460,6 +512,8 @@ export default function TicketSection({
                     </motion.button>
                   )}
                 </AnimatePresence>
+                </>
+                )}
               </div>
 
               <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
