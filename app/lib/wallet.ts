@@ -181,17 +181,23 @@ export async function getAppleWalletPass(
     voided: isCancelled || isCheckedIn,
 
     description: ticket.ticketType,
-    backgroundColor: isVIP
-      ? "rgb(122, 92, 0)"
-      : isExternal
-        ? "rgb(22, 101, 52)"
-        : "rgb(168, 13, 12)",
+    // Standby passes are always blue (every state — please-wait, entry-permitted,
+    // checked-in, cancelled); the colour is keyed off the type, not the status.
+    backgroundColor: isStandby
+      ? "rgb(30, 64, 175)"
+      : isVIP
+        ? "rgb(122, 92, 0)"
+        : isExternal
+          ? "rgb(22, 101, 52)"
+          : "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
-    labelColor: isVIP
-      ? "rgb(255, 235, 180)"
-      : isExternal
-        ? "rgb(187, 247, 208)"
-        : "rgb(255, 215, 0)",
+    labelColor: isStandby
+      ? "rgb(191, 219, 254)"
+      : isVIP
+        ? "rgb(255, 235, 180)"
+        : isExternal
+          ? "rgb(187, 247, 208)"
+          : "rgb(255, 215, 0)",
   };
 
   // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
