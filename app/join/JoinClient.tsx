@@ -189,7 +189,7 @@ export default function JoinClient() {
           </h2>
           <p className="text-base text-zinc-400 mb-10 text-pretty leading-relaxed max-w-lg mx-auto">
             We bring on a small group of new members each year. Get on the list
-            and we'll reach out when applications open.
+            and we&apos;ll reach out when applications open.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
