@@ -124,25 +124,27 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get event details
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, event_id),
-      columns: {
-        id: true,
-        name: true,
-        doorsOpen: true,
-        startTimeDate: true,
-        venue: true,
-        venueLink: true,
-        desc: true,
-        standbyEnabled: true,
-        tagline: true,
-        imgVersion: true,
-        referralsEnabled: true,
-        ticketingRoles: true,
-        route: true,
-      },
-    });
+    const [event, userRoles] = await Promise.all([
+      db.query.events.findFirst({
+        where: eq(events.id, event_id),
+        columns: {
+          id: true,
+          name: true,
+          doorsOpen: true,
+          startTimeDate: true,
+          venue: true,
+          venueLink: true,
+          desc: true,
+          standbyEnabled: true,
+          tagline: true,
+          imgVersion: true,
+          referralsEnabled: true,
+          ticketingRoles: true,
+          route: true,
+        },
+      }),
+      getRoleNamesForEmail(user.email),
+    ]);
 
     if (!event) {
       return NextResponse.json(
@@ -151,7 +153,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const userRoles = await getRoleNamesForEmail(user.email);
     const userAffiliations = [
       ...user.eduPersonAffiliation,
       ...user.eduPersonScopedAffiliation,

@@ -257,8 +257,10 @@ function FeedbackForm({
 
 export default function EventFeedbackCard({
   eventId,
+  loadSessionStatus = false,
 }: {
   eventId: string;
+  loadSessionStatus?: boolean;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -271,7 +273,9 @@ export default function EventFeedbackCard({
     parseScoreParam(searchParams.get("feedback_score")),
   );
 
-  const [loading, setLoading] = useState(true);
+  const shouldLoadFeedbackStatus = Boolean(feedbackToken) || loadSessionStatus;
+
+  const [loading, setLoading] = useState(shouldLoadFeedbackStatus);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -287,6 +291,15 @@ export default function EventFeedbackCard({
     let ignore = false;
 
     async function loadFeedbackStatus() {
+      if (!shouldLoadFeedbackStatus) {
+        setLoading(false);
+        setError(null);
+        setConfirmation(null);
+        setStatus(null);
+        setComment("");
+        return;
+      }
+
       setLoading(true);
       setError(null);
       setConfirmation(null);
@@ -338,7 +351,7 @@ export default function EventFeedbackCard({
     return () => {
       ignore = true;
     };
-  }, [eventId, feedbackToken]);
+  }, [eventId, feedbackToken, shouldLoadFeedbackStatus]);
 
   useEffect(() => {
     if (autoRecordedRef.current) return;

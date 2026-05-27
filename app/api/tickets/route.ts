@@ -404,27 +404,33 @@ export async function POST(req: Request) {
       );
     }
 
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, event_id),
-      columns: {
-        id: true,
-        name: true,
-        route: true,
-        startTimeDate: true,
-        endTimeDate: true,
-        venue: true,
-        venueLink: true,
-        desc: true,
-        releaseDate: true,
-        ticketingDate: true,
-        doorsOpen: true,
-        standbyEnabled: true,
-        tagline: true,
-        imgVersion: true,
-        referralsEnabled: true,
-        ticketingRoles: true,
-      },
-    });
+    const isStandbyRequest = ticketType === "STANDBY";
+    const [event, userRoles] = await Promise.all([
+      db.query.events.findFirst({
+        where: eq(events.id, event_id),
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          startTimeDate: true,
+          endTimeDate: true,
+          venue: true,
+          venueLink: true,
+          desc: true,
+          releaseDate: true,
+          ticketingDate: true,
+          doorsOpen: true,
+          standbyEnabled: true,
+          tagline: true,
+          imgVersion: true,
+          referralsEnabled: true,
+          ticketingRoles: true,
+        },
+      }),
+      isStandbyRequest
+        ? Promise.resolve<string[]>([])
+        : getRoleNamesForEmail(user.email),
+    ]);
 
     if (!event) {
       return NextResponse.json(
@@ -433,12 +439,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const userRoles = await getRoleNamesForEmail(user.email);
     const userAffiliations = [
       ...user.eduPersonAffiliation,
       ...user.eduPersonScopedAffiliation,
     ];
-    const isStandbyRequest = ticketType === "STANDBY";
 
     // Standby tickets are open to anyone who shows up — we deliberately skip
     // both the ASSU fee-waiver guard and the affiliation/ticketing-role guard

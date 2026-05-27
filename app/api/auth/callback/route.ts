@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
 import { consumeLoginState, getSession } from "@/app/lib/session";
@@ -64,8 +64,17 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
     session.user = user;
     await session.save();
-    await upsertUserProfile(user);
-    await recordMailingListMember({ email: user.email, source: "login" });
+
+    after(async () => {
+      try {
+        await Promise.all([
+          upsertUserProfile(user),
+          recordMailingListMember({ email: user.email, source: "login" }),
+        ]);
+      } catch (postLoginError) {
+        console.error("Post-login profile update error:", postLoginError);
+      }
+    });
 
     return NextResponse.redirect(new URL(redirectTo, baseUrl), 303);
   } catch (error) {

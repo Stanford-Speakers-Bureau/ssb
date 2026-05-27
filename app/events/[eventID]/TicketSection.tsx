@@ -37,6 +37,8 @@ type TicketSectionProps = {
   allowCancelFlowAccess?: boolean;
   initialEmailCancelAttendeeName?: string | null;
   eventName?: string | null;
+  initialAllowAdmittingStandby?: boolean;
+  initialViewerStateLoaded?: boolean;
 };
 
 type ViewerEventStateResponse = {
@@ -77,6 +79,8 @@ export default function TicketSection({
   allowCancelFlowAccess = false,
   initialEmailCancelAttendeeName = null,
   eventName = null,
+  initialAllowAdmittingStandby = false,
+  initialViewerStateLoaded = false,
 }: TicketSectionProps) {
   const router = useRouter();
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -94,13 +98,17 @@ export default function TicketSection({
   );
   const [isNotified, setIsNotified] = useState(initialIsNotified);
   const [isScanned, setIsScanned] = useState(initialIsScanned);
-  const [isViewerStateLoading, setIsViewerStateLoading] = useState(true);
+  const [isViewerStateLoading, setIsViewerStateLoading] = useState(
+    !initialViewerStateLoaded,
+  );
   const [viewerStateError, setViewerStateError] = useState<string | null>(null);
   const [viewerStateRequestKey, setViewerStateRequestKey] = useState(0);
 
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
-  const [admittingStandby, setAdmittingStandby] = useState(false);
+  const [admittingStandby, setAdmittingStandby] = useState(
+    initialAllowAdmittingStandby,
+  );
   const [standbyAdmissionOpened, setStandbyAdmissionOpened] = useState(false);
 
   const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
@@ -148,6 +156,11 @@ export default function TicketSection({
     let ignore = false;
 
     async function loadViewerState() {
+      if (initialViewerStateLoaded && viewerStateRequestKey === 0) {
+        setIsViewerStateLoading(false);
+        return;
+      }
+
       setIsViewerStateLoading(true);
       setViewerStateError(null);
 
@@ -200,7 +213,7 @@ export default function TicketSection({
     return () => {
       ignore = true;
     };
-  }, [eventId, viewerStateRequestKey]);
+  }, [eventId, initialViewerStateLoaded, viewerStateRequestKey]);
 
   // While a standby holder is waiting (admission not yet open), poll for the
   // flip so we can prompt them to refresh and reveal their QR. The QR itself is

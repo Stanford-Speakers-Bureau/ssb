@@ -37,7 +37,7 @@ export default function ClientHeaderBar() {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
 
   useEffect(() => {
-    if (isScanRoute) {
+    if (isScanRoute || isEventRoute) {
       return;
     }
 
@@ -167,10 +167,14 @@ export default function ClientHeaderBar() {
       window.removeEventListener("focus", refreshIfDue);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isScanRoute]);
+  }, [isEventRoute, isScanRoute]);
 
   if (isScanRoute) {
     return null;
+  }
+
+  if (isEventRoute) {
+    return <NavBar banner={false} />;
   }
 
   if (!bannerData) {

@@ -13,6 +13,10 @@ import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/a
 import { getEventEndDate, isEventOver } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import { normalizeEmail } from "@/app/lib/validation";
+import {
+  getAnonymousViewerEventState,
+  getViewerEventState,
+} from "@/app/lib/viewer-event-state";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -185,15 +189,28 @@ export default async function EventPage({
     redirect("/upcoming-speakers");
   }
 
-  const verifiedCancellationFlow = await getVerifiedCancellationFlow({
-    eventId: event.id,
-    cancelTicketParam: resolvedSearchParams.cancel_ticket,
-    cancelTokenParam: resolvedSearchParams.cancel_token,
-  });
-  const verifiedFeedbackFlow = await getVerifiedFeedbackFlow({
-    eventId: event.id,
-    feedbackTokenParam: resolvedSearchParams.feedback_token,
-  });
+  const [
+    verifiedCancellationFlow,
+    verifiedFeedbackFlow,
+    viewerStateResult,
+  ] = await Promise.all([
+    getVerifiedCancellationFlow({
+      eventId: event.id,
+      cancelTicketParam: resolvedSearchParams.cancel_ticket,
+      cancelTokenParam: resolvedSearchParams.cancel_token,
+    }),
+    getVerifiedFeedbackFlow({
+      eventId: event.id,
+      feedbackTokenParam: resolvedSearchParams.feedback_token,
+    }),
+    getViewerEventState(event.id)
+      .then((state) => ({ loaded: true, state }))
+      .catch((error) => {
+        console.error("Initial viewer state load error:", error);
+        return { loaded: false, state: getAnonymousViewerEventState() };
+      }),
+  ]);
+  const viewerState = viewerStateResult.state;
 
   const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
     ? null
@@ -205,7 +222,10 @@ export default async function EventPage({
       <div className="relative flex min-h-screen flex-col font-sans bg-zinc-950">
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-5">
-            <EventFeedbackCard eventId={event.id} />
+            <EventFeedbackCard
+              eventId={event.id}
+              loadSessionStatus={viewerState.ticketScanned}
+            />
 
             <NoticeBanner
               color="blue"
@@ -216,14 +236,14 @@ export default async function EventPage({
 
             <TicketSection
               eventId={event.id}
-              initialHasTicket={false}
-              initialTicketId={null}
-              initialTicketType={null}
-              initialTicketName={null}
-              initialIsScanned={false}
-              initialIsOnWaitlist={false}
-              initialWaitlistPosition={null}
-              userEmail={null}
+              initialHasTicket={!!viewerState.ticketId}
+              initialTicketId={viewerState.ticketId}
+              initialTicketType={viewerState.ticketType}
+              initialTicketName={viewerState.ticketName}
+              initialIsScanned={viewerState.ticketScanned}
+              initialIsOnWaitlist={viewerState.isOnWaitlist}
+              initialWaitlistPosition={viewerState.waitlistPosition}
+              userEmail={viewerState.userEmail}
               eventRoute={event.route || eventID}
               eventStartTime={event.start_time_date}
               eventEndTime={event.end_time_date}
@@ -231,7 +251,7 @@ export default async function EventPage({
               isSoldOut={false}
               ticketingDate={ticketingDate}
               hideTicketingDate={event.hide_ticketing_date}
-              initialIsNotified={false}
+              initialIsNotified={viewerState.isNotified}
               waitlistChance={event.waitlist_chance}
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
@@ -243,6 +263,8 @@ export default async function EventPage({
                 verifiedCancellationFlow.attendeeName
               }
               eventName={event.name}
+              initialAllowAdmittingStandby={viewerState.allowAdmittingStandby}
+              initialViewerStateLoaded={viewerStateResult.loaded}
             />
           </div>
         </main>
@@ -402,7 +424,10 @@ export default async function EventPage({
           {/* Right column – ticket section (sticky on desktop) */}
           <div>
             <div className="lg:sticky lg:top-24 flex flex-col gap-5">
-              <EventFeedbackCard eventId={event.id} />
+              <EventFeedbackCard
+                eventId={event.id}
+                loadSessionStatus={viewerState.ticketScanned}
+              />
 
               {/* Livestream banner */}
               {event.livestream && (
@@ -429,14 +454,14 @@ export default async function EventPage({
               ) : (
                 <TicketSection
                   eventId={event.id}
-                  initialHasTicket={false}
-                  initialTicketId={null}
-                  initialTicketType={null}
-                  initialTicketName={null}
-                  initialIsScanned={false}
-                  initialIsOnWaitlist={false}
-                  initialWaitlistPosition={null}
-                  userEmail={null}
+                  initialHasTicket={!!viewerState.ticketId}
+                  initialTicketId={viewerState.ticketId}
+                  initialTicketType={viewerState.ticketType}
+                  initialTicketName={viewerState.ticketName}
+                  initialIsScanned={viewerState.ticketScanned}
+                  initialIsOnWaitlist={viewerState.isOnWaitlist}
+                  initialWaitlistPosition={viewerState.waitlistPosition}
+                  userEmail={viewerState.userEmail}
                   eventRoute={event.route || eventID}
                   eventStartTime={event.start_time_date}
                   eventEndTime={event.end_time_date}
@@ -444,7 +469,7 @@ export default async function EventPage({
                   isSoldOut={isSoldOut}
                   ticketingDate={ticketingDate}
                   hideTicketingDate={event.hide_ticketing_date}
-                  initialIsNotified={false}
+                  initialIsNotified={viewerState.isNotified}
                   waitlistChance={event.waitlist_chance}
                   referralsEnabled={event.referrals_enabled}
                   standbyMode={event.standby_enabled}
@@ -455,6 +480,8 @@ export default async function EventPage({
                     verifiedCancellationFlow.attendeeName
                   }
                   eventName={event.name}
+                  initialAllowAdmittingStandby={viewerState.allowAdmittingStandby}
+                  initialViewerStateLoaded={viewerStateResult.loaded}
                 />
               )}
             </div>

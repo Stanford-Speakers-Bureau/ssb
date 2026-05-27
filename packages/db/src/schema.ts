@@ -118,6 +118,10 @@ export const tickets = pgTable(
     index("tickets_email_idx").on(t.email),
     index("tickets_event_id_idx").on(t.eventId),
     index("tickets_event_type_idx").on(t.eventId, t.type),
+    index("tickets_event_lower_trim_email_idx").on(
+      t.eventId,
+      sql`lower(trim(${t.email}))`,
+    ),
     index("tickets_referral_idx").on(t.referral),
     index("tickets_scanned_idx").on(t.scanned),
     uniqueIndex("tickets_event_email_unique").on(t.eventId, t.email),
@@ -353,14 +357,18 @@ export const referrals = pgTable(
 );
 
 // ── Roles ───────────────────────────────────────────────────────────────────
-export const roles = pgTable("roles", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  email: text("email"),
-  roles: text("roles"),
-});
+export const roles = pgTable(
+  "roles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    email: text("email"),
+    roles: text("roles"),
+  },
+  (t) => [index("roles_email_idx").on(t.email)],
+);
 
 // ── User Profiles ────────────────────────────────────────────────────────────
 export const userProfiles = pgTable(
