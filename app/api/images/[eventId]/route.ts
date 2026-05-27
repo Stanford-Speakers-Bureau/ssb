@@ -4,7 +4,11 @@ import {
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
-import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
+import {
+  fetchWithTimeout,
+  isFetchTimeoutError,
+  FetchTimeoutError,
+} from "@/app/lib/fetch";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
 import { verifyEventImageToken } from "@/app/lib/image-links";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -122,7 +126,27 @@ export async function GET(
     return new NextResponse("Image not found", { status: 404 });
   }
 
-  const imageBuffer = await imageResponse.arrayBuffer();
+  // fetchWithTimeout only bounds the connection/headers, not the body
+  // download. A stalled origin body would make arrayBuffer() hang forever,
+  // which the Workers runtime kills as a hung request. Race the body read
+  // against an explicit timeout so we always produce a response.
+  let imageBuffer: ArrayBuffer;
+  try {
+    imageBuffer = await Promise.race([
+      imageResponse.arrayBuffer(),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new FetchTimeoutError(IMAGE_ORIGIN_FETCH_TIMEOUT_MS)),
+          IMAGE_ORIGIN_FETCH_TIMEOUT_MS,
+        ),
+      ),
+    ]);
+  } catch (error) {
+    if (isFetchTimeoutError(error)) {
+      return new NextResponse("Image origin timed out", { status: 504 });
+    }
+    throw error;
+  }
   const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
   // Store in R2 cache for future requests (non-blocking).
