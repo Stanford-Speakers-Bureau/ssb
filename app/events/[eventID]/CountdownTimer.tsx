@@ -24,7 +24,12 @@ export default function CountdownTimer({
   label,
   onExpire,
 }: CountdownTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(targetDate));
+  // Start null so the server render and the first client render match.
+  // Computing from Date.now() during render produces different text on the
+  // server vs. client hydration, which triggers React hydration error #418.
+  const [timeLeft, setTimeLeft] = useState<ReturnType<
+    typeof calcTimeLeft
+  > | null>(null);
 
   useEffect(() => {
     const tick = () => {
@@ -35,6 +40,7 @@ export default function CountdownTimer({
         onExpire?.();
       }
     };
+    tick(); // compute immediately after mount, then tick every second
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [targetDate, onExpire]);
