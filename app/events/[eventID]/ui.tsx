@@ -69,11 +69,25 @@ export function FeedbackMessage({
         >
           <span className="flex items-center gap-2">
             {isSuccess ? (
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              <svg
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             ) : isInfo ? (
-              <svg className="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4 shrink-0 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
                 <path
                   d="M12 2a10 10 0 1 0 10 10"
                   stroke="currentColor"
@@ -82,8 +96,18 @@ export function FeedbackMessage({
                 />
               </svg>
             ) : (
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              <svg
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                />
               </svg>
             )}
             {message}
@@ -159,9 +183,13 @@ export function NoticeBanner({
   color?: keyof typeof noticeBannerColors;
 }) {
   return (
-    <div className={`rounded-xl border p-4 sm:p-5 ${noticeBannerColors[color]}`}>
+    <div
+      className={`rounded-xl border p-4 sm:p-5 ${noticeBannerColors[color]}`}
+    >
       <div className="flex items-start gap-2">
-        <span className={`shrink-0 mt-0.5 ${noticeBannerIconColors[color]}`}>{icon}</span>
+        <span className={`shrink-0 mt-0.5 ${noticeBannerIconColors[color]}`}>
+          {icon}
+        </span>
         <div className="min-w-0 flex-1 text-xs sm:text-sm font-medium leading-relaxed">
           {children}
         </div>
@@ -177,13 +205,27 @@ export function PriorityBanner({ priorityText }: { priorityText: string }) {
     <NoticeBanner
       color="amber"
       icon={
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+          />
         </svg>
       }
     >
       <div className="prose prose-sm prose-amber prose-invert prose-p:m-0 prose-a:underline max-w-none">
-        <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{priorityText}</ReactMarkdown>
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+        >
+          {priorityText}
+        </ReactMarkdown>
       </div>
     </NoticeBanner>
   );

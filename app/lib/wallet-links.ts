@@ -12,13 +12,11 @@ export type AppleWalletTokenClaims = {
 
 function getWalletLinkSecret(): Uint8Array {
   const secret =
-    process.env.SESSION_SECRET
-    || (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+    process.env.SESSION_SECRET ||
+    (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
 
   if (!secret) {
-    throw new Error(
-      "SESSION_SECRET must be set in production.",
-    );
+    throw new Error("SESSION_SECRET must be set in production.");
   }
 
   return new TextEncoder().encode(secret);
@@ -28,7 +26,9 @@ function getAppleWalletSecret(): Uint8Array {
   const secret = process.env.APPLE_WALLET_SECRET;
 
   if (!secret) {
-    throw new Error("APPLE_WALLET_SECRET must be set for Apple Wallet updates.");
+    throw new Error(
+      "APPLE_WALLET_SECRET must be set for Apple Wallet updates.",
+    );
   }
 
   return new TextEncoder().encode(secret);
@@ -102,9 +102,8 @@ export async function verifyAppleWalletToken(
     }
 
     const email = typeof payload.email === "string" ? payload.email : null;
-    const ticketId = typeof payload.ticketId === "string"
-      ? payload.ticketId
-      : null;
+    const ticketId =
+      typeof payload.ticketId === "string" ? payload.ticketId : null;
 
     if (!email || !ticketId) {
       return null;

@@ -27,7 +27,11 @@ export function parseRoleNames(rawRoles: string | null | undefined): string[] {
 }
 
 function normalizeAffiliations(values: string[]): string[] {
-  return [...new Set(values.map((value) => value.trim().toLowerCase()).filter(Boolean))];
+  return [
+    ...new Set(
+      values.map((value) => value.trim().toLowerCase()).filter(Boolean),
+    ),
+  ];
 }
 
 export function createSessionUser(input: {
@@ -63,7 +67,8 @@ export async function clearSession() {
 export async function upsertUserProfile(user: SessionUser) {
   const now = new Date();
 
-  await db.insert(userProfiles)
+  await db
+    .insert(userProfiles)
     .values({
       email: normalizeEmail(user.email),
       uid: user.uid,
@@ -96,7 +101,9 @@ export async function getUserProfileByEmail(email: string) {
   });
 }
 
-export async function getDisplayNameForEmail(email: string): Promise<string | null> {
+export async function getDisplayNameForEmail(
+  email: string,
+): Promise<string | null> {
   const profile = await getUserProfileByEmail(email);
   return profile?.displayName || null;
 }
@@ -107,7 +114,11 @@ export async function getRoleNamesForEmail(email: string): Promise<string[]> {
     columns: { roles: true },
   });
 
-  return [...new Set(roleRecords.flatMap((roleRecord) => parseRoleNames(roleRecord.roles)))];
+  return [
+    ...new Set(
+      roleRecords.flatMap((roleRecord) => parseRoleNames(roleRecord.roles)),
+    ),
+  ];
 }
 
 export async function verifyAdminOrScannerRequest(): Promise<AdminVerificationResult> {

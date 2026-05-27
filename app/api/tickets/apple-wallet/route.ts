@@ -43,9 +43,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (
-      verifiedWalletToken
-      && ticket_id
-      && ticket_id !== verifiedWalletToken.ticketId
+      verifiedWalletToken &&
+      ticket_id &&
+      ticket_id !== verifiedWalletToken.ticketId
     ) {
       return NextResponse.json(
         { error: "Wallet token does not match the requested ticket" },
@@ -57,7 +57,9 @@ export async function GET(req: NextRequest) {
 
     if (!resolvedTicketId) {
       return NextResponse.json(
-        { error: "Missing required query parameter: ticket_id or wallet_token" },
+        {
+          error: "Missing required query parameter: ticket_id or wallet_token",
+        },
         { status: 400 },
       );
     }
@@ -76,13 +78,13 @@ export async function GET(req: NextRequest) {
     const ticket = await db.query.tickets.findFirst({
       where: verifiedWalletToken
         ? and(
-          eq(tickets.id, verifiedWalletToken.ticketId),
-          eq(tickets.email, verifiedWalletToken.email),
-        )
+            eq(tickets.id, verifiedWalletToken.ticketId),
+            eq(tickets.email, verifiedWalletToken.email),
+          )
         : and(
-          eq(tickets.id, resolvedTicketId),
-          eq(tickets.email, sessionUserEmail!),
-        ),
+            eq(tickets.id, resolvedTicketId),
+            eq(tickets.email, sessionUserEmail!),
+          ),
       columns: {
         id: true,
         email: true,

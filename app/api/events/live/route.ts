@@ -11,7 +11,17 @@ export async function GET() {
   try {
     const liveEvent = await db.query.events.findFirst({
       where: eq(events.live, true),
-      columns: { id: true, name: true, venue: true, startTimeDate: true, scanned: true, tickets: true, reserved: true, identityVerificationEnabled: true, allowAdmittingStandby: true },
+      columns: {
+        id: true,
+        name: true,
+        venue: true,
+        startTimeDate: true,
+        scanned: true,
+        tickets: true,
+        reserved: true,
+        identityVerificationEnabled: true,
+        allowAdmittingStandby: true,
+      },
     });
 
     if (!liveEvent) {
@@ -45,7 +55,8 @@ export async function GET() {
             start_time_date: liveEvent.startTimeDate?.toISOString() ?? null,
             scanned: liveEvent.scanned || 0,
             totalSold: totalSold,
-            identity_verification_enabled: liveEvent.identityVerificationEnabled,
+            identity_verification_enabled:
+              liveEvent.identityVerificationEnabled,
             allow_admitting_standby: liveEvent.allowAdmittingStandby,
           },
         },

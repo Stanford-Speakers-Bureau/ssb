@@ -21,7 +21,9 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json(await getViewerEventState(eventId), { status: 200 });
+    return NextResponse.json(await getViewerEventState(eventId), {
+      status: 200,
+    });
   } catch (error) {
     console.error("Viewer event state fetch error:", error);
     return NextResponse.json(

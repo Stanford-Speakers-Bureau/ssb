@@ -28,14 +28,19 @@ Deno.serve(async (req) => {
   }
 
   const expectedSecret = Deno.env.get("WALLET_PUSH_SECRET");
-  if (!expectedSecret || req.headers.get("x-wallet-push-secret") !== expectedSecret) {
+  if (
+    !expectedSecret ||
+    req.headers.get("x-wallet-push-secret") !== expectedSecret
+  ) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   let serialNumbers: string[] = [];
   try {
     const body = (await req.json()) as { serialNumbers?: string[] };
-    serialNumbers = Array.isArray(body?.serialNumbers) ? body.serialNumbers : [];
+    serialNumbers = Array.isArray(body?.serialNumbers)
+      ? body.serialNumbers
+      : [];
   } catch {
     return new Response("Bad Request", { status: 400 });
   }

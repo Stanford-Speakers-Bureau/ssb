@@ -5,15 +5,7 @@ import {
 } from "@/app/lib/supabase";
 import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { isEventOver } from "@/app/lib/eventTime";
-import {
-  db,
-  eq,
-  and,
-  sql,
-  events,
-  tickets,
-  waitlist,
-} from "@ssb/db";
+import { db, eq, and, sql, events, tickets, waitlist } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
 import {
   recordMailingListMember,
@@ -21,7 +13,10 @@ import {
 } from "@/app/lib/mailing-list";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { type CancellationEmailData, type TicketEmailData } from "@/app/lib/email";
+import {
+  type CancellationEmailData,
+  type TicketEmailData,
+} from "@/app/lib/email";
 import {
   createCancellationEmailJob,
   createTicketEmailJob,
@@ -51,8 +46,7 @@ const TICKET_MESSAGES = {
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   ERROR_EVENT_STARTED_OR_ENDED:
     "Cannot cancel tickets after the event has ended.",
-  ERROR_EVENT_STARTED:
-    "Ticket sales have ended. This event is over.",
+  ERROR_EVENT_STARTED: "Ticket sales have ended. This event is over.",
   ERROR_TICKETING_NOT_OPEN:
     "Ticketing is not open yet for this event. Please check back later.",
   ERROR_STANDBY_ONLY:
@@ -146,10 +140,7 @@ type TicketEmailEventContext = {
   imgVersion: number | null;
 };
 
-function scheduleAfterResponse(
-  label: string,
-  task: () => Promise<void>,
-) {
+function scheduleAfterResponse(label: string, task: () => Promise<void>) {
   after(async () => {
     try {
       await task();
@@ -206,10 +197,12 @@ function isUniqueTicketConflict(error: unknown): boolean {
     constraint?: string;
   } | null;
 
-  return databaseError?.code === "23505"
-    || databaseError?.constraint_name === "tickets_event_email_unique"
-    || databaseError?.constraint === "tickets_event_email_unique"
-    || getErrorMessage(error).toLowerCase().includes("tickets_event_email_unique");
+  return (
+    databaseError?.code === "23505" ||
+    databaseError?.constraint_name === "tickets_event_email_unique" ||
+    databaseError?.constraint === "tickets_event_email_unique" ||
+    getErrorMessage(error).toLowerCase().includes("tickets_event_email_unique")
+  );
 }
 
 function buildTicketEmailPayload(args: {
@@ -336,12 +329,12 @@ export async function GET(req: Request) {
       name: t.name,
       events: t.event
         ? {
-          id: t.event.id,
-          name: t.event.name,
-          route: t.event.route,
-          start_time_date: t.event.startTimeDate?.toISOString() ?? null,
-          venue: t.event.venue,
-        }
+            id: t.event.id,
+            name: t.event.name,
+            route: t.event.route,
+            start_time_date: t.event.startTimeDate?.toISOString() ?? null,
+            venue: t.event.venue,
+          }
         : null,
     }));
 
@@ -462,10 +455,9 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
-        { status: 403 },
-      );
+      return NextResponse.json(getFeeWaiverIneligiblePayload(), {
+        status: 403,
+      });
     }
 
     if (
@@ -488,10 +480,9 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
+      return NextResponse.json(getRoleIneligiblePayload(allowedRoles), {
+        status: 403,
+      });
     }
 
     const referralValidation = await validateReferralInput({
@@ -529,7 +520,12 @@ export async function POST(req: Request) {
       }
     }
 
-    if (isEventOver({ endTime: event.endTimeDate, startTime: event.startTimeDate })) {
+    if (
+      isEventOver({
+        endTime: event.endTimeDate,
+        startTime: event.startTimeDate,
+      })
+    ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
         { status: 400 },
@@ -662,7 +658,9 @@ export async function POST(req: Request) {
     // Call stored procedure via raw SQL (atomic ticket creation with FOR UPDATE locking)
     let rpcData: TicketCreationRpcResult | null = null;
     try {
-      const result = await db.execute<{ create_ticket_with_name: TicketCreationRpcResult }>(sql`
+      const result = await db.execute<{
+        create_ticket_with_name: TicketCreationRpcResult;
+      }>(sql`
         SELECT create_ticket_with_name(
           ${event_id}::uuid,
           ${referral},
@@ -792,10 +790,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const {
-      event_id,
-      cancel_token,
-    } = body as { event_id?: string; cancel_token?: string };
+    const { event_id, cancel_token } = body as {
+      event_id?: string;
+      cancel_token?: string;
+    };
 
     if (!event_id || typeof event_id !== "string") {
       return NextResponse.json(
@@ -809,7 +807,8 @@ export async function DELETE(req: Request) {
       typeof cancel_token === "string" && cancel_token.trim()
         ? await verifyCancellationToken(cancel_token.trim())
         : null;
-    const authenticatedEmail = signedLinkClaims?.email ?? sessionUser?.email ?? null;
+    const authenticatedEmail =
+      signedLinkClaims?.email ?? sessionUser?.email ?? null;
     const authMethod = signedLinkClaims ? "signed_link" : "session";
 
     if (!authenticatedEmail) {
@@ -844,7 +843,12 @@ export async function DELETE(req: Request) {
       },
     });
 
-    if (isEventOver({ endTime: eventRow?.endTimeDate, startTime: eventRow?.startTimeDate })) {
+    if (
+      isEventOver({
+        endTime: eventRow?.endTimeDate,
+        startTime: eventRow?.startTimeDate,
+      })
+    ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
@@ -861,11 +865,14 @@ export async function DELETE(req: Request) {
     const ticketToCancel = await db.query.tickets.findFirst({
       where: signedLinkClaims
         ? and(
-          eq(tickets.id, signedLinkClaims.ticketId),
-          eq(tickets.eventId, event_id),
-          eq(tickets.email, authenticatedEmail),
-        )
-        : and(eq(tickets.eventId, event_id), eq(tickets.email, authenticatedEmail)),
+            eq(tickets.id, signedLinkClaims.ticketId),
+            eq(tickets.eventId, event_id),
+            eq(tickets.email, authenticatedEmail),
+          )
+        : and(
+            eq(tickets.eventId, event_id),
+            eq(tickets.email, authenticatedEmail),
+          ),
       columns: { id: true, createdAt: true, name: true, type: true },
     });
 
@@ -926,7 +933,10 @@ export async function DELETE(req: Request) {
     const gotTicketAt = ticketToCancel?.createdAt?.toISOString() ?? null;
     const heldFor = formatHeldFor(ticketToCancel?.createdAt);
     if (!cancelledTicketId) {
-      console.error("Ticket cancellation RPC returned without a cancelled ticket id:", rpcData);
+      console.error(
+        "Ticket cancellation RPC returned without a cancelled ticket id:",
+        rpcData,
+      );
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_GENERIC },
         { status: 500 },
@@ -966,11 +976,7 @@ export async function DELETE(req: Request) {
       },
     });
 
-    if (
-      rpcData?.promoted_ticket_id
-      && rpcData.promoted_email
-      && eventRow
-    ) {
+    if (rpcData?.promoted_ticket_id && rpcData.promoted_email && eventRow) {
       queueAuditEvent({
         action: "waitlist.pull",
         actor: authenticatedEmail,

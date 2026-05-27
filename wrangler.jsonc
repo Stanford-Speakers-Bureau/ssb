@@ -1,116 +1,110 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"account_id": "dad1029008e31e3b1823336f3651910b",
-	"main": "worker.js",
-	"name": "ssb",
-	"compatibility_date": "2025-12-16",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS",
-	},
-	"services": [
-		{
-			// Self-reference service binding, the service name must match the worker name
-			// see https://opennext.js.org/cloudflare/caching
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "ssb",
-		},
-	],
-	// Durable Objects backing OpenNext caching: the ISR revalidation queue
-	// and the sharded tag cache. (No BucketCachePurge — cachePurge is not
-	// configured in open-next.config.ts.)
-	// see https://opennext.js.org/cloudflare/caching
-	"durable_objects": {
-		"bindings": [
-			{
-				"name": "NEXT_CACHE_DO_QUEUE",
-				"class_name": "DOQueueHandler",
-			},
-			{
-				"name": "NEXT_TAG_CACHE_DO_SHARDED",
-				"class_name": "DOShardedTagCache",
-			},
-		],
-	},
-	"migrations": [
-		{
-			"tag": "v1",
-			"new_sqlite_classes": [
-				"DOQueueHandler",
-				"DOShardedTagCache",
-			],
-		},
-	],
-	"queues": {
-		"producers": [
-			{
-				"queue": "ssb-email-jobs",
-				"binding": "EMAIL_JOBS_QUEUE",
-			},
-		],
-		"consumers": [
-			{
-				"queue": "ssb-email-jobs",
-				"max_batch_size": 10,
-				"max_batch_timeout": 5,
-				"max_retries": 10,
-				"dead_letter_queue": "ssb-email-jobs-dlq",
-			},
-		],
-	},
-	"r2_buckets": [
-		// Use R2 incremental cache
-		// See https://opennext.js.org/cloudflare/caching
-		{
-			"binding": "NEXT_INC_CACHE_R2_BUCKET",
-			// Create the bucket before deploying
-			// You can change the bucket name if you want
-			// See https://developers.cloudflare.com/workers/wrangler/commands/#r2-bucket-create
-			"bucket_name": "ssb-cache",
-		},
-		{
-			"bucket_name": "ssb-cache",
-			"binding": "ssb_cache",
-			"remote": true,
-		},
-	],
-	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
-		"binding": "IMAGES",
-	},
-	"observability": {
-		"enabled": false,
-		"head_sampling_rate": 1,
-		"logs": {
-			"enabled": true,
-			"head_sampling_rate": 1,
-			"persist": true,
-			"invocation_logs": true,
-		},
-		"traces": {
-			"enabled": false,
-			"persist": true,
-			"head_sampling_rate": 1,
-		},
-	},
-	"vars": {
-		"SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
-		"NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
-		"SESSION_COOKIE_NAME": "ssb_session",
-		"SAML_SP_ENTITY_ID": "https://stanfordspeakersbureau.com",
-		"UPSTASH_REDIS_REST_URL": "https://concrete-vervet-23231.upstash.io",
-		"AWS_REGION": "us-east-2"
-	},
-	"hyperdrive": [
-		{
-			"binding": "HYPERDRIVE",
-			"id": "fe2e37aa56ae4bff83399fc005733ddd",
-			"localConnectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-		}
-	],
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "dad1029008e31e3b1823336f3651910b",
+  "main": "worker.js",
+  "name": "ssb",
+  "compatibility_date": "2025-12-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      // Self-reference service binding, the service name must match the worker name
+      // see https://opennext.js.org/cloudflare/caching
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "ssb",
+    },
+  ],
+  // Durable Objects backing OpenNext caching: the ISR revalidation queue
+  // and the sharded tag cache. (No BucketCachePurge — cachePurge is not
+  // configured in open-next.config.ts.)
+  // see https://opennext.js.org/cloudflare/caching
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler",
+      },
+      {
+        "name": "NEXT_TAG_CACHE_DO_SHARDED",
+        "class_name": "DOShardedTagCache",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache"],
+    },
+  ],
+  "queues": {
+    "producers": [
+      {
+        "queue": "ssb-email-jobs",
+        "binding": "EMAIL_JOBS_QUEUE",
+      },
+    ],
+    "consumers": [
+      {
+        "queue": "ssb-email-jobs",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 10,
+        "dead_letter_queue": "ssb-email-jobs-dlq",
+      },
+    ],
+  },
+  "r2_buckets": [
+    // Use R2 incremental cache
+    // See https://opennext.js.org/cloudflare/caching
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      // Create the bucket before deploying
+      // You can change the bucket name if you want
+      // See https://developers.cloudflare.com/workers/wrangler/commands/#r2-bucket-create
+      "bucket_name": "ssb-cache",
+    },
+    {
+      "bucket_name": "ssb-cache",
+      "binding": "ssb_cache",
+      "remote": true,
+    },
+  ],
+  "images": {
+    // Enable image optimization
+    // see https://opennext.js.org/cloudflare/howtos/image
+    "binding": "IMAGES",
+  },
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1,
+    },
+  },
+  "vars": {
+    "SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
+    "NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
+    "SESSION_COOKIE_NAME": "ssb_session",
+    "SAML_SP_ENTITY_ID": "https://stanfordspeakersbureau.com",
+    "UPSTASH_REDIS_REST_URL": "https://concrete-vervet-23231.upstash.io",
+    "AWS_REGION": "us-east-2",
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "fe2e37aa56ae4bff83399fc005733ddd",
+      "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+    },
+  ],
 }

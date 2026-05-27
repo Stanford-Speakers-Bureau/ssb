@@ -43,7 +43,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const insertedRows = await db.insert(notify)
+    const insertedRows = await db
+      .insert(notify)
       .values({ email: user.email, speakerId: speaker_id })
       .onConflictDoNothing()
       .returning({ id: notify.id });

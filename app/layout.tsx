@@ -3,6 +3,7 @@ import { Great_Vibes, Hedvig_Letters_Serif, Inter } from "next/font/google";
 import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
 import ClientFooter from "./components/ClientFooter";
+import PostHogIdentifier from "./components/PostHogIdentifier";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} antialiased`}
       >
+        <PostHogIdentifier />
         <ClientHeaderBar />
         {children}
         <ClientFooter />

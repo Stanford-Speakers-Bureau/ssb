@@ -20,8 +20,8 @@ export default async function Home() {
           isNotNull(events.route),
           sql`(${events.startTimeDate} AT TIME ZONE 'America/Los_Angeles')::date
               = (NOW() AT TIME ZONE 'America/Los_Angeles')::date`,
-          sql`NOW() < COALESCE(${events.endTimeDate}, ${events.startTimeDate} + INTERVAL '2 hours')`
-        )
+          sql`NOW() < COALESCE(${events.endTimeDate}, ${events.startTimeDate} + INTERVAL '2 hours')`,
+        ),
       )
       .limit(1);
 
@@ -43,7 +43,9 @@ export default async function Home() {
             "@type": "Organization",
             name: "Stanford Speakers Bureau",
             alternateName: "SSB",
-            url: process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com",
+            url:
+              process.env.NEXT_PUBLIC_BASE_URL ||
+              "https://stanfordspeakersbureau.com",
             logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"}/logo.png`,
             foundingDate: "1935",
             parentOrganization: {

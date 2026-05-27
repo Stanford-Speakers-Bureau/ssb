@@ -13,6 +13,7 @@ import { checkRateLimit, questionVoteRatelimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
 import { recordMailingListMember } from "@/app/lib/mailing-list";
 import { getQuestionsLifecycleState } from "@/app/events/[eventID]/questions/lifecycle";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 
 async function resolveEvent(routeOrId: string) {
   const isUuid = isValidUUID(routeOrId);
@@ -134,6 +135,22 @@ export async function POST(
       email: user.email,
       source: "event_question_vote",
     });
+
+    try {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "event_question_vote_cast",
+        properties: {
+          event_id: event.id,
+          question_id: questionID,
+        },
+        groups: { event: event.id },
+      });
+      await posthog.flush();
+    } catch (posthogError) {
+      console.error("PostHog question vote tracking error:", posthogError);
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

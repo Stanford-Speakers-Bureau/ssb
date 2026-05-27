@@ -1,11 +1,4 @@
-import {
-  and,
-  db,
-  emailUnsubscribes,
-  eq,
-  isNull,
-  mailingList,
-} from "@ssb/db";
+import { and, db, emailUnsubscribes, eq, isNull, mailingList } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
 import { canonicalizeEmail } from "@/app/lib/validation";
 
@@ -105,7 +98,7 @@ export async function recordSelfUnsubscribe(opts: {
     await logAuditEvent({
       action: "mailing_list.unsubscribe",
       actor: email,
-      eventId: opts.scope === "event" ? opts.eventId ?? null : null,
+      eventId: opts.scope === "event" ? (opts.eventId ?? null) : null,
       eventName: opts.eventName ?? null,
       targetEmail: email,
       metadata: {
@@ -131,17 +124,18 @@ export async function recordSelfResubscribe(opts: {
     throw new Error("eventId required for event scope");
   }
 
-  const where = opts.scope === "event"
-    ? and(
-      eq(emailUnsubscribes.email, email),
-      eq(emailUnsubscribes.scope, "event"),
-      eq(emailUnsubscribes.eventId, opts.eventId!),
-    )
-    : and(
-      eq(emailUnsubscribes.email, email),
-      eq(emailUnsubscribes.scope, opts.scope),
-      isNull(emailUnsubscribes.eventId),
-    );
+  const where =
+    opts.scope === "event"
+      ? and(
+          eq(emailUnsubscribes.email, email),
+          eq(emailUnsubscribes.scope, "event"),
+          eq(emailUnsubscribes.eventId, opts.eventId!),
+        )
+      : and(
+          eq(emailUnsubscribes.email, email),
+          eq(emailUnsubscribes.scope, opts.scope),
+          isNull(emailUnsubscribes.eventId),
+        );
 
   const result = await db
     .delete(emailUnsubscribes)
@@ -154,7 +148,7 @@ export async function recordSelfResubscribe(opts: {
     await logAuditEvent({
       action: "mailing_list.resubscribe",
       actor: email,
-      eventId: opts.scope === "event" ? opts.eventId ?? null : null,
+      eventId: opts.scope === "event" ? (opts.eventId ?? null) : null,
       eventName: opts.eventName ?? null,
       targetEmail: email,
       metadata: { scope: opts.scope },

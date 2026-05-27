@@ -149,9 +149,7 @@ function ViewButton({
       aria-selected={active}
       aria-label={`${label} view`}
       className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-sans font-medium transition-all ${
-        active
-          ? "bg-[#A80D0C] text-white"
-          : "text-zinc-400 hover:text-white"
+        active ? "bg-[#A80D0C] text-white" : "text-zinc-400 hover:text-white"
       }`}
     >
       {children}
@@ -185,4 +183,3 @@ function Chip({
     </button>
   );
 }
-

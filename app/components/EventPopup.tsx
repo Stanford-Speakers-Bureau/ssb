@@ -96,9 +96,7 @@ function PopupCountdown({
         {segments.map((seg, i) => (
           <div key={seg.unit} className="flex items-center gap-1.5 sm:gap-2">
             {i > 0 && (
-              <span className="text-lg font-bold text-zinc-600 -mt-4">
-                :
-              </span>
+              <span className="text-lg font-bold text-zinc-600 -mt-4">:</span>
             )}
             <div className="flex flex-col items-center">
               <div className="rounded-lg bg-white/[0.06] border border-white/10 w-[3rem] sm:w-[3.5rem] h-[2.75rem] sm:h-[3.25rem] flex items-center justify-center">
@@ -159,7 +157,12 @@ function setDismissed(eventId: string) {
 
 // ─── Suppressed routes ───
 
-const SUPPRESSED_PREFIXES = ["/events/", "/upcoming-speakers", "/scan", "/suggest/"];
+const SUPPRESSED_PREFIXES = [
+  "/events/",
+  "/upcoming-speakers",
+  "/scan",
+  "/suggest/",
+];
 
 function isSuppressedRoute(pathname: string): boolean {
   return SUPPRESSED_PREFIXES.some((p) => pathname.startsWith(p));
@@ -368,10 +371,14 @@ export default function EventPopup({
         : "Free tickets dropping soon.";
 
   const ctaLabel = isMystery
-    ? alreadyNotified ? "View Event" : "Notify Me When Revealed"
+    ? alreadyNotified
+      ? "View Event"
+      : "Notify Me When Revealed"
     : isTicketingOpen
       ? "Get Tickets Now"
-      : alreadyNotified ? "View Event" : "Notify Me When Tickets Drop";
+      : alreadyNotified
+        ? "View Event"
+        : "Notify Me When Tickets Drop";
 
   // ─── Render ───
 
@@ -402,8 +409,18 @@ export default function EventPopup({
               className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
               aria-label="Close"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
 
@@ -532,8 +549,18 @@ export default function EventPopup({
                       </>
                     ) : (
                       <>
-                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                        <svg
+                          className="w-[18px] h-[18px]"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"
+                          />
                         </svg>
                         {ctaLabel}
                       </>
@@ -566,8 +593,18 @@ export default function EventPopup({
                       }}
                       className="flex items-center justify-center gap-2 rounded-lg w-full px-6 py-3.5 text-sm sm:text-base font-semibold text-white bg-[#A80D0C] transition-colors hover:bg-[#C11211]"
                     >
-                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-[18px] h-[18px]"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       {ctaLabel}
                     </motion.div>
@@ -602,15 +639,35 @@ export default function EventPopup({
                       </>
                     ) : notifyStatus === "error" ? (
                       <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183"
+                          />
                         </svg>
                         Try Again
                       </>
                     ) : (
                       <>
-                        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        <svg
+                          className="w-[18px] h-[18px]"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                          />
                         </svg>
                         {ctaLabel}
                       </>

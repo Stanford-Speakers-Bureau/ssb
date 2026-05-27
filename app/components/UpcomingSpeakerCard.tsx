@@ -225,15 +225,33 @@ export default function UpcomingSpeakerCard({
 
 function CalendarIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+    <svg
+      className="w-3.5 h-3.5 text-red-400 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+      />
     </svg>
   );
 }
 
 function DoorIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className="w-3.5 h-3.5 text-red-400 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M13 4h3a2 2 0 0 1 2 2v14" />
       <path d="M2 20h3" />
       <path d="M13 20h9" />
@@ -245,25 +263,59 @@ function DoorIcon() {
 
 function ClockIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className="w-3.5 h-3.5 text-red-400 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   );
 }
 
 function LocationIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+    <svg
+      className="w-3.5 h-3.5 text-red-400 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+      />
     </svg>
   );
 }
 
 function ExternalLinkIcon() {
   return (
-    <svg className="w-3 h-3 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+    <svg
+      className="w-3 h-3 text-zinc-400 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+      />
     </svg>
   );
 }
@@ -368,7 +420,9 @@ function RevealedCard({
         <span className={PILL_CLASS}>
           {showSponsorPrefix && sponsorPrefix}
           {showSponsorPrefix && showSponsorName && " "}
-          {showSponsorName && <span className="font-semibold">{sponsorName}</span>}
+          {showSponsorName && (
+            <span className="font-semibold">{sponsorName}</span>
+          )}
         </span>
       )}
     </>
@@ -406,13 +460,15 @@ function RevealedCard({
           )}
           {showHeader && (
             <div className="mt-2 text-lg text-zinc-300 italic leading-relaxed prose prose-lg prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-              <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+              >
+                {header}
+              </ReactMarkdown>
             </div>
           )}
           {metaPills && (
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              {metaPills}
-            </div>
+            <div className="mt-5 flex flex-wrap gap-2.5">{metaPills}</div>
           )}
         </div>
       </div>
@@ -426,13 +482,15 @@ function RevealedCard({
         )}
         {showHeader && (
           <div className="mt-1.5 text-sm sm:text-base text-zinc-400 italic leading-relaxed prose prose-sm sm:prose-base prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-            <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{header}</ReactMarkdown>
+            <ReactMarkdown
+              rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+            >
+              {header}
+            </ReactMarkdown>
           </div>
         )}
         {metaPills && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {metaPills}
-          </div>
+          <div className="mt-3 flex flex-wrap gap-2">{metaPills}</div>
         )}
       </div>
 
@@ -493,7 +551,9 @@ function MysteryCard({
 }) {
   const countdownDate = eventDateRaw ? new Date(eventDateRaw) : null;
   const showCountdown =
-    countdownDate && !Number.isNaN(countdownDate.getTime()) && countdownDate > new Date();
+    countdownDate &&
+    !Number.isNaN(countdownDate.getTime()) &&
+    countdownDate > new Date();
   return (
     <div className="relative rounded-[28px] border border-white/10 bg-[var(--ssb-card)] overflow-hidden text-center shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
       {/* Blurred mystery background */}
@@ -545,8 +605,8 @@ function MysteryCard({
               {eventTimeText}
             </span>
           )}
-          {showLocation && (
-            showLocationName && showLocationUrl ? (
+          {showLocation &&
+            (showLocationName && showLocationUrl ? (
               <a
                 href={locationUrl}
                 target="_blank"
@@ -562,8 +622,7 @@ function MysteryCard({
                 <LocationIcon />
                 {locationName}
               </span>
-            ) : null
-          )}
+            ) : null)}
         </div>
 
         {/* Notify button */}
@@ -587,16 +646,29 @@ function MysteryCard({
               <motion.button
                 onClick={handleNotifyClick}
                 disabled={notifyStatus === "loading"}
-                whileHover={notifyStatus === "loading" ? undefined : { scale: 1.04 }}
-                whileTap={notifyStatus === "loading" ? undefined : { scale: 0.96 }}
+                whileHover={
+                  notifyStatus === "loading" ? undefined : { scale: 1.04 }
+                }
+                whileTap={
+                  notifyStatus === "loading" ? undefined : { scale: 0.96 }
+                }
                 className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-7 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {notifyStatus === "loading" ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
                   </svg>
                 )}
                 {notifyStatus === "loading" ? "Signing up..." : "Notify Me"}

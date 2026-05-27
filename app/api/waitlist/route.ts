@@ -56,10 +56,7 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
 }
 
-function scheduleAfterResponse(
-  label: string,
-  task: () => Promise<void>,
-) {
+function scheduleAfterResponse(label: string, task: () => Promise<void>) {
   after(async () => {
     try {
       await task();
@@ -111,7 +108,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral: referralFromBody, name: nameFromBody } = body as {
+    const {
+      event_id,
+      referral: referralFromBody,
+      name: nameFromBody,
+    } = body as {
       event_id?: string;
       referral?: string;
       name?: string;
@@ -174,10 +175,9 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
-        { status: 403 },
-      );
+      return NextResponse.json(getFeeWaiverIneligiblePayload(), {
+        status: 403,
+      });
     }
 
     if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
@@ -197,17 +197,13 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
+      return NextResponse.json(getRoleIneligiblePayload(allowedRoles), {
+        status: 403,
+      });
     }
 
     // Derive name from body override or OAuth metadata
-    const waitlistName =
-      nameFromBody?.trim() ||
-      user.displayName ||
-      null;
+    const waitlistName = nameFromBody?.trim() || user.displayName || null;
 
     if (!waitlistName) {
       return NextResponse.json(
@@ -235,7 +231,9 @@ export async function POST(req: Request) {
     // Use stored procedure to atomically join waitlist (prevents position collisions)
     let rpcData: JoinWaitlistRpcResult | null = null;
     try {
-      const result = await db.execute<{ join_waitlist_with_name: JoinWaitlistRpcResult }>(sql`
+      const result = await db.execute<{
+        join_waitlist_with_name: JoinWaitlistRpcResult;
+      }>(sql`
         SELECT join_waitlist_with_name(
           ${event_id}::uuid,
           ${referral || null},
@@ -465,11 +463,15 @@ export async function GET(req: Request) {
     if (eventId) {
       // Get status for specific event
       const entry = await db.query.waitlist.findFirst({
-        where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
+        where: and(
+          eq(waitlist.eventId, eventId),
+          eq(waitlist.email, user.email),
+        ),
         columns: { position: true },
       });
 
-      const [totalResult] = await db.select({ count: count() })
+      const [totalResult] = await db
+        .select({ count: count() })
         .from(waitlist)
         .where(eq(waitlist.eventId, eventId));
 
@@ -515,12 +517,12 @@ export async function GET(req: Request) {
         event_id: e.eventId,
         events: e.event
           ? {
-            id: e.event.id,
-            name: e.event.name,
-            route: e.event.route,
-            start_time_date: e.event.startTimeDate?.toISOString() ?? null,
-            venue: e.event.venue,
-          }
+              id: e.event.id,
+              name: e.event.name,
+              route: e.event.route,
+              start_time_date: e.event.startTimeDate?.toISOString() ?? null,
+              venue: e.event.venue,
+            }
           : null,
       }));
 

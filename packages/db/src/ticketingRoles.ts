@@ -1,8 +1,4 @@
-export const DEFAULT_TICKETING_ROLES = [
-  "student",
-  "faculty",
-  "staff",
-] as const;
+export const DEFAULT_TICKETING_ROLES = ["student", "faculty", "staff"] as const;
 
 export const TICKETING_ROLE_OPTIONS = [
   { value: "student", label: "Student" },

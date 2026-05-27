@@ -8,10 +8,26 @@ const CO_PRES_EMAIL = "ajoshi17@stanford.edu,anishan@stanford.edu";
 const APPLICATION_FORM = "https://forms.gle/82WaYv3C6oQC8bHU7";
 
 const ACTIVITIES = [
-  { n: "01", title: "Pitch the people you want to hear.", body: "Every Monday, members bring names to the table. If you can make the case, the room backs you." },
-  { n: "02", title: "Reach out to agents, managers, and teams.", body: "You'll learn to land speakers that students dream of. You'll hear back more than you'd think." },
-  { n: "03", title: "Plan the show, end to end.", body: "Book venues, negotiate fees, handle logistics, host the speaker the day of. Real ownership, not busywork." },
-  { n: "04", title: "Put it on stage.", body: "Run the event in front of a packed Stanford audience. Then do it again next month." },
+  {
+    n: "01",
+    title: "Pitch the people you want to hear.",
+    body: "Every Monday, members bring names to the table. If you can make the case, the room backs you.",
+  },
+  {
+    n: "02",
+    title: "Reach out to agents, managers, and teams.",
+    body: "You'll learn to land speakers that students dream of. You'll hear back more than you'd think.",
+  },
+  {
+    n: "03",
+    title: "Plan the show, end to end.",
+    body: "Book venues, negotiate fees, handle logistics, host the speaker the day of. Real ownership, not busywork.",
+  },
+  {
+    n: "04",
+    title: "Put it on stage.",
+    body: "Run the event in front of a packed Stanford audience. Then do it again next month.",
+  },
 ];
 
 const PERKS = [
@@ -35,11 +51,17 @@ const PERKS = [
 export default function JoinClient() {
   return (
     <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate">
-
       {/* Hero */}
       <section className="relative min-h-dvh flex items-end overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/meeting.JPG" alt="" fill className="object-cover" sizes="100vw" priority />
+          <Image
+            src="/meeting.JPG"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
           <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/65 to-zinc-950/25" />
           <div className="absolute inset-0 bg-linear-to-r from-zinc-950/70 to-transparent" />
         </div>
@@ -50,7 +72,7 @@ export default function JoinClient() {
             transition={{ duration: 0.7, delay: 0.15 }}
             className="font-serif text-5xl sm:text-7xl md:text-8xl text-white leading-none tracking-tight mb-6 text-balance max-w-[18ch]"
           >
-            Bringing speakers could be {" "}
+            Bringing speakers could be{" "}
             <span className="text-ssb-accent">up to you.</span>
           </motion.h1>
           <motion.p
@@ -59,8 +81,8 @@ export default function JoinClient() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base sm:text-lg text-zinc-300 max-w-xl mb-10 text-pretty leading-relaxed"
           >
-            SSB is a student-run board (undergrad and grad) that meets every Monday,
-            reaches out to the biggest names, and puts on events.
+            SSB is a student-run board (undergrad and grad) that meets every
+            Monday, reaches out to the biggest names, and puts on events.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -109,8 +131,12 @@ export default function JoinClient() {
                   )}
                 </div>
                 <div className="pb-2">
-                  <h3 className="font-serif text-xl sm:text-3xl text-white mb-3 text-pretty">{a.title}</h3>
-                  <p className="text-base text-zinc-400 text-pretty leading-relaxed max-w-2xl">{a.body}</p>
+                  <h3 className="font-serif text-xl sm:text-3xl text-white mb-3 text-pretty">
+                    {a.title}
+                  </h3>
+                  <p className="text-base text-zinc-400 text-pretty leading-relaxed max-w-2xl">
+                    {a.body}
+                  </p>
                 </div>
               </div>
             ))}
@@ -128,12 +154,19 @@ export default function JoinClient() {
           </div>
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
             {PERKS.map((p) => (
-              <div key={p.title} className="bg-zinc-950 p-8 sm:p-10 group hover:bg-zinc-900 transition-colors">
+              <div
+                key={p.title}
+                className="bg-zinc-950 p-8 sm:p-10 group hover:bg-zinc-900 transition-colors"
+              >
                 <span className="text-ssb-accent/70 group-hover:text-ssb-accent text-xl block mb-8 transition-colors">
                   {p.symbol}
                 </span>
-                <h3 className="font-serif text-xl sm:text-2xl text-white mb-3 text-pretty">{p.title}</h3>
-                <p className="text-sm text-zinc-400 text-pretty leading-relaxed">{p.body}</p>
+                <h3 className="font-serif text-xl sm:text-2xl text-white mb-3 text-pretty">
+                  {p.title}
+                </h3>
+                <p className="text-sm text-zinc-400 text-pretty leading-relaxed">
+                  {p.body}
+                </p>
               </div>
             ))}
           </div>
@@ -142,8 +175,14 @@ export default function JoinClient() {
 
       {/* CTA */}
       <section className="relative px-6 sm:px-16 py-24 sm:py-32 overflow-hidden border-t border-zinc-800">
-        <div aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-ssb-accent/6 via-transparent to-transparent" />
-        <div aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-ssb-accent/40 blur-sm" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-linear-to-b from-ssb-accent/6 via-transparent to-transparent"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-ssb-accent/40 blur-sm"
+        />
         <div className="relative max-w-3xl mx-auto text-center">
           <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight mb-5 text-balance">
             Recruitment season is coming.

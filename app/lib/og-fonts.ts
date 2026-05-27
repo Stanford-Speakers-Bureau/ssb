@@ -4,7 +4,7 @@ let cachedHedvigSerif: ArrayBuffer | null = null;
 
 export async function getHedvigSerif(): Promise<ArrayBuffer> {
   if (cachedHedvigSerif) return cachedHedvigSerif;
-  const ab = await loadFromFs() ?? await loadFromFetch();
+  const ab = (await loadFromFs()) ?? (await loadFromFetch());
   cachedHedvigSerif = ab;
   return ab;
 }

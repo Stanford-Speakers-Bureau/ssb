@@ -121,7 +121,10 @@ export function createSamlClient(request?: Request) {
 
 export async function generateMetadata(request?: Request): Promise<string> {
   const certData = stripPemHeaders(getPublicCert());
-  return createSamlClient(request).generateServiceProviderMetadata(certData, certData);
+  return createSamlClient(request).generateServiceProviderMetadata(
+    certData,
+    certData,
+  );
 }
 
 export type StanfordSamlAttributes = {
@@ -137,15 +140,15 @@ export function mapSamlAttributes(
 ): StanfordSamlAttributes {
   const uid = getSingleValue(
     (profile["urn:oid:0.9.2342.19200300.100.1.1"] as MultiValue) ||
-    (profile.uid as MultiValue),
+      (profile.uid as MultiValue),
   );
   const displayName = getSingleValue(
     (profile["urn:oid:2.16.840.1.113730.3.1.241"] as MultiValue) ||
-    (profile.displayName as MultiValue),
+      (profile.displayName as MultiValue),
   );
   const email = getSingleValue(
     (profile["urn:oid:0.9.2342.19200300.100.1.3"] as MultiValue) ||
-    (profile.mail as MultiValue),
+      (profile.mail as MultiValue),
   );
 
   return {
@@ -154,11 +157,11 @@ export function mapSamlAttributes(
     email,
     eduPersonAffiliation: getArrayValue(
       (profile["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"] as MultiValue) ||
-      (profile.eduPersonAffiliation as MultiValue),
+        (profile.eduPersonAffiliation as MultiValue),
     ),
     eduPersonScopedAffiliation: getArrayValue(
       (profile["urn:oid:1.3.6.1.4.1.5923.1.1.1.9"] as MultiValue) ||
-      (profile.eduPersonScopedAffiliation as MultiValue),
+        (profile.eduPersonScopedAffiliation as MultiValue),
     ),
   };
 }

@@ -75,6 +75,26 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
+  // Reverse-proxy the PostHog ingestion endpoint. We do the rewrite here (rather
+  // than in next.config rewrites) so we can strip the Cookie header: since
+  // /ingest is same-origin, the browser otherwise attaches all of our cookies —
+  // including the large chunked Supabase auth session — to every analytics
+  // request, blowing past the server's max header size and returning 431.
+  if (pathname.startsWith("/ingest")) {
+    const headers = new Headers(request.headers);
+    headers.delete("cookie");
+
+    const path = pathname.slice("/ingest".length);
+    const isAsset = path.startsWith("/static/") || path.startsWith("/array/");
+    const host = isAsset
+      ? "https://us-assets.i.posthog.com"
+      : "https://us.i.posthog.com";
+
+    return NextResponse.rewrite(`${host}${path}${request.nextUrl.search}`, {
+      request: { headers },
+    });
+  }
+
   // Add pathname to headers for layout access
   const response = NextResponse.next();
   response.headers.set("x-pathname", pathname);
@@ -103,7 +123,10 @@ export async function middleware(request: NextRequest) {
     if (
       !contentType?.includes("application/json") &&
       !contentType?.includes("multipart/form-data") &&
-      !(isSamlCallback && contentType?.includes("application/x-www-form-urlencoded"))
+      !(
+        isSamlCallback &&
+        contentType?.includes("application/x-www-form-urlencoded")
+      )
     ) {
       return NextResponse.json(
         {
@@ -140,6 +163,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files (public folder)
+     *
+     * Note: /ingest is intentionally NOT excluded — middleware reverse-proxies
+     * it to PostHog with the Cookie header stripped (see above).
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],

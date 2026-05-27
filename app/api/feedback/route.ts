@@ -7,6 +7,7 @@ import {
   sanitizeString,
 } from "@/app/lib/validation";
 import { and, db, eq, eventFeedback, sql, tickets } from "@ssb/db";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 
 const MAX_COMMENT_LENGTH = 1_500;
 const SCORE_EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -29,11 +30,7 @@ type FeedbackResolution =
     }
   | {
       eligible: false;
-      reason:
-        | "invalid_link"
-        | "not_signed_in"
-        | "no_ticket"
-        | "not_checked_in";
+      reason: "invalid_link" | "not_signed_in" | "no_ticket" | "not_checked_in";
       message?: string;
     };
 
@@ -280,7 +277,9 @@ export async function POST(req: Request) {
       const rawComment = typeof body.comment === "string" ? body.comment : null;
       if (rawComment != null && rawComment.length > MAX_COMMENT_LENGTH) {
         return NextResponse.json(
-          { error: `comment must be ${MAX_COMMENT_LENGTH} characters or fewer` },
+          {
+            error: `comment must be ${MAX_COMMENT_LENGTH} characters or fewer`,
+          },
           { status: 400 },
         );
       }
@@ -298,8 +297,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            resolution.message
-            || "Only checked-in ticket holders can submit feedback.",
+            resolution.message ||
+            "Only checked-in ticket holders can submit feedback.",
         },
         { status: 403 },
       );
@@ -327,7 +326,8 @@ export async function POST(req: Request) {
       }
     }
 
-    const [savedFeedback] = await db.insert(eventFeedback)
+    const [savedFeedback] = await db
+      .insert(eventFeedback)
       .values({
         eventId: body.eventId,
         ticketId: resolution.ticket.id,
@@ -347,6 +347,28 @@ export async function POST(req: Request) {
         submittedAt: eventFeedback.createdAt,
         updatedAt: eventFeedback.updatedAt,
       });
+
+    try {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: resolution.ticket.email,
+        event: "event_feedback_submitted",
+        properties: {
+          event_id: body.eventId,
+          score: savedFeedback.score,
+          has_comment: !!savedFeedback.comment,
+          // Length only — the raw comment text stays in the DB, not PostHog.
+          comment_length: savedFeedback.comment?.length ?? 0,
+          submitted_via: resolution.via,
+          is_update: !!existing,
+          $set: { last_feedback_score: savedFeedback.score },
+        },
+        groups: { event: body.eventId },
+      });
+      await posthog.flush();
+    } catch (posthogError) {
+      console.error("PostHog feedback tracking error:", posthogError);
+    }
 
     return NextResponse.json(
       {

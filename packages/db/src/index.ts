@@ -42,16 +42,37 @@ export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
     }
     if (!globalForDb.db) {
       if (!loggedFallback) {
-        console.error("[db] Hyperdrive context not found, falling back to DATABASE_URL");
+        console.error(
+          "[db] Hyperdrive context not found, falling back to DATABASE_URL",
+        );
         loggedFallback = true;
       }
       globalForDb.db = createDb(process.env.DATABASE_URL!);
     }
-    return (globalForDb.db as unknown as Record<string | symbol, unknown>)[prop];
+    return (globalForDb.db as unknown as Record<string | symbol, unknown>)[
+      prop
+    ];
   },
 });
 
 export * from "./schema";
 export * from "./ticketingRoles";
-export { sql, eq, ne, and, or, gt, gte, lt, lte, asc, desc, count, inArray, ilike, isNull, isNotNull } from "drizzle-orm";
+export {
+  sql,
+  eq,
+  ne,
+  and,
+  or,
+  gt,
+  gte,
+  lt,
+  lte,
+  asc,
+  desc,
+  count,
+  inArray,
+  ilike,
+  isNull,
+  isNotNull,
+} from "drizzle-orm";
 export type { InferSelectModel, InferInsertModel } from "drizzle-orm";

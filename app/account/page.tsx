@@ -44,7 +44,13 @@ async function getUserTickets(): Promise<Ticket[]> {
     where: eq(tickets.email, user.email),
     with: {
       event: {
-        columns: { id: true, name: true, route: true, doorsOpen: true, venue: true },
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          doorsOpen: true,
+          venue: true,
+        },
       },
     },
     orderBy: (tickets, { desc }) => [desc(tickets.createdAt)],
@@ -57,12 +63,12 @@ async function getUserTickets(): Promise<Ticket[]> {
     type: t.type,
     events: t.event
       ? {
-        id: t.event.id,
-        name: t.event.name,
-        route: t.event.route,
-        doors_open: t.event.doorsOpen?.toISOString() ?? null,
-        venue: t.event.venue,
-      }
+          id: t.event.id,
+          name: t.event.name,
+          route: t.event.route,
+          doors_open: t.event.doorsOpen?.toISOString() ?? null,
+          venue: t.event.venue,
+        }
       : null,
   }));
 }
@@ -85,7 +91,10 @@ export default async function AccountPage() {
   const nameParts = fullName.split(/\s+/).filter(Boolean);
   const firstName = nameParts[0] ?? null;
   const initials = (
-    nameParts.map((part) => part[0]).slice(0, 2).join("") ||
+    nameParts
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("") ||
     user.email[0] ||
     "?"
   ).toUpperCase();
@@ -136,7 +145,8 @@ export default async function AccountPage() {
               </div>
             ) : (
               <p className="text-sm text-zinc-500">
-                Stanford SSO didn&rsquo;t provide an affiliation for your account.
+                Stanford SSO didn&rsquo;t provide an affiliation for your
+                account.
               </p>
             )}
           </div>
@@ -171,7 +181,20 @@ export default async function AccountPage() {
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-ssb-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-ssb-accent/25 hover:bg-ssb-accent-strong transition-colors focus-visible:outline-ssb-accent focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 Browse upcoming events
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
               </Link>
             </div>
           ) : (
@@ -255,7 +278,21 @@ export default async function AccountPage() {
                           className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 hover:border-ssb-accent/50 hover:text-white transition-colors w-full md:w-auto shrink-0"
                         >
                           View event
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                            className="transition-transform group-hover:translate-x-0.5"
+                          >
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                          </svg>
                         </a>
                       )}
                     </div>

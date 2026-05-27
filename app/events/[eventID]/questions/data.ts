@@ -1,10 +1,4 @@
-import {
-  and,
-  db,
-  eq,
-  eventQuestions,
-  eventQuestionVotes,
-} from "@ssb/db";
+import { and, db, eq, eventQuestions, eventQuestionVotes } from "@ssb/db";
 
 export type EventQuestion = {
   id: string;
@@ -76,7 +70,9 @@ export async function getEventQuestions(
     rank: i + 1,
     hasVoted: userVotes.has(r.id),
     createdAt:
-      r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+      r.createdAt instanceof Date
+        ? r.createdAt.toISOString()
+        : String(r.createdAt),
   }));
 }
 
@@ -113,6 +109,8 @@ export async function getUserEventQuestions(
     duplicate: !!r.duplicate,
     votes: r.votes ?? 0,
     createdAt:
-      r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+      r.createdAt instanceof Date
+        ? r.createdAt.toISOString()
+        : String(r.createdAt),
   }));
 }

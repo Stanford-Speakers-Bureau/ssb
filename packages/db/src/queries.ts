@@ -95,9 +95,7 @@ export async function getAvailablePublicTickets(
   }
 
   maxPublic = Math.max(0, maxPublic);
-  const available = standbyEnabled
-    ? 0
-    : Math.max(0, maxPublic - publicCount);
+  const available = standbyEnabled ? 0 : Math.max(0, maxPublic - publicCount);
 
   return {
     available,
@@ -139,7 +137,8 @@ export async function getUserWaitlistStatus(
       where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, userEmail)),
       columns: { position: true },
     }),
-    db.select({ count: count() })
+    db
+      .select({ count: count() })
       .from(waitlist)
       .where(eq(waitlist.eventId, eventId)),
   ]);
@@ -158,7 +157,8 @@ export async function getWaitlistCount(
   db: Db,
   eventId: string,
 ): Promise<number> {
-  const [result] = await db.select({ count: count() })
+  const [result] = await db
+    .select({ count: count() })
     .from(waitlist)
     .where(eq(waitlist.eventId, eventId));
   return result?.count ?? 0;

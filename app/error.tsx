@@ -23,8 +23,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           We hit an unexpected error.
         </h1>
         <p className="mt-3 text-sm leading-6 text-zinc-300">
-          Please try again. If the issue keeps happening, contact
-          {" "}
+          Please try again. If the issue keeps happening, contact{" "}
           <a
             href="mailto:tickets@stanfordspeakersbureau.com"
             className="font-medium underline underline-offset-2 text-zinc-100"

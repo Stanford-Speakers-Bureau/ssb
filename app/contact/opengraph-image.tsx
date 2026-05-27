@@ -1,8 +1,4 @@
-import {
-  heroOG,
-  ogMosaicContentType,
-  ogMosaicSize,
-} from "@/app/lib/og-mosaic";
+import { heroOG, ogMosaicContentType, ogMosaicSize } from "@/app/lib/og-mosaic";
 
 export const alt = "Get in Touch with SSB";
 export const size = ogMosaicSize;

@@ -46,20 +46,36 @@ export default function JoinWaitlist({
           {/* Sold out badge */}
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-            <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Waitlist Available</span>
+            <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+              Waitlist Available
+            </span>
           </span>
 
-          <p className="text-md text-zinc-200 font-medium mb-3">Still want in? You have two options!</p>
+          <p className="text-md text-zinc-200 font-medium mb-3">
+            Still want in? You have two options!
+          </p>
 
           <div className="grid grid-cols-2 gap-2.5 mb-4">
             {/* Option 1: Online waitlist */}
             <div className="rounded-xl bg-white/[0.04] border border-white/[0.08] p-3.5">
               <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center mb-2.5">
-                <svg className="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                <svg
+                  className="w-3.5 h-3.5 text-zinc-300"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                  />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-white leading-snug">Join the online waitlist</p>
+              <p className="text-sm font-semibold text-white leading-snug">
+                Join the online waitlist
+              </p>
               <p className="text-xs text-zinc-500 leading-relaxed mt-1">
                 We&apos;ll email you a ticket when a spot opens.
               </p>
@@ -68,19 +84,37 @@ export default function JoinWaitlist({
             {/* Option 2: In-person standby */}
             <div className="rounded-xl bg-white/[0.04] border border-white/[0.08] p-3.5">
               <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center mb-2.5">
-                <svg className="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                <svg
+                  className="w-3.5 h-3.5 text-zinc-300"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-white leading-snug">Show up in person</p>
+              <p className="text-sm font-semibold text-white leading-snug">
+                Show up in person
+              </p>
               <p className="text-xs text-zinc-500 leading-relaxed mt-1">
                 Join the standby line, first come, first serve.
               </p>
             </div>
           </div>
 
-          <p className="text-sm font-medium text-zinc-400 text-center mb-5">We recommend doing both to maximize your chances.</p>
+          <p className="text-sm font-medium text-zinc-400 text-center mb-5">
+            We recommend doing both to maximize your chances.
+          </p>
 
           {/* High chance indicator */}
           {waitlistChance?.toLowerCase() === "high" && (
@@ -93,12 +127,27 @@ export default function JoinWaitlist({
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
                 animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatDelay: 1,
+                }}
               />
               <div className="relative flex items-center gap-2.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  <svg
+                    className="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -133,7 +182,6 @@ export default function JoinWaitlist({
           </RedButton>
         </>
       )}
-
     </div>
   );
 }

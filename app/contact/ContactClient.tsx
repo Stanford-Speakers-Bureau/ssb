@@ -52,7 +52,6 @@ const ArrowIcon = () => (
 export default function ContactClient() {
   return (
     <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate">
-
       {/* Hero */}
       <section className="relative min-h-dvh flex items-end overflow-hidden">
         <div className="absolute inset-0">
@@ -74,8 +73,7 @@ export default function ContactClient() {
             transition={{ duration: 0.7, delay: 0.15 }}
             className="font-serif text-5xl sm:text-7xl md:text-8xl text-white leading-none tracking-tight mb-6 text-balance max-w-[16ch]"
           >
-            Get in{" "}
-            <span className="text-ssb-accent">touch.</span>
+            Get in <span className="text-ssb-accent">touch.</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -83,7 +81,8 @@ export default function ContactClient() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base sm:text-lg text-zinc-300 max-w-lg text-pretty leading-relaxed"
           >
-            Ideas, sponsorships, press, or just a question — we read every message.
+            Ideas, sponsorships, press, or just a question — we read every
+            message.
           </motion.p>
         </div>
       </section>

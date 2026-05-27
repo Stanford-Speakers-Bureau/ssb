@@ -138,8 +138,9 @@ function ArrowButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={direction === "prev" ? "Previous speakers" : "Next speakers"}
-      className={`flex absolute top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] disabled:opacity-30 disabled:cursor-not-allowed ${direction === "prev" ? "left-2 lg:-left-5" : "right-2 lg:-right-5"
-        }`}
+      className={`flex absolute top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] disabled:opacity-30 disabled:cursor-not-allowed ${
+        direction === "prev" ? "left-2 lg:-left-5" : "right-2 lg:-right-5"
+      }`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

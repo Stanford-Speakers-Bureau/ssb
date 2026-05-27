@@ -149,7 +149,10 @@ export const walletRegistrations = pgTable(
       t.serialNumber,
     ),
     index("wallet_registrations_serial_idx").on(t.serialNumber),
-    index("wallet_registrations_device_idx").on(t.deviceLibraryId, t.passTypeId),
+    index("wallet_registrations_device_idx").on(
+      t.deviceLibraryId,
+      t.passTypeId,
+    ),
   ],
 );
 
@@ -596,9 +599,12 @@ export const eventFeedbackRelations = relations(eventFeedback, ({ one }) => ({
   }),
 }));
 
-export const emailUnsubscribesRelations = relations(emailUnsubscribes, ({ one }) => ({
-  event: one(events, {
-    fields: [emailUnsubscribes.eventId],
-    references: [events.id],
+export const emailUnsubscribesRelations = relations(
+  emailUnsubscribes,
+  ({ one }) => ({
+    event: one(events, {
+      fields: [emailUnsubscribes.eventId],
+      references: [events.id],
+    }),
   }),
-}));
+);

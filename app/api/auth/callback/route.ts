@@ -3,6 +3,7 @@ import { createSamlClient, mapSamlAttributes } from "@/app/lib/saml";
 import { createSessionUser, upsertUserProfile } from "@/app/lib/auth";
 import { consumeLoginState, getSession } from "@/app/lib/session";
 import { recordMailingListMember } from "@/app/lib/mailing-list";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 
 function buildFailureRedirect(
   baseUrl: string,
@@ -39,7 +40,9 @@ export async function POST(request: NextRequest) {
       return buildFailureRedirect(baseUrl, redirectTo);
     }
 
-    const { profile } = await createSamlClient(request).validatePostResponseAsync({
+    const { profile } = await createSamlClient(
+      request,
+    ).validatePostResponseAsync({
       SAMLResponse: samlResponse,
     });
 
@@ -73,6 +76,31 @@ export async function POST(request: NextRequest) {
         ]);
       } catch (postLoginError) {
         console.error("Post-login profile update error:", postLoginError);
+      }
+
+      try {
+        const posthog = getPostHogClient();
+        posthog.identify({
+          distinctId: user.email,
+          properties: {
+            email: user.email,
+            displayName: user.displayName,
+            uid: user.uid,
+            eduPersonAffiliation: user.eduPersonAffiliation,
+          },
+        });
+        posthog.capture({
+          distinctId: user.email,
+          event: "user_signed_in",
+          properties: {
+            email: user.email,
+            display_name: user.displayName,
+            redirect_to: redirectTo,
+          },
+        });
+        await posthog.flush();
+      } catch (posthogError) {
+        console.error("PostHog login tracking error:", posthogError);
       }
     });
 

@@ -5,11 +5,15 @@ initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@ssb/db"],
+  // Required to support PostHog trailing slash API requests
+  skipTrailingSlashRedirect: true,
   images: {
     qualities: [70, 75, 90],
     loader: "custom",
     loaderFile: "./image-loader.ts",
   },
+  // PostHog ingestion is reverse-proxied in middleware (with the Cookie header
+  // stripped to avoid 431 errors), not via rewrites here — see middleware.ts.
   async redirects() {
     return [
       {
@@ -34,7 +38,8 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/i/thm",
-        destination: "https://drive.google.com/file/d/1OxdUEGHx31u_lwL6vM_ajsJjleQZgphm/view?usp=sharing",
+        destination:
+          "https://drive.google.com/file/d/1OxdUEGHx31u_lwL6vM_ajsJjleQZgphm/view?usp=sharing",
         permanent: false,
       },
     ];
@@ -63,7 +68,9 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.googleusercontent.com https://*.supabase.co",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com",
+              // PostHog session replay compresses snapshots in a blob web worker.
+              "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -58,12 +58,34 @@ export default function LivestreamBanner({
               rel="noopener noreferrer"
               className="group flex-1 flex items-center gap-3 rounded-lg bg-white/15 backdrop-blur-sm ring-1 ring-white/20 px-4 py-3 transition-all hover:bg-white/25"
             >
-              <svg className="w-6 h-6 text-white flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+              <svg
+                className="w-6 h-6 text-white flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                />
               </svg>
-              <span className="text-sm font-semibold text-white">Watch Live</span>
-              <svg className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all ml-auto flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+              <span className="text-sm font-semibold text-white">
+                Watch Live
+              </span>
+              <svg
+                className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all ml-auto flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+                />
               </svg>
             </a>
           </div>
@@ -78,17 +100,25 @@ export default function LivestreamBanner({
       <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/20 via-transparent to-purple-500/30" />
       <div className="relative px-5 py-4 sm:py-5 flex items-center gap-4">
         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/25">
-          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+          <svg
+            className="w-7 h-7 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
           </svg>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm sm:text-base font-bold text-white leading-snug">
             This event will be livestreamed to the public!
             {timeUntil && (
-              <span className="font-normal text-white/80">
-                {" "}in {timeUntil}
-              </span>
+              <span className="font-normal text-white/80"> in {timeUntil}</span>
             )}
           </p>
           <p className="text-xs sm:text-sm text-white/75 mt-0.5">

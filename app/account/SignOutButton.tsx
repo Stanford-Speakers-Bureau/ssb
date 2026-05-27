@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import posthog from "posthog-js";
 
 export default function SignOutButton() {
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -9,6 +10,8 @@ export default function SignOutButton() {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
+      // Detach the PostHog identity so post-logout activity is a fresh person.
+      posthog.reset();
       window.location.href = `/api/auth/signout?redirect_to=${encodeURIComponent("/")}`;
     } catch (error) {
       console.error("Sign out error:", error);
@@ -27,7 +30,21 @@ export default function SignOutButton() {
         "Signing out…"
       ) : (
         <>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></svg>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="m16 17 5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
           Sign out
         </>
       )}
