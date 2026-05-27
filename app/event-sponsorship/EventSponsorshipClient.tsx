@@ -19,12 +19,30 @@ const COMMUNITY_TAGS = [
 ];
 
 const FUNDING_ITEMS = [
-  { label: "Speaker fees", body: "Honoraria and appearance fees to secure the names you want." },
-  { label: "Venue rental", body: "From Dinkelspiel to small classrooms, we cover the room." },
-  { label: "Event services", body: "AV, catering, security, and anything else you need to host." },
-  { label: "Advertising", body: "Posters, social promotion, and cross-org outreach." },
-  { label: "Event staffing", body: "SSB team members on hand to help run day-of logistics." },
-  { label: "Speaker contracts", body: "We negotiate the legal and logistical details with agents for you." },
+  {
+    label: "Speaker fees",
+    body: "Honoraria and appearance fees to secure the names you want.",
+  },
+  {
+    label: "Venue rental",
+    body: "From Dinkelspiel to small classrooms, we cover the room.",
+  },
+  {
+    label: "Event services",
+    body: "AV, catering, security, and anything else you need to host.",
+  },
+  {
+    label: "Advertising",
+    body: "Posters, social promotion, and cross-org outreach.",
+  },
+  {
+    label: "Event staffing",
+    body: "SSB team members on hand to help run day-of logistics.",
+  },
+  {
+    label: "Speaker contracts",
+    body: "We negotiate the legal and logistical details with agents for you.",
+  },
 ];
 
 type Tier = {
@@ -124,7 +142,6 @@ const ArrowIcon = ({ className }: { className?: string }) => (
 export default function EventSponsorshipClient() {
   return (
     <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate">
-
       {/* Hero */}
       <section className="relative min-h-dvh flex items-end overflow-hidden">
         <div className="absolute inset-0">
@@ -206,7 +223,10 @@ export default function EventSponsorshipClient() {
 
       {/* Programs — three tiers */}
       <section className="relative px-6 sm:px-16 py-20 sm:py-28 border-t border-zinc-800 overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-24 right-0 size-[32rem] rounded-full bg-ssb-accent/8 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 right-0 size-[32rem] rounded-full bg-ssb-accent/8 blur-3xl"
+        />
         <div className="relative max-w-6xl mx-auto">
           <div className="mb-14 sm:mb-16">
             <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight text-balance max-w-4xl">
@@ -226,7 +246,12 @@ export default function EventSponsorshipClient() {
                 whileInView={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -4 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ type: "spring", stiffness: 130, damping: 16, delay: i * 0.08 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 130,
+                  damping: 16,
+                  delay: i * 0.08,
+                }}
                 className={`group relative grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 sm:gap-10 rounded-3xl border p-8 sm:p-10 ${
                   tier.featured
                     ? "border-ssb-accent/40 bg-ssb-accent/5 shadow-xl shadow-ssb-accent/5"
@@ -234,7 +259,10 @@ export default function EventSponsorshipClient() {
                 }`}
               >
                 {tier.featured && (
-                  <div aria-hidden="true" className="pointer-events-none absolute -inset-px rounded-3xl bg-linear-to-br from-ssb-accent/10 to-transparent" />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -inset-px rounded-3xl bg-linear-to-br from-ssb-accent/10 to-transparent"
+                  />
                 )}
                 <div className="relative flex items-start gap-5 md:w-72">
                   <span className="font-serif text-6xl sm:text-7xl text-ssb-accent tabular-nums leading-none select-none">
@@ -281,7 +309,10 @@ export default function EventSponsorshipClient() {
                 break an event.
               </p>
             </div>
-            <ul role="list" className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <ul
+              role="list"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+            >
               {FUNDING_ITEMS.map((item, i) => (
                 <motion.li
                   key={item.label}
@@ -289,11 +320,20 @@ export default function EventSponsorshipClient() {
                   whileInView={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -4 }}
                   viewport={{ once: true, margin: "-60px" }}
-                  transition={{ type: "spring", stiffness: 150, damping: 16, delay: i * 0.06 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 16,
+                    delay: i * 0.06,
+                  }}
                   className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6"
                 >
-                  <p className="font-serif text-lg text-white leading-tight mb-2">{item.label}</p>
-                  <p className="text-sm text-zinc-400 text-pretty leading-relaxed">{item.body}</p>
+                  <p className="font-serif text-lg text-white leading-tight mb-2">
+                    {item.label}
+                  </p>
+                  <p className="text-sm text-zinc-400 text-pretty leading-relaxed">
+                    {item.body}
+                  </p>
                 </motion.li>
               ))}
             </ul>
@@ -317,7 +357,12 @@ export default function EventSponsorshipClient() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
-                transition={{ type: "spring", stiffness: 140, damping: 17, delay: i * 0.08 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 140,
+                  damping: 17,
+                  delay: i * 0.08,
+                }}
                 className="grid grid-cols-[52px_1fr] sm:grid-cols-[72px_1fr] gap-6 sm:gap-12 border-t border-zinc-800 py-10 last:border-b"
               >
                 <div className="flex flex-col items-center">
@@ -329,14 +374,22 @@ export default function EventSponsorshipClient() {
                       initial={{ scaleY: 0 }}
                       whileInView={{ scaleY: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: i * 0.08 + 0.25, ease: "easeOut" }}
+                      transition={{
+                        duration: 0.6,
+                        delay: i * 0.08 + 0.25,
+                        ease: "easeOut",
+                      }}
                       className="flex-1 w-px origin-top bg-linear-to-b from-ssb-accent/40 to-transparent mt-4"
                     />
                   )}
                 </div>
                 <div className="pb-2">
-                  <h3 className="font-serif text-xl sm:text-3xl text-white mb-3">{step.title}</h3>
-                  <p className="text-base text-zinc-400 text-pretty leading-relaxed max-w-2xl">{step.body}</p>
+                  <h3 className="font-serif text-xl sm:text-3xl text-white mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-base text-zinc-400 text-pretty leading-relaxed max-w-2xl">
+                    {step.body}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -346,8 +399,14 @@ export default function EventSponsorshipClient() {
 
       {/* CTA */}
       <section className="relative px-6 sm:px-16 py-24 sm:py-32 overflow-hidden border-t border-zinc-800">
-        <div aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-ssb-accent/6 via-transparent to-transparent" />
-        <div aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-ssb-accent/40 blur-sm" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-linear-to-b from-ssb-accent/6 via-transparent to-transparent"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-ssb-accent/40 blur-sm"
+        />
         <div className="relative max-w-3xl mx-auto text-center">
           <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight mb-5 text-balance">
             Let&rsquo;s bring your speaker to Stanford.

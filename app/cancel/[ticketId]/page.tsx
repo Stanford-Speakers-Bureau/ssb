@@ -48,10 +48,10 @@ export default async function CancelTicketRedirect({
   const normalizedTicketEmail = ticket.email.trim().toLowerCase();
 
   if (
-    cancelToken
-    && verifiedToken
-    && verifiedToken.ticketId === ticketId
-    && verifiedToken.email === normalizedTicketEmail
+    cancelToken &&
+    verifiedToken &&
+    verifiedToken.ticketId === ticketId &&
+    verifiedToken.email === normalizedTicketEmail
   ) {
     redirectParams.set("cancel_token", cancelToken);
   }

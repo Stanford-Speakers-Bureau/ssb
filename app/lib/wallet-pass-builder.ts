@@ -72,7 +72,10 @@ async function renderPass(args: {
   checkedIn: boolean;
 }): Promise<Buffer | null> {
   const { event } = args;
-  const imgUrl = await getSignedImageUrl(event.appleWalletImg || event.img, 3600);
+  const imgUrl = await getSignedImageUrl(
+    event.appleWalletImg || event.img,
+    3600,
+  );
   if (!imgUrl) return null;
 
   const imgResponse = await fetchWithTimeout(imgUrl, {}, IMG_FETCH_TIMEOUT_MS);

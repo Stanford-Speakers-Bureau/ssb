@@ -47,13 +47,10 @@ export default function QuestionsLeaderboard({
     setError(null);
 
     try {
-      const res = await fetch(
-        `/api/events/${eventId}/questions/${id}/vote`,
-        {
-          method: hasVoted ? "DELETE" : "POST",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const res = await fetch(`/api/events/${eventId}/questions/${id}/vote`, {
+        method: hasVoted ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+      });
       const data = (await res.json().catch(() => ({}))) as {
         alreadyVoted?: boolean;
         error?: string;

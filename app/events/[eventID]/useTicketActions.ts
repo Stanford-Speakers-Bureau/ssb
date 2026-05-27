@@ -9,6 +9,7 @@ import {
   isFetchTimeoutError,
 } from "@/app/lib/fetch";
 import { fireFullConfetti, fireSimpleConfetti } from "./confetti";
+import posthog from "posthog-js";
 
 const REQUEST_TIMEOUT_MS = 12_000;
 const WAITLIST_CACHE_PREFIX = "waitlist_status";
@@ -75,8 +76,7 @@ function readWaitlistCache(eventId: string): WaitlistStatusCache | null {
     const parsed = JSON.parse(raw) as WaitlistStatusCache;
     return {
       isOnWaitlist: !!parsed.isOnWaitlist,
-      position:
-        typeof parsed.position === "number" ? parsed.position : null,
+      position: typeof parsed.position === "number" ? parsed.position : null,
     };
   } catch {
     return null;
@@ -161,6 +161,18 @@ async function safeJson<T>(response: Response): Promise<T | null> {
   }
 }
 
+// Capture a client event tagged with the PostHog `event` group. We attach the
+// group per-event (rather than via posthog.group(), which sticks to the whole
+// session and would mis-tag later pageviews on other pages) so per-event
+// rollups stay clean. Mirrors the server-side `groups` usage.
+function captureForEvent(
+  event: string,
+  eventId: string,
+  properties: Record<string, unknown>,
+) {
+  posthog.capture(event, { ...properties, $groups: { event: eventId } });
+}
+
 export type TicketButtonProps = {
   eventId: string;
   initialHasTicket?: boolean;
@@ -243,21 +255,21 @@ export default function useTicketActions({
   const hasSsrWaitlistState = isLoggedIn && isSoldOut && !initialHasTicket;
   const initialWaitlistState = hasSsrWaitlistState
     ? {
-      isOnWaitlist: initialIsOnWaitlist,
-      position: initialWaitlistPosition,
-      isReady: initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
-    }
+        isOnWaitlist: initialIsOnWaitlist,
+        position: initialWaitlistPosition,
+        isReady: initialIsOnWaitlist ? initialWaitlistPosition !== null : true,
+      }
     : !isLoggedIn
       ? {
-        isOnWaitlist: false,
-        position: null,
-        isReady: false,
-      }
+          isOnWaitlist: false,
+          position: null,
+          isReady: false,
+        }
       : {
-        isOnWaitlist: initialWaitlistCache?.isOnWaitlist ?? false,
-        position: initialWaitlistCache?.position ?? null,
-        isReady: !!initialWaitlistCache,
-      };
+          isOnWaitlist: initialWaitlistCache?.isOnWaitlist ?? false,
+          position: initialWaitlistCache?.position ?? null,
+          isReady: !!initialWaitlistCache,
+        };
   const [isOnWaitlist, setIsOnWaitlist] = useState(
     initialWaitlistState.isOnWaitlist,
   );
@@ -284,7 +296,8 @@ export default function useTicketActions({
   );
   const [showIneligibleLinks, setShowIneligibleLinks] = useState(true);
   const [ineligibleAssuUrl, setIneligibleAssuUrl] = useState(DEFAULT_ASSU_URL);
-  const [ineligibleFaqUrl, setIneligibleFaqUrl] = useState(DEFAULT_ASSU_FAQ_URL);
+  const [ineligibleFaqUrl, setIneligibleFaqUrl] =
+    useState(DEFAULT_ASSU_FAQ_URL);
 
   // Notify when ticketing opens
   const [isNotified, setIsNotified] = useState(initialIsNotified);
@@ -320,13 +333,10 @@ export default function useTicketActions({
         | undefined,
     ) => {
       const isFeeWaiverResponse =
-        data?.code === FEE_WAIVER_INELIGIBLE_CODE
-        || (
-          !data?.code &&
-          (data?.error ?? "").toLowerCase().includes("please contact assu")
-        );
-      const isRoleRestrictionResponse =
-        data?.code === ROLE_INELIGIBLE_CODE;
+        data?.code === FEE_WAIVER_INELIGIBLE_CODE ||
+        (!data?.code &&
+          (data?.error ?? "").toLowerCase().includes("please contact assu"));
+      const isRoleRestrictionResponse = data?.code === ROLE_INELIGIBLE_CODE;
 
       if (isFeeWaiverResponse) {
         setMessage(null);
@@ -336,6 +346,11 @@ export default function useTicketActions({
         setIneligibleAssuUrl(data?.assuUrl || DEFAULT_ASSU_URL);
         setIneligibleFaqUrl(data?.faqUrl || DEFAULT_ASSU_FAQ_URL);
         setShowIneligibleModal(true);
+        captureForEvent("ticketing_blocked", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          reason: "fee_waiver",
+        });
         return true;
       }
 
@@ -345,12 +360,17 @@ export default function useTicketActions({
         setIneligibleMessage(data?.error || DEFAULT_ROLE_RESTRICTION_MESSAGE);
         setShowIneligibleLinks(false);
         setShowIneligibleModal(true);
+        captureForEvent("ticketing_blocked", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          reason: "role_restriction",
+        });
         return true;
       }
 
       return false;
     },
-    [],
+    [eventId, eventName],
   );
 
   const redirectToAuth = useCallback(
@@ -385,12 +405,19 @@ export default function useTicketActions({
         redirectToAuth("notify");
         return;
       }
-      const data = (await safeJson<{
-        alreadySignedUp?: boolean;
-        error?: string;
-      }>(response)) ?? {};
+      const data =
+        (await safeJson<{
+          alreadySignedUp?: boolean;
+          error?: string;
+        }>(response)) ?? {};
       if (response.ok) {
         setIsNotified(true);
+        if (!data.alreadySignedUp) {
+          captureForEvent("ticketing_notify_signed_up", eventId, {
+            event_id: eventId,
+            event_name: eventName,
+          });
+        }
         if (data.alreadySignedUp) {
           setMessage(TICKETING_NOTIFY_MESSAGES.ALREADY_SIGNED_UP);
         }
@@ -403,7 +430,14 @@ export default function useTicketActions({
     } finally {
       if (!redirecting) setIsLoadingNotify(false);
     }
-  }, [eventId, isLoadingNotify, isLoggedIn, isNotified, redirectToAuth]);
+  }, [
+    eventId,
+    eventName,
+    isLoadingNotify,
+    isLoggedIn,
+    isNotified,
+    redirectToAuth,
+  ]);
 
   const handleNotifyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -523,8 +557,8 @@ export default function useTicketActions({
     [eventId],
   );
 
-  const reconcileWaitlistStatus = useCallback(
-    async (): Promise<WaitlistStatusCache | null> => {
+  const reconcileWaitlistStatus =
+    useCallback(async (): Promise<WaitlistStatusCache | null> => {
       try {
         const response = await fetchWithTimeout(
           `/api/waitlist?eventId=${eventId}`,
@@ -556,9 +590,7 @@ export default function useTicketActions({
       }
 
       return null;
-    },
-    [eventId],
-  );
+    }, [eventId]);
 
   useEffect(() => {
     // Clear message after 3 seconds
@@ -566,9 +598,9 @@ export default function useTicketActions({
       const lowered = message.toLowerCase();
       const autoClearMs =
         lowered.includes("processing") ||
-          lowered.includes("checking") ||
-          lowered.includes("waiting") ||
-          lowered.includes("longer than usual")
+        lowered.includes("checking") ||
+        lowered.includes("waiting") ||
+        lowered.includes("longer than usual")
           ? 10_000
           : 3_000;
       const timer = setTimeout(() => setMessage(null), autoClearMs);
@@ -652,9 +684,19 @@ export default function useTicketActions({
     setMessage(null);
     let redirecting = false;
 
+    captureForEvent("waitlist_join_started", eventId, {
+      event_id: eventId,
+      event_name: eventName,
+    });
+
     try {
       // If there's a referral warning, don't proceed
       if (referralWarning) {
+        captureForEvent("ticketing_blocked", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          reason: "invalid_referral",
+        });
         setIsWaitlistLoading(false);
         return;
       }
@@ -690,13 +732,14 @@ export default function useTicketActions({
         return;
       }
 
-      const data = (await safeJson<{
-        position?: number;
-        error?: string;
-        code?: string;
-        assuUrl?: string;
-        faqUrl?: string;
-      }>(response)) ?? {};
+      const data =
+        (await safeJson<{
+          position?: number;
+          error?: string;
+          code?: string;
+          assuUrl?: string;
+          faqUrl?: string;
+        }>(response)) ?? {};
 
       if (response.ok) {
         const nextPosition =
@@ -708,6 +751,8 @@ export default function useTicketActions({
           isOnWaitlist: true,
           position: nextPosition,
         });
+        // `waitlist_joined` is captured server-side (see app/api/waitlist) so
+        // the conversion survives ad-blockers / the tab closing on redirect.
         setMessage("Successfully joined the waitlist!");
         if (referral) {
           clearStoredReferralCode(eventId);
@@ -720,10 +765,20 @@ export default function useTicketActions({
         if (showIneligibleModalForResponse(data)) {
           return;
         }
+        captureForEvent("waitlist_join_failed", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          reason: data.code ?? data.error ?? "unknown",
+        });
         setMessage(errorMessage);
       }
     } catch (error) {
       if (isFetchTimeoutError(error)) {
+        captureForEvent("waitlist_join_failed", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          reason: "timeout",
+        });
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileWaitlistStatus();
         if (reconciled?.isOnWaitlist) {
@@ -742,6 +797,7 @@ export default function useTicketActions({
     }
   }, [
     eventId,
+    eventName,
     isLoggedIn,
     referralsEnabled,
     referralCode,
@@ -774,6 +830,10 @@ export default function useTicketActions({
           isOnWaitlist: false,
           position: null,
         });
+        captureForEvent("waitlist_left", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+        });
         setMessage("Successfully left the waitlist");
       } else {
         const errorMessage = data.error || "Failed to leave waitlist";
@@ -799,7 +859,7 @@ export default function useTicketActions({
     } finally {
       setIsWaitlistLoading(false);
     }
-  }, [eventId, reconcileWaitlistStatus]);
+  }, [eventId, eventName, reconcileWaitlistStatus]);
 
   // Handle cancelling a ticket
   const handleCancelTicket = useCallback(async () => {
@@ -830,7 +890,12 @@ export default function useTicketActions({
         // Dispatch event to update ticket status
         window.dispatchEvent(
           new CustomEvent("ticketChanged", {
-            detail: { hasTicket: false, ticketId: null, ticketName: null, ticketType: null },
+            detail: {
+              hasTicket: false,
+              ticketId: null,
+              ticketName: null,
+              ticketType: null,
+            },
           }),
         );
       } else {
@@ -854,7 +919,12 @@ export default function useTicketActions({
     } finally {
       setIsLoading(false);
     }
-  }, [emailCancelContext?.cancelToken, eventId, isLoggedIn, reconcileTicketStatus]);
+  }, [
+    emailCancelContext?.cancelToken,
+    eventId,
+    isLoggedIn,
+    reconcileTicketStatus,
+  ]);
 
   // Actual ticket creation/cancellation logic
   const processTicketRequest = useCallback(async () => {
@@ -870,6 +940,13 @@ export default function useTicketActions({
     try {
       // If there's a referral warning, don't proceed
       if (referralWarning) {
+        if (!hasTicket) {
+          captureForEvent("ticketing_blocked", eventId, {
+            event_id: eventId,
+            event_name: eventName,
+            reason: "invalid_referral",
+          });
+        }
         setIsLoading(false);
         return;
       }
@@ -887,6 +964,13 @@ export default function useTicketActions({
             referral = readStoredReferralCode(eventId);
           }
         }
+
+        captureForEvent("ticket_purchase_started", eventId, {
+          event_id: eventId,
+          event_name: eventName,
+          used_referral: !!referral,
+          referral_code: referral,
+        });
       }
 
       const requestBody: { event_id: string; referral?: string | null } = {
@@ -911,9 +995,9 @@ export default function useTicketActions({
 
       const data =
         (await safeJson<
-          TicketLookupResponse
-          & FeeWaiverEligibilityResponse
-          & TicketingRoleEligibilityResponse
+          TicketLookupResponse &
+            FeeWaiverEligibilityResponse &
+            TicketingRoleEligibilityResponse
         >(response)) ?? {};
 
       if (response.ok) {
@@ -921,11 +1005,14 @@ export default function useTicketActions({
           // Cancelling ticket
           setHasTicket(false);
           clearWaitlistCache(eventId);
+          // `ticket_cancelled` is captured server-side (see app/api/tickets).
           setMessage(TICKET_MESSAGES.DELETED);
         } else {
           // Creating ticket
           setHasTicket(true);
           clearWaitlistCache(eventId);
+          // `ticket_created` is captured server-side (see app/api/tickets) so
+          // the conversion survives ad-blockers / the tab closing on redirect.
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
           // Clear referral from session storage after successful ticket creation
@@ -946,10 +1033,24 @@ export default function useTicketActions({
         if (showIneligibleModalForResponse(data)) {
           return;
         }
+        if (!hasTicket) {
+          captureForEvent("ticket_creation_failed", eventId, {
+            event_id: eventId,
+            event_name: eventName,
+            reason: data.code ?? data.error ?? "unknown",
+          });
+        }
         setMessage(data.error || TICKET_MESSAGES.ERROR_GENERIC);
       }
     } catch (error) {
       if (isFetchTimeoutError(error)) {
+        if (!hasTicket) {
+          captureForEvent("ticket_creation_failed", eventId, {
+            event_id: eventId,
+            event_name: eventName,
+            reason: "timeout",
+          });
+        }
         setMessage(PROCESSING_MESSAGE);
         const reconciled = await reconcileTicketStatus(
           hasTicket ? "cancelled" : "created",
@@ -969,6 +1070,7 @@ export default function useTicketActions({
     }
   }, [
     eventId,
+    eventName,
     hasTicket,
     isLoggedIn,
     referralsEnabled,
@@ -1005,14 +1107,15 @@ export default function useTicketActions({
 
       const data =
         (await safeJson<
-          TicketLookupResponse
-          & FeeWaiverEligibilityResponse
-          & TicketingRoleEligibilityResponse
+          TicketLookupResponse &
+            FeeWaiverEligibilityResponse &
+            TicketingRoleEligibilityResponse
         >(response)) ?? {};
 
       if (response.ok) {
         setHasTicket(true);
         clearWaitlistCache(eventId);
+        // `standby_ticket_created` is captured server-side (see app/api/tickets).
         setMessage(TICKET_MESSAGES.SUCCESS);
         fireSimpleConfetti();
         // Dispatch event to update ticket status
@@ -1089,10 +1192,11 @@ export default function useTicketActions({
           return;
         }
 
-        const data = (await safeJson<{
-          valid?: boolean;
-          message?: string;
-        }>(response)) ?? {};
+        const data =
+          (await safeJson<{
+            valid?: boolean;
+            message?: string;
+          }>(response)) ?? {};
 
         if (data.valid) {
           setReferralWarning(null);
@@ -1139,6 +1243,11 @@ export default function useTicketActions({
     if (urlReferralCode) {
       writeStoredReferralCode(eventId, urlReferralCode);
       setReferralCode(urlReferralCode);
+      captureForEvent("referral_link_visited", eventId, {
+        event_id: eventId,
+        event_name: eventName,
+        referral_code: urlReferralCode,
+      });
       // Validate the referral code from URL
       void validateReferralCode(urlReferralCode);
       // Clean up the URL by removing the referral parameters
@@ -1159,7 +1268,7 @@ export default function useTicketActions({
         setReferralWarning(null);
       }
     }
-  }, [eventId, referralsEnabled, validateReferralCode]);
+  }, [eventId, eventName, referralsEnabled, validateReferralCode]);
 
   // Auto-action after redirect from authentication.
   // Note: React 18 StrictMode (dev) mounts/unmounts effects twice, so we persist intent in sessionStorage
@@ -1278,7 +1387,13 @@ export default function useTicketActions({
     autoTicketProcessed.current = true;
     sessionStorage.removeItem(autoTicketKey);
     void processTicketRequest();
-  }, [eventId, processTicketRequest, hasTicket, isEventLongOver, isTicketingOpen]);
+  }, [
+    eventId,
+    processTicketRequest,
+    hasTicket,
+    isEventLongOver,
+    isTicketingOpen,
+  ]);
 
   // Auto-notify after redirect from authentication (reuses handleNotify which handles 401)
   // Skip if event is sold out (user should join waitlist instead) or ticketing is already open
@@ -1365,16 +1480,15 @@ export default function useTicketActions({
 
   const isSalesDisabled = isEventLongOver && !hasTicket;
   const isButtonDisabled =
-    isLoading ||
-    isSalesDisabled ||
-    (!!referralWarning && !hasTicket);
+    isLoading || isSalesDisabled || (!!referralWarning && !hasTicket);
 
   // Ticketing not open yet: show "ticketing opens" + notify UI
   const showTicketingOpensOnly =
     !hasTicket &&
     !isTicketingOpen &&
     !isSoldOut &&
-    (hideTicketingDate || (ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime())));
+    (hideTicketingDate ||
+      (ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime())));
 
   return {
     // State

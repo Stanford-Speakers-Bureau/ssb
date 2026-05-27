@@ -207,10 +207,7 @@ function wrapToMimeLines(input: string, lineLength: number = 76): string {
   return chunks.join("\r\n");
 }
 
-function buildUtf8MimeBodyPart(
-  contentType: string,
-  content: string,
-): string[] {
+function buildUtf8MimeBodyPart(contentType: string, content: string): string[] {
   return [
     `Content-Type: ${contentType}; charset=UTF-8`,
     `Content-Transfer-Encoding: base64`,
@@ -227,10 +224,14 @@ function buildUtf8MimeBodyPart(
 function getOrdinalSuffix(day: number): string {
   if (day > 3 && day < 21) return "th";
   switch (day % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -239,7 +240,10 @@ function formatPillDate(dateString: string | null): string {
   if (!dateString) return "";
   const date = new Date(dateString);
   const day = parseInt(
-    date.toLocaleDateString("en-US", { day: "numeric", timeZone: PACIFIC_TIMEZONE }),
+    date.toLocaleDateString("en-US", {
+      day: "numeric",
+      timeZone: PACIFIC_TIMEZONE,
+    }),
   );
   const suffix = getOrdinalSuffix(day);
   return date
@@ -283,7 +287,10 @@ function markdownToEmailHTML(md: string): string {
   return md
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #A80D0C; text-decoration: underline;">$1</a>')
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" style="color: #A80D0C; text-decoration: underline;">$1</a>',
+    )
     .replace(/\n/g, "<br>");
 }
 
@@ -299,11 +306,16 @@ const gmailBlendEnd = `</span></span>`;
 // ============================================================================
 
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  return (
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"
+  );
 }
 
 /** Generates the shared <style> block for all emails */
-function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): string {
+function buildEmailStyles(opts?: {
+  isVIP?: boolean;
+  isExternal?: boolean;
+}): string {
   return `
     :root {
       color-scheme: light dark;
@@ -391,14 +403,22 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
     }
     u + .body a { color: #A80D0C !important; }
 
-    ${opts?.isVIP ? `
+    ${
+      opts?.isVIP
+        ? `
     u + .body .vip-border { border-color: #D4AF37 !important; }
     u + .body .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }
-    ` : ""}
-    ${opts?.isExternal ? `
+    `
+        : ""
+    }
+    ${
+      opts?.isExternal
+        ? `
     u + .body .external-border { border-color: #16a34a !important; }
     u + .body .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }
-    ` : ""}
+    `
+        : ""
+    }
 
     /* Standard dark mode (non-Gmail) */
     @media (prefers-color-scheme: dark) {
@@ -410,10 +430,18 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
       .details-card { background-color: #18181b !important; }
       .qr-section { background-color: #18181b !important; }
       .footer { background-color: #18181b !important; border-top: 1px solid #3f3f46 !important; }
-      ${opts?.isVIP ? `.vip-border { border-color: #D4AF37 !important; }
-      .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }` : ""}
-      ${opts?.isExternal ? `.external-border { border-color: #16a34a !important; }
-      .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }` : ""}
+      ${
+        opts?.isVIP
+          ? `.vip-border { border-color: #D4AF37 !important; }
+      .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }`
+          : ""
+      }
+      ${
+        opts?.isExternal
+          ? `.external-border { border-color: #16a34a !important; }
+      .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }`
+          : ""
+      }
     }
 
     /* Mobile responsive */
@@ -430,7 +458,11 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
 }
 
 /** Wraps the full HTML document shell around body content */
-function buildEmailShell(title: string, styles: string, bodyContent: string): string {
+function buildEmailShell(
+  title: string,
+  styles: string,
+  bodyContent: string,
+): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -481,10 +513,13 @@ function buildHeroCard(data: {
     <tr>
       <td align="center" style="padding: 0;">
         <div style="max-width: 600px; margin: 0 auto; overflow: hidden;">
-          ${imageUrl ? `
+          ${
+            imageUrl
+              ? `
           <!-- Event Image -->
           <img src="${imageUrl}" alt="${data.eventName}" width="600" style="width: 100%; height: auto; display: block;" />
-          ` : `
+          `
+              : `
           <!-- No image fallback: SSB logo header -->
           <div style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 24px; text-align: center;">
             <img src="${baseUrl}/logo.png" alt="Stanford Speakers Bureau" width="50" height="50" style="display: block; margin: 0 auto 12px;" />
@@ -492,17 +527,22 @@ function buildHeroCard(data: {
               <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</p>
             ${gmailBlendEnd}
           </div>
-          `}
+          `
+          }
           <!-- Title + Tagline + Pills -->
           <div class="hero-info" style="background-color: #18181b; padding: 24px 24px 20px; ${accentBorder}">
             ${gmailBlendStart}
               <h1 class="hero-title" style="margin: 0 0 6px 0; color: #ffffff; font-size: 28px; font-weight: 700; font-family: Georgia, 'Times New Roman', Times, serif; line-height: 1.2;">${data.eventName}</h1>
             ${gmailBlendEnd}
-            ${data.eventTagline ? `
+            ${
+              data.eventTagline
+                ? `
             ${gmailBlendStart}
               <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 15px; line-height: 1.5;">${markdownToEmailHTML(data.eventTagline)}</p>
             ${gmailBlendEnd}
-            ` : ""}
+            `
+                : ""
+            }
             ${pills}
           </div>
         </div>
@@ -567,9 +607,7 @@ function buildInfoPills(data: {
  * Generates the HTML for the "Important" notice block.
  * Accepts optional extra HTML strings to append after the base items.
  */
-function buildImportantNotice(
-  extraItems?: string[],
-): string {
+function buildImportantNotice(extraItems?: string[]): string {
   const allItems = [
     ...IMPORTANT_NOTICE_ITEMS.map(
       (item) =>
@@ -580,7 +618,8 @@ function buildImportantNotice(
 
   const itemsHTML = allItems
     .map((content, i) => {
-      const marginStyle = i < allItems.length - 1 ? ' style="margin-bottom: 8px;"' : "";
+      const marginStyle =
+        i < allItems.length - 1 ? ' style="margin-bottom: 8px;"' : "";
       return `<div${marginStyle}>${content}</div>`;
     })
     .join("\n");
@@ -618,9 +657,10 @@ function buildDetailsCard(opts: {
 
   const rowsHTML = opts.rows
     .map((row) => {
-      const valueHTML = row.isLink && row.href
-        ? `<a href="${row.href}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${row.value}</a>`
-        : `${gmailBlendStart}${row.value}${gmailBlendEnd}`;
+      const valueHTML =
+        row.isLink && row.href
+          ? `<a href="${row.href}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${row.value}</a>`
+          : `${gmailBlendStart}${row.value}${gmailBlendEnd}`;
       return `
         <tr>
           <td style="padding: 8px 0; color: #a1a1aa; font-size: 14px; width: 120px; vertical-align: top;">
@@ -709,13 +749,14 @@ function buildQRSection(opts: {
         </div>`
       : "";
 
-  const validityText = opts.ticketValidTime && opts.ticketValidDate
-    ? `${gmailBlendStart}
+  const validityText =
+    opts.ticketValidTime && opts.ticketValidDate
+      ? `${gmailBlendStart}
         <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
           Ticket valid until <span style="font-weight: bold; color: #e4e4e7;">${opts.ticketValidTime}</span> on <span style="font-weight: bold; color: #e4e4e7;">${opts.ticketValidDate}</span> for <span style="font-weight: bold; color: #e4e4e7;">${opts.attendeeName || "you"}</span>. We recommend arriving early to avoid long lines!
         </p>
       ${gmailBlendEnd}`
-    : "";
+      : "";
   const appleWalletButton = opts.appleWalletUrl
     ? `
       <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
@@ -762,7 +803,11 @@ function buildCalendarButton(googleCalendarUrl: string): string {
 }
 
 /** Builds a centered CTA button */
-function buildButton(href: string, label: string, opts?: { style?: string }): string {
+function buildButton(
+  href: string,
+  label: string,
+  opts?: { style?: string },
+): string {
   return `
     <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
       <tr>
@@ -796,7 +841,15 @@ function buildFooter(unsub?: { url: string; label: string } | null): string {
 }
 
 /** Builds a text paragraph inside the content area */
-function buildParagraph(text: string, opts?: { color?: string; fontSize?: string; fontWeight?: string; marginBottom?: string }): string {
+function buildParagraph(
+  text: string,
+  opts?: {
+    color?: string;
+    fontSize?: string;
+    fontWeight?: string;
+    marginBottom?: string;
+  },
+): string {
   const color = opts?.color || "#f4f4f5";
   const fontSize = opts?.fontSize || "16px";
   const fontWeight = opts?.fontWeight || "normal";
@@ -873,7 +926,9 @@ function generateICalContent(data: TicketEmailData): string {
   const startDate = new Date(data.eventStartTime);
   if (Number.isNaN(startDate.getTime())) return "";
 
-  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
+  const defaultEndDate = new Date(
+    startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS,
+  );
   let endDate = defaultEndDate;
   if (data.eventEndTime) {
     const parsedEndDate = new Date(data.eventEndTime);
@@ -1113,7 +1168,9 @@ async function generateTicketEmailHTML(
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
 
   const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDoorsOpen = doorsOpenTime
+    ? formatPillTime(doorsOpenTime)
+    : null;
 
   const referralCode = generateReferralCode(data.email);
   const referralUrl =
@@ -1125,17 +1182,17 @@ async function generateTicketEmailHTML(
 
   const ticketValidTime = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: PACIFIC_TIMEZONE,
-    })
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
     : "";
   const ticketValidDate = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-    })
+        month: "long",
+        day: "numeric",
+      })
     : "";
   const attendeeName = data.name?.trim() || "you";
 
@@ -1151,11 +1208,17 @@ async function generateTicketEmailHTML(
   });
 
   // Build detail rows
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [];
   if (data.name) detailRows.push({ label: "Name:", value: data.name });
   detailRows.push({ label: "Event:", value: eventName || "Event" });
   detailRows.push({ label: "Date & Time:", value: formattedDate });
-  if (formattedDoorsOpen) detailRows.push({ label: "Doors Open:", value: formattedDoorsOpen });
+  if (formattedDoorsOpen)
+    detailRows.push({ label: "Doors Open:", value: formattedDoorsOpen });
   if (eventVenue) {
     detailRows.push({
       label: "Location:",
@@ -1170,9 +1233,17 @@ async function generateTicketEmailHTML(
   });
 
   if (REFERRAL_ENABLED && referralCode && !isVIP && !isExternal) {
-    detailRows.push({ label: "Referral Code:", value: `<span style="font-family: monospace;">${referralCode}</span>` });
+    detailRows.push({
+      label: "Referral Code:",
+      value: `<span style="font-family: monospace;">${referralCode}</span>`,
+    });
     if (referralUrl) {
-      detailRows.push({ label: "Referral Link:", value: referralUrl, isLink: true, href: referralUrl });
+      detailRows.push({
+        label: "Referral Link:",
+        value: referralUrl,
+        isLink: true,
+        href: referralUrl,
+      });
     }
   }
 
@@ -1190,9 +1261,10 @@ async function generateTicketEmailHTML(
     isExternal,
   });
 
-  const cancelBanner = !isVIP && !isExternal && cancelTicketUrl
-    ? buildCancelBanner(cancelTicketUrl)
-    : "";
+  const cancelBanner =
+    !isVIP && !isExternal && cancelTicketUrl
+      ? buildCancelBanner(cancelTicketUrl)
+      : "";
 
   const contentSections: string[] = [];
 
@@ -1201,32 +1273,40 @@ async function generateTicketEmailHTML(
 
   // VIP welcome
   if (isVIP) {
-    contentSections.push(buildParagraph(
-      "Use the VIP entrance when you arrive, we've saved you a front-row seat.",
-    ));
+    contentSections.push(
+      buildParagraph(
+        "Use the VIP entrance when you arrive, we've saved you a front-row seat.",
+      ),
+    );
   }
 
   // Welcome message
-  contentSections.push(buildParagraph("Your ticket is confirmed, we can't wait to see you!"));
+  contentSections.push(
+    buildParagraph("Your ticket is confirmed, we can't wait to see you!"),
+  );
 
   // Cancel ticket message + button (VIP/External only — regular tickets use the top banner)
   if (isVIP || isExternal) {
-    contentSections.push(buildParagraph(
-      "Can't make it? Please cancel so someone else can attend.",
-    ));
+    contentSections.push(
+      buildParagraph(
+        "Can't make it? Please cancel so someone else can attend.",
+      ),
+    );
     if (cancelTicketUrl) {
       contentSections.push(buildButton(cancelTicketUrl, "Cancel Ticket"));
     }
   }
 
   // Event details card
-  contentSections.push(buildDetailsCard({
-    rows: detailRows,
-    ticketTypeBadge: { type: ticketType || "STANDARD" },
-    actionButtonHref: eventUrl,
-    isVIP,
-    isExternal,
-  }));
+  contentSections.push(
+    buildDetailsCard({
+      rows: detailRows,
+      ticketTypeBadge: { type: ticketType || "STANDARD" },
+      actionButtonHref: eventUrl,
+      isVIP,
+      isExternal,
+    }),
+  );
 
   // Referral message
   if (REFERRAL_ENABLED && referralCode && !isVIP && !isExternal) {
@@ -1241,17 +1321,19 @@ async function generateTicketEmailHTML(
 
   // QR code section
   if (qrImageSrc) {
-    contentSections.push(buildQRSection({
-      qrImageSrc,
-      ticketType: ticketType || "STANDARD",
-      ticketId,
-      appleWalletUrl,
-      ticketValidTime,
-      ticketValidDate,
-      attendeeName,
-      isVIP,
-      isExternal,
-    }));
+    contentSections.push(
+      buildQRSection({
+        qrImageSrc,
+        ticketType: ticketType || "STANDARD",
+        ticketId,
+        appleWalletUrl,
+        ticketValidTime,
+        ticketValidDate,
+        attendeeName,
+        isVIP,
+        isExternal,
+      }),
+    );
   }
 
   // Calendar button
@@ -1280,10 +1362,19 @@ async function generateTicketEmailHTML(
 }
 
 function generateTicketEmailText(data: TicketEmailData): string {
-  const { eventName, ticketType, eventStartTime, eventRoute, ticketId, doorsOpenTime } = data;
+  const {
+    eventName,
+    ticketType,
+    eventStartTime,
+    eventRoute,
+    ticketId,
+    doorsOpenTime,
+  } = data;
 
   const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDoorsOpen = doorsOpenTime
+    ? formatPillTime(doorsOpenTime)
+    : null;
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
   const cancelTicketUrl = data.cancelTicketUrl ?? null;
@@ -1313,11 +1404,15 @@ ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 ${buildImportantNoticeText()}
 ${isVIP || isExternal ? `\n${cancelLine}` : ""}
-${REFERRAL_ENABLED && referralCode && !isVIP && !isExternal ? `
+${
+  REFERRAL_ENABLED && referralCode && !isVIP && !isExternal
+    ? `
 - Your Referral Code: ${referralCode}
 ${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
 ${REFERRAL_MESSAGE}
-` : ""}
+`
+    : ""
+}
 
 Stanford Speakers Bureau
 For ADA accommodations or other questions, please email ${getFromEmail()}
@@ -1460,7 +1555,8 @@ export type WaitlistEmailData = {
 async function generateWaitlistEmailHTML(
   data: WaitlistEmailData,
 ): Promise<string> {
-  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } = data;
+  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } =
+    data;
 
   const formattedDate = formatFullDateTime(eventStartTime);
 
@@ -1477,9 +1573,11 @@ async function generateWaitlistEmailHTML(
   const contentSections: string[] = [];
 
   // Welcome message
-  contentSections.push(buildParagraph(
-    `You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!`,
-  ));
+  contentSections.push(
+    buildParagraph(
+      `You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!`,
+    ),
+  );
 
   // Waitlist position badge (only show position for top 5)
   if (position <= 5) {
@@ -1503,7 +1601,12 @@ async function generateWaitlistEmailHTML(
   }
 
   // Event details card (partial)
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [
     { label: "Event:", value: eventName },
     { label: "Date & Time:", value: formattedDate },
   ];
@@ -1518,10 +1621,12 @@ async function generateWaitlistEmailHTML(
   contentSections.push(buildDetailsCard({ rows: detailRows }));
 
   // Standby line notice
-  contentSections.push(buildParagraph(
-    "Heads up: If a standby line opens at the venue, the online waitlist closes. Come to the venue for a chance to get in!",
-    { color: "#a1a1aa", fontSize: "14px" },
-  ));
+  contentSections.push(
+    buildParagraph(
+      "Heads up: If a standby line opens at the venue, the online waitlist closes. Come to the venue for a chance to get in!",
+      { color: "#a1a1aa", fontSize: "14px" },
+    ),
+  );
 
   const bodyContent = `
     ${heroCard}
@@ -1545,7 +1650,9 @@ function generateWaitlistEmailText(data: WaitlistEmailData): string {
   const { eventName, position, eventStartTime, eventVenue } = data;
   const formattedDate = formatFullDateTime(eventStartTime);
   const baseUrl = getBaseUrl();
-  const eventUrl = data.eventRoute ? `${baseUrl}/events/${data.eventRoute}` : null;
+  const eventUrl = data.eventRoute
+    ? `${baseUrl}/events/${data.eventRoute}`
+    : null;
 
   return `
 You're on the waitlist!
@@ -1624,7 +1731,8 @@ export type CancellationEmailData = {
 async function generateCancellationEmailHTML(
   data: CancellationEmailData,
 ): Promise<string> {
-  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } = data;
+  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } =
+    data;
 
   const baseUrl = getBaseUrl();
   const isVIP = data.ticketType?.toUpperCase() === "VIP";
@@ -1647,11 +1755,16 @@ async function generateCancellationEmailHTML(
   const contentSections: string[] = [];
 
   const greeting = data.name ? `Hi ${data.name}, your` : "Your";
-  contentSections.push(buildParagraph(
-    `${greeting} ticket for ${eventName} has been cancelled.`,
-  ));
+  contentSections.push(
+    buildParagraph(`${greeting} ticket for ${eventName} has been cancelled.`),
+  );
 
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [];
   if (data.name) detailRows.push({ label: "Name:", value: data.name });
   detailRows.push({ label: "Event:", value: eventName });
   detailRows.push({ label: "Date & Time:", value: formattedDate });
@@ -1663,18 +1776,22 @@ async function generateCancellationEmailHTML(
       href: eventVenueLink || undefined,
     });
   }
-  contentSections.push(buildDetailsCard({
-    rows: detailRows,
-    ticketTypeBadge: { type: data.ticketType || "STANDARD" },
-    actionButtonHref: eventUrl,
-    isVIP,
-    isExternal,
-  }));
+  contentSections.push(
+    buildDetailsCard({
+      rows: detailRows,
+      ticketTypeBadge: { type: data.ticketType || "STANDARD" },
+      actionButtonHref: eventUrl,
+      isVIP,
+      isExternal,
+    }),
+  );
 
-  contentSections.push(buildParagraph(
-    `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
-    { color: "#a1a1aa", fontSize: "14px" },
-  ));
+  contentSections.push(
+    buildParagraph(
+      `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
+      { color: "#a1a1aa", fontSize: "14px" },
+    ),
+  );
 
   const bodyContent = `
     ${heroCard}
@@ -1843,29 +1960,39 @@ function generateVIPScanNotificationHTML(
     <h2 style="margin: 0;">VIP Ticket Scanned</h2>
   </div>
   <div class="content">
-    ${attendeeName ? `
+    ${
+      attendeeName
+        ? `
     <div class="info-row">
       <span class="label">Attendee Name:</span>
       <span class="value">${attendeeName}</span>
     </div>
-    ` : ""}
+    `
+        : ""
+    }
 
     <div class="info-row">
       <span class="label">Attendee Email:</span>
       <span class="value">${attendeeEmail}</span>
     </div>
 
-    ${scannerName ? `
+    ${
+      scannerName
+        ? `
     <div class="info-row">
       <span class="label">Scanned By:</span>
       <span class="value">${scannerName}${scannerEmail ? ` (${scannerEmail})` : ""}</span>
     </div>
-    ` : scannerEmail ? `
+    `
+        : scannerEmail
+          ? `
     <div class="info-row">
       <span class="label">Scanned By:</span>
       <span class="value">${scannerEmail}</span>
     </div>
-    ` : ""}
+    `
+          : ""
+    }
 
     <div class="info-row">
       <span class="label">Event:</span>
@@ -1887,7 +2014,9 @@ function generateVIPScanNotificationHTML(
   `.trim();
 }
 
-function generateVIPScanNotificationText(data: VIPScanNotificationData): string {
+function generateVIPScanNotificationText(
+  data: VIPScanNotificationData,
+): string {
   const {
     attendeeEmail,
     attendeeName,

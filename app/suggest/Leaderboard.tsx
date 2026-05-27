@@ -224,7 +224,9 @@ export default function Leaderboard({
     if (typeof window === "undefined") return;
     const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`);
     const apply = (matches: boolean) => {
-      const nextSize = matches ? INITIAL_VISIBLE_MOBILE : INITIAL_VISIBLE_DESKTOP;
+      const nextSize = matches
+        ? INITIAL_VISIBLE_MOBILE
+        : INITIAL_VISIBLE_DESKTOP;
       setPageSize(nextSize);
       setVisibleCount((n) => (n === INITIAL_VISIBLE_DESKTOP ? nextSize : n));
     };
@@ -373,9 +375,7 @@ export default function Leaderboard({
         </div>
       ) : filteredSuggestions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="font-serif text-2xl text-zinc-500 mb-2">
-            No matches.
-          </p>
+          <p className="font-serif text-2xl text-zinc-500 mb-2">No matches.</p>
           <p className="font-sans text-sm text-zinc-500 max-w-xs">
             Try a different name.
           </p>
@@ -404,9 +404,7 @@ export default function Leaderboard({
               >
                 <span
                   className={`font-serif w-9 sm:w-14 text-right shrink-0 leading-none ${
-                    isTopThree
-                      ? "text-3xl sm:text-5xl"
-                      : "text-xl sm:text-2xl"
+                    isTopThree ? "text-3xl sm:text-5xl" : "text-xl sm:text-2xl"
                   } ${rankColor(globalIndex)}`}
                 >
                   {rankNumber}
@@ -420,7 +418,9 @@ export default function Leaderboard({
                   )}
                   <p
                     className={`font-serif text-white truncate leading-tight ${
-                      isTopThree ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
+                      isTopThree
+                        ? "text-xl sm:text-2xl"
+                        : "text-base sm:text-lg"
                     }`}
                   >
                     {suggestion.speaker}

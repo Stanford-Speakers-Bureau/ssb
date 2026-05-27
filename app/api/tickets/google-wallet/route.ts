@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getImageProxyUrl,
-} from "@/app/lib/supabase";
+import { getImageProxyUrl } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
 import { getGoogleWalletPass } from "@/app/lib/wallet";
 import { db, eq, and, tickets } from "@ssb/db";

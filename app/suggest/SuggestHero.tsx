@@ -56,7 +56,7 @@ function useTypewriterCycle(names: string[], reduce: boolean) {
     };
   }, [names, reduce]);
 
-  return names.includes(display) ? display : names[0] ?? "";
+  return names.includes(display) ? display : (names[0] ?? "");
 }
 
 function BlinkingCaret() {
@@ -64,7 +64,12 @@ function BlinkingCaret() {
     <motion.span
       aria-hidden="true"
       animate={{ opacity: [1, 1, 0, 0, 1] }}
-      transition={{ duration: 1.0, repeat: Infinity, ease: "linear", times: [0, 0.5, 0.51, 0.99, 1] }}
+      transition={{
+        duration: 1.0,
+        repeat: Infinity,
+        ease: "linear",
+        times: [0, 0.5, 0.51, 0.99, 1],
+      }}
       className="inline-block w-[0.08em] bg-[#A80D0C] ml-[0.06em] align-middle"
       style={{ height: "0.85em" }}
     />
@@ -98,10 +103,10 @@ function Marquee({
           reduce
             ? undefined
             : {
-              duration: durationSec,
-              ease: "linear",
-              repeat: Infinity,
-            }
+                duration: durationSec,
+                ease: "linear",
+                repeat: Infinity,
+              }
         }
       >
         {track.map((name, i) => (

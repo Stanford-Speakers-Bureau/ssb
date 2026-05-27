@@ -51,7 +51,10 @@ function HeroBackground() {
           exit={{ opacity: 0 }}
           transition={{
             opacity: { duration: 1.6, ease: [0.4, 0, 0.2, 1] },
-            scale: { duration: ROTATION_INTERVAL_MS / 1000 + 1.6, ease: "linear" },
+            scale: {
+              duration: ROTATION_INTERVAL_MS / 1000 + 1.6,
+              ease: "linear",
+            },
           }}
           className="absolute inset-0"
         >

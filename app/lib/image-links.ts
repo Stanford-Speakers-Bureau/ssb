@@ -5,9 +5,9 @@ const TOKEN_PURPOSE = "event_image";
 
 function getImageLinkSecret(): string {
   const secret =
-    process.env.IMAGE_LINK_SECRET
-    || process.env.SESSION_SECRET
-    || (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+    process.env.IMAGE_LINK_SECRET ||
+    process.env.SESSION_SECRET ||
+    (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
 
   if (!secret) {
     throw new Error(
@@ -49,9 +49,7 @@ export function verifyEventImageToken(
   }
 
   const expected = toBase64Url(
-    createHmac("sha256", secret)
-      .update(`${TOKEN_PURPOSE}:${eventId}`)
-      .digest(),
+    createHmac("sha256", secret).update(`${TOKEN_PURPOSE}:${eventId}`).digest(),
   );
 
   const provided = Buffer.from(token);

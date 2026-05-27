@@ -28,7 +28,9 @@ async function loadSuggestion(id: string) {
   return { id: row.id, speaker: row.speaker };
 }
 
-export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageParams): Promise<Metadata> {
   const { id } = await params;
   const s = await loadSuggestion(id);
   if (!s) {
@@ -84,14 +86,13 @@ export default async function SuggestionDeepLinkPage({
               Stanford Speakers Bureau
             </p>
             <h1 className="font-serif text-4xl sm:text-6xl text-white leading-[1.05]">
-              Should <HighlightedName name={suggestion.speaker} />{" "}
-              come speak at Stanford?
+              Should <HighlightedName name={suggestion.speaker} /> come speak at
+              Stanford?
             </h1>
             <p className="mt-5 font-sans text-base sm:text-lg text-zinc-400 leading-relaxed">
-              Upvote <strong>{suggestion.speaker}</strong>{" "}
-              below, and while you&rsquo;re here,
-              add other names you&rsquo;d love to see and help us pick the rest
-              of the lineup.
+              Upvote <strong>{suggestion.speaker}</strong> below, and while
+              you&rsquo;re here, add other names you&rsquo;d love to see and
+              help us pick the rest of the lineup.
             </p>
           </div>
         </section>
@@ -128,8 +129,8 @@ export default async function SuggestionDeepLinkPage({
                     <div className="flex-1 h-px bg-zinc-800" />
                   </div>
                   <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
-                    Add another name to the list. Every suggestion goes to
-                    the leaderboard once we review it.
+                    Add another name to the list. Every suggestion goes to the
+                    leaderboard once we review it.
                   </p>
                   <SubmitPanel
                     user={user}

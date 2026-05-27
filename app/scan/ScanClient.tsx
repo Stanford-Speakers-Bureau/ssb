@@ -330,7 +330,8 @@ export default function ScanClient() {
   const routeValidTicket = useCallback(
     (ticket: TicketInfo) => {
       const isStandby = isStandbyType(ticket.type);
-      const allowStandby = liveEventRef.current?.allow_admitting_standby ?? false;
+      const allowStandby =
+        liveEventRef.current?.allow_admitting_standby ?? false;
 
       if (isStandby && !allowStandby) {
         if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
@@ -362,54 +363,70 @@ export default function ScanClient() {
   );
 
   // Handle scan results - GET lookup first, then confirm before marking scanned
-  const handleScan = useCallback(async (id: string) => {
-    if (!id.trim()) return;
+  const handleScan = useCallback(
+    async (id: string) => {
+      if (!id.trim()) return;
 
-    // Ignore scans while confirmation modal is open
-    if (showConfirmationRef.current) return;
+      // Ignore scans while confirmation modal is open
+      if (showConfirmationRef.current) return;
 
-    // Prevent duplicate scans within 3 seconds
-    const now = Date.now();
-    if (lastScannedRef.current === id && now - scanCooldownRef.current < 3000) {
-      return;
-    }
+      // Prevent duplicate scans within 3 seconds
+      const now = Date.now();
+      if (
+        lastScannedRef.current === id &&
+        now - scanCooldownRef.current < 3000
+      ) {
+        return;
+      }
 
-    setEmailSUNET("");
+      setEmailSUNET("");
 
-    lastScannedRef.current = id;
-    scanCooldownRef.current = now;
+      lastScannedRef.current = id;
+      scanCooldownRef.current = now;
 
-    // Clear any existing timeout
-    if (statusTimeoutRef.current) {
-      clearTimeout(statusTimeoutRef.current);
-      statusTimeoutRef.current = null;
-    }
+      // Clear any existing timeout
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+        statusTimeoutRef.current = null;
+      }
 
-    // Reset status immediately so background snaps back to black
-    setStatus(null);
-    setTicketInfo(null);
+      // Reset status immediately so background snaps back to black
+      setStatus(null);
+      setTicketInfo(null);
 
-    setIsLoading(true);
-    try {
-      // Step 1: GET lookup only (no side effects)
-      const response = await fetch(
-        `/api/scan?ticket_id=${encodeURIComponent(id.trim())}`,
-      );
+      setIsLoading(true);
+      try {
+        // Step 1: GET lookup only (no side effects)
+        const response = await fetch(
+          `/api/scan?ticket_id=${encodeURIComponent(id.trim())}`,
+        );
 
-      const data = (await response.json()) as {
-        status?: TicketStatus;
-        ticket?: TicketInfo;
-      };
+        const data = (await response.json()) as {
+          status?: TicketStatus;
+          ticket?: TicketInfo;
+        };
 
-      const ticketStatus = data.status ?? "invalid";
+        const ticketStatus = data.status ?? "invalid";
 
-      if (ticketStatus === "valid" && data.ticket) {
-        // Step 2: standby gating / identity confirmation / direct admit
-        routeValidTicket(data.ticket);
-      } else {
-        // Already scanned or invalid - show immediate feedback
-        setStatus(ticketStatus === "valid" ? null : ticketStatus);
-        setTicketInfo(data.ticket ?? null);
+        if (ticketStatus === "valid" && data.ticket) {
+          // Step 2: standby gating / identity confirmation / direct admit
+          routeValidTicket(data.ticket);
+        } else {
+          // Already scanned or invalid - show immediate feedback
+          setStatus(ticketStatus === "valid" ? null : ticketStatus);
+          setTicketInfo(data.ticket ?? null);
+          await fetchLiveEvent();
+
+          statusTimeoutRef.current = setTimeout(() => {
+            setStatus(null);
+            setTicketInfo(null);
+            statusTimeoutRef.current = null;
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Scan error:", error);
+        setStatus("invalid");
+        setTicketInfo(null);
         await fetchLiveEvent();
 
         statusTimeoutRef.current = setTimeout(() => {
@@ -417,22 +434,12 @@ export default function ScanClient() {
           setTicketInfo(null);
           statusTimeoutRef.current = null;
         }, 3000);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Scan error:", error);
-      setStatus("invalid");
-      setTicketInfo(null);
-      await fetchLiveEvent();
-
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
-        statusTimeoutRef.current = null;
-      }, 3000);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [routeValidTicket]);
+    },
+    [routeValidTicket],
+  );
 
   // Open the manual lookup sheet, resetting any previous query/results.
   const openManualEntry = useCallback(() => {
@@ -477,7 +484,8 @@ export default function ScanClient() {
         if (controller.signal.aborted) return;
         setSearchResults(data.results ?? []);
       } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
         console.error("Search error:", error);
         setSearchResults([]);
       } finally {
@@ -490,27 +498,30 @@ export default function ScanClient() {
 
   // Pick a search result: scanned tickets show their status, unscanned ones
   // go straight to the identity / standby confirmation.
-  const handleSelectResult = useCallback((ticket: TicketInfo) => {
-    closeManualEntry();
+  const handleSelectResult = useCallback(
+    (ticket: TicketInfo) => {
+      closeManualEntry();
 
-    if (statusTimeoutRef.current) {
-      clearTimeout(statusTimeoutRef.current);
-      statusTimeoutRef.current = null;
-    }
-
-    if (ticket.scanned) {
-      setStatus("already_scanned");
-      setTicketInfo(ticket);
-      statusTimeoutRef.current = setTimeout(() => {
-        setStatus(null);
-        setTicketInfo(null);
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
         statusTimeoutRef.current = null;
-      }, 6000);
-      return;
-    }
+      }
 
-    routeValidTicket(ticket);
-  }, [closeManualEntry, routeValidTicket]);
+      if (ticket.scanned) {
+        setStatus("already_scanned");
+        setTicketInfo(ticket);
+        statusTimeoutRef.current = setTimeout(() => {
+          setStatus(null);
+          setTicketInfo(null);
+          statusTimeoutRef.current = null;
+        }, 6000);
+        return;
+      }
+
+      routeValidTicket(ticket);
+    },
+    [closeManualEntry, routeValidTicket],
+  );
 
   // Confirm scan - POST to mark ticket as scanned
   const handleConfirm = useCallback(async () => {
@@ -821,7 +832,9 @@ export default function ScanClient() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center font-sans bg-[var(--ssb-paper)] px-6">
         <div className="w-full max-w-md bg-zinc-900 rounded-2xl p-8 sm:p-12 text-center border border-zinc-800">
-          <h1 className="text-3xl text-[#A80D0C] mb-6 font-serif">SSB Scanner</h1>
+          <h1 className="text-3xl text-[#A80D0C] mb-6 font-serif">
+            SSB Scanner
+          </h1>
           <svg
             className="w-16 h-16 mx-auto mb-6 text-zinc-400"
             fill="none"
@@ -892,7 +905,9 @@ export default function ScanClient() {
       {/* ============================ NO LIVE EVENT ============================ */}
       {!liveEvent && (
         <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-3xl text-[#A80D0C] mb-8 font-serif">SSB Scanner</h1>
+          <h1 className="text-3xl text-[#A80D0C] mb-8 font-serif">
+            SSB Scanner
+          </h1>
           <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/15">
               <span className="h-3 w-3 rounded-full bg-yellow-400" />
@@ -970,7 +985,11 @@ export default function ScanClient() {
                   className="absolute inset-x-3 h-0.5 rounded-full bg-[#A80D0C] shadow-[0_0_12px_2px_rgba(168,13,12,0.7)]"
                   initial={{ top: "8%" }}
                   animate={{ top: ["8%", "92%", "8%"] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                 />
               </div>
             </div>
@@ -1000,7 +1019,9 @@ export default function ScanClient() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <p className="mt-3 text-lg font-semibold text-white">Checking…</p>
+                <p className="mt-3 text-lg font-semibold text-white">
+                  Checking…
+                </p>
               </div>
             </div>
           )}
@@ -1025,7 +1046,10 @@ export default function ScanClient() {
                 liveEvent.totalSold !== undefined && (
                   <div className="shrink-0 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-white backdrop-blur-sm">
                     {liveEvent.scanned}
-                    <span className="text-zinc-400"> / {liveEvent.totalSold}</span>
+                    <span className="text-zinc-400">
+                      {" "}
+                      / {liveEvent.totalSold}
+                    </span>
                   </div>
                 )}
             </div>
@@ -1054,7 +1078,8 @@ export default function ScanClient() {
                   Camera access denied
                 </p>
                 <p className="mb-3 text-xs text-zinc-300">
-                  Enable camera permissions in your browser settings, then retry.
+                  Enable camera permissions in your browser settings, then
+                  retry.
                 </p>
                 <button
                   type="button"
@@ -1070,7 +1095,9 @@ export default function ScanClient() {
             )}
 
             {cameraError && cameraPermission !== "denied" && (
-              <p className="mb-3 text-center text-sm text-red-300">{cameraError}</p>
+              <p className="mb-3 text-center text-sm text-red-300">
+                {cameraError}
+              </p>
             )}
 
             <div className="flex items-center gap-2">
@@ -1317,7 +1344,9 @@ export default function ScanClient() {
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", duration: 0.32, bounce: 0.12 }}
               className="w-full max-w-sm rounded-t-2xl border-t border-zinc-700 bg-zinc-900 p-6 shadow-2xl sm:rounded-2xl sm:border"
-              style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.5rem)" }}
+              style={{
+                paddingBottom: "max(env(safe-area-inset-bottom), 1.5rem)",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-center font-serif text-xl text-white">
@@ -1421,7 +1450,11 @@ function ResultIcon({ kind }: { kind: string }) {
   if (kind === "x") {
     return (
       <svg {...common}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6 6l12 12M18 6L6 18"
+        />
       </svg>
     );
   }
@@ -1439,7 +1472,12 @@ function ResultIcon({ kind }: { kind: string }) {
 
 function CameraIcon({ className = "" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -1452,7 +1490,12 @@ function CameraIcon({ className = "" }: { className?: string }) {
 
 function FingerIcon({ className = "" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -1465,7 +1508,12 @@ function FingerIcon({ className = "" }: { className?: string }) {
 
 function BatteryIcon({ className = "" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <rect x="2" y="8" width="16" height="8" rx="2" strokeWidth={1.8} />
       <path strokeLinecap="round" strokeWidth={1.8} d="M21 11v2" />
       <path strokeLinecap="round" strokeWidth={1.8} d="M6 10v4" />
@@ -1475,7 +1523,12 @@ function BatteryIcon({ className = "" }: { className?: string }) {
 
 function SearchIcon({ className = "" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <circle cx="11" cy="11" r="7" strokeWidth={1.8} />
       <path strokeLinecap="round" strokeWidth={1.8} d="M21 21l-4.3-4.3" />
     </svg>
@@ -1484,7 +1537,12 @@ function SearchIcon({ className = "" }: { className?: string }) {
 
 function InfoIcon({ className = "" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <circle cx="12" cy="12" r="9" strokeWidth={1.8} />
       <path strokeLinecap="round" strokeWidth={1.8} d="M12 11v5m0-8h.01" />
     </svg>

@@ -33,29 +33,33 @@ export default function UnsubscribeClient({
 
   const ANNOUNCE_PHRASE = "speakers bureau";
 
-  const headline = scope === "announce"
-    ? "Unsubscribe from Stanford Speakers Bureau announcements"
-    : scope === "newsletter"
-      ? "Unsubscribe from the Stanford Speakers Bureau newsletter"
-      : `Unsubscribe from emails about ${eventName ?? "this event"}`;
+  const headline =
+    scope === "announce"
+      ? "Unsubscribe from Stanford Speakers Bureau announcements"
+      : scope === "newsletter"
+        ? "Unsubscribe from the Stanford Speakers Bureau newsletter"
+        : `Unsubscribe from emails about ${eventName ?? "this event"}`;
 
-  const description = scope === "announce"
-    ? "You'll stop receiving all promotional emails about future events — announcements, \"tickets available\" notices, and general newsletters. You'll still get reminders and confirmations for events you've already got tickets to."
-    : scope === "newsletter"
-      ? "You'll stop receiving our newsletter. You'll still get new speaker announcements and reminders/confirmations for any events you have tickets to."
-      : `You'll stop receiving promotional emails about ${eventName ?? "this event"} — announcements and "tickets available" notices. If you have a ticket to this event you'll still get your reminders and confirmations, and you'll keep getting emails about other events.`;
+  const description =
+    scope === "announce"
+      ? "You'll stop receiving all promotional emails about future events — announcements, \"tickets available\" notices, and general newsletters. You'll still get reminders and confirmations for events you've already got tickets to."
+      : scope === "newsletter"
+        ? "You'll stop receiving our newsletter. You'll still get new speaker announcements and reminders/confirmations for any events you have tickets to."
+        : `You'll stop receiving promotional emails about ${eventName ?? "this event"} — announcements and "tickets available" notices. If you have a ticket to this event you'll still get your reminders and confirmations, and you'll keep getting emails about other events.`;
 
-  const scopeLabel = scope === "announce"
-    ? "promotional SSB emails about future events"
-    : scope === "newsletter"
-      ? "the Stanford Speakers Bureau newsletter"
-      : `emails about ${eventName ?? "this event"}`;
+  const scopeLabel =
+    scope === "announce"
+      ? "promotional SSB emails about future events"
+      : scope === "newsletter"
+        ? "the Stanford Speakers Bureau newsletter"
+        : `emails about ${eventName ?? "this event"}`;
 
-  const requiredPhrase = scope === "announce"
-    ? "speakers bureau"
-    : scope === "newsletter"
-      ? "newsletter"
-      : (eventName ?? "");
+  const requiredPhrase =
+    scope === "announce"
+      ? "speakers bureau"
+      : scope === "newsletter"
+        ? "newsletter"
+        : (eventName ?? "");
 
   const isPhraseValid = useMemo(
     () =>
@@ -156,7 +160,9 @@ export default function UnsubscribeClient({
       <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-8 shadow-xl">
         {phase === "form" && (
           <>
-            <h1 className="text-xl font-semibold text-white mb-3">{headline}</h1>
+            <h1 className="text-xl font-semibold text-white mb-3">
+              {headline}
+            </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
               <span className="text-zinc-500">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
@@ -171,10 +177,10 @@ export default function UnsubscribeClient({
                   Only want to skip one event?
                 </p>
                 <p className="leading-relaxed">
-                  This stops promotional emails about every future event. If
-                  you only want to stop hearing about one specific event, find
-                  one of our emails about that event and use the unsubscribe
-                  link in its footer instead.
+                  This stops promotional emails about every future event. If you
+                  only want to stop hearing about one specific event, find one
+                  of our emails about that event and use the unsubscribe link in
+                  its footer instead.
                 </p>
               </div>
             )}
@@ -184,8 +190,8 @@ export default function UnsubscribeClient({
               className="block text-sm font-medium text-zinc-300 mb-2"
             >
               Type{" "}
-              <span className="font-mono text-white">{requiredPhrase}</span>
-              {" "}to unsubscribe
+              <span className="font-mono text-white">{requiredPhrase}</span> to
+              unsubscribe
             </label>
             <input
               id="confirm"
@@ -198,9 +204,7 @@ export default function UnsubscribeClient({
               disabled={submitting}
             />
 
-            {error && (
-              <p className="mt-3 text-sm text-rose-400">{error}</p>
-            )}
+            {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
 
             <button
               type="button"
@@ -243,9 +247,7 @@ export default function UnsubscribeClient({
               You&rsquo;ll no longer receive {scopeLabel}.
             </p>
 
-            {error && (
-              <p className="mb-3 text-sm text-rose-400">{error}</p>
-            )}
+            {error && <p className="mb-3 text-sm text-rose-400">{error}</p>}
 
             <button
               type="button"
@@ -295,8 +297,8 @@ export default function UnsubscribeClient({
               className="block text-sm font-medium text-zinc-300 mb-2"
             >
               Type{" "}
-              <span className="font-mono text-white">{ANNOUNCE_PHRASE}</span>
-              {" "}to unsubscribe
+              <span className="font-mono text-white">{ANNOUNCE_PHRASE}</span> to
+              unsubscribe
             </label>
             <input
               id="announce-confirm"
@@ -309,9 +311,7 @@ export default function UnsubscribeClient({
               disabled={submitting}
             />
 
-            {error && (
-              <p className="mt-3 text-sm text-rose-400">{error}</p>
-            )}
+            {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
 
             <button
               type="button"

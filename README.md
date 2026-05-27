@@ -84,30 +84,30 @@ Run `admin/` alongside on `:3001` if you need the dashboard.
 Local dev reads from `.env`. Production reads from `wrangler.jsonc` `vars`
 plus Cloudflare secrets (anything sensitive is set with `wrangler secret put`).
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection (local Supabase or prod) — used outside the Worker context |
-| `SUPABASE_URL` / `SUPABASE_KEY` / `SUPABASE_KEY_PUBLIC` | Supabase REST + storage |
-| `NEXT_PUBLIC_BASE_URL` | Canonical site URL (`http://localhost:3000` locally) |
-| `SESSION_SECRET` | iron-session signing key — **must match `admin/`** |
-| `SESSION_COOKIE_NAME` | Cookie name — **must match `admin/`** |
-| `SESSION_COOKIE_DOMAIN` | Leave **unset** on localhost; set to apex domain in prod |
-| `SAML_SP_ENTITY_ID` | SAML SP entity ID registered with Stanford SPDB |
-| `SP_PUBLIC_CERT` / `SP_PRIVATE_KEY` | SAML SP keypair (PEM) |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiting |
-| `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | SES sender |
-| `SES_FROM_EMAIL` | From-address for transactional mail |
-| `APPLE_WALLET_KEY` / `APPLE_WALLET_CERT` / `APPLE_WALLET_G4` | PKPass signing chain (base64-PEM) |
-| `APPLE_WALLET_SECRET` | Long-lived Apple Wallet pass update auth secret |
-| `GOOGLE_WALLET_EMAIL` / `GOOGLE_WALLET_KEY` | Google Wallet service account |
+| Variable                                                     | Purpose                                                                        |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `DATABASE_URL`                                               | Postgres connection (local Supabase or prod) — used outside the Worker context |
+| `SUPABASE_URL` / `SUPABASE_KEY` / `SUPABASE_KEY_PUBLIC`      | Supabase REST + storage                                                        |
+| `NEXT_PUBLIC_BASE_URL`                                       | Canonical site URL (`http://localhost:3000` locally)                           |
+| `SESSION_SECRET`                                             | iron-session signing key — **must match `admin/`**                             |
+| `SESSION_COOKIE_NAME`                                        | Cookie name — **must match `admin/`**                                          |
+| `SESSION_COOKIE_DOMAIN`                                      | Leave **unset** on localhost; set to apex domain in prod                       |
+| `SAML_SP_ENTITY_ID`                                          | SAML SP entity ID registered with Stanford SPDB                                |
+| `SP_PUBLIC_CERT` / `SP_PRIVATE_KEY`                          | SAML SP keypair (PEM)                                                          |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`        | Rate limiting                                                                  |
+| `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | SES sender                                                                     |
+| `SES_FROM_EMAIL`                                             | From-address for transactional mail                                            |
+| `APPLE_WALLET_KEY` / `APPLE_WALLET_CERT` / `APPLE_WALLET_G4` | PKPass signing chain (base64-PEM)                                              |
+| `APPLE_WALLET_SECRET`                                        | Long-lived Apple Wallet pass update auth secret                                |
+| `GOOGLE_WALLET_EMAIL` / `GOOGLE_WALLET_KEY`                  | Google Wallet service account                                                  |
 
 Dev-only toggles:
 
-| Variable | Effect |
-| --- | --- |
-| `DISABLE_EMAIL=true` | Skip SES sends entirely (logs the payload instead) |
-| `LOCAL_EVENTS_ENABLED=true` | Show events that would normally be hidden by visibility rules |
-| `LOCAL_TICKETING_ENABLED=true` | Bypass purchase guardrails for testing |
+| Variable                       | Effect                                                        |
+| ------------------------------ | ------------------------------------------------------------- |
+| `DISABLE_EMAIL=true`           | Skip SES sends entirely (logs the payload instead)            |
+| `LOCAL_EVENTS_ENABLED=true`    | Show events that would normally be hidden by visibility rules |
+| `LOCAL_TICKETING_ENABLED=true` | Bypass purchase guardrails for testing                        |
 
 ### Sync prod data into your local DB
 

@@ -18,7 +18,9 @@ import { getQuestionsLifecycleState } from "./lifecycle";
 
 const getCachedEvent = cache(async (idOrRoute: string) => {
   if (isValidUUID(idOrRoute)) {
-    return (await getEventById(idOrRoute)) ?? (await getEventByRoute(idOrRoute));
+    return (
+      (await getEventById(idOrRoute)) ?? (await getEventByRoute(idOrRoute))
+    );
   }
   return getEventByRoute(idOrRoute);
 });

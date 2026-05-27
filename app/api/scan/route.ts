@@ -87,39 +87,41 @@ export async function POST(req: Request) {
     } | null = null;
 
     if (ticket_id) {
-      ticket = await db.query.tickets.findFirst({
-        where: eq(tickets.id, ticket_id),
-        columns: {
-          id: true,
-          type: true,
-          scanned: true,
-          scanTime: true,
-          email: true,
-          name: true,
-          eventId: true,
-          scanUser: true,
-          scanEmail: true,
-        },
-      }) ?? null;
+      ticket =
+        (await db.query.tickets.findFirst({
+          where: eq(tickets.id, ticket_id),
+          columns: {
+            id: true,
+            type: true,
+            scanned: true,
+            scanTime: true,
+            email: true,
+            name: true,
+            eventId: true,
+            scanUser: true,
+            scanEmail: true,
+          },
+        })) ?? null;
     } else if (emailSUNET) {
       const email = !isValidEmail(emailSUNET)
         ? `${emailSUNET}@stanford.edu`
         : emailSUNET;
 
-      ticket = await db.query.tickets.findFirst({
-        where: and(eq(tickets.email, email), eq(tickets.eventId, event_id!)),
-        columns: {
-          id: true,
-          type: true,
-          scanned: true,
-          scanTime: true,
-          email: true,
-          name: true,
-          eventId: true,
-          scanUser: true,
-          scanEmail: true,
-        },
-      }) ?? null;
+      ticket =
+        (await db.query.tickets.findFirst({
+          where: and(eq(tickets.email, email), eq(tickets.eventId, event_id!)),
+          columns: {
+            id: true,
+            type: true,
+            scanned: true,
+            scanTime: true,
+            email: true,
+            name: true,
+            eventId: true,
+            scanUser: true,
+            scanEmail: true,
+          },
+        })) ?? null;
     }
 
     if (!ticket) {
@@ -194,7 +196,8 @@ export async function POST(req: Request) {
     const now = new Date();
     const scanTime = now.toISOString();
 
-    const [updatedTicket] = await db.update(tickets)
+    const [updatedTicket] = await db
+      .update(tickets)
       .set({
         scanned: true,
         scanTime: now,
@@ -285,7 +288,10 @@ export async function GET(req: Request) {
 
     if (!ticket_id && !(emailSUNET && event_id)) {
       return NextResponse.json(
-        { error: "Missing required parameter: ticket_id or (emailSUNET + event_id)" },
+        {
+          error:
+            "Missing required parameter: ticket_id or (emailSUNET + event_id)",
+        },
         { status: 400 },
       );
     }
@@ -320,39 +326,41 @@ export async function GET(req: Request) {
     } | null = null;
 
     if (ticket_id) {
-      ticket = await db.query.tickets.findFirst({
-        where: eq(tickets.id, ticket_id),
-        columns: {
-          id: true,
-          type: true,
-          scanned: true,
-          scanTime: true,
-          email: true,
-          name: true,
-          eventId: true,
-          scanUser: true,
-          scanEmail: true,
-        },
-      }) ?? null;
+      ticket =
+        (await db.query.tickets.findFirst({
+          where: eq(tickets.id, ticket_id),
+          columns: {
+            id: true,
+            type: true,
+            scanned: true,
+            scanTime: true,
+            email: true,
+            name: true,
+            eventId: true,
+            scanUser: true,
+            scanEmail: true,
+          },
+        })) ?? null;
     } else if (emailSUNET) {
       const email = !isValidEmail(emailSUNET)
         ? `${emailSUNET}@stanford.edu`
         : emailSUNET;
 
-      ticket = await db.query.tickets.findFirst({
-        where: and(eq(tickets.email, email), eq(tickets.eventId, event_id!)),
-        columns: {
-          id: true,
-          type: true,
-          scanned: true,
-          scanTime: true,
-          email: true,
-          name: true,
-          eventId: true,
-          scanUser: true,
-          scanEmail: true,
-        },
-      }) ?? null;
+      ticket =
+        (await db.query.tickets.findFirst({
+          where: and(eq(tickets.email, email), eq(tickets.eventId, event_id!)),
+          columns: {
+            id: true,
+            type: true,
+            scanned: true,
+            scanTime: true,
+            email: true,
+            name: true,
+            eventId: true,
+            scanUser: true,
+            scanEmail: true,
+          },
+        })) ?? null;
     }
 
     if (!ticket) {

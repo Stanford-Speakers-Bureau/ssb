@@ -157,7 +157,10 @@ export async function getAppleWalletPass(
   // standby admission for the event (allow_admitting_standby). The change rides
   // on the single back-status field below so iOS shows our custom banner.
   const isStandbyAdmitting =
-    isStandby && ticket.admittingStandby === true && !isCancelled && !isCheckedIn;
+    isStandby &&
+    ticket.admittingStandby === true &&
+    !isCancelled &&
+    !isCheckedIn;
   const statusValue = isCancelled
     ? "Cancelled"
     : isCheckedIn
@@ -181,17 +184,23 @@ export async function getAppleWalletPass(
     voided: isCancelled || isCheckedIn,
 
     description: ticket.ticketType,
-    backgroundColor: isVIP
-      ? "rgb(122, 92, 0)"
-      : isExternal
-        ? "rgb(22, 101, 52)"
-        : "rgb(168, 13, 12)",
+    // Standby passes are always blue (every state — please-wait, entry-permitted,
+    // checked-in, cancelled); the colour is keyed off the type, not the status.
+    backgroundColor: isStandby
+      ? "rgb(30, 64, 175)"
+      : isVIP
+        ? "rgb(122, 92, 0)"
+        : isExternal
+          ? "rgb(22, 101, 52)"
+          : "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
-    labelColor: isVIP
-      ? "rgb(255, 235, 180)"
-      : isExternal
-        ? "rgb(187, 247, 208)"
-        : "rgb(255, 215, 0)",
+    labelColor: isStandby
+      ? "rgb(191, 219, 254)"
+      : isVIP
+        ? "rgb(255, 235, 180)"
+        : isExternal
+          ? "rgb(187, 247, 208)"
+          : "rgb(255, 215, 0)",
   };
 
   // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
@@ -215,7 +224,9 @@ export async function getAppleWalletPass(
       doorTime.getTime() + 86_400_000,
     ).toISOString();
   }
-  const venueSemantics: Record<string, unknown> = { venueName: ticket.eventVenue };
+  const venueSemantics: Record<string, unknown> = {
+    venueName: ticket.eventVenue,
+  };
   if (ticket.eventLat && ticket.eventLng) {
     venueSemantics.venueLocation = {
       latitude: ticket.eventLat,
@@ -278,7 +289,10 @@ export async function getAppleWalletPass(
   // where the pass is voided anyway). When admission opens the barcode appears
   // alongside the back-status flip, so the user still gets the custom banner.
   const hideStandbyBarcode =
-    isStandby && ticket.admittingStandby !== true && !isCheckedIn && !isCancelled;
+    isStandby &&
+    ticket.admittingStandby !== true &&
+    !isCheckedIn &&
+    !isCancelled;
   if (!hideStandbyBarcode) {
     pass.setBarcodes({
       format: "PKBarcodeFormatQR",

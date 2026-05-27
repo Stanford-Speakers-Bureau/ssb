@@ -12,9 +12,9 @@ export type UnsubscribeTokenClaims =
 
 function getUnsubscribeLinkSecret(): Uint8Array {
   const secret =
-    process.env.UNSUBSCRIBE_LINK_SECRET
-    || process.env.SESSION_SECRET
-    || (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+    process.env.UNSUBSCRIBE_LINK_SECRET ||
+    process.env.SESSION_SECRET ||
+    (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
 
   if (!secret) {
     throw new Error(
@@ -131,9 +131,8 @@ export async function verifyUnsubscribeToken(
 
     if (payload.purpose !== TOKEN_PURPOSE) return null;
 
-    const email = typeof payload.email === "string"
-      ? normalizeEmail(payload.email)
-      : null;
+    const email =
+      typeof payload.email === "string" ? normalizeEmail(payload.email) : null;
     const scope = typeof payload.scope === "string" ? payload.scope : null;
 
     if (!email || !scope) return null;
@@ -147,9 +146,8 @@ export async function verifyUnsubscribeToken(
     }
 
     if (scope === "event") {
-      const eventId = typeof payload.eventId === "string"
-        ? payload.eventId
-        : null;
+      const eventId =
+        typeof payload.eventId === "string" ? payload.eventId : null;
       if (!eventId) return null;
       return { scope: "event", email, eventId };
     }

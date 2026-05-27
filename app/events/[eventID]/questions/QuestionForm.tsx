@@ -72,10 +72,7 @@ export default function QuestionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="question"
-          className="sr-only"
-        >
+        <label htmlFor="question" className="sr-only">
           Your question
         </label>
         <textarea
@@ -118,7 +115,9 @@ export default function QuestionForm({
             exit={{ opacity: 0, y: -6 }}
             className="flex items-start gap-2 p-3 bg-green-950/30 rounded-md border border-green-900/50"
           >
-            <p className="text-sm text-green-300">{QUESTION_MESSAGES.SUCCESS}</p>
+            <p className="text-sm text-green-300">
+              {QUESTION_MESSAGES.SUCCESS}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

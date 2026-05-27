@@ -58,9 +58,5 @@ export function sanitizeString(
 ): string | null {
   if (!input) return null;
   if (input.length > maxLength) return null;
-  return (
-    input
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-      .trim() || null
-  );
+  return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").trim() || null;
 }

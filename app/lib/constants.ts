@@ -42,8 +42,7 @@ export const QUESTION_MESSAGES = {
   ERROR_BANNED: "You have been banned from submitting questions.",
   ERROR_LIFECYCLE_NOT_OPEN:
     "Question submissions aren't open for this event yet.",
-  ERROR_LIFECYCLE_CLOSED:
-    "Question submissions have closed — doors are open!",
+  ERROR_LIFECYCLE_CLOSED: "Question submissions have closed — doors are open!",
   ERROR_EVENT_NOT_FOUND: "Event not found.",
   ERROR_QUESTION_NOT_FOUND: "Question not found.",
   ERROR_DUPLICATE: "You've already suggested this question.",

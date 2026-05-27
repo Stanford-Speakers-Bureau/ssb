@@ -19,9 +19,8 @@ export async function POST(req: Request) {
   }
 
   const token = typeof body.token === "string" ? body.token : null;
-  const confirmation = typeof body.confirmation === "string"
-    ? body.confirmation
-    : "";
+  const confirmation =
+    typeof body.confirmation === "string" ? body.confirmation : "";
   const alsoAnnounce = body.alsoAnnounce === true;
 
   if (!token) {
@@ -77,13 +76,17 @@ export async function POST(req: Request) {
     eventName = event?.name ?? null;
   }
 
-  const requiredPhrase = claims.scope === "announce"
-    ? ANNOUNCE_PHRASE
-    : claims.scope === "newsletter"
-      ? NEWSLETTER_PHRASE
-      : eventName;
+  const requiredPhrase =
+    claims.scope === "announce"
+      ? ANNOUNCE_PHRASE
+      : claims.scope === "newsletter"
+        ? NEWSLETTER_PHRASE
+        : eventName;
 
-  if (!requiredPhrase || normalize(confirmation) !== normalize(requiredPhrase)) {
+  if (
+    !requiredPhrase ||
+    normalize(confirmation) !== normalize(requiredPhrase)
+  ) {
     return NextResponse.json(
       {
         error: `You must type "${requiredPhrase ?? ""}" to unsubscribe`,

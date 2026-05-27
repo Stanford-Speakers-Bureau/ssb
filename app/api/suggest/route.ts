@@ -126,9 +126,7 @@ export async function POST(req: Request) {
       columns: { speaker: true },
     });
 
-    const existingSpeakers = new Set(
-      existingSuggestions.map((s) => s.speaker),
-    );
+    const existingSpeakers = new Set(existingSuggestions.map((s) => s.speaker));
 
     // Filter out speakers that have already been suggested by this user
     const newSpeakers = speakers.filter(
@@ -144,7 +142,8 @@ export async function POST(req: Request) {
 
     // Insert all new speakers and cast a vote for each
     for (const speakerName of newSpeakers) {
-      const [suggestion] = await db.insert(suggest)
+      const [suggestion] = await db
+        .insert(suggest)
         .values({
           email: user.email,
           speaker: speakerName,

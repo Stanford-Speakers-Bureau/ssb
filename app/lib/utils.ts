@@ -52,7 +52,9 @@ export function generateGoogleCalendarUrl(event: {
   const startDate = new Date(startTime);
   if (Number.isNaN(startDate.getTime())) return "";
 
-  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
+  const defaultEndDate = new Date(
+    startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS,
+  );
   let endDate = defaultEndDate;
   if (endTime) {
     const parsedEndDate = new Date(endTime);

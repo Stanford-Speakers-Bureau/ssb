@@ -7,7 +7,10 @@ import type { FlatSpeaker } from "./types";
 
 const AUTOPLAY_INTERVAL_MS = 6000;
 
-type SpotlightSpeaker = FlatSpeaker & { image: string, spotlightImage?: string };
+type SpotlightSpeaker = FlatSpeaker & {
+  image: string;
+  spotlightImage?: string;
+};
 
 function Slide({
   speaker,
@@ -98,9 +101,12 @@ function Arrow({
     <button
       type="button"
       onClick={onClick}
-      aria-label={direction === "prev" ? "Previous spotlight" : "Next spotlight"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${direction === "prev" ? "left-2 lg:-left-8" : "right-2 lg:-right-8"
-        }`}
+      aria-label={
+        direction === "prev" ? "Previous spotlight" : "Next spotlight"
+      }
+      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 h-12 w-12 items-center justify-center rounded-full bg-[#A80D0C] text-white shadow-lg transition-all hover:bg-[#C11211] ${
+        direction === "prev" ? "left-2 lg:-left-8" : "right-2 lg:-right-8"
+      }`}
     >
       <svg
         width="22"
@@ -227,10 +233,11 @@ export default function SpeakerSpotlight({
                 type="button"
                 onClick={() => scrollTo(i)}
                 aria-label={`Go to spotlight ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${i === selected
-                  ? "w-8 bg-[#A80D0C]"
-                  : "w-4 bg-zinc-600 hover:bg-zinc-400"
-                  }`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === selected
+                    ? "w-8 bg-[#A80D0C]"
+                    : "w-4 bg-zinc-600 hover:bg-zinc-400"
+                }`}
               />
             ))}
           </div>

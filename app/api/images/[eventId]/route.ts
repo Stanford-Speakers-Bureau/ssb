@@ -26,9 +26,8 @@ export async function GET(
   // Get version from query param for cache key
   const url = new URL(request.url);
   const requestedVersion = url.searchParams.get("v") || "1";
-  const requestedVariant = url.searchParams.get("variant") === "mobile"
-    ? "mobile"
-    : "default";
+  const requestedVariant =
+    url.searchParams.get("variant") === "mobile" ? "mobile" : "default";
   // Signed token (minted by admin emails) authorizing access to an unreleased
   // event's image. Not part of the cache key.
   const imageToken = url.searchParams.get("t");
@@ -75,9 +74,10 @@ export async function GET(
 
   // Get event from database
   const event = await getEventById(eventId);
-  const imageName = requestedVariant === "mobile"
-    ? event?.mobile_img || event?.img
-    : event?.img || event?.mobile_img;
+  const imageName =
+    requestedVariant === "mobile"
+      ? event?.mobile_img || event?.img
+      : event?.img || event?.mobile_img;
 
   if (!event || !imageName) {
     return new NextResponse("Not found", { status: 404 });

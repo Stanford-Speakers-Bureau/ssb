@@ -55,25 +55,29 @@ export async function GET(req: Request) {
       ? new Date(closestEvent.doors_open)
       : null;
     const isHappeningNow =
-      !isMystery
-      && !isBeforeTicketing
-      && !!doorsOpenDate
-      && !Number.isNaN(doorsOpenDate.getTime())
-      && now >= doorsOpenDate;
+      !isMystery &&
+      !isBeforeTicketing &&
+      !!doorsOpenDate &&
+      !Number.isNaN(doorsOpenDate.getTime()) &&
+      now >= doorsOpenDate;
 
     // Banner text and countdown target: reveal → tickets release → event
     const bannerText = isMystery
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
       : isHappeningNow
-        ? closestEvent?.name + (closestEvent?.name?.includes("and")
-          ? BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE_PLURAL
-          : BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE)
-        : closestEvent?.name + (closestEvent?.name?.includes("and") ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL : BANNER_MESSAGES.EVENT_MESSAGE);
+        ? closestEvent?.name +
+          (closestEvent?.name?.includes("and")
+            ? BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE_PLURAL
+            : BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE)
+        : closestEvent?.name +
+          (closestEvent?.name?.includes("and")
+            ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL
+            : BANNER_MESSAGES.EVENT_MESSAGE);
 
     const countdownTarget = isMystery
       ? closestEvent?.release_date
       : isBeforeTicketing
-        ? closestEvent?.ticketing_date ?? undefined
+        ? (closestEvent?.ticketing_date ?? undefined)
         : isHappeningNow
           ? null
           : closestEvent?.doors_open;
@@ -102,10 +106,10 @@ export async function GET(req: Request) {
       now < ticketingDate;
 
     const phase = isMystery
-      ? "mystery" as const
+      ? ("mystery" as const)
       : isActuallyBeforeTicketing
-        ? "pre-ticketing" as const
-        : "ticketing-open" as const;
+        ? ("pre-ticketing" as const)
+        : ("ticketing-open" as const);
 
     // Check if the user is already signed up for notifications
     let isLoggedIn = false;
@@ -137,12 +141,17 @@ export async function GET(req: Request) {
         prefaceLabel,
         target: countdownTarget || null,
         eventId: closestEvent?.id ?? null,
-        imageUrl: !isMystery && closestEvent && (closestEvent.img || closestEvent.mobile_img)
-          ? getImageProxyUrl(closestEvent.id, closestEvent.img_version)
-          : null,
+        imageUrl:
+          !isMystery &&
+          closestEvent &&
+          (closestEvent.img || closestEvent.mobile_img)
+            ? getImageProxyUrl(closestEvent.id, closestEvent.img_version)
+            : null,
         phase,
-        eventRoute: !isMystery && closestEvent?.route ? closestEvent.route : null,
-        speakerName: !isMystery && closestEvent?.name ? closestEvent.name : null,
+        eventRoute:
+          !isMystery && closestEvent?.route ? closestEvent.route : null,
+        speakerName:
+          !isMystery && closestEvent?.name ? closestEvent.name : null,
         isLoggedIn,
         isNotified,
       },

@@ -43,11 +43,11 @@ function safeFilename(value: string): string {
   }
   return (
     "qr-" +
-    trimmed
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40) || "qr-code"
+      trimmed
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 40) || "qr-code"
   );
 }
 
@@ -342,12 +342,12 @@ export default function QRGeneratorClient() {
 
   const previewBoxStyle = transparent
     ? ({
-      backgroundColor: "transparent",
-      backgroundImage:
-        "linear-gradient(45deg, rgba(255,255,255,0.08) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.08) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.08) 75%), linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.08) 75%)",
-      backgroundSize: "14px 14px",
-      backgroundPosition: "0 0, 0 7px, 7px -7px, -7px 0px",
-    } as React.CSSProperties)
+        backgroundColor: "transparent",
+        backgroundImage:
+          "linear-gradient(45deg, rgba(255,255,255,0.08) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.08) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.08) 75%), linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.08) 75%)",
+        backgroundSize: "14px 14px",
+        backgroundPosition: "0 0, 0 7px, 7px -7px, -7px 0px",
+      } as React.CSSProperties)
     : ({ backgroundColor: bgColor } as React.CSSProperties);
 
   const previewBgQR = transparent ? "transparent" : bgColor;
@@ -393,10 +393,11 @@ export default function QRGeneratorClient() {
                         key={p.name}
                         type="button"
                         onClick={() => applyPalette(p)}
-                        className={`group flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${active
-                          ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
-                          : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-ink)] hover:border-[var(--ssb-accent-strong)]/60"
-                          }`}
+                        className={`group flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
+                          active
+                            ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
+                            : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-ink)] hover:border-[var(--ssb-accent-strong)]/60"
+                        }`}
                       >
                         <PaletteChip palette={p} />
                         {p.name}
@@ -428,10 +429,11 @@ export default function QRGeneratorClient() {
                       <button
                         type="button"
                         onClick={() => setTransparent((v) => !v)}
-                        className={`shrink-0 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${transparent
-                          ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
-                          : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent-strong)]/60"
-                          }`}
+                        className={`shrink-0 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                          transparent
+                            ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
+                            : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-muted)] hover:border-[var(--ssb-accent-strong)]/60"
+                        }`}
                         aria-pressed={transparent}
                       >
                         Transparent
@@ -497,10 +499,11 @@ export default function QRGeneratorClient() {
                         key={preset.value}
                         type="button"
                         onClick={() => setDownloadSize(preset.value)}
-                        className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${active
-                          ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
-                          : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-ink)] hover:border-[var(--ssb-accent-strong)]/60"
-                          }`}
+                        className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
+                          active
+                            ? "border-[var(--ssb-accent-strong)] bg-[var(--ssb-accent-soft)] text-white"
+                            : "border-[var(--ssb-border)] bg-[var(--ssb-paper-strong)] text-[var(--ssb-ink)] hover:border-[var(--ssb-accent-strong)]/60"
+                        }`}
                       >
                         {preset.label}
                         <span className="ml-1.5 text-xs opacity-70">

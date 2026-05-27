@@ -13,6 +13,5 @@ jobs:
       - name: install dependencies
         run: bun install
 
-
       - name: check typescript errors
         run: bunx tsc --noEmit

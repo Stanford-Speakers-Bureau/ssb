@@ -12,9 +12,9 @@ export type CancellationTokenClaims = {
 
 function getCancellationLinkSecret(): Uint8Array {
   const secret =
-    process.env.CANCELLATION_LINK_SECRET
-    || process.env.SESSION_SECRET
-    || (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+    process.env.CANCELLATION_LINK_SECRET ||
+    process.env.SESSION_SECRET ||
+    (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
 
   if (!secret) {
     throw new Error(
@@ -93,9 +93,8 @@ export async function verifyCancellationToken(
     }
 
     const email = typeof payload.email === "string" ? payload.email : null;
-    const ticketId = typeof payload.ticketId === "string"
-      ? payload.ticketId
-      : null;
+    const ticketId =
+      typeof payload.ticketId === "string" ? payload.ticketId : null;
 
     if (!email || !ticketId) {
       return null;

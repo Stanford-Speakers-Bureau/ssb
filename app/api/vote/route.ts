@@ -4,6 +4,7 @@ import { db, eq, and, suggest, votes } from "@ssb/db";
 import { voteRatelimit, checkRateLimit } from "@/app/lib/ratelimit";
 import { isValidUUID } from "@/app/lib/validation";
 import { recordMailingListMember } from "@/app/lib/mailing-list";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 
 export const VOTE_MESSAGES = {
   SUCCESS: "Vote recorded!",
@@ -90,10 +91,21 @@ export async function POST(req: Request) {
     await db.insert(votes).values({ speakerId: speaker_id, email: user.email });
     await recordMailingListMember({ email: user.email, source: "vote" });
 
-    return NextResponse.json(
-      { success: true },
-      { status: 200 },
-    );
+    try {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "speaker_vote_cast",
+        properties: {
+          speaker_id,
+        },
+      });
+      await posthog.flush();
+    } catch (posthogError) {
+      console.error("PostHog vote tracking error:", posthogError);
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Vote error:", error);
     return NextResponse.json(
@@ -172,10 +184,21 @@ export async function DELETE(req: Request) {
     // Delete the vote
     await db.delete(votes).where(eq(votes.id, existingVote.id));
 
-    return NextResponse.json(
-      { success: true },
-      { status: 200 },
-    );
+    try {
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user.email,
+        event: "speaker_vote_removed",
+        properties: {
+          speaker_id,
+        },
+      });
+      await posthog.flush();
+    } catch (posthogError) {
+      console.error("PostHog unvote tracking error:", posthogError);
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Unvote error:", error);
     return NextResponse.json(

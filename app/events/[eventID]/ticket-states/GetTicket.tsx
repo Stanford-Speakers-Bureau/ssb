@@ -32,7 +32,6 @@ export default function GetTicket({
 
   return (
     <>
-
       {referralsEnabled && (
         <ReferralCodeInput
           code={referralCode}
@@ -68,7 +67,11 @@ export default function GetTicket({
         onConfirm={noBags.handleConfirmNoBags}
         confirmDisabled={noBags.isConfirmDisabled}
       >
-        <NoBagsModalChildren value={noBags.noBagsConfirmation} onChange={noBags.setNoBagsConfirmation} onConfirm={noBags.handleConfirmNoBags} />
+        <NoBagsModalChildren
+          value={noBags.noBagsConfirmation}
+          onChange={noBags.setNoBagsConfirmation}
+          onConfirm={noBags.handleConfirmNoBags}
+        />
       </ConfirmationModal>
     </>
   );

@@ -35,17 +35,18 @@ export default async function UnsubscribePage({ searchParams }: PageProps) {
   }
 
   const existing = await db.query.emailUnsubscribes.findFirst({
-    where: claims.scope === "event"
-      ? and(
-        eq(emailUnsubscribes.email, claims.email),
-        eq(emailUnsubscribes.scope, "event"),
-        eq(emailUnsubscribes.eventId, claims.eventId),
-      )
-      : and(
-        eq(emailUnsubscribes.email, claims.email),
-        eq(emailUnsubscribes.scope, claims.scope),
-        isNull(emailUnsubscribes.eventId),
-      ),
+    where:
+      claims.scope === "event"
+        ? and(
+            eq(emailUnsubscribes.email, claims.email),
+            eq(emailUnsubscribes.scope, "event"),
+            eq(emailUnsubscribes.eventId, claims.eventId),
+          )
+        : and(
+            eq(emailUnsubscribes.email, claims.email),
+            eq(emailUnsubscribes.scope, claims.scope),
+            isNull(emailUnsubscribes.eventId),
+          ),
     columns: { id: true },
   });
 
@@ -61,12 +62,12 @@ export default async function UnsubscribePage({ searchParams }: PageProps) {
 }
 
 function ErrorState({ reason }: { reason: "missing" | "invalid" }) {
-  const heading = reason === "missing"
-    ? "No unsubscribe token"
-    : "Link expired or invalid";
-  const body = reason === "missing"
-    ? "This page expects an unsubscribe link from one of our emails. If you copied the URL by hand, please use the link in the email instead."
-    : "This unsubscribe link is no longer valid. It may have expired, or the URL may have been edited. To stop receiving emails, please reply to one of our messages or contact tickets@stanfordspeakersbureau.com.";
+  const heading =
+    reason === "missing" ? "No unsubscribe token" : "Link expired or invalid";
+  const body =
+    reason === "missing"
+      ? "This page expects an unsubscribe link from one of our emails. If you copied the URL by hand, please use the link in the email instead."
+      : "This unsubscribe link is no longer valid. It may have expired, or the URL may have been edited. To stop receiving emails, please reply to one of our messages or contact tickets@stanfordspeakersbureau.com.";
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center px-4">

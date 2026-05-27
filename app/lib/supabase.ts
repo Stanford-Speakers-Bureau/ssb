@@ -159,9 +159,7 @@ async function computeNextMilestoneEvent(): Promise<Event | null> {
 
   if (alive.length === 0) return null;
 
-  const active = alive.filter(
-    (e) => e.doorsOpen && e.doorsOpen <= now,
-  );
+  const active = alive.filter((e) => e.doorsOpen && e.doorsOpen <= now);
   if (active.length > 0) {
     const event = active.reduce((best, cur) => {
       const curT = cur.doorsOpen!.getTime();
@@ -190,9 +188,9 @@ const getCachedNextMilestoneEvent = unstable_cache(
   { revalidate: 60 },
 );
 
-export async function getNextMilestoneEvent(
-  options?: { fresh?: boolean },
-): Promise<Event | null> {
+export async function getNextMilestoneEvent(options?: {
+  fresh?: boolean;
+}): Promise<Event | null> {
   if (options?.fresh) return computeNextMilestoneEvent();
   return getCachedNextMilestoneEvent();
 }

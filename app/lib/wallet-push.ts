@@ -61,7 +61,9 @@ export async function pushWalletUpdate(
       headers: {
         "content-type": "application/json",
         "x-wallet-push-secret": secret,
-        ...(apiKey ? { authorization: `Bearer ${apiKey}`, apikey: apiKey } : {}),
+        ...(apiKey
+          ? { authorization: `Bearer ${apiKey}`, apikey: apiKey }
+          : {}),
       },
       body: JSON.stringify({ serialNumbers: ids }),
     });

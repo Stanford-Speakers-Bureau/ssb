@@ -43,7 +43,17 @@ function LeaderCard({ member, index }: { member: TeamMember; index: number }) {
           href={`mailto:${member.email}`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-ssb-accent transition-colors"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <rect width="20" height="16" x="2" y="4" rx="2" />
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
           </svg>
@@ -54,7 +64,13 @@ function LeaderCard({ member, index }: { member: TeamMember; index: number }) {
   );
 }
 
-function DirectorCard({ member, index }: { member: TeamMember; index: number }) {
+function DirectorCard({
+  member,
+  index,
+}: {
+  member: TeamMember;
+  index: number;
+}) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
@@ -88,7 +104,17 @@ function DirectorCard({ member, index }: { member: TeamMember; index: number }) 
           href={`mailto:${member.email}`}
           className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-ssb-accent transition-colors"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <rect width="20" height="16" x="2" y="4" rx="2" />
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
           </svg>
@@ -115,7 +141,17 @@ function RecruitCard({ index }: { index: number }) {
         className="group relative aspect-square w-full overflow-hidden border border-dashed border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center text-center p-6 sm:p-8 transition-all duration-500 hover:border-ssb-accent hover:bg-ssb-accent/5 focus-visible:outline-ssb-accent focus-visible:outline-2"
       >
         <div className="flex size-14 items-center justify-center rounded-full bg-ssb-accent/10 text-ssb-accent mb-5 transition-colors group-hover:bg-ssb-accent/20">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
@@ -127,11 +163,23 @@ function RecruitCard({ index }: { index: number }) {
           Join the team.
         </h3>
         <p className="text-sm text-zinc-400 text-pretty leading-relaxed mb-4 max-w-xs">
-          We&rsquo;re always looking for students who want to bring big names to campus.
+          We&rsquo;re always looking for students who want to bring big names to
+          campus.
         </p>
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:text-ssb-accent transition-colors">
           Get in touch
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="transition-transform group-hover:translate-x-0.5"
+          >
             <path d="M5 12h14" />
             <path d="m12 5 7 7-7 7" />
           </svg>
@@ -144,7 +192,6 @@ function RecruitCard({ index }: { index: number }) {
 export default function TeamClient() {
   return (
     <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate">
-
       {/* Hero */}
       <section className="relative min-h-dvh flex items-end overflow-hidden">
         <div className="absolute inset-0">
@@ -166,8 +213,8 @@ export default function TeamClient() {
             transition={{ duration: 0.7, delay: 0.15 }}
             className="font-serif text-5xl sm:text-7xl md:text-8xl text-white leading-none tracking-tight mb-6 text-balance max-w-[18ch]"
           >
-            The students who{" "}
-            <span className="text-ssb-accent">make this</span> happen.
+            The students who <span className="text-ssb-accent">make this</span>{" "}
+            happen.
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
