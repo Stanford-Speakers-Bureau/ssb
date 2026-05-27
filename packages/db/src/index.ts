@@ -3,18 +3,25 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
+type CloudflareContext = {
+  env?: { HYPERDRIVE?: { connectionString?: string } };
+};
 
 const globalForDb = globalThis as unknown as {
   db: DrizzleDb | undefined;
 };
 
-// Read the Hyperdrive connection string directly from the globalThis symbol that
-// OpenNext's worker entrypoint always sets — no require("@opennextjs/cloudflare") needed.
-function getHyperdriveConnectionString(): string | null {
-  const cfCtx = (globalThis as unknown as Record<symbol, unknown>)[
+const hyperdriveDbs = new WeakMap<
+  CloudflareContext,
+  { connStr: string; db: DrizzleDb }
+>();
+
+// Read the Cloudflare request context directly from the globalThis symbol that
+// OpenNext's worker entrypoint always sets -- no require("@opennextjs/cloudflare") needed.
+function getCloudflareContext(): CloudflareContext | null {
+  return ((globalThis as unknown as Record<symbol, unknown>)[
     Symbol.for("__cloudflare-context__")
-  ] as { env?: { HYPERDRIVE?: { connectionString?: string } } } | undefined;
-  return cfCtx?.env?.HYPERDRIVE?.connectionString ?? null;
+  ] ?? null) as CloudflareContext | null;
 }
 
 function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
@@ -30,15 +37,29 @@ function createDb(connectionString: string, hyperdrive = false): DrizzleDb {
 
 // Proxy that lazily resolves the DB on first property access.
 // - In Cloudflare Workers: uses the Hyperdrive connection string from the worker context.
-//   Hyperdrive manages the actual DB connection pool, so a fresh client per access is fine.
+//   Hyperdrive manages the actual DB connection pool, so create one client per request.
 // - Elsewhere (local/SSR): uses DATABASE_URL with a singleton.
 let loggedFallback = false;
 export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
   get(_, prop) {
-    const hyperdriveConnStr = getHyperdriveConnectionString();
-    if (hyperdriveConnStr) {
-      const requestDb = createDb(hyperdriveConnStr, true);
-      return (requestDb as unknown as Record<string | symbol, unknown>)[prop];
+    const cfCtx = getCloudflareContext();
+    if (cfCtx?.env?.HYPERDRIVE?.connectionString) {
+      const hyperdriveConnStr = cfCtx.env.HYPERDRIVE.connectionString;
+      // Reuse one client for the current request context. Hyperdrive pools
+      // origin DB connections, so a fresh driver client per request is cheap
+      // and avoids stale cross-request sockets. Caching here only prevents
+      // creating a new postgres() pool for every db property access.
+      let requestDb = hyperdriveDbs.get(cfCtx);
+      if (requestDb?.connStr !== hyperdriveConnStr) {
+        requestDb = {
+          connStr: hyperdriveConnStr,
+          db: createDb(hyperdriveConnStr, true),
+        };
+        hyperdriveDbs.set(cfCtx, requestDb);
+      }
+      return (requestDb.db as unknown as Record<string | symbol, unknown>)[
+        prop
+      ];
     }
     if (!globalForDb.db) {
       if (!loggedFallback) {
