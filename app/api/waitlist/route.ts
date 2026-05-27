@@ -16,6 +16,7 @@ import {
   isTicketingEligible,
   resolveTicketingRoles,
 } from "@/app/lib/ticketingRoles";
+import { captureServerEvent } from "@/app/lib/posthog-server";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -337,6 +338,17 @@ export async function POST(req: Request) {
         position: waitlistPosition,
         referral,
       },
+    });
+    captureServerEvent({
+      distinctId: user.email,
+      event: "waitlist_joined",
+      properties: {
+        event_id: event.id,
+        event_name: event.name ?? null,
+        waitlist_position: waitlistPosition,
+        used_referral: !!referral,
+      },
+      groups: { event: event.id },
     });
     scheduleAfterResponse("Mailing list add", async () => {
       await recordMailingListMember({ email: user.email, source: "waitlist" });

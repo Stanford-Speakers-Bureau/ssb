@@ -161,6 +161,18 @@ async function safeJson<T>(response: Response): Promise<T | null> {
   }
 }
 
+// Capture a client event tagged with the PostHog `event` group. We attach the
+// group per-event (rather than via posthog.group(), which sticks to the whole
+// session and would mis-tag later pageviews on other pages) so per-event
+// rollups stay clean. Mirrors the server-side `groups` usage.
+function captureForEvent(
+  event: string,
+  eventId: string,
+  properties: Record<string, unknown>,
+) {
+  posthog.capture(event, { ...properties, $groups: { event: eventId } });
+}
+
 export type TicketButtonProps = {
   eventId: string;
   initialHasTicket?: boolean;
@@ -334,7 +346,7 @@ export default function useTicketActions({
         setIneligibleAssuUrl(data?.assuUrl || DEFAULT_ASSU_URL);
         setIneligibleFaqUrl(data?.faqUrl || DEFAULT_ASSU_FAQ_URL);
         setShowIneligibleModal(true);
-        posthog.capture("ticketing_blocked", {
+        captureForEvent("ticketing_blocked", eventId, {
           event_id: eventId,
           event_name: eventName,
           reason: "fee_waiver",
@@ -348,7 +360,7 @@ export default function useTicketActions({
         setIneligibleMessage(data?.error || DEFAULT_ROLE_RESTRICTION_MESSAGE);
         setShowIneligibleLinks(false);
         setShowIneligibleModal(true);
-        posthog.capture("ticketing_blocked", {
+        captureForEvent("ticketing_blocked", eventId, {
           event_id: eventId,
           event_name: eventName,
           reason: "role_restriction",
@@ -401,7 +413,7 @@ export default function useTicketActions({
       if (response.ok) {
         setIsNotified(true);
         if (!data.alreadySignedUp) {
-          posthog.capture("ticketing_notify_signed_up", {
+          captureForEvent("ticketing_notify_signed_up", eventId, {
             event_id: eventId,
             event_name: eventName,
           });
@@ -596,12 +608,6 @@ export default function useTicketActions({
     }
   }, [message]);
 
-  // Associate all client-side events on this page with the PostHog `event`
-  // group, so ticketing/waitlist/pageview/replay roll up per event natively.
-  useEffect(() => {
-    posthog.group("event", eventId, eventName ? { name: eventName } : undefined);
-  }, [eventId, eventName]);
-
   useEffect(() => {
     resetWaitlistStateFromCache();
     setIsWaitlistStatusLoading(false);
@@ -678,7 +684,7 @@ export default function useTicketActions({
     setMessage(null);
     let redirecting = false;
 
-    posthog.capture("waitlist_join_started", {
+    captureForEvent("waitlist_join_started", eventId, {
       event_id: eventId,
       event_name: eventName,
     });
@@ -686,7 +692,7 @@ export default function useTicketActions({
     try {
       // If there's a referral warning, don't proceed
       if (referralWarning) {
-        posthog.capture("ticketing_blocked", {
+        captureForEvent("ticketing_blocked", eventId, {
           event_id: eventId,
           event_name: eventName,
           reason: "invalid_referral",
@@ -745,13 +751,8 @@ export default function useTicketActions({
           isOnWaitlist: true,
           position: nextPosition,
         });
-        posthog.capture("waitlist_joined", {
-          event_id: eventId,
-          event_name: eventName,
-          waitlist_position: nextPosition,
-          used_referral: !!referral,
-          referral_code: referral,
-        });
+        // `waitlist_joined` is captured server-side (see app/api/waitlist) so
+        // the conversion survives ad-blockers / the tab closing on redirect.
         setMessage("Successfully joined the waitlist!");
         if (referral) {
           clearStoredReferralCode(eventId);
@@ -764,7 +765,7 @@ export default function useTicketActions({
         if (showIneligibleModalForResponse(data)) {
           return;
         }
-        posthog.capture("waitlist_join_failed", {
+        captureForEvent("waitlist_join_failed", eventId, {
           event_id: eventId,
           event_name: eventName,
           reason: data.code ?? data.error ?? "unknown",
@@ -773,7 +774,7 @@ export default function useTicketActions({
       }
     } catch (error) {
       if (isFetchTimeoutError(error)) {
-        posthog.capture("waitlist_join_failed", {
+        captureForEvent("waitlist_join_failed", eventId, {
           event_id: eventId,
           event_name: eventName,
           reason: "timeout",
@@ -829,7 +830,7 @@ export default function useTicketActions({
           isOnWaitlist: false,
           position: null,
         });
-        posthog.capture("waitlist_left", {
+        captureForEvent("waitlist_left", eventId, {
           event_id: eventId,
           event_name: eventName,
         });
@@ -940,7 +941,7 @@ export default function useTicketActions({
       // If there's a referral warning, don't proceed
       if (referralWarning) {
         if (!hasTicket) {
-          posthog.capture("ticketing_blocked", {
+          captureForEvent("ticketing_blocked", eventId, {
             event_id: eventId,
             event_name: eventName,
             reason: "invalid_referral",
@@ -964,7 +965,7 @@ export default function useTicketActions({
           }
         }
 
-        posthog.capture("ticket_purchase_started", {
+        captureForEvent("ticket_purchase_started", eventId, {
           event_id: eventId,
           event_name: eventName,
           used_referral: !!referral,
@@ -1004,24 +1005,14 @@ export default function useTicketActions({
           // Cancelling ticket
           setHasTicket(false);
           clearWaitlistCache(eventId);
-          posthog.capture("ticket_cancelled", {
-            event_id: eventId,
-            event_name: eventName,
-            ticket_type: ticketType,
-          });
+          // `ticket_cancelled` is captured server-side (see app/api/tickets).
           setMessage(TICKET_MESSAGES.DELETED);
         } else {
           // Creating ticket
           setHasTicket(true);
           clearWaitlistCache(eventId);
-          posthog.capture("ticket_created", {
-            event_id: eventId,
-            event_name: eventName,
-            ticket_id: data.ticketId ?? null,
-            ticket_type: data.ticketType ?? null,
-            used_referral: !!referral,
-            referral_code: referral,
-          });
+          // `ticket_created` is captured server-side (see app/api/tickets) so
+          // the conversion survives ad-blockers / the tab closing on redirect.
           setMessage(TICKET_MESSAGES.SUCCESS);
           fireFullConfetti();
           // Clear referral from session storage after successful ticket creation
@@ -1043,7 +1034,7 @@ export default function useTicketActions({
           return;
         }
         if (!hasTicket) {
-          posthog.capture("ticket_creation_failed", {
+          captureForEvent("ticket_creation_failed", eventId, {
             event_id: eventId,
             event_name: eventName,
             reason: data.code ?? data.error ?? "unknown",
@@ -1054,7 +1045,7 @@ export default function useTicketActions({
     } catch (error) {
       if (isFetchTimeoutError(error)) {
         if (!hasTicket) {
-          posthog.capture("ticket_creation_failed", {
+          captureForEvent("ticket_creation_failed", eventId, {
             event_id: eventId,
             event_name: eventName,
             reason: "timeout",
@@ -1080,7 +1071,6 @@ export default function useTicketActions({
   }, [
     eventId,
     eventName,
-    ticketType,
     hasTicket,
     isLoggedIn,
     referralsEnabled,
@@ -1125,11 +1115,7 @@ export default function useTicketActions({
       if (response.ok) {
         setHasTicket(true);
         clearWaitlistCache(eventId);
-        posthog.capture("standby_ticket_created", {
-          event_id: eventId,
-          event_name: eventName,
-          ticket_id: data.ticketId ?? null,
-        });
+        // `standby_ticket_created` is captured server-side (see app/api/tickets).
         setMessage(TICKET_MESSAGES.SUCCESS);
         fireSimpleConfetti();
         // Dispatch event to update ticket status
@@ -1166,7 +1152,6 @@ export default function useTicketActions({
     }
   }, [
     eventId,
-    eventName,
     isLoggedIn,
     reconcileTicketStatus,
     redirectToAuth,
@@ -1258,7 +1243,7 @@ export default function useTicketActions({
     if (urlReferralCode) {
       writeStoredReferralCode(eventId, urlReferralCode);
       setReferralCode(urlReferralCode);
-      posthog.capture("referral_link_visited", {
+      captureForEvent("referral_link_visited", eventId, {
         event_id: eventId,
         event_name: eventName,
         referral_code: urlReferralCode,

@@ -32,6 +32,7 @@ import {
   isTicketingEligible,
   resolveTicketingRoles,
 } from "@/app/lib/ticketingRoles";
+import { captureServerEvent } from "@/app/lib/posthog-server";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Your ticket is confirmed. Check your email in a moment.",
@@ -626,6 +627,16 @@ export async function POST(req: Request) {
         targetEmail: user.email,
         metadata: { type: "STANDBY", ticketId: standbyTicket.id },
       });
+      captureServerEvent({
+        distinctId: user.email,
+        event: "standby_ticket_created",
+        properties: {
+          event_id,
+          event_name: event.name ?? null,
+          ticket_id: standbyTicket.id,
+        },
+        groups: { event: event_id },
+      });
       queueMailingListAdd(user.email, "ticket");
 
       return NextResponse.json(
@@ -758,6 +769,18 @@ export async function POST(req: Request) {
       eventName: event.name ?? null,
       targetEmail: user.email,
       metadata: { type: "STANDARD", ticketId },
+    });
+    captureServerEvent({
+      distinctId: user.email,
+      event: "ticket_created",
+      properties: {
+        event_id,
+        event_name: event.name ?? null,
+        ticket_id: ticketId,
+        ticket_type: "STANDARD",
+        used_referral: !!referral,
+      },
+      groups: { event: event_id },
     });
     queueMailingListAdd(user.email, "ticket");
 
@@ -975,6 +998,18 @@ export async function DELETE(req: Request) {
         ...(cancellationEmailQueued ? { cancellationEmailSent: true } : {}),
       },
     });
+    captureServerEvent({
+      distinctId: authenticatedEmail,
+      event: "ticket_cancelled",
+      properties: {
+        event_id,
+        event_name: eventRow?.name ?? null,
+        ticket_id: cancelledTicketId,
+        ticket_type: ticketToCancel?.type ?? null,
+        auth_method: authMethod,
+      },
+      groups: { event: event_id },
+    });
 
     if (rpcData?.promoted_ticket_id && rpcData.promoted_email && eventRow) {
       queueAuditEvent({
@@ -990,6 +1025,20 @@ export async function DELETE(req: Request) {
           ticketType: rpcData.promoted_ticket_type || "STANDARD",
           cancelledTicketId,
         },
+      });
+      // Waitlist promotion mints a ticket for another user entirely; the
+      // browser SDK never sees it, so this conversion only exists server-side.
+      captureServerEvent({
+        distinctId: rpcData.promoted_email,
+        event: "ticket_created",
+        properties: {
+          event_id,
+          event_name: eventRow.name ?? null,
+          ticket_id: rpcData.promoted_ticket_id,
+          ticket_type: rpcData.promoted_ticket_type || "STANDARD",
+          via: "waitlist_promotion",
+        },
+        groups: { event: event_id },
       });
 
       queueReferralRecordUpdate(event_id, rpcData.promoted_email);
