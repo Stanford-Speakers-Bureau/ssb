@@ -9,7 +9,7 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
   capture_exceptions: true,
   disable_session_recording: false,
   session_recording: {
-    maskAllInputs: false,
+    maskAllInputs: true,
   },
   // Turn on debug in development mode
   debug: process.env.NODE_ENV === "development",
