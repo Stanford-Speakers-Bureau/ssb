@@ -1,3 +1,7 @@
+// PostHog public config.
+export const POSTHOG_KEY = "phc_mTqWFw7xrUVTVEhiseqty9hMGbhvPLnGjk7gWmJ6bChn";
+export const POSTHOG_HOST = "https://us.i.posthog.com";
+
 // Notification Messages (speaker announcement)
 export const NOTIFY_MESSAGES = {
   SUCCESS: "You'll be notified when the speaker is announced!",
