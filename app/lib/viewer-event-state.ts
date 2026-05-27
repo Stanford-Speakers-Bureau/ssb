@@ -33,13 +33,18 @@ type ViewerEventStateRow = {
   ticket_name: string | null;
   ticket_scanned: boolean | null;
   is_on_waitlist: boolean | null;
-  waitlist_position: number | string | null;
+  waitlist_position: number | string | bigint | null;
   is_notified: boolean | null;
   allow_admitting_standby: boolean | null;
 };
 
-function toOptionalNumber(value: number | string | null): number | null {
+function toOptionalNumber(
+  value: number | string | bigint | null,
+): number | null {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "bigint") {
+    return value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+  }
   if (typeof value === "string") {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -67,7 +72,7 @@ export async function getViewerEventState(
       t.name AS ticket_name,
       t.scanned AS ticket_scanned,
       w.id IS NOT NULL AS is_on_waitlist,
-      w.position AS waitlist_position,
+      w.position::int AS waitlist_position,
       n.id IS NOT NULL AS is_notified,
       e.allow_admitting_standby AS allow_admitting_standby
     FROM (
