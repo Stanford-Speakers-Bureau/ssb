@@ -109,7 +109,7 @@ function ExpandedCard({
               src={image}
               alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-cover object-[50%_calc(50%+5px)] transition-transform duration-700 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
             {hasMeta && (

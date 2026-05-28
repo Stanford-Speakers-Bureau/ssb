@@ -30,6 +30,36 @@ export type Speaker = {
 export const SPEAKERS: Speaker[] = [
   // 2026
   {
+    slug: "rachel-platten",
+    name: "Rachel Platten",
+    year: "2026",
+    month: "May",
+    location: "Meyer Green",
+    title: "Singer-songwriter",
+    bio: "Rachel Platten is an American singer-songwriter best known for her hit song 'Fight Song.' She has released two studio albums, 'Wildfire' (2015) and 'Wildfire: Extended Play' (2017), and has toured extensively across the United States and internationally. Platten is also known for her advocacy work, including her support for the LGBTQ+ community and her commitment to mental health awareness.",
+    image: "/speakers/rachel-platten.jpeg",
+  },
+  {
+    slug: "steve-wozniak",
+    name: "Steve Wozniak",
+    year: "2026",
+    month: "May",
+    location: "Building",
+    title: "Co-founder of Apple",
+    bio: 'Stephen Gary Wozniak, affectionately known as "Woz," is an American computer engineer and technology entrepreneur. Alongside Steve Jobs, he co-founded Apple Computer (now Apple Inc.) in 1976. By single-handedly designing the Apple I and Apple II, Wozniak ignited the global personal computer revolution.',
+    image: "/speakers/steve-wozniak.jpg",
+  },
+  {
+    slug: "janet-hill",
+    name: "Janet Hill",
+    year: "2026",
+    month: "May",
+    location: "Building",
+    title: "Wife of Steve Wozniak",
+    bio: "Janet Hill Wozniak is best known as the wife of Apple co-founder Steve Wozniak, whom she married in August 2008. Together, they co-founded the Wozniak Family Foundation in 2014 to support STEM education, alongside various philanthropic ventures",
+    image: "/speakers/woz-and-wife.jpg",
+  },
+  {
     slug: "arden-cho",
     name: "Arden Cho",
     year: "2026",

@@ -118,21 +118,21 @@ export default function SpeakerDrawer({
               </div>
             </div>
 
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Scrollable body — image layout matches timeline cards */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 pt-5 sm:pt-6 pb-8">
               {image && (
-                <div className="relative w-full h-72 bg-zinc-900">
+                <div className="relative w-full h-72 sm:h-80 mb-5 rounded overflow-hidden bg-zinc-900">
                   <Image
                     src={image}
                     alt={`${speaker.name} speaking at Stanford University from Stanford Speakers Bureau (SSB)`}
                     fill
-                    className="object-cover"
+                    className="object-cover object-[50%_calc(50%+5px)]"
                     sizes="(max-width: 768px) 100vw, 580px"
                   />
                 </div>
               )}
 
-              <div className="px-6 sm:px-10 py-8">
+              <div>
                 <p className="text-xs font-sans uppercase tracking-[0.2em] text-[#A80D0C] mb-3">
                   {speaker.year} · Stanford Speakers Bureau
                 </p>
