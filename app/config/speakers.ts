@@ -47,7 +47,17 @@ export const SPEAKERS: Speaker[] = [
     location: "Building",
     title: "Co-founder of Apple",
     bio: 'Stephen Gary Wozniak, affectionately known as "Woz," is an American computer engineer and technology entrepreneur. Alongside Steve Jobs, he co-founded Apple Computer (now Apple Inc.) in 1976. By single-handedly designing the Apple I and Apple II, Wozniak ignited the global personal computer revolution.',
-    image: "/speakers/woz.jpg",
+    image: "/speakers/steve-wozniak.jpg",
+  },
+  {
+    slug: "janet-hill",
+    name: "Janet Hill",
+    year: "2026",
+    month: "May",
+    location: "Building",
+    title: "Wife of Steve Wozniak",
+    bio: "Janet Hill Wozniak is best known as the wife of Apple co-founder Steve Wozniak, whom she married in August 2008. Together, they co-founded the Wozniak Family Foundation in 2014 to support STEM education, alongside various philanthropic ventures",
+    image: "/speakers/woz-and-wife.jpg",
   },
   {
     slug: "arden-cho",
