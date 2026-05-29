@@ -640,6 +640,46 @@ function buildImportantNoticeText(): string {
   return `BEFORE YOU ARRIVE:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
 }
 
+function standbyNoticeLines(startTimeStr?: string | null): string[] {
+  const admitClause = startTimeStr
+    ? `Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time, around ${startTimeStr}.`
+    : "Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time.";
+  return [
+    "This is a standby ticket, and admission is not guaranteed.",
+    "Please wait in the standby ticket area when you arrive.",
+    admitClause,
+    "Your QR code isn't active yet. It will appear on your ticket page once standby admission opens at the venue.",
+  ];
+}
+
+/** Builds a prominent standby notice box for standby ticket emails */
+function buildStandbyNotice(startTimeStr?: string | null): string {
+  const lines = standbyNoticeLines(startTimeStr);
+  const itemsHTML = lines
+    .map(
+      (text, i) =>
+        `<div${i < lines.length - 1 ? ' style="margin-bottom: 8px;"' : ""}>${text}</div>`,
+    )
+    .join("\n");
+
+  return `
+    <div class="important-box" style="background-color: #18181b; border: 3px solid #d97706; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
+      ${gmailBlendStart}
+        <h2 style="margin: 0 0 12px 0; color: #f59e0b; font-size: 18px; font-weight: 700; text-transform: uppercase;"><b>Standby Ticket</b></h2>
+        <div style="color: #f4f4f5; font-size: 15px; line-height: 1.8;">
+          ${itemsHTML}
+        </div>
+      ${gmailBlendEnd}
+    </div>`;
+}
+
+/** Generates plain text standby notice */
+function buildStandbyNoticeText(startTimeStr?: string | null): string {
+  return `STANDBY TICKET:\n${standbyNoticeLines(startTimeStr)
+    .map((line) => `- ${line}`)
+    .join("\n")}`;
+}
+
 /** Builds the event details card with label/value rows */
 function buildDetailsCard(opts: {
   rows: { label: string; value: string; isLink?: boolean; href?: string }[];
@@ -1166,6 +1206,7 @@ async function generateTicketEmailHTML(
   const appleWalletUrl = data.appleWalletUrl ?? null;
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const isStandby = ticketType?.toUpperCase() === "STANDBY";
 
   const formattedDate = formatFullDateTime(eventStartTime);
   const formattedDoorsOpen = doorsOpenTime
@@ -1268,8 +1309,13 @@ async function generateTicketEmailHTML(
 
   const contentSections: string[] = [];
 
-  // Important notice
-  contentSections.push(buildImportantNotice(undefined));
+  // Standby notice (replaces the standard "before you arrive" box) or the
+  // regular important notice
+  if (isStandby) {
+    contentSections.push(buildStandbyNotice(ticketValidTime || null));
+  } else {
+    contentSections.push(buildImportantNotice(undefined));
+  }
 
   // VIP welcome
   if (isVIP) {
@@ -1282,7 +1328,11 @@ async function generateTicketEmailHTML(
 
   // Welcome message
   contentSections.push(
-    buildParagraph("Your ticket is confirmed, we can't wait to see you!"),
+    buildParagraph(
+      isStandby
+        ? "Your standby ticket is reserved. Head to the venue and wait in the standby area — we hope to see you inside!"
+        : "Your ticket is confirmed, we can't wait to see you!",
+    ),
   );
 
   // Cancel ticket message + button (VIP/External only — regular tickets use the top banner)
@@ -1386,16 +1436,25 @@ function generateTicketEmailText(data: TicketEmailData): string {
 
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const isStandby = ticketType?.toUpperCase() === "STANDBY";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
   const cancelLine = cancelTicketUrl
     ? `Can't make it? Please cancel so someone else can attend.\nCancel Ticket: ${cancelTicketUrl}`
     : "";
 
   return `
-${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
+${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : isStandby ? "Standby Ticket Reserved!" : "Ticket Confirmed!"}
 
-Your ticket is confirmed, we can't wait to see you!
+${isStandby ? "Your standby ticket is reserved. Head to the venue and wait in the standby area — we hope to see you inside!" : "Your ticket is confirmed, we can't wait to see you!"}
 
-${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
+${isStandby ? `${buildStandbyNoticeText(standbyStartTime)}\n\n` : ""}${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
@@ -1427,9 +1486,14 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     return;
   }
 
-  const subject = data.eventName
-    ? `Your Ticket for ${data.eventName} is enclosed!`
-    : "Your Ticket is enclosed!";
+  const isStandby = data.ticketType?.toUpperCase() === "STANDBY";
+  const subject = isStandby
+    ? data.eventName
+      ? `Your standby ticket for ${data.eventName} is reserved`
+      : "Your standby ticket is reserved"
+    : data.eventName
+      ? `Your Ticket for ${data.eventName} is enclosed!`
+      : "Your Ticket is enclosed!";
   const cancelTicketUrl = await buildCancellationLink({
     baseUrl: getBaseUrl(),
     email: data.email,
@@ -1451,9 +1515,12 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   };
   const textContent = generateTicketEmailText(renderData);
 
-  // Generate QR and prepare cid
+  // Generate QR and prepare cid. Standby tickets have no scannable QR until
+  // staff open admission at the venue, so we omit it from the email entirely.
   const qrCid = `ticket-qr-${data.ticketId}@stanfordspeakersbureau`;
-  const qrBuffer = await generateQRCodePngBuffer(data.ticketId);
+  const qrBuffer = isStandby
+    ? null
+    : await generateQRCodePngBuffer(data.ticketId);
   const htmlContent = await generateTicketEmailHTML(renderData, {
     qrCid: qrBuffer ? qrCid : undefined,
   });

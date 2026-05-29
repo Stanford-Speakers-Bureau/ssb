@@ -11,6 +11,7 @@ import { glassPanel, NoticeBanner } from "./ui";
 import ReferralShare from "./ReferralShare";
 import { generateReferralCode } from "@/app/lib/utils";
 import CountdownTimer from "./CountdownTimer";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 
 type TicketSectionProps = {
   eventId: string;
@@ -114,6 +115,14 @@ export default function TicketSection({
   const [standbyAdmissionOpened, setStandbyAdmissionOpened] = useState(false);
 
   const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
 
   const onAddToAppleWallet = () => {
     if (!ticketId || isLoadingAppleWallet) return;
@@ -318,6 +327,7 @@ export default function TicketSection({
     referralsEnabled,
     initialIsScanned: isScanned,
     standbyMode,
+    allowAdmittingStandby: admittingStandby,
     allowCancelFlowAccess,
     initialEmailCancelAttendeeName,
     ticketType,
@@ -437,6 +447,35 @@ export default function TicketSection({
                   <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
                     Standby Ticket
                   </p>
+                </div>
+              )}
+
+              {isStandbyTicket && (
+                <div className="w-full mb-4">
+                  <NoticeBanner
+                    color="amber"
+                    icon={
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                        />
+                      </svg>
+                    }
+                  >
+                    This is a standby ticket, and admission is not guaranteed.
+                    Please wait in the standby ticket area. Standby admission is
+                    first come, first served — we&apos;ll start admitting from
+                    the standby line closer to the event start time
+                    {standbyStartTime ? `, around ${standbyStartTime}` : ""}.
+                  </NoticeBanner>
                 </div>
               )}
 

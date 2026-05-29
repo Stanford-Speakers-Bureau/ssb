@@ -194,6 +194,7 @@ export type TicketButtonProps = {
   referralsEnabled?: boolean;
   initialIsScanned?: boolean;
   standbyMode?: boolean;
+  allowAdmittingStandby?: boolean;
   allowCancelFlowAccess?: boolean;
   ticketType?: string | null;
   eventName?: string | null;
