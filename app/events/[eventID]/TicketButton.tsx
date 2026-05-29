@@ -57,6 +57,8 @@ export default function TicketButton(props: TicketButtonProps) {
         isLoading={actions.isLoading}
         processStandbyTicketRequest={actions.processStandbyTicketRequest}
         waitlistChance={actions.waitlistChance}
+        admittingStandby={props.allowAdmittingStandby ?? false}
+        eventStartTime={props.eventStartTime}
       />
     );
   } else if (actions.isSoldOut && !actions.hasTicket) {

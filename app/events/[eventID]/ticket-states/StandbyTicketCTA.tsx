@@ -4,41 +4,64 @@ import { motion } from "motion/react";
 import { RedButton, ConfirmationModal, NoBagsModalChildren } from "../ui";
 import { TICKET_MESSAGES } from "../useTicketActions";
 import { useNoBagsConfirmation } from "./useNoBagsConfirmation";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 
 type StandbyTicketCTAProps = {
   isLoading: boolean;
   processStandbyTicketRequest: () => void;
   waitlistChance?: string | null;
+  admittingStandby?: boolean;
+  eventStartTime?: string | null;
 };
 
 export default function StandbyTicketCTA({
   isLoading,
   processStandbyTicketRequest,
   waitlistChance,
+  admittingStandby = false,
+  eventStartTime = null,
 }: StandbyTicketCTAProps) {
   const noBags = useNoBagsConfirmation(processStandbyTicketRequest);
   const isHighChance = waitlistChance?.toLowerCase() === "high";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
 
   return (
     <div>
-      {/* Live badge */}
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
-        <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+      {/* Live badge — "Admitting Now" only when staff are actively pulling from
+          the standby line; otherwise a calmer "Standby line open" badge. */}
+      {admittingStandby ? (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+          </span>
+          <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+            Admitting Now
+          </span>
         </span>
-        <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
-          Admitting Now
+      ) : (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+          <span className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+            Standby line open
+          </span>
         </span>
-      </span>
+      )}
 
       <p className="text-md font-semibold text-white mb-1.5">
         The standby line is open!
       </p>
       <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
-        Grab a standby ticket below and head to the venue. You&apos;ll be
-        admitted as spots become available. No guarantee, but many people get
-        in.
+        {admittingStandby
+          ? "Grab a standby ticket below and head to the venue. You're being admitted as spots become available. No guarantee, but many people get in."
+          : `Grab a standby ticket below and head to the venue. Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time${standbyStartTime ? `, around ${standbyStartTime}` : ""}. No guarantee, but many people get in.`}
       </p>
 
       {/* High chance indicator */}
