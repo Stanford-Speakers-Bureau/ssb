@@ -640,21 +640,30 @@ function buildImportantNoticeText(): string {
   return `BEFORE YOU ARRIVE:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
 }
 
-function standbyNoticeLines(startTimeStr?: string | null): string[] {
+function standbyNoticeLines(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string[] {
   const admitClause = startTimeStr
     ? `Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time, around ${startTimeStr}.`
     : "Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time.";
+  const ticketPage = eventUrl
+    ? `<a href="${eventUrl}" target="_blank" rel="noopener noreferrer" style="color: #f59e0b; text-decoration: none; border-bottom: 1px solid #f59e0b;">your ticket page</a>`
+    : "your ticket page";
   return [
     "This is a standby ticket, and admission is not guaranteed.",
     "Please wait in the standby ticket area when you arrive.",
     admitClause,
-    "Your QR code isn't active yet. It will appear on your ticket page once standby admission opens at the venue.",
+    `Your QR code isn't active yet. It will appear on ${ticketPage} once standby admission opens at the venue.`,
   ];
 }
 
 /** Builds a prominent standby notice box for standby ticket emails */
-function buildStandbyNotice(startTimeStr?: string | null): string {
-  const lines = standbyNoticeLines(startTimeStr);
+function buildStandbyNotice(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string {
+  const lines = standbyNoticeLines(startTimeStr, eventUrl);
   const itemsHTML = lines
     .map(
       (text, i) =>
@@ -674,10 +683,17 @@ function buildStandbyNotice(startTimeStr?: string | null): string {
 }
 
 /** Generates plain text standby notice */
-function buildStandbyNoticeText(startTimeStr?: string | null): string {
-  return `STANDBY TICKET:\n${standbyNoticeLines(startTimeStr)
-    .map((line) => `- ${line}`)
-    .join("\n")}`;
+function buildStandbyNoticeText(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string {
+  // Pass no eventUrl so the lines stay plain text (no HTML anchor); the link is
+  // surfaced as a trailing URL line instead.
+  const lines = standbyNoticeLines(startTimeStr).map((line) => `- ${line}`);
+  if (eventUrl) {
+    lines.push(`- View your ticket page: ${eventUrl}`);
+  }
+  return `STANDBY TICKET:\n${lines.join("\n")}`;
 }
 
 /** Builds the event details card with label/value rows */
@@ -1312,7 +1328,7 @@ async function generateTicketEmailHTML(
   // Standby notice (replaces the standard "before you arrive" box) or the
   // regular important notice
   if (isStandby) {
-    contentSections.push(buildStandbyNotice(ticketValidTime || null));
+    contentSections.push(buildStandbyNotice(ticketValidTime || null, eventUrl));
   } else {
     contentSections.push(buildImportantNotice(undefined));
   }
@@ -1454,7 +1470,7 @@ ${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? 
 
 ${isStandby ? "Your standby ticket is reserved. Head to the venue and wait in the standby area — we hope to see you inside!" : "Your ticket is confirmed, we can't wait to see you!"}
 
-${isStandby ? `${buildStandbyNoticeText(standbyStartTime)}\n\n` : ""}${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
+${isStandby ? `${buildStandbyNoticeText(standbyStartTime, eventUrl)}\n\n` : ""}${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
