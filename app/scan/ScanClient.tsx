@@ -62,6 +62,10 @@ function isVipType(type: string | null | undefined): boolean {
   return (type ?? "").toLowerCase().trim() === "vip";
 }
 
+function isExternalType(type: string | null | undefined): boolean {
+  return (type ?? "").toLowerCase().trim() === "external";
+}
+
 function getErrorLike(error: unknown): ErrorLike {
   if (error instanceof Error) {
     return { name: error.name, message: error.message };
@@ -346,10 +350,13 @@ export default function ScanClient() {
       }
 
       // Identity verification defaults on; standby admissions always confirm so
-      // staff acknowledge the "only if there's space" warning.
+      // staff acknowledge the "only if there's space" warning. External guests
+      // are non-Stanford and ALWAYS require an ID check, regardless of the
+      // event-level identity verification setting.
       const requireConfirm =
         (liveEventRef.current?.identity_verification_enabled ?? true) ||
-        isStandby;
+        isStandby ||
+        isExternalType(ticket.type);
 
       if (requireConfirm) {
         setPendingTicket(ticket);
@@ -795,6 +802,7 @@ export default function ScanClient() {
   const ticketIsVip = isVipType(ticketInfo?.type);
   const ticketIsStandby = isStandbyType(ticketInfo?.type);
   const pendingIsStandby = isStandbyType(pendingTicket?.type);
+  const pendingIsExternal = isExternalType(pendingTicket?.type);
 
   // Full-screen result theme: bold, unmissable color + icon for door staff.
   const resultTheme = (() => {
@@ -1349,12 +1357,17 @@ export default function ScanClient() {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-center font-serif text-xl text-white">
-                Verify identity
-              </h3>
-              <p className="mb-4 text-center text-sm text-zinc-400">
-                Does this name match their photo ID?
-              </p>
+              <div className="mb-4 flex flex-col items-center gap-2 rounded-xl border border-red-500/60 bg-red-950/50 px-4 py-5">
+                <WarningIcon className="h-11 w-11 text-red-400" />
+                <h3 className="text-center font-serif text-2xl font-bold uppercase tracking-wide text-white">
+                  Stop — check photo ID
+                </h3>
+                <p className="text-center text-sm font-medium text-red-100">
+                  Make them show a photo ID. The name on it{" "}
+                  <span className="font-bold underline">must</span> match the
+                  name below. Do not admit if it doesn&apos;t.
+                </p>
+              </div>
 
               <div className="mb-4 rounded-xl bg-zinc-800 p-4 text-center">
                 <p className="mb-1 text-2xl font-bold text-white">
@@ -1371,6 +1384,23 @@ export default function ScanClient() {
                   </p>
                 )}
               </div>
+
+              {/* Amber external-guest warning — non-Stanford, ID check always required */}
+              {pendingIsExternal && (
+                <div className="mb-4 flex gap-3 rounded-xl border border-amber-400/60 bg-amber-950/60 p-4">
+                  <WarningIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-amber-200">
+                      External guest — ID check required
+                    </p>
+                    <p className="text-xs text-amber-200/80">
+                      This is a non-Stanford guest. You must verify their photo
+                      ID matches the name above before admitting — every time,
+                      no exceptions.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Blue standby warning */}
               {pendingIsStandby && (
@@ -1545,6 +1575,24 @@ function InfoIcon({ className = "" }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="9" strokeWidth={1.8} />
       <path strokeLinecap="round" strokeWidth={1.8} d="M12 11v5m0-8h.01" />
+    </svg>
+  );
+}
+
+function WarningIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+      />
     </svg>
   );
 }
