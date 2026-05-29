@@ -635,7 +635,7 @@ export default function ScanClient() {
           setCameraPermission("denied");
           setCameraError(
             errorInfo.message ||
-              "Failed to access camera. Please check permissions.",
+            "Failed to access camera. Please check permissions.",
           );
         }
         return;
@@ -696,7 +696,7 @@ export default function ScanClient() {
       } else {
         setCameraError(
           errorInfo.message ||
-            "Failed to access camera. Please check permissions.",
+          "Failed to access camera. Please check permissions.",
         );
       }
     }
@@ -818,9 +818,9 @@ export default function ScanClient() {
       case "invalid":
         return { bg: "bg-red-600", icon: "x", title: "Invalid Ticket" };
       case "id_mismatch":
-        return { bg: "bg-red-600", icon: "x", title: "Send to Standby Line" };
+        return { bg: "bg-red-600", icon: "x", title: "Send to Solutions Desk" };
       case "standby_blocked":
-        return { bg: "bg-amber-500", icon: "warn", title: "Standby — Not Yet" };
+        return { bg: "bg-amber-500", icon: "warn", title: "Standby is not being admitted yet. Send to standby line or solutions desk." };
       default:
         return null;
     }
@@ -876,18 +876,18 @@ export default function ScanClient() {
       style={
         scanMode === "hold" && liveEvent
           ? {
-              // `none` (not `manipulation`) so a small finger drag isn't read
-              // as a pan/scroll — that gesture would fire pointercancel and
-              // drop the hold. Combined with pointer capture, the press stays
-              // active until the finger actually lifts.
-              touchAction: "none",
-              WebkitTouchCallout: "none",
-              // Stop Safari from highlighting/selecting text while the
-              // user holds down to scan.
-              userSelect: "none",
-              WebkitUserSelect: "none",
-              WebkitTapHighlightColor: "transparent",
-            }
+            // `none` (not `manipulation`) so a small finger drag isn't read
+            // as a pan/scroll — that gesture would fire pointercancel and
+            // drop the hold. Combined with pointer capture, the press stays
+            // active until the finger actually lifts.
+            touchAction: "none",
+            WebkitTouchCallout: "none",
+            // Stop Safari from highlighting/selecting text while the
+            // user holds down to scan.
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            WebkitTapHighlightColor: "transparent",
+          }
           : { WebkitTapHighlightColor: "transparent" }
       }
       className="relative h-[100dvh] w-full overflow-hidden bg-black font-sans"
@@ -937,9 +937,8 @@ export default function ScanClient() {
           <div
             id="qr-reader"
             ref={scanAreaRef}
-            className={`absolute inset-0 bg-black transition-all duration-300 ${
-              isLoading ? "blur-md" : ""
-            }`}
+            className={`absolute inset-0 bg-black transition-all duration-300 ${isLoading ? "blur-md" : ""
+              }`}
           />
 
           {/* Idle scrim — camera off (hold mode, or before permission) */}
@@ -1119,11 +1118,10 @@ export default function ScanClient() {
                   type="button"
                   onClick={() => setScanMode("hold")}
                   aria-pressed={scanMode === "hold"}
-                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
-                    scanMode === "hold"
-                      ? "bg-[#A80D0C] text-white"
-                      : "text-zinc-300"
-                  }`}
+                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${scanMode === "hold"
+                    ? "bg-[#A80D0C] text-white"
+                    : "text-zinc-300"
+                    }`}
                 >
                   Hold
                 </button>
@@ -1131,11 +1129,10 @@ export default function ScanClient() {
                   type="button"
                   onClick={() => setScanMode("always")}
                   aria-pressed={scanMode === "always"}
-                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
-                    scanMode === "always"
-                      ? "bg-[#A80D0C] text-white"
-                      : "text-zinc-300"
-                  }`}
+                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${scanMode === "always"
+                    ? "bg-[#A80D0C] text-white"
+                    : "text-zinc-300"
+                    }`}
                 >
                   Always on
                 </button>
@@ -1360,12 +1357,12 @@ export default function ScanClient() {
               <div className="mb-4 flex flex-col items-center gap-2 rounded-xl border border-red-500/60 bg-red-950/50 px-4 py-5">
                 <WarningIcon className="h-11 w-11 text-red-400" />
                 <h3 className="text-center font-serif text-2xl font-bold uppercase tracking-wide text-white">
-                  Stop — check photo ID
+                  Stop — check ID
                 </h3>
                 <p className="text-center text-sm font-medium text-red-100">
                   Make them show a photo ID. The name on it{" "}
-                  <span className="font-bold underline">must</span> match the
-                  name below. Do not admit if it doesn&apos;t.
+                  <span className="font-bold underline">must</span>{" "}match the
+                  name below. Reject and send to solutions desk if it doesn&apos;t.
                 </p>
               </div>
 
@@ -1431,11 +1428,10 @@ export default function ScanClient() {
                   type="button"
                   onClick={handleConfirm}
                   disabled={isConfirming}
-                  className={`flex-1 rounded-xl py-4 text-lg font-semibold text-white transition-colors disabled:opacity-50 ${
-                    pendingIsStandby
-                      ? "bg-blue-600 active:bg-blue-500"
-                      : "bg-green-600 active:bg-green-500"
-                  }`}
+                  className={`flex-1 rounded-xl py-4 text-lg font-semibold text-white transition-colors disabled:opacity-50 ${pendingIsStandby
+                    ? "bg-blue-600 active:bg-blue-500"
+                    : "bg-green-600 active:bg-green-500"
+                    }`}
                 >
                   {isConfirming
                     ? "…"
