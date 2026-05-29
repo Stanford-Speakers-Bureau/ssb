@@ -110,6 +110,9 @@ export const tickets = pgTable(
     scanUser: text("scan_user"),
     scanEmail: text("scan_email"),
     name: text("name"),
+    // Optional internal label for certain guests (e.g. "Keynote Speaker").
+    // Admin-only: never shown on the public site, emails, or wallet passes.
+    title: text("title"),
     // Bumped whenever a wallet-visible field changes, so the PassKit web
     // service can answer If-Modified-Since / passesUpdatedSince correctly.
     walletUpdatedAt: timestamp("wallet_updated_at", { withTimezone: true }),
