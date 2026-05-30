@@ -56,7 +56,7 @@ function useTypewriterCycle(names: string[], reduce: boolean) {
     };
   }, [names, reduce]);
 
-  return names.includes(display) ? display : (names[0] ?? "");
+  return display;
 }
 
 function BlinkingCaret() {
@@ -134,11 +134,13 @@ export default function SuggestHero({
   const bottom = names.slice(half);
 
   const reduce = useReducedMotion();
-  // Lead with trending user suggestions if we have enough, then fall through to curated picks.
+  // Cycle the real leaderboard in rank order (#1 down). Only fall back to the
+  // curated picks when there are no user suggestions yet.
   const cycleNames = useMemo(() => {
+    const source = topNames.length > 0 ? topNames : POPULAR_SPEAKER_NAMES;
     const seen = new Set<string>();
     const merged: string[] = [];
-    for (const n of [...topNames, ...POPULAR_SPEAKER_NAMES]) {
+    for (const n of source) {
       if (!seen.has(n)) {
         seen.add(n);
         merged.push(n);
