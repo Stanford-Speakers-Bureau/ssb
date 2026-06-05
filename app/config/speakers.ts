@@ -30,6 +30,17 @@ export type Speaker = {
 export const SPEAKERS: Speaker[] = [
   // 2026
   {
+    slug: "hank",
+    name: "Hank Green",
+    year: "2026",
+    month: "May",
+    location: "Cemex Auditorium",
+    title:
+      "entrepreneur, author, science communicator, stand-up comedian, and YouTuber",
+    bio: "Hank Green is one of the internet’s favorite science storytellers — a best-selling author, entrepreneur, activist, and co-founder of Complexly, the team behind Crash Course. From breaking down big scientific ideas to telling deeply human stories, Hank has spent years making learning feel curious, funny, urgent, and alive. Whether he’s talking about climate, health, creativity, or the strange ways people connect online, he brings a rare mix of humor, honesty, and insight. Get ready for an electrifying night with one of the internet’s most dynamic educators and storytellers.",
+    image: "/speakers/hankgreen.jpg",
+  },
+  {
     slug: "rachel-platten",
     name: "Rachel Platten",
     year: "2026",
@@ -49,7 +60,7 @@ export const SPEAKERS: Speaker[] = [
     bio: 'Stephen Gary Wozniak, affectionately known as "Woz," is an American computer engineer and technology entrepreneur. Alongside Steve Jobs, he co-founded Apple Computer (now Apple Inc.) in 1976. By single-handedly designing the Apple I and Apple II, Wozniak ignited the global personal computer revolution.',
     image: "/speakers/steve-wozniak.jpg",
   },
-  {
+  /*{
     slug: "janet-hill",
     name: "Janet Hill",
     year: "2026",
@@ -58,7 +69,7 @@ export const SPEAKERS: Speaker[] = [
     title: "Wife of Steve Wozniak",
     bio: "Janet Hill Wozniak is best known as the wife of Apple co-founder Steve Wozniak, whom she married in August 2008. Together, they co-founded the Wozniak Family Foundation in 2014 to support STEM education, alongside various philanthropic ventures",
     image: "/speakers/woz-and-wife.jpg",
-  },
+  },*/
   {
     slug: "arden-cho",
     name: "Arden Cho",
