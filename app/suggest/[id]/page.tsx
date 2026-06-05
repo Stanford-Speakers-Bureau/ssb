@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db, eq, and, suggest } from "@ssb/db";
 import { getSessionUser } from "@/app/lib/auth";
 import { isValidUUID } from "@/app/lib/validation";
@@ -17,15 +17,16 @@ type PageParams = {
 async function loadSuggestion(id: string) {
   if (!isValidUUID(id)) return null;
   const row = await db.query.suggest.findFirst({
-    where: and(
-      eq(suggest.id, id),
-      eq(suggest.approved, true),
-      eq(suggest.spoke, false),
-    ),
-    columns: { id: true, speaker: true },
+    where: and(eq(suggest.id, id), eq(suggest.approved, true)),
+    columns: { id: true, speaker: true, spoke: true, eventLink: true },
   });
   if (!row?.speaker) return null;
-  return { id: row.id, speaker: row.speaker };
+  return {
+    id: row.id,
+    speaker: row.speaker,
+    spoke: row.spoke,
+    eventLink: row.eventLink,
+  };
 }
 
 export async function generateMetadata({
@@ -33,7 +34,8 @@ export async function generateMetadata({
 }: PageParams): Promise<Metadata> {
   const { id } = await params;
   const s = await loadSuggestion(id);
-  if (!s) {
+  // Spoke suggestions redirect away, so don't advertise an indexable page.
+  if (!s || s.spoke) {
     return {
       title: "Suggestion not found",
       robots: { index: false, follow: false },
@@ -65,6 +67,12 @@ export default async function SuggestionDeepLinkPage({
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const suggestion = await loadSuggestion(id);
   if (!suggestion) notFound();
+
+  // Once a speaker has spoken, send the unique link to the event recap if one
+  // was set, otherwise to the past speakers page.
+  if (suggestion.spoke) {
+    redirect(suggestion.eventLink || "/past-speakers");
+  }
 
   const user = await getSessionUser();
   const wantsAutoVote = sp.vote === "1";

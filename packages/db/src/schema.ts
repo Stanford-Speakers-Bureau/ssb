@@ -221,6 +221,8 @@ export const suggest = pgTable(
     reviewed: boolean("reviewed").notNull().default(false),
     duplicate: boolean("duplicate").notNull().default(false),
     spoke: boolean("spoke").notNull().default(false),
+    // Where the suggestion's unique link redirects once the speaker has spoken.
+    eventLink: text("event_link"),
   },
   (t) => [
     index("suggest_email_idx").on(t.email),
