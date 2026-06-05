@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db, eq, and, suggest } from "@ssb/db";
 import { getSessionUser } from "@/app/lib/auth";
 import { isValidUUID } from "@/app/lib/validation";
+import { SPEAKERS } from "@/app/config/speakers";
 import Leaderboard from "../Leaderboard";
 import SubmitPanel from "../SubmitPanel";
 import UserSuggestionsPanel from "../UserSuggestionsPanel";
@@ -27,6 +28,24 @@ async function loadSuggestion(id: string) {
     spoke: row.spoke,
     eventLink: row.eventLink,
   };
+}
+
+// Normalize a name for slug matching: lowercase, strip accents/punctuation,
+// collapse whitespace. "Stephen O'Brien" and "stephen obrien" compare equal.
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+// Match a spoken suggestion to its archive entry by name, so the unique link
+// can deeplink to that speaker's profile on /past-speakers.
+function findArchiveSlug(speaker: string): string | null {
+  const target = normalizeName(speaker);
+  if (!target) return null;
+  return SPEAKERS.find((s) => normalizeName(s.name) === target)?.slug ?? null;
 }
 
 export async function generateMetadata({
@@ -68,10 +87,13 @@ export default async function SuggestionDeepLinkPage({
   const suggestion = await loadSuggestion(id);
   if (!suggestion) notFound();
 
-  // Once a speaker has spoken, send the unique link to the event recap if one
-  // was set, otherwise to the past speakers page.
+  // Once a speaker has spoken, the unique link redirects: to the admin-set
+  // event link if any, else to the speaker's archive entry (matched by name),
+  // else to the bare past-speakers page.
   if (suggestion.spoke) {
-    redirect(suggestion.eventLink || "/past-speakers");
+    if (suggestion.eventLink) redirect(suggestion.eventLink);
+    const slug = findArchiveSlug(suggestion.speaker);
+    redirect(slug ? `/past-speakers?speaker=${encodeURIComponent(slug)}` : "/past-speakers");
   }
 
   const user = await getSessionUser();
