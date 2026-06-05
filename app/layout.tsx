@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientHeaderBar from "./components/ClientHeaderBar";
 import ClientFooter from "./components/ClientFooter";
 import PostHogIdentifier from "./components/PostHogIdentifier";
+import { getBannerData } from "./lib/banner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -48,18 +49,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Compute the banner's show/hide decision on the server so the first paint
+  // already reserves (or doesn't reserve) the right space — no appear-then-
+  // collapse layout shift. Auth-dependent popup fields are filled by the
+  // client's first refresh; they don't affect the banner's height.
+  const initialBannerData = await getBannerData();
+
   return (
     <html lang="en" className="dark">
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} antialiased`}
       >
         <PostHogIdentifier />
-        <ClientHeaderBar />
+        <ClientHeaderBar initialBannerData={initialBannerData} />
         {children}
         <ClientFooter />
       </body>

@@ -5,36 +5,22 @@ import { usePathname } from "next/navigation";
 import NavBar from "./NavBar";
 import BannerBar from "./BannerBar";
 import EventPopup from "./EventPopup";
+import type { BannerProps, BannerData } from "../lib/banner";
 
 const BACKGROUND_REFRESH_MS = 60 * 1000;
 const PHASE_TRANSITION_BUFFER_MS = 1_000;
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
-type BannerProps = {
-  text: string;
-  href: string;
-  target?: string | number | Date | null;
-  prefaceLabel: string;
-  eventId?: string | null;
-  imageUrl?: string | null;
-  phase?: "mystery" | "pre-ticketing" | "ticketing-open";
-  eventRoute?: string | null;
-  speakerName?: string | null;
-  isLoggedIn?: boolean;
-  isNotified?: boolean;
-};
-
-type BannerData = {
-  showBanner: boolean;
-  bannerProps: BannerProps | null;
-};
-
-export default function ClientHeaderBar() {
+export default function ClientHeaderBar({
+  initialBannerData,
+}: {
+  initialBannerData: BannerData;
+}) {
   const pathname = usePathname();
   const isScanRoute = pathname.startsWith("/scan");
   const isEventRoute = pathname.startsWith("/events/");
 
-  const [bannerData, setBannerData] = useState<BannerData | null>(null);
+  const [bannerData, setBannerData] = useState<BannerData>(initialBannerData);
 
   useEffect(() => {
     if (isScanRoute) {
@@ -171,15 +157,6 @@ export default function ClientHeaderBar() {
 
   if (isScanRoute) {
     return null;
-  }
-
-  if (!bannerData) {
-    return (
-      <>
-        <div className="h-9 md:h-10" aria-hidden="true" />
-        <NavBar banner={false} />
-      </>
-    );
   }
 
   const bp = bannerData.bannerProps;
