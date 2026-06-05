@@ -56,7 +56,7 @@ function useTypewriterCycle(names: string[], reduce: boolean) {
     };
   }, [names, reduce]);
 
-  return names.includes(display) ? display : (names[0] ?? "");
+  return display;
 }
 
 function BlinkingCaret() {
