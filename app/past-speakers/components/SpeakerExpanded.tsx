@@ -92,11 +92,12 @@ function ExpandedCard({
 
   return (
     <motion.article
+      id={`speaker-${speaker.slug}`}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
+      className="group relative scroll-mt-28 overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
     >
       <div
         className={`grid ${image ? "md:grid-cols-2" : "grid-cols-1"} ${
