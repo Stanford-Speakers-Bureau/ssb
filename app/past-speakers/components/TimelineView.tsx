@@ -63,11 +63,12 @@ export default function TimelineView({
                 return (
                   <motion.div
                     key={speaker.slug}
+                    id={`speaker-${speaker.slug}`}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-80px" }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className={`relative md:w-1/2 ${
+                    className={`relative scroll-mt-28 md:w-1/2 ${
                       isLeft ? "md:pr-10" : "md:ml-auto md:pl-10"
                     }`}
                   >
