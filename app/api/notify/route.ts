@@ -4,6 +4,7 @@ import { db, notify } from "@ssb/db";
 import { NOTIFY_MESSAGES } from "@/app/lib/constants";
 import { isValidUUID } from "@/app/lib/validation";
 import { logAuditEvent } from "@/app/lib/audit";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 
 export async function POST(req: Request) {
   try {
@@ -42,7 +43,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const insertedRows = await db.insert(notify)
+    const insertedRows = await db
+      .insert(notify)
       .values({ email: user.email, speakerId: speaker_id })
       .onConflictDoNothing()
       .returning({ id: notify.id });
@@ -55,6 +57,7 @@ export async function POST(req: Request) {
         targetEmail: user.email,
       });
     }
+    await recordMailingListMember({ email: user.email, source: "notify" });
 
     return NextResponse.json(
       {

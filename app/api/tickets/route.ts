@@ -5,19 +5,18 @@ import {
 } from "@/app/lib/supabase";
 import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { isEventOver } from "@/app/lib/eventTime";
-import {
-  db,
-  eq,
-  and,
-  sql,
-  events,
-  tickets,
-  waitlist,
-} from "@ssb/db";
+import { db, eq, and, sql, events, tickets, waitlist } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
+import {
+  recordMailingListMember,
+  type MailingListSource,
+} from "@/app/lib/mailing-list";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
-import { type CancellationEmailData, type TicketEmailData } from "@/app/lib/email";
+import {
+  type CancellationEmailData,
+  type TicketEmailData,
+} from "@/app/lib/email";
 import {
   createCancellationEmailJob,
   createTicketEmailJob,
@@ -33,6 +32,7 @@ import {
   isTicketingEligible,
   resolveTicketingRoles,
 } from "@/app/lib/ticketingRoles";
+import { captureServerEvent } from "@/app/lib/posthog-server";
 
 const TICKET_MESSAGES = {
   SUCCESS: "Your ticket is confirmed. Check your email in a moment.",
@@ -47,8 +47,7 @@ const TICKET_MESSAGES = {
   ERROR_LIVE_EVENT: "Cannot cancel tickets while an event is live.",
   ERROR_EVENT_STARTED_OR_ENDED:
     "Cannot cancel tickets after the event has ended.",
-  ERROR_EVENT_STARTED:
-    "Ticket sales have ended. This event is over.",
+  ERROR_EVENT_STARTED: "Ticket sales have ended. This event is over.",
   ERROR_TICKETING_NOT_OPEN:
     "Ticketing is not open yet for this event. Please check back later.",
   ERROR_STANDBY_ONLY:
@@ -56,7 +55,7 @@ const TICKET_MESSAGES = {
   ERROR_NAME_REQUIRED:
     "A name is required for your ticket. If you see this error, please email tickets@stanfordspeakersbureau.com.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
+    "According to ASSU records, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. Please contact ASSU for further details. We encourage you to show up to the venue early to join the standby line instead.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -142,10 +141,7 @@ type TicketEmailEventContext = {
   imgVersion: number | null;
 };
 
-function scheduleAfterResponse(
-  label: string,
-  task: () => Promise<void>,
-) {
+function scheduleAfterResponse(label: string, task: () => Promise<void>) {
   after(async () => {
     try {
       await task();
@@ -189,6 +185,12 @@ function queueAuditEvent(params: Parameters<typeof logAuditEvent>[0]) {
   });
 }
 
+function queueMailingListAdd(email: string, source: MailingListSource) {
+  scheduleAfterResponse("Mailing list add", async () => {
+    await recordMailingListMember({ email, source });
+  });
+}
+
 function isUniqueTicketConflict(error: unknown): boolean {
   const databaseError = error as {
     code?: string;
@@ -196,10 +198,12 @@ function isUniqueTicketConflict(error: unknown): boolean {
     constraint?: string;
   } | null;
 
-  return databaseError?.code === "23505"
-    || databaseError?.constraint_name === "tickets_event_email_unique"
-    || databaseError?.constraint === "tickets_event_email_unique"
-    || getErrorMessage(error).toLowerCase().includes("tickets_event_email_unique");
+  return (
+    databaseError?.code === "23505" ||
+    databaseError?.constraint_name === "tickets_event_email_unique" ||
+    databaseError?.constraint === "tickets_event_email_unique" ||
+    getErrorMessage(error).toLowerCase().includes("tickets_event_email_unique")
+  );
 }
 
 function buildTicketEmailPayload(args: {
@@ -326,12 +330,12 @@ export async function GET(req: Request) {
       name: t.name,
       events: t.event
         ? {
-          id: t.event.id,
-          name: t.event.name,
-          route: t.event.route,
-          start_time_date: t.event.startTimeDate?.toISOString() ?? null,
-          venue: t.event.venue,
-        }
+            id: t.event.id,
+            name: t.event.name,
+            route: t.event.route,
+            start_time_date: t.event.startTimeDate?.toISOString() ?? null,
+            venue: t.event.venue,
+          }
         : null,
     }));
 
@@ -394,27 +398,33 @@ export async function POST(req: Request) {
       );
     }
 
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, event_id),
-      columns: {
-        id: true,
-        name: true,
-        route: true,
-        startTimeDate: true,
-        endTimeDate: true,
-        venue: true,
-        venueLink: true,
-        desc: true,
-        releaseDate: true,
-        ticketingDate: true,
-        doorsOpen: true,
-        standbyEnabled: true,
-        tagline: true,
-        imgVersion: true,
-        referralsEnabled: true,
-        ticketingRoles: true,
-      },
-    });
+    const isStandbyRequest = ticketType === "STANDBY";
+    const [event, userRoles] = await Promise.all([
+      db.query.events.findFirst({
+        where: eq(events.id, event_id),
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          startTimeDate: true,
+          endTimeDate: true,
+          venue: true,
+          venueLink: true,
+          desc: true,
+          releaseDate: true,
+          ticketingDate: true,
+          doorsOpen: true,
+          standbyEnabled: true,
+          tagline: true,
+          imgVersion: true,
+          referralsEnabled: true,
+          ticketingRoles: true,
+        },
+      }),
+      isStandbyRequest
+        ? Promise.resolve<string[]>([])
+        : getRoleNamesForEmail(user.email),
+    ]);
 
     if (!event) {
       return NextResponse.json(
@@ -423,15 +433,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const userRoles = await getRoleNamesForEmail(user.email);
     const userAffiliations = [
       ...user.eduPersonAffiliation,
       ...user.eduPersonScopedAffiliation,
     ];
-    const isStandbyRequest = ticketType === "STANDBY";
 
-    // Keep the ASSU guidance for standard online ticketing, but still allow the
-    // standby flow to proceed to the broader affiliation eligibility check.
+    // Standby tickets are open to anyone who shows up — we deliberately skip
+    // both the ASSU fee-waiver guard and the affiliation/ticketing-role guard
+    // for standby requests. Standard online ticketing still enforces both.
     if (!isStandbyRequest && userRoles.includes(FEE_WAIVER_ROLE)) {
       queueAuditEvent({
         action: "ticket.ineligible",
@@ -447,13 +456,15 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
-        { status: 403 },
-      );
+      return NextResponse.json(getFeeWaiverIneligiblePayload(), {
+        status: 403,
+      });
     }
 
-    if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
+    if (
+      !isStandbyRequest &&
+      !isTicketingEligible(userAffiliations, event.ticketingRoles)
+    ) {
       const allowedRoles = resolveTicketingRoles(event.ticketingRoles);
 
       queueAuditEvent({
@@ -470,10 +481,9 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
+      return NextResponse.json(getRoleIneligiblePayload(allowedRoles), {
+        status: 403,
+      });
     }
 
     const referralValidation = await validateReferralInput({
@@ -511,7 +521,12 @@ export async function POST(req: Request) {
       }
     }
 
-    if (isEventOver({ endTime: event.endTimeDate, startTime: event.startTimeDate })) {
+    if (
+      isEventOver({
+        endTime: event.endTimeDate,
+        startTime: event.startTimeDate,
+      })
+    ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED },
         { status: 400 },
@@ -612,6 +627,17 @@ export async function POST(req: Request) {
         targetEmail: user.email,
         metadata: { type: "STANDBY", ticketId: standbyTicket.id },
       });
+      captureServerEvent({
+        distinctId: user.email,
+        event: "standby_ticket_created",
+        properties: {
+          event_id,
+          event_name: event.name ?? null,
+          ticket_id: standbyTicket.id,
+        },
+        groups: { event: event_id },
+      });
+      queueMailingListAdd(user.email, "ticket");
 
       return NextResponse.json(
         {
@@ -643,7 +669,9 @@ export async function POST(req: Request) {
     // Call stored procedure via raw SQL (atomic ticket creation with FOR UPDATE locking)
     let rpcData: TicketCreationRpcResult | null = null;
     try {
-      const result = await db.execute<{ create_ticket_with_name: TicketCreationRpcResult }>(sql`
+      const result = await db.execute<{
+        create_ticket_with_name: TicketCreationRpcResult;
+      }>(sql`
         SELECT create_ticket_with_name(
           ${event_id}::uuid,
           ${referral},
@@ -742,6 +770,19 @@ export async function POST(req: Request) {
       targetEmail: user.email,
       metadata: { type: "STANDARD", ticketId },
     });
+    captureServerEvent({
+      distinctId: user.email,
+      event: "ticket_created",
+      properties: {
+        event_id,
+        event_name: event.name ?? null,
+        ticket_id: ticketId,
+        ticket_type: "STANDARD",
+        used_referral: !!referral,
+      },
+      groups: { event: event_id },
+    });
+    queueMailingListAdd(user.email, "ticket");
 
     return NextResponse.json(
       {
@@ -772,10 +813,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const {
-      event_id,
-      cancel_token,
-    } = body as { event_id?: string; cancel_token?: string };
+    const { event_id, cancel_token } = body as {
+      event_id?: string;
+      cancel_token?: string;
+    };
 
     if (!event_id || typeof event_id !== "string") {
       return NextResponse.json(
@@ -789,7 +830,8 @@ export async function DELETE(req: Request) {
       typeof cancel_token === "string" && cancel_token.trim()
         ? await verifyCancellationToken(cancel_token.trim())
         : null;
-    const authenticatedEmail = signedLinkClaims?.email ?? sessionUser?.email ?? null;
+    const authenticatedEmail =
+      signedLinkClaims?.email ?? sessionUser?.email ?? null;
     const authMethod = signedLinkClaims ? "signed_link" : "session";
 
     if (!authenticatedEmail) {
@@ -824,7 +866,12 @@ export async function DELETE(req: Request) {
       },
     });
 
-    if (isEventOver({ endTime: eventRow?.endTimeDate, startTime: eventRow?.startTimeDate })) {
+    if (
+      isEventOver({
+        endTime: eventRow?.endTimeDate,
+        startTime: eventRow?.startTimeDate,
+      })
+    ) {
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_EVENT_STARTED_OR_ENDED },
         { status: 400 },
@@ -841,11 +888,14 @@ export async function DELETE(req: Request) {
     const ticketToCancel = await db.query.tickets.findFirst({
       where: signedLinkClaims
         ? and(
-          eq(tickets.id, signedLinkClaims.ticketId),
-          eq(tickets.eventId, event_id),
-          eq(tickets.email, authenticatedEmail),
-        )
-        : and(eq(tickets.eventId, event_id), eq(tickets.email, authenticatedEmail)),
+            eq(tickets.id, signedLinkClaims.ticketId),
+            eq(tickets.eventId, event_id),
+            eq(tickets.email, authenticatedEmail),
+          )
+        : and(
+            eq(tickets.eventId, event_id),
+            eq(tickets.email, authenticatedEmail),
+          ),
       columns: { id: true, createdAt: true, name: true, type: true },
     });
 
@@ -906,7 +956,10 @@ export async function DELETE(req: Request) {
     const gotTicketAt = ticketToCancel?.createdAt?.toISOString() ?? null;
     const heldFor = formatHeldFor(ticketToCancel?.createdAt);
     if (!cancelledTicketId) {
-      console.error("Ticket cancellation RPC returned without a cancelled ticket id:", rpcData);
+      console.error(
+        "Ticket cancellation RPC returned without a cancelled ticket id:",
+        rpcData,
+      );
       return NextResponse.json(
         { error: TICKET_MESSAGES.ERROR_GENERIC },
         { status: 500 },
@@ -945,12 +998,20 @@ export async function DELETE(req: Request) {
         ...(cancellationEmailQueued ? { cancellationEmailSent: true } : {}),
       },
     });
+    captureServerEvent({
+      distinctId: authenticatedEmail,
+      event: "ticket_cancelled",
+      properties: {
+        event_id,
+        event_name: eventRow?.name ?? null,
+        ticket_id: cancelledTicketId,
+        ticket_type: ticketToCancel?.type ?? null,
+        auth_method: authMethod,
+      },
+      groups: { event: event_id },
+    });
 
-    if (
-      rpcData?.promoted_ticket_id
-      && rpcData.promoted_email
-      && eventRow
-    ) {
+    if (rpcData?.promoted_ticket_id && rpcData.promoted_email && eventRow) {
       queueAuditEvent({
         action: "waitlist.pull",
         actor: authenticatedEmail,
@@ -964,6 +1025,20 @@ export async function DELETE(req: Request) {
           ticketType: rpcData.promoted_ticket_type || "STANDARD",
           cancelledTicketId,
         },
+      });
+      // Waitlist promotion mints a ticket for another user entirely; the
+      // browser SDK never sees it, so this conversion only exists server-side.
+      captureServerEvent({
+        distinctId: rpcData.promoted_email,
+        event: "ticket_created",
+        properties: {
+          event_id,
+          event_name: eventRow.name ?? null,
+          ticket_id: rpcData.promoted_ticket_id,
+          ticket_type: rpcData.promoted_ticket_type || "STANDARD",
+          via: "waitlist_promotion",
+        },
+        groups: { event: event_id },
       });
 
       queueReferralRecordUpdate(event_id, rpcData.promoted_email);

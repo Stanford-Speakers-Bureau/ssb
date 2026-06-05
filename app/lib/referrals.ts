@@ -65,7 +65,9 @@ export async function validateReferralInput(
     return { ok: true, referral: null };
   }
 
-  const userReferralCode = normalizeReferralCode(generateReferralCode(userEmail));
+  const userReferralCode = normalizeReferralCode(
+    generateReferralCode(userEmail),
+  );
   if (normalizedReferral === userReferralCode) {
     return {
       ok: false,

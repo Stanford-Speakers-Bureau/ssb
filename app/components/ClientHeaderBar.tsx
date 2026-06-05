@@ -5,107 +5,25 @@ import { usePathname } from "next/navigation";
 import NavBar from "./NavBar";
 import BannerBar from "./BannerBar";
 import EventPopup from "./EventPopup";
+import type { BannerProps, BannerData } from "../lib/banner";
 
-const BACKGROUND_REFRESH_MS = 10 * 60 * 1000;
+const BACKGROUND_REFRESH_MS = 60 * 1000;
 const PHASE_TRANSITION_BUFFER_MS = 1_000;
 const MAX_TIMEOUT_MS = 2_147_483_647;
-const BANNER_CACHE_KEY = "ssb:banner-data:v1";
-const BANNER_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
-type BannerProps = {
-  text: string;
-  href: string;
-  target?: string | number | Date | null;
-  prefaceLabel: string;
-  eventId?: string | null;
-  imageUrl?: string | null;
-  phase?: "mystery" | "pre-ticketing" | "ticketing-open";
-  eventRoute?: string | null;
-  speakerName?: string | null;
-  isLoggedIn?: boolean;
-  isNotified?: boolean;
-};
-
-type BannerData = {
-  showBanner: boolean;
-  bannerProps: BannerProps | null;
-};
-
-type CachedBanner = {
-  data: BannerData;
-  cachedAt: number;
-};
-
-function isValidBannerData(data: unknown): data is BannerData {
-  if (!data || typeof data !== "object") return false;
-
-  const candidate = data as Partial<BannerData>;
-  if (typeof candidate.showBanner !== "boolean") return false;
-  if (!candidate.showBanner) return candidate.bannerProps === null;
-
-  const props = candidate.bannerProps;
-  return (
-    !!props &&
-    typeof props === "object" &&
-    typeof props.text === "string" &&
-    typeof props.href === "string" &&
-    props.href.startsWith("/") &&
-    !props.href.startsWith("//") &&
-    typeof props.prefaceLabel === "string"
-  );
-}
-
-function parseCachedBanner(raw: string | null): CachedBanner | null {
-  if (!raw) return null;
-  try {
-    const cached = JSON.parse(raw) as CachedBanner;
-    if (
-      !cached ||
-      typeof cached.cachedAt !== "number" ||
-      !isValidBannerData(cached.data)
-    ) {
-      return null;
-    }
-    return cached;
-  } catch {
-    return null;
-  }
-}
-
-function readCachedBanner(): CachedBanner | null {
-  try {
-    const cached = parseCachedBanner(
-      window.localStorage.getItem(BANNER_CACHE_KEY),
-    );
-    if (!cached) return null;
-    if (Date.now() - cached.cachedAt > BANNER_CACHE_MAX_AGE_MS) return null;
-    return cached;
-  } catch {
-    return null;
-  }
-}
-
-function writeCachedBanner(data: BannerData) {
-  try {
-    window.localStorage.setItem(
-      BANNER_CACHE_KEY,
-      JSON.stringify({ data, cachedAt: Date.now() } satisfies CachedBanner),
-    );
-  } catch {
-    // localStorage may be unavailable.
-  }
-}
-
-export default function ClientHeaderBar() {
+export default function ClientHeaderBar({
+  initialBannerData,
+}: {
+  initialBannerData: BannerData;
+}) {
   const pathname = usePathname();
   const isScanRoute = pathname.startsWith("/scan");
   const isEventRoute = pathname.startsWith("/events/");
 
-  const [bannerData, setBannerData] = useState<BannerData | null>(null);
-  const [hasFreshBannerData, setHasFreshBannerData] = useState(false);
+  const [bannerData, setBannerData] = useState<BannerData>(initialBannerData);
 
   useEffect(() => {
-    if (isScanRoute || isEventRoute) {
+    if (isScanRoute) {
       return;
     }
 
@@ -155,14 +73,14 @@ export default function ClientHeaderBar() {
 
       phaseTimeoutId = window.setTimeout(
         () => {
-          void refreshBanner();
+          void refreshBanner({ fresh: true });
           scheduleNextRefresh();
         },
         Math.min(delay, MAX_TIMEOUT_MS),
       );
     };
 
-    async function refreshBanner() {
+    async function refreshBanner({ fresh = false }: { fresh?: boolean } = {}) {
       if (inFlightController || document.visibilityState !== "visible") {
         return;
       }
@@ -172,17 +90,18 @@ export default function ClientHeaderBar() {
       lastRefreshAt = Date.now();
 
       try {
-        const response = await fetch("/api/banner-data", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          fresh ? "/api/banner-data?fresh=1" : "/api/banner-data",
+          {
+            signal: controller.signal,
+          },
+        );
         if (!response.ok) return;
 
         const data = (await response.json()) as BannerData;
         if (!isActive) return;
 
         setBannerData(data);
-        setHasFreshBannerData(true);
-        writeCachedBanner(data);
         schedulePhaseRefresh(data.bannerProps?.target ?? null);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -221,35 +140,9 @@ export default function ClientHeaderBar() {
       }
     };
 
-    const handleStorage = (event: StorageEvent) => {
-      if (!isActive || event.key !== BANNER_CACHE_KEY) return;
-
-      const cached = parseCachedBanner(event.newValue);
-      if (!cached) return;
-
-      setBannerData(cached.data);
-      setHasFreshBannerData(true);
-      lastRefreshAt = cached.cachedAt;
-      schedulePhaseRefresh(cached.data.bannerProps?.target ?? null);
-      scheduleNextRefresh();
-    };
-
-    void Promise.resolve().then(() => {
-      if (!isActive) return;
-
-      const cached = readCachedBanner();
-      if (cached) {
-        setBannerData(cached.data);
-        setHasFreshBannerData(false);
-        lastRefreshAt = cached.cachedAt;
-        schedulePhaseRefresh(cached.data.bannerProps?.target ?? null);
-      }
-
-      refreshIfDue();
-    });
+    refreshIfDue();
 
     window.addEventListener("focus", refreshIfDue);
-    window.addEventListener("storage", handleStorage);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
@@ -258,26 +151,12 @@ export default function ClientHeaderBar() {
       clearPhaseRefresh();
       clearNextRefresh();
       window.removeEventListener("focus", refreshIfDue);
-      window.removeEventListener("storage", handleStorage);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isEventRoute, isScanRoute]);
+  }, [isScanRoute]);
 
   if (isScanRoute) {
     return null;
-  }
-
-  if (isEventRoute) {
-    return <NavBar banner={false} />;
-  }
-
-  if (!bannerData) {
-    return (
-      <>
-        <div className="h-9 md:h-10" aria-hidden="true" />
-        <NavBar banner={false} />
-      </>
-    );
   }
 
   const bp = bannerData.bannerProps;
@@ -293,23 +172,22 @@ export default function ClientHeaderBar() {
         />
       )}
       <NavBar banner={bannerData.showBanner} />
-      {hasFreshBannerData &&
-        bannerData.showBanner &&
-        bp?.eventId &&
-        bp.phase && (
-          <EventPopup
-            eventId={bp.eventId}
-            text={bp.text}
-            href={bp.href}
-            target={typeof bp.target === "string" ? bp.target : null}
-            prefaceLabel={bp.prefaceLabel}
-            phase={bp.phase}
-            imageUrl={bp.imageUrl ?? null}
-            speakerName={bp.speakerName ?? null}
-            isLoggedIn={bp.isLoggedIn ?? false}
-            isNotified={bp.isNotified ?? false}
-          />
-        )}
+      {/* Banner shows on event pages, but the popup modal does not: a ticket
+          holder landing on an event page should not get a modal over it. */}
+      {!isEventRoute && bannerData.showBanner && bp?.eventId && bp.phase && (
+        <EventPopup
+          eventId={bp.eventId}
+          text={bp.text}
+          href={bp.href}
+          target={typeof bp.target === "string" ? bp.target : null}
+          prefaceLabel={bp.prefaceLabel}
+          phase={bp.phase}
+          imageUrl={bp.imageUrl ?? null}
+          speakerName={bp.speakerName ?? null}
+          isLoggedIn={bp.isLoggedIn ?? false}
+          isNotified={bp.isNotified ?? false}
+        />
+      )}
     </>
   );
 }

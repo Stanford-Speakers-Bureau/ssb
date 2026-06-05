@@ -37,7 +37,10 @@ export async function GET(req: Request) {
     }
 
     const referral = await db.query.referrals.findFirst({
-      where: and(eq(referrals.eventId, eventId), eq(referrals.referralCode, userReferralCode)),
+      where: and(
+        eq(referrals.eventId, eventId),
+        eq(referrals.referralCode, userReferralCode),
+      ),
       columns: { count: true },
     });
 
@@ -104,10 +107,7 @@ export async function POST(req: Request) {
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     const validation = await validateReferralInput({

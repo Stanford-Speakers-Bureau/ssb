@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
+import posthog from "posthog-js";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
@@ -75,6 +76,9 @@ export default function SuggestForm() {
       }
 
       setStatus("success");
+      posthog.capture("speaker_suggested", {
+        suggestion_count: allSuggestions.length,
+      });
       setPills([]);
       setCurrentInput("");
       router.refresh();
@@ -202,9 +206,7 @@ export default function SuggestForm() {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-red-300">
-              {errorMessage}
-            </p>
+            <p className="text-sm text-red-300">{errorMessage}</p>
           </motion.div>
         )}
 
@@ -230,9 +232,7 @@ export default function SuggestForm() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-green-300">
-              {SUGGEST_MESSAGES.SUCCESS}
-            </p>
+            <p className="text-sm text-green-300">{SUGGEST_MESSAGES.SUCCESS}</p>
           </motion.div>
         )}
       </AnimatePresence>

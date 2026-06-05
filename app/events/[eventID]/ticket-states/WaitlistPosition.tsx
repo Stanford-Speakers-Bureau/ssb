@@ -37,10 +37,10 @@ export default function WaitlistPosition({
 
   const formattedDoorsOpen = doorsOpen
     ? new Date(doorsOpen).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      timeZoneName: "short",
-    })
+        hour: "numeric",
+        minute: "2-digit",
+        timeZoneName: "short",
+      })
     : null;
 
   // Loading step progression
@@ -53,10 +53,11 @@ export default function WaitlistPosition({
 
   useEffect(() => {
     if (isWaitlistPositionReady) return;
-    setLoadingStep(0);
+    const t0 = setTimeout(() => setLoadingStep(0), 0);
     const t1 = setTimeout(() => setLoadingStep(1), 1400);
     const t2 = setTimeout(() => setLoadingStep(2), 3000);
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
     };
@@ -143,7 +144,9 @@ export default function WaitlistPosition({
 
   return (
     <div>
-      {isWaitlistPositionReady && waitlistPosition !== null && waitlistPosition <= 5 ? (
+      {isWaitlistPositionReady &&
+      waitlistPosition !== null &&
+      waitlistPosition <= 5 ? (
         <>
           <div className="flex items-center justify-between mb-4">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -195,12 +198,27 @@ export default function WaitlistPosition({
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
                 animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatDelay: 1,
+                }}
               />
               <div className="relative flex items-center gap-2.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  <svg
+                    className="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -224,9 +242,23 @@ export default function WaitlistPosition({
           <div className="rounded-xl bg-white/[0.06] border border-white/[0.08] p-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="w-4 h-4 text-zinc-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                <svg
+                  className="w-4 h-4 text-zinc-200"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  />
                 </svg>
               </div>
               <p className="text-sm font-semibold text-white">
@@ -235,28 +267,61 @@ export default function WaitlistPosition({
             </div>
             {formattedDoorsOpen && (
               <p className="text-sm font-semibold text-white mb-2">
-                We start letting people off the standby line at {formattedDoorsOpen}. Arrive earlier to secure your spot
+                We start letting people off the standby line at{" "}
+                {formattedDoorsOpen}. Arrive earlier to secure your spot
               </p>
             )}
             <p className="text-xs text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show up, if you arrive early you&apos;re very likely to get in.
+              The in-person standby line runs independently from the online
+              waitlist. Many ticket holders don&apos;t show up, if you arrive
+              early you&apos;re very likely to get in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>First come, first served</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>Separate from online waitlist</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>Admitted as no-shows are called</span>
               </div>
@@ -266,15 +331,35 @@ export default function WaitlistPosition({
           {/* Compact info row */}
           <div className="flex items-center gap-3 text-xs text-zinc-500">
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              <svg
+                className="w-3.5 h-3.5 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+                />
               </svg>
               <span>Auto-assigned</span>
             </div>
             <span className="text-zinc-700">&middot;</span>
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              <svg
+                className="w-3.5 h-3.5 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                />
               </svg>
               <span>Emailed instantly</span>
             </div>
@@ -319,12 +404,27 @@ export default function WaitlistPosition({
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
                 animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatDelay: 1,
+                }}
               />
               <div className="relative flex items-center gap-2.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                  <svg
+                    className="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -347,9 +447,23 @@ export default function WaitlistPosition({
           <div className="rounded-xl bg-white/[0.06] border border-white/[0.08] p-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="w-4 h-4 text-zinc-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                <svg
+                  className="w-4 h-4 text-zinc-200"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  />
                 </svg>
               </div>
               <p className="text-sm font-semibold text-white">
@@ -358,28 +472,61 @@ export default function WaitlistPosition({
             </div>
             {formattedDoorsOpen && (
               <p className="text-sm font-semibold text-white mb-2">
-                We start letting people off the standby line at {formattedDoorsOpen}. Arrive early to secure your spot!
+                We start letting people off the standby line at{" "}
+                {formattedDoorsOpen}. Arrive early to secure your spot!
               </p>
             )}
             <p className="text-xs text-zinc-400 leading-relaxed mb-3">
-              The in-person standby line runs independently from the online waitlist. Many ticket holders don&apos;t show, so arrive as early as possible for the best chance of getting in.
+              The in-person standby line runs independently from the online
+              waitlist. Many ticket holders don&apos;t show, so arrive as early
+              as possible for the best chance of getting in.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>First come, first served</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>Separate from online waitlist</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-400 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
                 <span>Admitted as no-shows are called</span>
               </div>
@@ -389,15 +536,35 @@ export default function WaitlistPosition({
           {/* Compact info row */}
           <div className="flex items-center gap-3 text-xs text-zinc-500">
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              <svg
+                className="w-3.5 h-3.5 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+                />
               </svg>
               <span>Auto-assigned</span>
             </div>
             <span className="text-zinc-700">&middot;</span>
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              <svg
+                className="w-3.5 h-3.5 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                />
               </svg>
               <span>Emailed instantly</span>
             </div>
@@ -415,7 +582,10 @@ export default function WaitlistPosition({
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
             >
               <circle
-                cx="32" cy="32" r="28" fill="none"
+                cx="32"
+                cy="32"
+                r="28"
+                fill="none"
                 strokeWidth="2"
                 strokeDasharray="4 8"
                 className="stroke-zinc-700/50"
@@ -425,12 +595,18 @@ export default function WaitlistPosition({
             {/* Progress ring */}
             <svg className="w-20 h-20 -rotate-90" viewBox="0 0 64 64">
               <circle
-                cx="32" cy="32" r="28" fill="none"
+                cx="32"
+                cy="32"
+                r="28"
+                fill="none"
                 strokeWidth="3.5"
                 className="stroke-zinc-800"
               />
               <motion.circle
-                cx="32" cy="32" r="28" fill="none"
+                cx="32"
+                cy="32"
+                r="28"
+                fill="none"
                 strokeWidth="3.5"
                 strokeLinecap="round"
                 className="stroke-emerald-400"
@@ -456,7 +632,11 @@ export default function WaitlistPosition({
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring", bounce: 0.4 }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"
+                />
               </motion.svg>
             </div>
           </div>
@@ -497,9 +677,7 @@ export default function WaitlistPosition({
                 className="w-1.5 h-1.5 rounded-full"
                 animate={{
                   backgroundColor:
-                    i <= loadingStep
-                      ? "rgb(16 185 129)"
-                      : "rgb(228 228 231)",
+                    i <= loadingStep ? "rgb(16 185 129)" : "rgb(228 228 231)",
                   scale: i === loadingStep ? 1.3 : 1,
                 }}
                 transition={{ duration: 0.3 }}

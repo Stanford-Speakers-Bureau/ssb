@@ -1,3 +1,7 @@
+// PostHog public config.
+export const POSTHOG_KEY = "phc_mTqWFw7xrUVTVEhiseqty9hMGbhvPLnGjk7gWmJ6bChn";
+export const POSTHOG_HOST = "https://us.i.posthog.com";
+
 // Notification Messages (speaker announcement)
 export const NOTIFY_MESSAGES = {
   SUCCESS: "You'll be notified when the speaker is announced!",
@@ -27,10 +31,33 @@ export const SUGGEST_MESSAGES = {
   ERROR_BANNED: "You have been banned from making suggestions.",
 } as const;
 
+// Event Question Messages
+export const QUESTION_MESSAGES = {
+  SUCCESS: "Thanks! Your question is pending review.",
+  VOTE_SUCCESS: "Vote recorded!",
+  VOTE_REMOVED: "Vote removed.",
+  ALREADY_VOTED: "You've already voted on this question.",
+  NOT_VOTED: "You haven't voted on this question.",
+  ERROR_GENERIC: "Something went wrong. Please try again.",
+  ERROR_MISSING: "Please enter a question.",
+  ERROR_TOO_SHORT: "Question must be at least 4 characters.",
+  ERROR_TOO_LONG: "Question must be 280 characters or less.",
+  ERROR_NOT_AUTHENTICATED: "Not authenticated. Please sign in with Stanford.",
+  ERROR_BANNED: "You have been banned from submitting questions.",
+  ERROR_LIFECYCLE_NOT_OPEN:
+    "Question submissions aren't open for this event yet.",
+  ERROR_LIFECYCLE_CLOSED: "Question submissions have closed — doors are open!",
+  ERROR_EVENT_NOT_FOUND: "Event not found.",
+  ERROR_QUESTION_NOT_FOUND: "Question not found.",
+  ERROR_DUPLICATE: "You've already suggested this question.",
+} as const;
+
 export const BANNER_MESSAGES = {
   NOTIFY_MESSAGE: "GET EARLY ACCESS TO OUR NEXT SPEAKER!!",
   EVENT_MESSAGE: " is coming to Stanford!",
   EVENT_MESSAGE_PLURAL: " are coming to Stanford!",
+  EVENT_HAPPENING_NOW_MESSAGE: " is at Stanford right now!",
+  EVENT_HAPPENING_NOW_MESSAGE_PLURAL: " are at Stanford right now!",
   COUNTDOWN_REVEAL_MESSAGE: "Speaker Reveal in",
   COUNTDOWN_TICKETS_MESSAGE: "FREE Tickets Go Live in",
   COUNTDOWN_EVENT_MESSAGE: "Event starts in",

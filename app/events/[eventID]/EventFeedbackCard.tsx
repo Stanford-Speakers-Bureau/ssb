@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { FeedbackModal, Spinner, glassPanel, redButtonBase } from "./ui";
 
 type FeedbackPayload = {
@@ -14,16 +15,16 @@ type FeedbackPayload = {
 
 type FeedbackApiResponse =
   | {
-    eligible: true;
-    via: "session" | "signed_link";
-    attendeeName: string | null;
-    feedback: FeedbackPayload | null;
-  }
+      eligible: true;
+      via: "session" | "signed_link";
+      attendeeName: string | null;
+      feedback: FeedbackPayload | null;
+    }
   | {
-    eligible: false;
-    reason: string;
-    message?: string;
-  };
+      eligible: false;
+      reason: string;
+      message?: string;
+    };
 
 function parseScoreParam(value: string | null): number | null {
   if (!value || !/^\d+$/.test(value)) return null;
@@ -98,15 +99,14 @@ function FeedbackForm({
   if (error && (!status || !status.eligible)) {
     return (
       <div id={wrapperId} className={wrapperClass}>
-        <p className="text-sm font-medium text-rose-300">
-          {error}
-        </p>
+        <p className="text-sm font-medium text-rose-300">{error}</p>
       </div>
     );
   }
 
   if (!status || status.eligible !== true) {
-    const message = status && !status.eligible ? status.message ?? null : null;
+    const message =
+      status && !status.eligible ? (status.message ?? null) : null;
     if (isCard && (!feedbackToken || !message)) return null;
     return (
       <div id={wrapperId} className={wrapperClass}>
@@ -133,10 +133,12 @@ function FeedbackForm({
       <div className="flex flex-col gap-4">
         <div>
           <h3
-            className={`font-semibold text-white${isCard ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
-              }`}
+            className={`font-semibold text-white${
+              isCard ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
+            }`}
           >
-            How likely are you to recommend Stanford Speakers Bureau events to a friend?
+            How likely are you to recommend Stanford Speakers Bureau events to a
+            friend?
           </h3>
         </div>
 
@@ -167,9 +169,7 @@ function FeedbackForm({
                 <span className="text-4xl font-bold text-white">
                   {existingFeedback.score}
                 </span>
-                <span className="text-xl font-semibold text-zinc-500">
-                  /10
-                </span>
+                <span className="text-xl font-semibold text-zinc-500">/10</span>
               </div>
             </div>
           </div>
@@ -185,11 +185,16 @@ function FeedbackForm({
                     type="button"
                     onClick={() => onScoreClick(score)}
                     disabled={submitting}
-                    aria-label={isPending ? `Saving ${score} out of 10` : `Rate ${score} out of 10`}
-                    className={`rounded-xl border px-0 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${isActive
-                      ? "border-[#A80D0C] bg-[#A80D0C] text-white"
-                      : "disabled:opacity-50 border-zinc-700 bg-zinc-900/70 text-zinc-200 hover:border-[#A80D0C] hover:bg-[#A80D0C]/15"
-                      }`}
+                    aria-label={
+                      isPending
+                        ? `Saving ${score} out of 10`
+                        : `Rate ${score} out of 10`
+                    }
+                    className={`rounded-xl border px-0 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${
+                      isActive
+                        ? "border-[#A80D0C] bg-[#A80D0C] text-white"
+                        : "disabled:opacity-50 border-zinc-700 bg-zinc-900/70 text-zinc-200 hover:border-[#A80D0C] hover:bg-[#A80D0C]/15"
+                    }`}
                   >
                     <span className="flex h-5 items-center justify-center">
                       {isPending ? <Spinner /> : score}
@@ -235,7 +240,11 @@ function FeedbackForm({
             disabled={submitting}
             className={`${redButtonBase} disabled:opacity-50`}
           >
-            {submitting ? "Saving..." : savedComment ? "Update Comment" : "Save Comment"}
+            {submitting
+              ? "Saving..."
+              : savedComment
+                ? "Update Comment"
+                : "Save Comment"}
           </button>
         )}
 
@@ -257,8 +266,10 @@ function FeedbackForm({
 
 export default function EventFeedbackCard({
   eventId,
+  loadSessionStatus = false,
 }: {
   eventId: string;
+  loadSessionStatus?: boolean;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -271,7 +282,9 @@ export default function EventFeedbackCard({
     parseScoreParam(searchParams.get("feedback_score")),
   );
 
-  const [loading, setLoading] = useState(true);
+  const shouldLoadFeedbackStatus = Boolean(feedbackToken) || loadSessionStatus;
+
+  const [loading, setLoading] = useState(shouldLoadFeedbackStatus);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -282,11 +295,44 @@ export default function EventFeedbackCard({
     Boolean(feedbackToken),
   );
   const autoRecordedRef = useRef(false);
+  const viewTrackedRef = useRef(false);
+
+  // Fire the feedback funnel's entry event once the eligibility status resolves:
+  // `event_feedback_viewed` when the form is offered, `event_feedback_blocked`
+  // (with the reason) when it isn't — so submission drop-off is measurable.
+  useEffect(() => {
+    if (!status || viewTrackedRef.current) return;
+    viewTrackedRef.current = true;
+
+    if (status.eligible) {
+      posthog.capture("event_feedback_viewed", {
+        event_id: eventId,
+        via: status.via,
+        is_update: !!status.feedback,
+        $groups: { event: eventId },
+      });
+    } else {
+      posthog.capture("event_feedback_blocked", {
+        event_id: eventId,
+        reason: status.reason,
+        $groups: { event: eventId },
+      });
+    }
+  }, [eventId, status]);
 
   useEffect(() => {
     let ignore = false;
 
     async function loadFeedbackStatus() {
+      if (!shouldLoadFeedbackStatus) {
+        setLoading(false);
+        setError(null);
+        setConfirmation(null);
+        setStatus(null);
+        setComment("");
+        return;
+      }
+
       setLoading(true);
       setError(null);
       setConfirmation(null);
@@ -338,7 +384,7 @@ export default function EventFeedbackCard({
     return () => {
       ignore = true;
     };
-  }, [eventId, feedbackToken]);
+  }, [eventId, feedbackToken, shouldLoadFeedbackStatus]);
 
   useEffect(() => {
     if (autoRecordedRef.current) return;

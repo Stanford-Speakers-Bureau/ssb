@@ -32,7 +32,10 @@ export default function HeroSection({
         <div className="relative aspect-[3/2] sm:absolute sm:inset-0 sm:aspect-auto bg-zinc-800">
           <picture className="absolute inset-0 block h-full w-full">
             {mobileSignedImageUrl && (
-              <source media="(max-width: 639px)" srcSet={mobileSignedImageUrl} />
+              <source
+                media="(max-width: 639px)"
+                srcSet={mobileSignedImageUrl}
+              />
             )}
             <img
               src={signedImageUrl}
@@ -77,7 +80,11 @@ export default function HeroSection({
         </h1>
         {tagline && (
           <div className="mt-1.5 sm:mt-2.5 text-sm sm:text-lg lg:text-xl text-zinc-300 leading-relaxed max-w-6xl prose prose-sm sm:prose-lg prose-zinc prose-invert prose-p:m-0 prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-            <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{tagline}</ReactMarkdown>
+            <ReactMarkdown
+              rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+            >
+              {tagline}
+            </ReactMarkdown>
           </div>
         )}
 

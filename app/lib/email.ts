@@ -1,4 +1,3 @@
-import type { QRCodeToBufferOptions } from "qrcode";
 import QRCode from "qrcode";
 import {
   CALENDAR_DEFAULT_DURATION_MS,
@@ -208,10 +207,7 @@ function wrapToMimeLines(input: string, lineLength: number = 76): string {
   return chunks.join("\r\n");
 }
 
-function buildUtf8MimeBodyPart(
-  contentType: string,
-  content: string,
-): string[] {
+function buildUtf8MimeBodyPart(contentType: string, content: string): string[] {
   return [
     `Content-Type: ${contentType}; charset=UTF-8`,
     `Content-Transfer-Encoding: base64`,
@@ -228,10 +224,14 @@ function buildUtf8MimeBodyPart(
 function getOrdinalSuffix(day: number): string {
   if (day > 3 && day < 21) return "th";
   switch (day % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -240,7 +240,10 @@ function formatPillDate(dateString: string | null): string {
   if (!dateString) return "";
   const date = new Date(dateString);
   const day = parseInt(
-    date.toLocaleDateString("en-US", { day: "numeric", timeZone: PACIFIC_TIMEZONE }),
+    date.toLocaleDateString("en-US", {
+      day: "numeric",
+      timeZone: PACIFIC_TIMEZONE,
+    }),
   );
   const suffix = getOrdinalSuffix(day);
   return date
@@ -284,7 +287,10 @@ function markdownToEmailHTML(md: string): string {
   return md
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #A80D0C; text-decoration: underline;">$1</a>')
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" style="color: #A80D0C; text-decoration: underline;">$1</a>',
+    )
     .replace(/\n/g, "<br>");
 }
 
@@ -300,11 +306,16 @@ const gmailBlendEnd = `</span></span>`;
 // ============================================================================
 
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com";
+  return (
+    process.env.NEXT_PUBLIC_BASE_URL || "https://stanfordspeakersbureau.com"
+  );
 }
 
 /** Generates the shared <style> block for all emails */
-function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): string {
+function buildEmailStyles(opts?: {
+  isVIP?: boolean;
+  isExternal?: boolean;
+}): string {
   return `
     :root {
       color-scheme: light dark;
@@ -392,14 +403,22 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
     }
     u + .body a { color: #A80D0C !important; }
 
-    ${opts?.isVIP ? `
+    ${
+      opts?.isVIP
+        ? `
     u + .body .vip-border { border-color: #D4AF37 !important; }
     u + .body .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }
-    ` : ""}
-    ${opts?.isExternal ? `
+    `
+        : ""
+    }
+    ${
+      opts?.isExternal
+        ? `
     u + .body .external-border { border-color: #16a34a !important; }
     u + .body .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }
-    ` : ""}
+    `
+        : ""
+    }
 
     /* Standard dark mode (non-Gmail) */
     @media (prefers-color-scheme: dark) {
@@ -411,10 +430,18 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
       .details-card { background-color: #18181b !important; }
       .qr-section { background-color: #18181b !important; }
       .footer { background-color: #18181b !important; border-top: 1px solid #3f3f46 !important; }
-      ${opts?.isVIP ? `.vip-border { border-color: #D4AF37 !important; }
-      .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }` : ""}
-      ${opts?.isExternal ? `.external-border { border-color: #16a34a !important; }
-      .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }` : ""}
+      ${
+        opts?.isVIP
+          ? `.vip-border { border-color: #D4AF37 !important; }
+      .vip-shadow { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important; }`
+          : ""
+      }
+      ${
+        opts?.isExternal
+          ? `.external-border { border-color: #16a34a !important; }
+      .external-shadow { box-shadow: 0 0 15px rgba(22, 163, 74, 0.3) !important; }`
+          : ""
+      }
     }
 
     /* Mobile responsive */
@@ -431,7 +458,11 @@ function buildEmailStyles(opts?: { isVIP?: boolean; isExternal?: boolean }): str
 }
 
 /** Wraps the full HTML document shell around body content */
-function buildEmailShell(title: string, styles: string, bodyContent: string): string {
+function buildEmailShell(
+  title: string,
+  styles: string,
+  bodyContent: string,
+): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -482,10 +513,13 @@ function buildHeroCard(data: {
     <tr>
       <td align="center" style="padding: 0;">
         <div style="max-width: 600px; margin: 0 auto; overflow: hidden;">
-          ${imageUrl ? `
+          ${
+            imageUrl
+              ? `
           <!-- Event Image -->
           <img src="${imageUrl}" alt="${data.eventName}" width="600" style="width: 100%; height: auto; display: block;" />
-          ` : `
+          `
+              : `
           <!-- No image fallback: SSB logo header -->
           <div style="background: linear-gradient(135deg, #A80D0C 0%, #C11211 100%); padding: 40px 24px; text-align: center;">
             <img src="${baseUrl}/logo.png" alt="Stanford Speakers Bureau" width="50" height="50" style="display: block; margin: 0 auto 12px;" />
@@ -493,17 +527,22 @@ function buildHeroCard(data: {
               <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;">Stanford Speakers Bureau</p>
             ${gmailBlendEnd}
           </div>
-          `}
+          `
+          }
           <!-- Title + Tagline + Pills -->
           <div class="hero-info" style="background-color: #18181b; padding: 24px 24px 20px; ${accentBorder}">
             ${gmailBlendStart}
               <h1 class="hero-title" style="margin: 0 0 6px 0; color: #ffffff; font-size: 28px; font-weight: 700; font-family: Georgia, 'Times New Roman', Times, serif; line-height: 1.2;">${data.eventName}</h1>
             ${gmailBlendEnd}
-            ${data.eventTagline ? `
+            ${
+              data.eventTagline
+                ? `
             ${gmailBlendStart}
               <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 15px; line-height: 1.5;">${markdownToEmailHTML(data.eventTagline)}</p>
             ${gmailBlendEnd}
-            ` : ""}
+            `
+                : ""
+            }
             ${pills}
           </div>
         </div>
@@ -568,9 +607,7 @@ function buildInfoPills(data: {
  * Generates the HTML for the "Important" notice block.
  * Accepts optional extra HTML strings to append after the base items.
  */
-function buildImportantNotice(
-  extraItems?: string[],
-): string {
+function buildImportantNotice(extraItems?: string[]): string {
   const allItems = [
     ...IMPORTANT_NOTICE_ITEMS.map(
       (item) =>
@@ -581,7 +618,8 @@ function buildImportantNotice(
 
   const itemsHTML = allItems
     .map((content, i) => {
-      const marginStyle = i < allItems.length - 1 ? ' style="margin-bottom: 8px;"' : "";
+      const marginStyle =
+        i < allItems.length - 1 ? ' style="margin-bottom: 8px;"' : "";
       return `<div${marginStyle}>${content}</div>`;
     })
     .join("\n");
@@ -602,6 +640,62 @@ function buildImportantNoticeText(): string {
   return `BEFORE YOU ARRIVE:\n${IMPORTANT_NOTICE_ITEMS.map((item) => `- ${item.text}`).join("\n")}`;
 }
 
+function standbyNoticeLines(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string[] {
+  const admitClause = startTimeStr
+    ? `Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time, around ${startTimeStr}.`
+    : "Standby admission is first come, first served — we'll start admitting from the standby line closer to the event start time.";
+  const ticketPage = eventUrl
+    ? `<a href="${eventUrl}" target="_blank" rel="noopener noreferrer" style="color: #f59e0b; text-decoration: none; border-bottom: 1px solid #f59e0b;">your ticket page</a>`
+    : "your ticket page";
+  return [
+    "This is a standby ticket, and admission is not guaranteed.",
+    "Please wait in the standby ticket area when you arrive.",
+    admitClause,
+    `Your QR code isn't active yet. It will appear on ${ticketPage} once standby admission opens at the venue.`,
+  ];
+}
+
+/** Builds a prominent standby notice box for standby ticket emails */
+function buildStandbyNotice(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string {
+  const lines = standbyNoticeLines(startTimeStr, eventUrl);
+  const itemsHTML = lines
+    .map(
+      (text, i) =>
+        `<div${i < lines.length - 1 ? ' style="margin-bottom: 8px;"' : ""}>${text}</div>`,
+    )
+    .join("\n");
+
+  return `
+    <div class="important-box" style="background-color: #18181b; border: 3px solid #d97706; padding: 20px 24px; margin-bottom: 24px; border-radius: 8px; text-align: center;">
+      ${gmailBlendStart}
+        <h2 style="margin: 0 0 12px 0; color: #f59e0b; font-size: 18px; font-weight: 700; text-transform: uppercase;"><b>Standby Ticket</b></h2>
+        <div style="color: #f4f4f5; font-size: 15px; line-height: 1.8;">
+          ${itemsHTML}
+        </div>
+      ${gmailBlendEnd}
+    </div>`;
+}
+
+/** Generates plain text standby notice */
+function buildStandbyNoticeText(
+  startTimeStr?: string | null,
+  eventUrl?: string | null,
+): string {
+  // Pass no eventUrl so the lines stay plain text (no HTML anchor); the link is
+  // surfaced as a trailing URL line instead.
+  const lines = standbyNoticeLines(startTimeStr).map((line) => `- ${line}`);
+  if (eventUrl) {
+    lines.push(`- View your ticket page: ${eventUrl}`);
+  }
+  return `STANDBY TICKET:\n${lines.join("\n")}`;
+}
+
 /** Builds the event details card with label/value rows */
 function buildDetailsCard(opts: {
   rows: { label: string; value: string; isLink?: boolean; href?: string }[];
@@ -619,9 +713,10 @@ function buildDetailsCard(opts: {
 
   const rowsHTML = opts.rows
     .map((row) => {
-      const valueHTML = row.isLink && row.href
-        ? `<a href="${row.href}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${row.value}</a>`
-        : `${gmailBlendStart}${row.value}${gmailBlendEnd}`;
+      const valueHTML =
+        row.isLink && row.href
+          ? `<a href="${row.href}" target="_blank" rel="noopener noreferrer" style="color: #A80D0C; text-decoration: none; border-bottom: 1px solid #A80D0C;">${row.value}</a>`
+          : `${gmailBlendStart}${row.value}${gmailBlendEnd}`;
       return `
         <tr>
           <td style="padding: 8px 0; color: #a1a1aa; font-size: 14px; width: 120px; vertical-align: top;">
@@ -710,13 +805,14 @@ function buildQRSection(opts: {
         </div>`
       : "";
 
-  const validityText = opts.ticketValidTime && opts.ticketValidDate
-    ? `${gmailBlendStart}
+  const validityText =
+    opts.ticketValidTime && opts.ticketValidDate
+      ? `${gmailBlendStart}
         <p style="margin: 16px 0 0 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">
           Ticket valid until <span style="font-weight: bold; color: #e4e4e7;">${opts.ticketValidTime}</span> on <span style="font-weight: bold; color: #e4e4e7;">${opts.ticketValidDate}</span> for <span style="font-weight: bold; color: #e4e4e7;">${opts.attendeeName || "you"}</span>. We recommend arriving early to avoid long lines!
         </p>
       ${gmailBlendEnd}`
-    : "";
+      : "";
   const appleWalletButton = opts.appleWalletUrl
     ? `
       <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" style="margin-top: 16px;">
@@ -763,7 +859,11 @@ function buildCalendarButton(googleCalendarUrl: string): string {
 }
 
 /** Builds a centered CTA button */
-function buildButton(href: string, label: string, opts?: { style?: string }): string {
+function buildButton(
+  href: string,
+  label: string,
+  opts?: { style?: string },
+): string {
   return `
     <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
       <tr>
@@ -775,7 +875,14 @@ function buildButton(href: string, label: string, opts?: { style?: string }): st
 }
 
 /** Builds the email footer */
-function buildFooter(): string {
+function buildFooter(unsub?: { url: string; label: string } | null): string {
+  const unsubLine = unsub
+    ? `
+          <p style="margin: 12px 0 0 0; color: #71717a; font-size: 12px;">
+            <a href="${unsub.url}" style="color: #a1a1aa; text-decoration: underline;">${unsub.label}</a>
+          </p>`
+    : "";
+
   return `
     <tr>
       <td align="center" class="footer" style="padding: 30px; background-color: #18181b; border-top: 1px solid #3f3f46; text-align: center;">
@@ -783,14 +890,22 @@ function buildFooter(): string {
           <p style="margin: 0 0 8px 0; color: #71717a; font-size: 12px;">Stanford Speakers Bureau</p>
           <p style="margin: 0; color: #71717a; font-size: 12px;">
             For ADA accommodations or other questions, please email <a href="mailto:${getFromEmail()}" style="color: #a1a1aa; text-decoration: none;">${getFromEmail()}</a>
-          </p>
+          </p>${unsubLine}
         ${gmailBlendEnd}
       </td>
     </tr>`;
 }
 
 /** Builds a text paragraph inside the content area */
-function buildParagraph(text: string, opts?: { color?: string; fontSize?: string; fontWeight?: string; marginBottom?: string }): string {
+function buildParagraph(
+  text: string,
+  opts?: {
+    color?: string;
+    fontSize?: string;
+    fontWeight?: string;
+    marginBottom?: string;
+  },
+): string {
   const color = opts?.color || "#f4f4f5";
   const fontSize = opts?.fontSize || "16px";
   const fontWeight = opts?.fontWeight || "normal";
@@ -867,7 +982,9 @@ function generateICalContent(data: TicketEmailData): string {
   const startDate = new Date(data.eventStartTime);
   if (Number.isNaN(startDate.getTime())) return "";
 
-  const defaultEndDate = new Date(startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS);
+  const defaultEndDate = new Date(
+    startDate.getTime() + CALENDAR_DEFAULT_DURATION_MS,
+  );
   let endDate = defaultEndDate;
   if (data.eventEndTime) {
     const parsedEndDate = new Date(data.eventEndTime);
@@ -932,24 +1049,128 @@ function generateICalContent(data: TicketEmailData): string {
 }
 
 // ============================================================================
-// QR Code generation (unchanged)
+// QR Code generation
 // ============================================================================
+//
+// `qrcode`'s `toBuffer` only exists in its Node ("server") build. Cloudflare
+// Workers resolves the package's `browser` field, which omits `toBuffer`, so we
+// encode the PNG ourselves: `QRCode.create` (present in both builds) yields the
+// module matrix, and the Web-standard CompressionStream produces the
+// zlib-compressed IDAT payload. Pure JS — no pngjs, no Node streams.
+
+const PNG_SIGNATURE = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) {
+    crc = CRC32_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+// PNG chunk: length + type + data + CRC32(type+data), all big-endian.
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const chunk = new Uint8Array(12 + data.length);
+  const view = new DataView(chunk.buffer);
+  view.setUint32(0, data.length);
+  for (let i = 0; i < 4; i++) {
+    chunk[4 + i] = type.charCodeAt(i);
+  }
+  chunk.set(data, 8);
+  view.setUint32(8 + data.length, crc32(chunk.subarray(4, 8 + data.length)));
+  return chunk;
+}
+
+// CompressionStream("deflate") emits a zlib stream (RFC 1950) — exactly the
+// format a PNG IDAT chunk expects.
+async function deflateToZlib(input: Uint8Array): Promise<Uint8Array> {
+  const cs = new CompressionStream("deflate");
+  const writer = cs.writable.getWriter();
+  void writer.write(input as BufferSource);
+  void writer.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
 
 async function generateQRCodePngBuffer(
   ticketId: string,
 ): Promise<Buffer | null> {
   try {
-    const options: QRCodeToBufferOptions = {
-      errorCorrectionLevel: "H",
-      type: "png",
-      width: 400,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#FFFFFF",
-      },
-    };
-    return await QRCode.toBuffer(ticketId, options);
+    const dark: [number, number, number] = [0, 0, 0]; // #000000
+    const light: [number, number, number] = [255, 255, 255]; // #FFFFFF
+    const margin = 2; // quiet-zone width, in modules
+    const targetWidth = 400; // desired image width, in px
+
+    const qr = QRCode.create(ticketId, { errorCorrectionLevel: "H" });
+    const count = qr.modules.size;
+    const modules = qr.modules.data;
+    // Integer scale keeps every module a uniform, crisp size.
+    const scale = Math.max(1, Math.floor(targetWidth / (count + margin * 2)));
+    const dim = (count + margin * 2) * scale;
+
+    // Raw image: each row is one filter byte (0 = None, left as the array's
+    // zero-init) followed by RGB triplets.
+    const rowBytes = 1 + dim * 3;
+    const raw = new Uint8Array(rowBytes * dim);
+    for (let y = 0; y < dim; y++) {
+      const my = Math.floor(y / scale) - margin;
+      const rowStart = y * rowBytes;
+      for (let x = 0; x < dim; x++) {
+        const mx = Math.floor(x / scale) - margin;
+        const isDark =
+          my >= 0 &&
+          my < count &&
+          mx >= 0 &&
+          mx < count &&
+          modules[my * count + mx] !== 0;
+        const color = isDark ? dark : light;
+        const px = rowStart + 1 + x * 3;
+        raw[px] = color[0];
+        raw[px + 1] = color[1];
+        raw[px + 2] = color[2];
+      }
+    }
+
+    const ihdr = new Uint8Array(13);
+    const ihdrView = new DataView(ihdr.buffer);
+    ihdrView.setUint32(0, dim); // width
+    ihdrView.setUint32(4, dim); // height
+    ihdr[8] = 8; // bit depth
+    ihdr[9] = 2; // color type 2 = truecolor RGB
+    // bytes 10-12 (compression / filter / interlace) stay 0
+
+    const idat = await deflateToZlib(raw);
+
+    const ihdrChunk = pngChunk("IHDR", ihdr);
+    const idatChunk = pngChunk("IDAT", idat);
+    const iendChunk = pngChunk("IEND", new Uint8Array(0));
+
+    const png = new Uint8Array(
+      PNG_SIGNATURE.length +
+        ihdrChunk.length +
+        idatChunk.length +
+        iendChunk.length,
+    );
+    let offset = 0;
+    for (const part of [PNG_SIGNATURE, ihdrChunk, idatChunk, iendChunk]) {
+      png.set(part, offset);
+      offset += part.length;
+    }
+
+    return Buffer.from(png);
   } catch (error) {
     console.error("Error generating QR code buffer:", error);
     return null;
@@ -1001,9 +1222,12 @@ async function generateTicketEmailHTML(
   const appleWalletUrl = data.appleWalletUrl ?? null;
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const isStandby = ticketType?.toUpperCase() === "STANDBY";
 
   const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDoorsOpen = doorsOpenTime
+    ? formatPillTime(doorsOpenTime)
+    : null;
 
   const referralCode = generateReferralCode(data.email);
   const referralUrl =
@@ -1015,17 +1239,17 @@ async function generateTicketEmailHTML(
 
   const ticketValidTime = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: PACIFIC_TIMEZONE,
-    })
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
     : "";
   const ticketValidDate = eventStartTime
     ? new Date(eventStartTime).toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-    })
+        month: "long",
+        day: "numeric",
+      })
     : "";
   const attendeeName = data.name?.trim() || "you";
 
@@ -1041,11 +1265,17 @@ async function generateTicketEmailHTML(
   });
 
   // Build detail rows
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [];
   if (data.name) detailRows.push({ label: "Name:", value: data.name });
   detailRows.push({ label: "Event:", value: eventName || "Event" });
   detailRows.push({ label: "Date & Time:", value: formattedDate });
-  if (formattedDoorsOpen) detailRows.push({ label: "Doors Open:", value: formattedDoorsOpen });
+  if (formattedDoorsOpen)
+    detailRows.push({ label: "Doors Open:", value: formattedDoorsOpen });
   if (eventVenue) {
     detailRows.push({
       label: "Location:",
@@ -1060,9 +1290,17 @@ async function generateTicketEmailHTML(
   });
 
   if (REFERRAL_ENABLED && referralCode && !isVIP && !isExternal) {
-    detailRows.push({ label: "Referral Code:", value: `<span style="font-family: monospace;">${referralCode}</span>` });
+    detailRows.push({
+      label: "Referral Code:",
+      value: `<span style="font-family: monospace;">${referralCode}</span>`,
+    });
     if (referralUrl) {
-      detailRows.push({ label: "Referral Link:", value: referralUrl, isLink: true, href: referralUrl });
+      detailRows.push({
+        label: "Referral Link:",
+        value: referralUrl,
+        isLink: true,
+        href: referralUrl,
+      });
     }
   }
 
@@ -1080,43 +1318,61 @@ async function generateTicketEmailHTML(
     isExternal,
   });
 
-  const cancelBanner = !isVIP && !isExternal && cancelTicketUrl
-    ? buildCancelBanner(cancelTicketUrl)
-    : "";
+  const cancelBanner =
+    !isVIP && !isExternal && cancelTicketUrl
+      ? buildCancelBanner(cancelTicketUrl)
+      : "";
 
   const contentSections: string[] = [];
 
-  // Important notice
-  contentSections.push(buildImportantNotice(undefined));
+  // Standby notice (replaces the standard "before you arrive" box) or the
+  // regular important notice
+  if (isStandby) {
+    contentSections.push(buildStandbyNotice(ticketValidTime || null, eventUrl));
+  } else {
+    contentSections.push(buildImportantNotice(undefined));
+  }
 
   // VIP welcome
   if (isVIP) {
-    contentSections.push(buildParagraph(
-      "Use the VIP entrance when you arrive, we've saved you a front-row seat.",
-    ));
+    contentSections.push(
+      buildParagraph(
+        "Use the VIP entrance when you arrive, we've saved you a front-row seat.",
+      ),
+    );
   }
 
   // Welcome message
-  contentSections.push(buildParagraph("Your ticket is confirmed, we can't wait to see you!"));
+  contentSections.push(
+    buildParagraph(
+      isStandby
+        ? "Your standby ticket is reserved. Head to the venue and wait in the standby area — we hope to see you inside!"
+        : "Your ticket is confirmed, we can't wait to see you!",
+    ),
+  );
 
   // Cancel ticket message + button (VIP/External only — regular tickets use the top banner)
   if (isVIP || isExternal) {
-    contentSections.push(buildParagraph(
-      "Can't make it? Please cancel so someone else can attend.",
-    ));
+    contentSections.push(
+      buildParagraph(
+        "Can't make it? Please cancel so someone else can attend.",
+      ),
+    );
     if (cancelTicketUrl) {
       contentSections.push(buildButton(cancelTicketUrl, "Cancel Ticket"));
     }
   }
 
   // Event details card
-  contentSections.push(buildDetailsCard({
-    rows: detailRows,
-    ticketTypeBadge: { type: ticketType || "STANDARD" },
-    actionButtonHref: eventUrl,
-    isVIP,
-    isExternal,
-  }));
+  contentSections.push(
+    buildDetailsCard({
+      rows: detailRows,
+      ticketTypeBadge: { type: ticketType || "STANDARD" },
+      actionButtonHref: eventUrl,
+      isVIP,
+      isExternal,
+    }),
+  );
 
   // Referral message
   if (REFERRAL_ENABLED && referralCode && !isVIP && !isExternal) {
@@ -1131,17 +1387,19 @@ async function generateTicketEmailHTML(
 
   // QR code section
   if (qrImageSrc) {
-    contentSections.push(buildQRSection({
-      qrImageSrc,
-      ticketType: ticketType || "STANDARD",
-      ticketId,
-      appleWalletUrl,
-      ticketValidTime,
-      ticketValidDate,
-      attendeeName,
-      isVIP,
-      isExternal,
-    }));
+    contentSections.push(
+      buildQRSection({
+        qrImageSrc,
+        ticketType: ticketType || "STANDARD",
+        ticketId,
+        appleWalletUrl,
+        ticketValidTime,
+        ticketValidDate,
+        attendeeName,
+        isVIP,
+        isExternal,
+      }),
+    );
   }
 
   // Calendar button
@@ -1170,10 +1428,19 @@ async function generateTicketEmailHTML(
 }
 
 function generateTicketEmailText(data: TicketEmailData): string {
-  const { eventName, ticketType, eventStartTime, eventRoute, ticketId, doorsOpenTime } = data;
+  const {
+    eventName,
+    ticketType,
+    eventStartTime,
+    eventRoute,
+    ticketId,
+    doorsOpenTime,
+  } = data;
 
   const formattedDate = formatFullDateTime(eventStartTime);
-  const formattedDoorsOpen = doorsOpenTime ? formatPillTime(doorsOpenTime) : null;
+  const formattedDoorsOpen = doorsOpenTime
+    ? formatPillTime(doorsOpenTime)
+    : null;
   const baseUrl = getBaseUrl();
   const eventUrl = eventRoute ? `${baseUrl}/events/${eventRoute}` : null;
   const cancelTicketUrl = data.cancelTicketUrl ?? null;
@@ -1185,16 +1452,25 @@ function generateTicketEmailText(data: TicketEmailData): string {
 
   const isVIP = ticketType?.toUpperCase() === "VIP";
   const isExternal = ticketType?.toUpperCase() === "EXTERNAL";
+  const isStandby = ticketType?.toUpperCase() === "STANDBY";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
   const cancelLine = cancelTicketUrl
     ? `Can't make it? Please cancel so someone else can attend.\nCancel Ticket: ${cancelTicketUrl}`
     : "";
 
   return `
-${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : "Ticket Confirmed!"}
+${!isVIP && !isExternal && cancelLine ? `${cancelLine}\n\n---\n` : ""}${isVIP ? "VIP Ticket Confirmed!" : isExternal ? "External Ticket Confirmed!" : isStandby ? "Standby Ticket Reserved!" : "Ticket Confirmed!"}
 
-Your ticket is confirmed, we can't wait to see you!
+${isStandby ? "Your standby ticket is reserved. Head to the venue and wait in the standby area — we hope to see you inside!" : "Your ticket is confirmed, we can't wait to see you!"}
 
-${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
+${isStandby ? `${buildStandbyNoticeText(standbyStartTime, eventUrl)}\n\n` : ""}${isVIP ? "Use the VIP entrance when you arrive, we've saved you a front-row seat.\n\n" : ""}Event Details:
 ${data.name ? `- Name: ${data.name}\n` : ""}- Event: ${eventName || "Event"}
 - Date & Time: ${formattedDate}
 ${formattedDoorsOpen ? `- Doors Open: ${formattedDoorsOpen}\n` : ""}- Ticket Type: ${ticketType || "STANDARD"}
@@ -1203,11 +1479,15 @@ ${eventUrl ? `- Event URL: ${eventUrl}` : ""}
 
 ${buildImportantNoticeText()}
 ${isVIP || isExternal ? `\n${cancelLine}` : ""}
-${REFERRAL_ENABLED && referralCode && !isVIP && !isExternal ? `
+${
+  REFERRAL_ENABLED && referralCode && !isVIP && !isExternal
+    ? `
 - Your Referral Code: ${referralCode}
 ${referralUrl ? `- Your Referral Link: ${referralUrl}` : ""}
 ${REFERRAL_MESSAGE}
-` : ""}
+`
+    : ""
+}
 
 Stanford Speakers Bureau
 For ADA accommodations or other questions, please email ${getFromEmail()}
@@ -1222,9 +1502,14 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     return;
   }
 
-  const subject = data.eventName
-    ? `Your Ticket for ${data.eventName} is enclosed!`
-    : "Your Ticket is enclosed!";
+  const isStandby = data.ticketType?.toUpperCase() === "STANDBY";
+  const subject = isStandby
+    ? data.eventName
+      ? `Your standby ticket for ${data.eventName} is reserved`
+      : "Your standby ticket is reserved"
+    : data.eventName
+      ? `Your Ticket for ${data.eventName} is enclosed!`
+      : "Your Ticket is enclosed!";
   const cancelTicketUrl = await buildCancellationLink({
     baseUrl: getBaseUrl(),
     email: data.email,
@@ -1246,9 +1531,12 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
   };
   const textContent = generateTicketEmailText(renderData);
 
-  // Generate QR and prepare cid
+  // Generate QR and prepare cid. Standby tickets have no scannable QR until
+  // staff open admission at the venue, so we omit it from the email entirely.
   const qrCid = `ticket-qr-${data.ticketId}@stanfordspeakersbureau`;
-  const qrBuffer = await generateQRCodePngBuffer(data.ticketId);
+  const qrBuffer = isStandby
+    ? null
+    : await generateQRCodePngBuffer(data.ticketId);
   const htmlContent = await generateTicketEmailHTML(renderData, {
     qrCid: qrBuffer ? qrCid : undefined,
   });
@@ -1350,7 +1638,8 @@ export type WaitlistEmailData = {
 async function generateWaitlistEmailHTML(
   data: WaitlistEmailData,
 ): Promise<string> {
-  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } = data;
+  const { eventName, position, eventStartTime, eventVenue, eventVenueLink } =
+    data;
 
   const formattedDate = formatFullDateTime(eventStartTime);
 
@@ -1367,9 +1656,11 @@ async function generateWaitlistEmailHTML(
   const contentSections: string[] = [];
 
   // Welcome message
-  contentSections.push(buildParagraph(
-    `You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!`,
-  ));
+  contentSections.push(
+    buildParagraph(
+      `You're on the waitlist for ${eventName}. We'll let you know if a spot opens up!`,
+    ),
+  );
 
   // Waitlist position badge (only show position for top 5)
   if (position <= 5) {
@@ -1393,7 +1684,12 @@ async function generateWaitlistEmailHTML(
   }
 
   // Event details card (partial)
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [
     { label: "Event:", value: eventName },
     { label: "Date & Time:", value: formattedDate },
   ];
@@ -1408,10 +1704,12 @@ async function generateWaitlistEmailHTML(
   contentSections.push(buildDetailsCard({ rows: detailRows }));
 
   // Standby line notice
-  contentSections.push(buildParagraph(
-    "Heads up: If a standby line opens at the venue, the online waitlist closes. Come to the venue for a chance to get in!",
-    { color: "#a1a1aa", fontSize: "14px" },
-  ));
+  contentSections.push(
+    buildParagraph(
+      "Heads up: If a standby line opens at the venue, the online waitlist closes. Come to the venue for a chance to get in!",
+      { color: "#a1a1aa", fontSize: "14px" },
+    ),
+  );
 
   const bodyContent = `
     ${heroCard}
@@ -1435,7 +1733,9 @@ function generateWaitlistEmailText(data: WaitlistEmailData): string {
   const { eventName, position, eventStartTime, eventVenue } = data;
   const formattedDate = formatFullDateTime(eventStartTime);
   const baseUrl = getBaseUrl();
-  const eventUrl = data.eventRoute ? `${baseUrl}/events/${data.eventRoute}` : null;
+  const eventUrl = data.eventRoute
+    ? `${baseUrl}/events/${data.eventRoute}`
+    : null;
 
   return `
 You're on the waitlist!
@@ -1514,7 +1814,8 @@ export type CancellationEmailData = {
 async function generateCancellationEmailHTML(
   data: CancellationEmailData,
 ): Promise<string> {
-  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } = data;
+  const { eventName, eventStartTime, eventRoute, eventVenue, eventVenueLink } =
+    data;
 
   const baseUrl = getBaseUrl();
   const isVIP = data.ticketType?.toUpperCase() === "VIP";
@@ -1537,11 +1838,16 @@ async function generateCancellationEmailHTML(
   const contentSections: string[] = [];
 
   const greeting = data.name ? `Hi ${data.name}, your` : "Your";
-  contentSections.push(buildParagraph(
-    `${greeting} ticket for ${eventName} has been cancelled.`,
-  ));
+  contentSections.push(
+    buildParagraph(`${greeting} ticket for ${eventName} has been cancelled.`),
+  );
 
-  const detailRows: { label: string; value: string; isLink?: boolean; href?: string }[] = [];
+  const detailRows: {
+    label: string;
+    value: string;
+    isLink?: boolean;
+    href?: string;
+  }[] = [];
   if (data.name) detailRows.push({ label: "Name:", value: data.name });
   detailRows.push({ label: "Event:", value: eventName });
   detailRows.push({ label: "Date & Time:", value: formattedDate });
@@ -1553,18 +1859,22 @@ async function generateCancellationEmailHTML(
       href: eventVenueLink || undefined,
     });
   }
-  contentSections.push(buildDetailsCard({
-    rows: detailRows,
-    ticketTypeBadge: { type: data.ticketType || "STANDARD" },
-    actionButtonHref: eventUrl,
-    isVIP,
-    isExternal,
-  }));
+  contentSections.push(
+    buildDetailsCard({
+      rows: detailRows,
+      ticketTypeBadge: { type: data.ticketType || "STANDARD" },
+      actionButtonHref: eventUrl,
+      isVIP,
+      isExternal,
+    }),
+  );
 
-  contentSections.push(buildParagraph(
-    `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
-    { color: "#a1a1aa", fontSize: "14px" },
-  ));
+  contentSections.push(
+    buildParagraph(
+      `If you did not request this cancellation, please contact us at ${getFromEmail()}.`,
+      { color: "#a1a1aa", fontSize: "14px" },
+    ),
+  );
 
   const bodyContent = `
     ${heroCard}
@@ -1733,29 +2043,39 @@ function generateVIPScanNotificationHTML(
     <h2 style="margin: 0;">VIP Ticket Scanned</h2>
   </div>
   <div class="content">
-    ${attendeeName ? `
+    ${
+      attendeeName
+        ? `
     <div class="info-row">
       <span class="label">Attendee Name:</span>
       <span class="value">${attendeeName}</span>
     </div>
-    ` : ""}
+    `
+        : ""
+    }
 
     <div class="info-row">
       <span class="label">Attendee Email:</span>
       <span class="value">${attendeeEmail}</span>
     </div>
 
-    ${scannerName ? `
+    ${
+      scannerName
+        ? `
     <div class="info-row">
       <span class="label">Scanned By:</span>
       <span class="value">${scannerName}${scannerEmail ? ` (${scannerEmail})` : ""}</span>
     </div>
-    ` : scannerEmail ? `
+    `
+        : scannerEmail
+          ? `
     <div class="info-row">
       <span class="label">Scanned By:</span>
       <span class="value">${scannerEmail}</span>
     </div>
-    ` : ""}
+    `
+          : ""
+    }
 
     <div class="info-row">
       <span class="label">Event:</span>
@@ -1777,7 +2097,9 @@ function generateVIPScanNotificationHTML(
   `.trim();
 }
 
-function generateVIPScanNotificationText(data: VIPScanNotificationData): string {
+function generateVIPScanNotificationText(
+  data: VIPScanNotificationData,
+): string {
   const {
     attendeeEmail,
     attendeeName,

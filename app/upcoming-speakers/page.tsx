@@ -6,6 +6,7 @@ import { SuggestSpeakerButton } from "./SuggestSpeakerButton";
 import UpcomingHero from "./UpcomingHero";
 import EmptyEventsState from "./EmptyEventsState";
 import {
+  EVENT_STILL_ALIVE,
   formatEventDate,
   formatTime,
   getImageProxyUrl,
@@ -13,8 +14,7 @@ import {
   serializeEvent,
 } from "@/app/lib/supabase";
 import { getSessionUser } from "@/app/lib/auth";
-import { db, eq, gte, count as dbCount, events, tickets, notify } from "@ssb/db";
-
+import { db, eq, count as dbCount, tickets, notify } from "@ssb/db";
 
 const ogTitle = "Upcoming at Stanford";
 const ogDescription =
@@ -48,7 +48,8 @@ type SanitizedEvent = {
 
 async function getTicketCount(eventId: string): Promise<number> {
   try {
-    const [result] = await db.select({ count: dbCount() })
+    const [result] = await db
+      .select({ count: dbCount() })
       .from(tickets)
       .where(eq(tickets.eventId, eventId));
     return result?.count ?? 0;
@@ -58,17 +59,21 @@ async function getTicketCount(eventId: string): Promise<number> {
 }
 
 async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
-  const bufferDate = new Date();
-  bufferDate.setDate(bufferDate.getDate() - 2);
-
-  const rawEvents = await db.query.events.findMany({
-    where: gte(events.startTimeDate, bufferDate),
-    orderBy: (events, { asc }) => [asc(events.startTimeDate)],
-  }).catch((err: unknown) => {
-    const cause = (err as Error & { cause?: Error })?.cause;
-    console.error("[getUpcomingEvents] query failed:", cause?.message ?? (err as Error).message);
-    throw err;
-  });
+  // Keep events visible until 6 hours past their effective end (end_time_date,
+  // or start_time_date + 12 hours when end is missing).
+  const rawEvents = await db.query.events
+    .findMany({
+      where: EVENT_STILL_ALIVE,
+      orderBy: (events, { asc }) => [asc(events.startTimeDate)],
+    })
+    .catch((err: unknown) => {
+      const cause = (err as Error & { cause?: Error })?.cause;
+      console.error(
+        "[getUpcomingEvents] query failed:",
+        cause?.message ?? (err as Error).message,
+      );
+      throw err;
+    });
 
   return await Promise.all(
     rawEvents.map(async (rawEvent) => {
@@ -160,7 +165,9 @@ export default async function UpcomingSpeakers() {
                     ? "Speaker: To Be Announced"
                     : event.tagline || ""
                 }
-                dateText={formatEventDate(event.isMystery ? event.doors_open : event.start_time_date)}
+                dateText={formatEventDate(
+                  event.isMystery ? event.doors_open : event.start_time_date,
+                )}
                 doorsOpenText={
                   event.doors_open
                     ? `Doors open ${formatTime(event.doors_open)}`
@@ -174,16 +181,16 @@ export default async function UpcomingSpeakers() {
                 locationName={event.isMystery ? "" : event.venue || ""}
                 locationUrl={event.isMystery ? "" : event.venue_link || ""}
                 backgroundImageUrl={
-                  event.isMystery
-                    ? ""
-                    : event.signedImageUrl || ""
+                  event.isMystery ? "" : event.signedImageUrl || ""
                 }
                 ctaHref={event.isMystery ? "" : `/events/${event.route}`}
                 ctaText={event.isMystery ? "" : "Get Tickets"}
                 mystery={event.isMystery}
                 eventDateRaw={event.isMystery ? event.release_date : null}
                 eventId={event.id}
-                isAlreadyNotified={userNotificationState.notifications.has(event.id)}
+                isAlreadyNotified={userNotificationState.notifications.has(
+                  event.id,
+                )}
                 isLoggedIn={userNotificationState.isLoggedIn}
                 capacity={event.capacity}
                 ticketsSold={event.ticketsSold}

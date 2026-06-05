@@ -155,8 +155,9 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={`${direction === "prev" ? "Previous" : "Next"} speaker`}
-      className={`absolute top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#f4d8cd]/60 bg-[#fff8f1] text-[#181210] shadow-[0_18px_36px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-[52%] hover:bg-white lg:flex ${direction === "prev" ? "left-2" : "right-2"
-        }`}
+      className={`absolute top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#f4d8cd]/60 bg-[#fff8f1] text-[#181210] shadow-[0_18px_36px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-[52%] hover:bg-white lg:flex ${
+        direction === "prev" ? "left-2" : "right-2"
+      }`}
     >
       <svg
         width="20"
@@ -280,16 +281,16 @@ export default function SpeakerShowcase() {
     drawerIndex === null
       ? null
       : {
-        slug: SPEAKERS[drawerIndex].slug,
-        name: SPEAKERS[drawerIndex].name,
-        year: SPEAKERS[drawerIndex].year,
-        title: SPEAKERS[drawerIndex].title || undefined,
-        bio: SPEAKERS[drawerIndex].bio,
-        videoUrl: SPEAKERS[drawerIndex].videoUrl,
-        videoLabel: SPEAKERS[drawerIndex].videoLabel,
-        month: SPEAKERS[drawerIndex].month,
-        location: SPEAKERS[drawerIndex].location,
-      };
+          slug: SPEAKERS[drawerIndex].slug,
+          name: SPEAKERS[drawerIndex].name,
+          year: SPEAKERS[drawerIndex].year,
+          title: SPEAKERS[drawerIndex].title || undefined,
+          bio: SPEAKERS[drawerIndex].bio,
+          videoUrl: SPEAKERS[drawerIndex].videoUrl,
+          videoLabel: SPEAKERS[drawerIndex].videoLabel,
+          month: SPEAKERS[drawerIndex].month,
+          location: SPEAKERS[drawerIndex].location,
+        };
 
   return (
     <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(219,76,58,0.12),transparent_32%),linear-gradient(180deg,#1a1412_0%,#211816_100%)] text-white">
@@ -372,10 +373,11 @@ export default function SpeakerShowcase() {
               type="button"
               onClick={() => scrollTo(i)}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${i === selected
-                ? "w-8 bg-[#f08f74]"
-                : "w-4 bg-white/20 hover:bg-white/38"
-                }`}
+              className={`h-1.5 rounded-full transition-all ${
+                i === selected
+                  ? "w-8 bg-[#f08f74]"
+                  : "w-4 bg-white/20 hover:bg-white/38"
+              }`}
             />
           ))}
         </div>

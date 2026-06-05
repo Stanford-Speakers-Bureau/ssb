@@ -3,6 +3,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, suggest, votes, roles } from "@ssb/db";
 import { SUGGEST_MESSAGES } from "@/app/lib/constants";
 import { checkRateLimit, suggestRatelimit } from "@/app/lib/ratelimit";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 
 const MIN_SPEAKER_LENGTH = 2;
 const MAX_SPEAKER_LENGTH = 500;
@@ -125,9 +126,7 @@ export async function POST(req: Request) {
       columns: { speaker: true },
     });
 
-    const existingSpeakers = new Set(
-      existingSuggestions.map((s) => s.speaker),
-    );
+    const existingSpeakers = new Set(existingSuggestions.map((s) => s.speaker));
 
     // Filter out speakers that have already been suggested by this user
     const newSpeakers = speakers.filter(
@@ -143,7 +142,8 @@ export async function POST(req: Request) {
 
     // Insert all new speakers and cast a vote for each
     for (const speakerName of newSpeakers) {
-      const [suggestion] = await db.insert(suggest)
+      const [suggestion] = await db
+        .insert(suggest)
         .values({
           email: user.email,
           speaker: speakerName,
@@ -164,6 +164,8 @@ export async function POST(req: Request) {
         // Suggestion was created successfully; vote is a best-effort enhancement
       }
     }
+
+    await recordMailingListMember({ email: user.email, source: "suggest" });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

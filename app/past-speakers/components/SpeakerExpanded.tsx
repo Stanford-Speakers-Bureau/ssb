@@ -28,11 +28,23 @@ export default function SpeakerExpanded({
     );
   }
 
-  let globalIndex = 0;
+  const indexedSections = sections.map((section, sectionIndex) => {
+    const previousSpeakerCount = sections
+      .slice(0, sectionIndex)
+      .reduce((sum, previous) => sum + previous.speakers.length, 0);
+
+    return {
+      ...section,
+      speakers: section.speakers.map((speaker, index) => ({
+        speaker,
+        globalIndex: previousSpeakerCount + index,
+      })),
+    };
+  });
 
   return (
     <div className="max-w-6xl mx-auto px-6 sm:px-12 py-12 sm:py-16">
-      {sections.map((section) => {
+      {indexedSections.map((section) => {
         if (section.speakers.length === 0) return null;
         return (
           <section key={section.year} className="mb-16 last:mb-0">
@@ -44,10 +56,9 @@ export default function SpeakerExpanded({
             </div>
 
             <div className="space-y-6">
-              {section.speakers.map((speaker) => {
+              {section.speakers.map(({ speaker, globalIndex }) => {
                 const image = images[speaker.slug];
                 const reverse = globalIndex % 2 === 1;
-                globalIndex += 1;
                 return (
                   <ExpandedCard
                     key={speaker.slug}
@@ -81,11 +92,12 @@ function ExpandedCard({
 
   return (
     <motion.article
+      id={`speaker-${speaker.slug}`}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
+      className="group relative scroll-mt-28 overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950"
     >
       <div
         className={`grid ${image ? "md:grid-cols-2" : "grid-cols-1"} ${

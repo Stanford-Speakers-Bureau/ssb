@@ -20,6 +20,7 @@ type TicketWalletData = {
   eventLat: number;
   eventLng: number;
   eventAddress: string;
+  admittingStandby?: boolean | null;
 };
 
 const APPLE_WALLET_IMAGE_FETCH_TIMEOUT_MS = 10_000;
@@ -42,9 +43,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (
-      verifiedWalletToken
-      && ticket_id
-      && ticket_id !== verifiedWalletToken.ticketId
+      verifiedWalletToken &&
+      ticket_id &&
+      ticket_id !== verifiedWalletToken.ticketId
     ) {
       return NextResponse.json(
         { error: "Wallet token does not match the requested ticket" },
@@ -56,7 +57,9 @@ export async function GET(req: NextRequest) {
 
     if (!resolvedTicketId) {
       return NextResponse.json(
-        { error: "Missing required query parameter: ticket_id or wallet_token" },
+        {
+          error: "Missing required query parameter: ticket_id or wallet_token",
+        },
         { status: 400 },
       );
     }
@@ -75,13 +78,13 @@ export async function GET(req: NextRequest) {
     const ticket = await db.query.tickets.findFirst({
       where: verifiedWalletToken
         ? and(
-          eq(tickets.id, verifiedWalletToken.ticketId),
-          eq(tickets.email, verifiedWalletToken.email),
-        )
+            eq(tickets.id, verifiedWalletToken.ticketId),
+            eq(tickets.email, verifiedWalletToken.email),
+          )
         : and(
-          eq(tickets.id, resolvedTicketId),
-          eq(tickets.email, sessionUserEmail!),
-        ),
+            eq(tickets.id, resolvedTicketId),
+            eq(tickets.email, sessionUserEmail!),
+          ),
       columns: {
         id: true,
         email: true,
@@ -103,6 +106,7 @@ export async function GET(req: NextRequest) {
             latitude: true,
             longitude: true,
             address: true,
+            allowAdmittingStandby: true,
           },
         },
       },
@@ -154,17 +158,18 @@ export async function GET(req: NextRequest) {
     const ticketData: TicketWalletData = {
       email: ticket.email,
       name: ticket.name,
-      eventName: event.name!,
+      eventName: event.name ?? "",
       ticketType: ticket.type,
       eventDoorTime: event.doorsOpen?.toISOString() ?? "",
       ticketId: ticket.id,
-      eventVenue: event.venue!,
-      eventVenueLink: event.venueLink!,
+      eventVenue: event.venue ?? "",
+      eventVenueLink: event.venueLink ?? "",
       eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
       eventLat: Number(event.latitude),
       eventLng: Number(event.longitude),
       eventAddress: event.address ?? "",
       start_time_date: event.startTimeDate?.toISOString() ?? "",
+      admittingStandby: event.allowAdmittingStandby,
     };
 
     const passBuf = await getAppleWalletPass(imgBuffer, ticketData);

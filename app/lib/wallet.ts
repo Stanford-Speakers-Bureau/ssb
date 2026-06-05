@@ -3,6 +3,8 @@ import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 import { SignJWT, importPKCS8 } from "jose";
 import { formatInTimeZone } from "date-fns-tz";
 import { fetchWithTimeout } from "./fetch";
+import { deriveAppleWalletAuthToken } from "./wallet-links";
+import { generateGoogleCalendarUrl } from "./utils";
 
 type TicketWalletData = {
   email: string;
@@ -18,9 +20,36 @@ type TicketWalletData = {
   eventLng: number;
   eventAddress: string;
   start_time_date: string;
+  cancelled?: boolean | null;
+  checkedIn?: boolean | null;
+  admittingStandby?: boolean | null;
 };
 
 const WALLET_ASSET_FETCH_TIMEOUT_MS = 10_000;
+
+function toValidDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatPacificTime(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(date);
+}
+
+function formatPacificDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: PACIFIC_TIMEZONE,
+  }).format(date);
+}
 
 export async function getAppleWalletPass(
   image_buffer: Buffer,
@@ -118,127 +147,237 @@ export async function getAppleWalletPass(
 
   const isVIP = ticket.ticketType?.toUpperCase().trim() === "VIP";
   const isExternal = ticket.ticketType?.toUpperCase().trim() === "EXTERNAL";
+  const isStandby = ticket.ticketType?.toUpperCase().trim() === "STANDBY";
+  const isCancelled = ticket.cancelled === true;
+  // A scanned (checked-in) ticket is "used": it's voided like a cancellation so
+  // iOS greys it out at the door, but it carries a welcoming status, not a
+  // cancellation note. Cancellation wins if both are somehow set.
+  const isCheckedIn = ticket.checkedIn === true && !isCancelled;
+  // Standby passes flip from "please wait" to "entry permitted" when staff open
+  // standby admission for the event (allow_admitting_standby). The change rides
+  // on the single back-status field below so iOS shows our custom banner.
+  const isStandbyAdmitting =
+    isStandby &&
+    ticket.admittingStandby === true &&
+    !isCancelled &&
+    !isCheckedIn;
+  const statusValue = isCancelled
+    ? "Cancelled"
+    : isCheckedIn
+      ? "Checked In ✓"
+      : isStandby
+        ? isStandbyAdmitting
+          ? "Entry Permitted ✓"
+          : "Standby — please wait"
+        : "Active";
+  // webServiceURL + authenticationToken make the pass updatable: the device
+  // registers with our PassKit web service and we push refreshes via APNs.
+  // Only passes issued with these fields can ever receive remote updates.
+  const authenticationToken = await deriveAppleWalletAuthToken(ticket.ticketId);
   const props = {
     passTypeIdentifier: "pass.com.stanfordspeakersbureau.ticket",
     teamIdentifier: "SNC2X5N2CY",
     serialNumber: ticket.ticketId,
     organizationName: "Stanford Speakers Bureau",
+    webServiceURL: `${baseUrl}/api/wallet`,
+    authenticationToken,
+    voided: isCancelled || isCheckedIn,
 
     description: ticket.ticketType,
-    backgroundColor: isVIP
-      ? "rgb(122, 92, 0)"
-      : isExternal
-        ? "rgb(22, 101, 52)"
-        : "rgb(168, 13, 12)",
+    // Standby passes are always blue (every state — please-wait, entry-permitted,
+    // checked-in, cancelled); the colour is keyed off the type, not the status.
+    backgroundColor: isStandby
+      ? "rgb(30, 64, 175)"
+      : isVIP
+        ? "rgb(122, 92, 0)"
+        : isExternal
+          ? "rgb(22, 101, 52)"
+          : "rgb(168, 13, 12)",
     foregroundColor: "rgb(255, 255, 255)",
-    labelColor: isVIP
-      ? "rgb(255, 235, 180)"
-      : isExternal
-        ? "rgb(187, 247, 208)"
-        : "rgb(255, 215, 0)",
+    labelColor: isStandby
+      ? "rgb(191, 219, 254)"
+      : isVIP
+        ? "rgb(255, 235, 180)"
+        : isExternal
+          ? "rgb(187, 247, 208)"
+          : "rgb(255, 215, 0)",
   };
 
   // DB timestamps are stored as timestamptz (UTC). toISOString() in the route
   // produces a UTC "Z" string — parse directly rather than re-applying a
   // Pacific offset via fromZonedTime, which would double-shift the time.
-  const doorTimeUTC = new Date(ticket.eventDoorTime);
-  const startTimeUTC = new Date(ticket.start_time_date);
+  // Missing/invalid timestamps yield null so date-dependent fields are skipped
+  // rather than throwing when formatted (Intl throws on an Invalid Date).
+  const doorTime = toValidDate(ticket.eventDoorTime);
+  const startTime = toValidDate(ticket.start_time_date);
+
+  // Shared semantic tags. These let iOS surface native event intelligence
+  // (smart date headers, one-tap Get Directions, time-to-leave, richer
+  // lock-screen relevance) without changing the visible layout.
+  const eventSemantics: Record<string, unknown> = {
+    eventName: ticket.eventName,
+    eventType: "PKEventTypeGeneric",
+  };
+  if (startTime) eventSemantics.eventStartDate = startTime.toISOString();
+  if (doorTime) {
+    eventSemantics.eventEndDate = new Date(
+      doorTime.getTime() + 86_400_000,
+    ).toISOString();
+  }
+  const venueSemantics: Record<string, unknown> = {
+    venueName: ticket.eventVenue,
+  };
+  if (ticket.eventLat && ticket.eventLng) {
+    venueSemantics.venueLocation = {
+      latitude: ticket.eventLat,
+      longitude: ticket.eventLng,
+    };
+  }
 
   const pass = new PKPass(buffers, certificates, props);
   pass.type = "eventTicket";
-  pass.headerFields.push({
-    key: "date-time",
-    label: new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: PACIFIC_TIMEZONE,
-    }).format(doorTimeUTC),
-    value: new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: PACIFIC_TIMEZONE,
-    }).format(doorTimeUTC),
-    textAlignment: "PKTextAlignmentLeft",
-  });
+  // changeMessage lives on exactly ONE field per logical attribute (the
+  // user-facing front field). The back-of-pass mirrors below update silently.
+  // If two fields with a changeMessage changed in the same update, iOS can't
+  // pick one line and falls back to the generic "<pass style> changed" banner.
+  if (doorTime) {
+    pass.headerFields.push({
+      key: "date-time",
+      label: formatPacificTime(doorTime),
+      value: formatPacificDate(doorTime),
+      changeMessage: "Heads up — the event is now %@.",
+      textAlignment: "PKTextAlignmentLeft",
+      semantics: eventSemantics,
+    });
+  }
   pass.secondaryFields.push(
     {
       key: "event",
       label: "Event",
       value: ticket.eventName,
+      changeMessage: "Event updated to %@.",
       textAlignment: "PKTextAlignmentLeft",
+      semantics: { eventName: ticket.eventName },
     },
     {
       key: "loc",
       label: "Location",
       value: ticket.eventVenue,
+      changeMessage: "📍 New location: %@.",
       textAlignment: "PKTextAlignmentLeft",
+      semantics: venueSemantics,
     },
   );
   pass.auxiliaryFields.push({
     key: "type",
     label: "Type",
     value: ticket.ticketType,
+    changeMessage: "Your ticket is now %@.",
     textAlignment: "PKTextAlignmentLeft",
   });
-  if (ticket.name) {
-    pass.auxiliaryFields.push({
-      key: "attendee",
-      label: "Attendee",
-      value: ticket.name,
-      textAlignment: "PKTextAlignmentRight",
-    });
-  }
-  pass.setBarcodes({
-    format: "PKBarcodeFormatQR",
-    message: ticket.ticketId,
-    messageEncoding: "iso-8859-1",
-    altText: ticket.name || ticket.email,
+  // Always render the attendee field (placeholder when empty) so its key never
+  // appears/disappears — a structural change also triggers the generic banner.
+  pass.auxiliaryFields.push({
+    key: "attendee",
+    label: "Attendee",
+    value: ticket.name || "—",
+    changeMessage: "This ticket is now under the name %@.",
+    textAlignment: "PKTextAlignmentRight",
   });
-  if (ticket.name) {
-    pass.backFields.push({
-      key: "back-name",
-      label: "Name",
-      value: ticket.name,
+  // A standby ticket carries no scannable code until staff open admission — the
+  // QR only appears once admitting (or if it's already checked in / cancelled,
+  // where the pass is voided anyway). When admission opens the barcode appears
+  // alongside the back-status flip, so the user still gets the custom banner.
+  const hideStandbyBarcode =
+    isStandby &&
+    ticket.admittingStandby !== true &&
+    !isCheckedIn &&
+    !isCancelled;
+  if (!hideStandbyBarcode) {
+    pass.setBarcodes({
+      format: "PKBarcodeFormatQR",
+      message: ticket.ticketId,
+      messageEncoding: "iso-8859-1",
+      altText: ticket.name || ticket.email,
     });
   }
+  pass.backFields.push({
+    key: "back-status",
+    label: "Status",
+    value: statusValue,
+    // The check-in push rides on this single, always-present field so iOS shows
+    // our welcome line rather than the generic "<pass> changed" banner. (Adding
+    // a new back field on scan would be a structural change and suppress it.)
+    changeMessage: isCheckedIn
+      ? "✅ %@ — welcome to the event!"
+      : isStandbyAdmitting
+        ? "🎉 Standby entry is now open — head to the door!"
+        : "Ticket status changed to %@.",
+  });
+  if (isCancelled) {
+    pass.backFields.push({
+      key: "back-cancelled-note",
+      label: "Cancellation",
+      value: "This ticket has been cancelled and is no longer valid for entry.",
+    });
+  }
+  // Tappable action links for the back of the pass.
+  const mapsDirections =
+    ticket.eventLat && ticket.eventLng
+      ? `https://maps.apple.com/?daddr=${ticket.eventLat},${ticket.eventLng}` +
+        (ticket.eventVenue ? `&q=${encodeURIComponent(ticket.eventVenue)}` : "")
+      : null;
+  const directionsUrl = ticket.eventVenueLink || mapsDirections;
+  const calendarUrl =
+    generateGoogleCalendarUrl({
+      eventName: ticket.eventName,
+      eventStartTime: ticket.start_time_date || null,
+      eventVenue: ticket.eventVenue,
+      ticketId: ticket.ticketId,
+      ticketEmail: ticket.email,
+      ticketType: ticket.ticketType,
+    }) || null;
+  // Plain email address: Wallet's data detector linkifies it into a mail
+  // composer. A full mailto:?subject= URI would render as literal text instead.
+  const supportEmail =
+    process.env.SES_FROM_EMAIL || "tickets@stanfordspeakersbureau.com";
+
+  // Back-of-pass mirrors update silently (no changeMessage) so they don't
+  // compete with the front fields for the notification banner.
+  pass.backFields.push({
+    key: "back-name",
+    label: "Name",
+    value: ticket.name ?? "Not provided",
+  });
   pass.backFields.push(
     {
       key: "back-event",
       label: "Event",
       value: ticket.eventName,
     },
-    {
-      key: "back-start-time",
-      label: "Start Time",
-      value: new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(startTimeUTC),
-    },
-    {
-      key: "back-door-time",
-      label: "Doors Open",
-      value: new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(doorTimeUTC),
-    },
-    {
-      key: "back-date",
-      label: "Date",
-      value: new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        timeZone: PACIFIC_TIMEZONE,
-      }).format(doorTimeUTC),
-    },
+    ...(startTime
+      ? [
+          {
+            key: "back-start-time",
+            label: "Start Time",
+            value: formatPacificTime(startTime),
+          },
+        ]
+      : []),
+    ...(doorTime
+      ? [
+          {
+            key: "back-door-time",
+            label: "Doors Open",
+            value: formatPacificTime(doorTime),
+          },
+          {
+            key: "back-date",
+            label: "Date",
+            value: formatPacificDate(doorTime),
+          },
+        ]
+      : []),
     {
       key: "back-type",
       label: "Ticket Type",
@@ -259,28 +398,54 @@ export async function getAppleWalletPass(
       label: "Location",
       value: ticket.eventVenue,
     },
-    {
-      key: "back-loc-link",
-      label: "Directions",
-      value: ticket.eventVenueLink,
-    },
+    // Prefer the venue's own directions link; otherwise route to the
+    // coordinates in Apple Maps. Wallet renders these URLs as tappable links.
+    ...(directionsUrl
+      ? [
+          {
+            key: "back-loc-link",
+            label: "Directions",
+            value: directionsUrl,
+          },
+        ]
+      : []),
     {
       key: "back-event-link",
       label: "Event Details",
       value: ticket.eventLink,
     },
-  );
-  pass.setExpirationDate(new Date(doorTimeUTC.getTime() + 86_400_000));
-  // iOS gets stricter when you provide both location and time data, so only provide time to maximize chances of success
-  // pass.setLocations({
-  //   latitude: ticket.eventLat,
-  //   longitude: ticket.eventLng,
-  // });
-  pass.setRelevantDates([
+    ...(calendarUrl
+      ? [
+          {
+            key: "back-calendar",
+            label: "Add to Calendar",
+            value: calendarUrl,
+          },
+        ]
+      : []),
     {
-      relevantDate: doorTimeUTC,
+      key: "back-contact",
+      label: "Questions?",
+      value: supportEmail,
     },
-  ]);
+  );
+  // Surface the pass on the lock screen near the venue. Note: iOS gets stricter
+  // about lock-screen relevance when both location and time are present and
+  // tends to favor one signal at a time — both are still valid to set.
+  if (ticket.eventLat && ticket.eventLng) {
+    pass.setLocations({
+      latitude: ticket.eventLat,
+      longitude: ticket.eventLng,
+      relevantText: `${ticket.eventName} is here`,
+    });
+  }
+  if (doorTime) {
+    pass.setExpirationDate(new Date(doorTime.getTime() + 86_400_000));
+    pass.setRelevantDates([
+      { relevantDate: doorTime },
+      ...(startTime ? [{ relevantDate: startTime }] : []),
+    ]);
+  }
 
   return pass.getAsBuffer();
 }

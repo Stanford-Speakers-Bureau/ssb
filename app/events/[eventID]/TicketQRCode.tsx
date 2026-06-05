@@ -56,8 +56,9 @@ export default function TicketQRCode({
           />
         )}
         <div
-          className={`bg-white rounded-lg shadow-2xl border-4 border-white relative z-0 ${compact ? "p-3 sm:p-4" : "p-6 md:p-8"
-            }`}
+          className={`bg-white rounded-lg shadow-2xl border-4 border-white relative z-0 ${
+            compact ? "p-3 sm:p-4" : "p-6 md:p-8"
+          }`}
         >
           <QRCodeSVG value={ticketId} size={size} level="H" marginSize={2} />
         </div>
@@ -77,7 +78,29 @@ export default function TicketQRCode({
           "Standby tickets do not guarantee entry. Arrive early for the best chance of admission."
         ) : attendeeName && eventStartTime ? (
           <>
-            Ticket valid until <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: PACIFIC_TIMEZONE })}</span> on <span className="font-bold text-zinc-200">{new Date(eventStartTime).toLocaleString("en-US", { month: "long", day: "numeric" })}</span> for <span className="font-bold text-zinc-200">{attendeeName}</span>.{showArriveEarly && <><br />We recommend arriving early to avoid long lines!</>}
+            Ticket valid until{" "}
+            <span className="font-bold text-zinc-200">
+              {new Date(eventStartTime).toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                timeZone: PACIFIC_TIMEZONE,
+              })}
+            </span>{" "}
+            on{" "}
+            <span className="font-bold text-zinc-200">
+              {new Date(eventStartTime).toLocaleString("en-US", {
+                month: "long",
+                day: "numeric",
+              })}
+            </span>{" "}
+            for <span className="font-bold text-zinc-200">{attendeeName}</span>.
+            {showArriveEarly && (
+              <>
+                <br />
+                We recommend arriving early to avoid long lines!
+              </>
+            )}
           </>
         ) : (
           "Show this QR code at the event entrance"

@@ -11,6 +11,7 @@ import { glassPanel, NoticeBanner } from "./ui";
 import ReferralShare from "./ReferralShare";
 import { generateReferralCode } from "@/app/lib/utils";
 import CountdownTimer from "./CountdownTimer";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
 
 type TicketSectionProps = {
   eventId: string;
@@ -37,6 +38,8 @@ type TicketSectionProps = {
   allowCancelFlowAccess?: boolean;
   initialEmailCancelAttendeeName?: string | null;
   eventName?: string | null;
+  initialAllowAdmittingStandby?: boolean;
+  initialViewerStateLoaded?: boolean;
 };
 
 type ViewerEventStateResponse = {
@@ -49,6 +52,7 @@ type ViewerEventStateResponse = {
   isOnWaitlist?: boolean;
   waitlistPosition?: number | null;
   isNotified?: boolean;
+  allowAdmittingStandby?: boolean;
 };
 
 export default function TicketSection({
@@ -76,6 +80,8 @@ export default function TicketSection({
   allowCancelFlowAccess = false,
   initialEmailCancelAttendeeName = null,
   eventName = null,
+  initialAllowAdmittingStandby = false,
+  initialViewerStateLoaded = false,
 }: TicketSectionProps) {
   const router = useRouter();
   const [hasTicket, setHasTicket] = useState(initialHasTicket);
@@ -86,22 +92,37 @@ export default function TicketSection({
   const [ticketName, setTicketName] = useState<string | null>(
     initialTicketName,
   );
-  const [viewerUserEmail, setViewerUserEmail] = useState<string | null>(userEmail);
+  const [viewerUserEmail, setViewerUserEmail] = useState<string | null>(
+    userEmail,
+  );
   const [isOnWaitlist, setIsOnWaitlist] = useState(initialIsOnWaitlist);
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(
     initialWaitlistPosition,
   );
   const [isNotified, setIsNotified] = useState(initialIsNotified);
   const [isScanned, setIsScanned] = useState(initialIsScanned);
-  const [isViewerStateLoading, setIsViewerStateLoading] = useState(true);
+  const [isViewerStateLoading, setIsViewerStateLoading] = useState(
+    !initialViewerStateLoaded,
+  );
   const [viewerStateError, setViewerStateError] = useState<string | null>(null);
   const [viewerStateRequestKey, setViewerStateRequestKey] = useState(0);
 
   const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
-  const [qrRevealed, setQrRevealed] = useState(false);
   const [scannedRevealed, setScannedRevealed] = useState(false);
+  const [admittingStandby, setAdmittingStandby] = useState(
+    initialAllowAdmittingStandby,
+  );
+  const [standbyAdmissionOpened, setStandbyAdmissionOpened] = useState(false);
 
   const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
 
   const onAddToAppleWallet = () => {
     if (!ticketId || isLoadingAppleWallet) return;
@@ -146,6 +167,11 @@ export default function TicketSection({
     let ignore = false;
 
     async function loadViewerState() {
+      if (initialViewerStateLoaded && viewerStateRequestKey === 0) {
+        setIsViewerStateLoading(false);
+        return;
+      }
+
       setIsViewerStateLoading(true);
       setViewerStateError(null);
 
@@ -178,6 +204,7 @@ export default function TicketSection({
             : null,
         );
         setIsNotified(!!data.isNotified);
+        setAdmittingStandby(!!data.allowAdmittingStandby);
       } catch (error) {
         console.error("Failed to load viewer event state:", error);
         if (!ignore) {
@@ -197,15 +224,43 @@ export default function TicketSection({
     return () => {
       ignore = true;
     };
-  }, [eventId, viewerStateRequestKey]);
+  }, [eventId, initialViewerStateLoaded, viewerStateRequestKey]);
+
+  // While a standby holder is waiting (admission not yet open), poll for the
+  // flip so we can prompt them to refresh and reveal their QR. The QR itself is
+  // only rendered after a re-fetch, so we surface a refresh CTA rather than
+  // swapping it in silently.
+  useEffect(() => {
+    if (!isStandbyTicket || admittingStandby) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/events/viewer-state?eventId=${encodeURIComponent(eventId)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as ViewerEventStateResponse;
+        if (!cancelled && data.allowAdmittingStandby) {
+          setStandbyAdmissionOpened(true);
+        }
+      } catch {
+        // Ignore transient poll failures; the next tick retries.
+      }
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isStandbyTicket, admittingStandby, eventId]);
 
   useEffect(() => {
     if (
-      requireTicketAccess
-      && !allowCancelFlowAccess
-      && !isViewerStateLoading
-      && !viewerStateError
-      && !hasTicket
+      requireTicketAccess &&
+      !allowCancelFlowAccess &&
+      !isViewerStateLoading &&
+      !viewerStateError &&
+      !hasTicket
     ) {
       router.replace("/upcoming-speakers");
     }
@@ -272,6 +327,7 @@ export default function TicketSection({
     referralsEnabled,
     initialIsScanned: isScanned,
     standbyMode,
+    allowAdmittingStandby: admittingStandby,
     allowCancelFlowAccess,
     initialEmailCancelAttendeeName,
     ticketType,
@@ -279,8 +335,8 @@ export default function TicketSection({
   };
 
   if (
-    isViewerStateLoading
-    || (requireTicketAccess && !allowCancelFlowAccess && !hasTicket)
+    isViewerStateLoading ||
+    (requireTicketAccess && !allowCancelFlowAccess && !hasTicket)
   ) {
     return (
       <div className="event-ticket-section flex flex-col gap-5">
@@ -310,9 +366,7 @@ export default function TicketSection({
       <div className="event-ticket-section flex flex-col gap-5">
         <div className={glassPanel + " p-5 sm:p-6"}>
           <div className="flex flex-col items-center gap-4 text-center">
-            <p className="text-sm font-medium text-white">
-              {viewerStateError}
-            </p>
+            <p className="text-sm font-medium text-white">{viewerStateError}</p>
             <button
               onClick={() => setViewerStateRequestKey((value) => value + 1)}
               className="rounded-xl bg-[#A80D0C] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E0B0A]"
@@ -338,7 +392,11 @@ export default function TicketSection({
       {hasTicket && (
         <>
           {isEventLongOver && (
-            <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
+            <div
+              className={
+                glassPanel + " p-4 sm:p-5 flex items-center justify-center"
+              }
+            >
               <p className="text-sm font-medium text-white text-center">
                 This event is over. Thank you for attending!
               </p>
@@ -346,7 +404,11 @@ export default function TicketSection({
           )}
 
           {showDoorsCountdown && doorsOpenDate && (
-            <div className={glassPanel + " p-4 sm:p-5 flex items-center justify-center"}>
+            <div
+              className={
+                glassPanel + " p-4 sm:p-5 flex items-center justify-center"
+              }
+            >
               <CountdownTimer
                 targetDate={doorsOpenDate}
                 label="Doors open in"
@@ -358,21 +420,62 @@ export default function TicketSection({
           {ticketType?.toUpperCase() === "VIP" && (
             <NoticeBanner
               color="amber"
-              icon={<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" /></svg>}
+              icon={
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
+                </svg>
+              }
             >
               We&apos;ve reserved a seat for you in the front few rows. Please
               use the VIP entrance when you arrive at the venue.
             </NoticeBanner>
           )}
           {ticketId && (
-            <div className={`${isStandbyTicket ? "rounded-xl bg-zinc-900/50 border border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}>
+            <div
+              className={`${isStandbyTicket ? "rounded-xl bg-zinc-900/50 border border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}
+            >
               {isStandbyTicket && (
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/40 to-amber-400/0" />
               )}
 
               {isStandbyTicket && (
                 <div className="mb-3 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/25">
-                  <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Standby Ticket</p>
+                  <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+                    Standby Ticket
+                  </p>
+                </div>
+              )}
+
+              {isStandbyTicket && (
+                <div className="w-full mb-4">
+                  <NoticeBanner
+                    color="amber"
+                    icon={
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                        />
+                      </svg>
+                    }
+                  >
+                    This is a standby ticket, and admission is not guaranteed.
+                    Please wait in the standby ticket area. Standby admission is
+                    first come, first served — we&apos;ll start admitting from
+                    the standby line closer to the event start time
+                    {standbyStartTime ? `, around ${standbyStartTime}` : ""}.
+                  </NoticeBanner>
                 </div>
               )}
 
@@ -386,12 +489,27 @@ export default function TicketSection({
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
                     animate={{ x: ["-100%", "100%"] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      repeatDelay: 1,
+                    }}
                   />
                   <div className="relative flex items-center gap-2.5">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                      <svg
+                        className="w-4 h-4 text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                        />
                       </svg>
                     </div>
                     <div>
@@ -414,52 +532,113 @@ export default function TicketSection({
               )}
 
               <div className="relative">
-                <TicketQRCode
-                  ticketId={ticketId}
-                  size={190}
-                  compact
-                  ticketType={ticketType}
-                  attendeeName={ticketName}
-                  eventStartTime={eventStartTime ?? doorsOpen}
-                />
+                {/* A standby ticket has no scannable QR until staff open
+                    admission for the event. Until then we render a placeholder
+                    instead of the real code (not just an overlay over it). */}
+                {isStandbyTicket && !admittingStandby ? (
+                  <div
+                    className={`flex flex-col items-center justify-center rounded-lg ${standbyAdmissionOpened ? "bg-emerald-950" : "bg-zinc-900"}`}
+                    style={{ width: 190, height: 190 }}
+                  >
+                    {standbyAdmissionOpened ? (
+                      <>
+                        <svg
+                          className="w-10 h-10 text-emerald-400 mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                          />
+                        </svg>
+                        <p className="text-sm font-semibold text-emerald-300 text-center px-4">
+                          Standby admission is open!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setStandbyAdmissionOpened(false);
+                            setViewerStateRequestKey((k) => k + 1);
+                          }}
+                          className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-sm font-semibold cursor-pointer hover:bg-emerald-500/25 transition-colors"
+                        >
+                          Refresh to reveal QR
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-10 h-10 text-zinc-500 mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                          />
+                        </svg>
+                        <p className="text-sm font-semibold text-zinc-400 text-center px-4">
+                          QR unlocks when standby admission opens
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <TicketQRCode
+                      ticketId={ticketId}
+                      size={190}
+                      compact
+                      ticketType={ticketType}
+                      attendeeName={ticketName}
+                      eventStartTime={eventStartTime ?? doorsOpen}
+                    />
 
-                {/* Standby ticket overlay — tap to reveal */}
-                <AnimatePresence>
-                  {isStandbyTicket && !qrRevealed && (
-                    <motion.button
-                      initial={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      onClick={() => setQrRevealed(true)}
-                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900 rounded-lg cursor-pointer"
-                    >
-                      <svg className="w-10 h-10 text-zinc-500 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
-                      </svg>
-                      <p className="text-sm font-semibold text-zinc-400">Tap to reveal standby ticket</p>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-
-                {/* Scanned ticket overlay — tap to reveal */}
-                <AnimatePresence>
-                  {isScanned && !scannedRevealed && (
-                    <motion.button
-                      initial={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      onClick={() => setScannedRevealed(true)}
-                      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-950 rounded-lg cursor-pointer"
-                    >
-                      <svg className="w-10 h-10 text-emerald-400 mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                      </svg>
-                      <p className="text-sm font-semibold text-emerald-300">Ticket scanned</p>
-                      <p className="text-xs text-emerald-400/70 mt-1">Enjoy the event!</p>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                    {/* Scanned ticket overlay — tap to reveal */}
+                    <AnimatePresence>
+                      {isScanned && !scannedRevealed && (
+                        <motion.button
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => setScannedRevealed(true)}
+                          className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-950 rounded-lg cursor-pointer"
+                        >
+                          <svg
+                            className="w-10 h-10 text-emerald-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                            />
+                          </svg>
+                          <p className="text-sm font-semibold text-emerald-300">
+                            Ticket scanned
+                          </p>
+                          <p className="text-xs text-emerald-400/70 mt-1">
+                            Enjoy the event!
+                          </p>
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
               </div>
 
               <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
@@ -482,7 +661,6 @@ export default function TicketSection({
                   )}
                 </button>
               </div>
-
             </div>
           )}
         </>
@@ -491,29 +669,46 @@ export default function TicketSection({
       {/* Cancel ticket button — right after ticket card */}
       {hasTicket && <TicketButton {...ticketButtonProps} />}
 
-      {hasTicket && referralsEnabled && viewerUserEmail && (() => {
-        const code = generateReferralCode(viewerUserEmail);
-        if (!code) return null;
-        return (
-          <div className={glassPanel + " overflow-hidden"}>
-            <ReferralShare
-              referralCode={code}
-              route={eventRoute}
-              eventId={eventId}
-            />
-          </div>
-        );
-      })()}
+      {hasTicket &&
+        referralsEnabled &&
+        viewerUserEmail &&
+        (() => {
+          const code = generateReferralCode(viewerUserEmail);
+          if (!code) return null;
+          return (
+            <div className={glassPanel + " overflow-hidden"}>
+              <ReferralShare
+                referralCode={code}
+                route={eventRoute}
+                eventId={eventId}
+              />
+            </div>
+          );
+        })()}
 
       {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
         <NoticeBanner
           color="red"
-          icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>}
+          icon={
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              />
+            </svg>
+          }
         >
-          This ticket is not transferable. A photo ID will be required for entry.
+          This ticket is not transferable. A photo ID will be required for
+          entry.
         </NoticeBanner>
       )}
-
     </div>
   );
 }

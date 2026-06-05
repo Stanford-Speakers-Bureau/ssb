@@ -4,11 +4,7 @@ import {
   type TicketingRole,
 } from "@ssb/db/ticketingRoles";
 
-export {
-  DEFAULT_TICKETING_ROLES,
-  TICKETING_ROLE_OPTIONS,
-  type TicketingRole,
-};
+export { DEFAULT_TICKETING_ROLES, TICKETING_ROLE_OPTIONS, type TicketingRole };
 
 export const ROLE_INELIGIBLE_CODE = "ticketing_role_ineligible";
 
@@ -44,9 +40,7 @@ export function resolveTicketingRoles(
   values: readonly string[] | null | undefined,
 ): TicketingRole[] {
   const sanitized = sanitizeTicketingRoles(values ?? []);
-  return sanitized.length > 0
-    ? sanitized
-    : [...DEFAULT_TICKETING_ROLES];
+  return sanitized.length > 0 ? sanitized : [...DEFAULT_TICKETING_ROLES];
 }
 
 export function sanitizeTicketingRoles(
@@ -61,16 +55,18 @@ export function sanitizeTicketingRoles(
     }
   }
 
-  return TICKETING_ROLE_OPTIONS
-    .map(({ value }) => value)
-    .filter((role) => normalized.has(role));
+  return TICKETING_ROLE_OPTIONS.map(({ value }) => value).filter((role) =>
+    normalized.has(role),
+  );
 }
 
 export function formatTicketingRoleList(
   roles: readonly string[] | null | undefined,
 ): string {
-  const labels = resolveTicketingRoles(roles).map((role) =>
-    TICKETING_ROLE_OPTIONS.find((option) => option.value === role)?.label ?? role
+  const labels = resolveTicketingRoles(roles).map(
+    (role) =>
+      TICKETING_ROLE_OPTIONS.find((option) => option.value === role)?.label ??
+      role,
   );
 
   if (labels.length === 1) {

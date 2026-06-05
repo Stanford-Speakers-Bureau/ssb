@@ -9,10 +9,18 @@ import {
 } from "@/app/lib/supabase";
 import { verifyCancellationToken } from "@/app/lib/cancellation-links";
 import { verifyEventFeedbackToken } from "@/app/lib/feedback-links";
-import { generateEventTitle, generateEventDescription, stripMarkdown } from "@/app/lib/metadata";
+import {
+  generateEventTitle,
+  generateEventDescription,
+  stripMarkdown,
+} from "@/app/lib/metadata";
 import { getEventEndDate, isEventOver } from "@/app/lib/eventTime";
 import { generateGoogleCalendarUrl } from "@/app/lib/utils";
 import { normalizeEmail } from "@/app/lib/validation";
+import {
+  getAnonymousViewerEventState,
+  getViewerEventState,
+} from "@/app/lib/viewer-event-state";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -24,6 +32,7 @@ import ProhibitedItems from "./ProhibitedItems";
 import HeroSection from "./HeroSection";
 import LivestreamBanner from "./LivestreamBanner";
 import EventFeedbackCard from "./EventFeedbackCard";
+import QuestionsBar from "./QuestionsBar";
 import { NoticeBanner } from "./ui";
 
 interface PageProps {
@@ -48,7 +57,9 @@ async function getVerifiedCancellationFlow(input: {
   attendeeName: string | null;
 }> {
   const cancelTicket =
-    typeof input.cancelTicketParam === "string" ? input.cancelTicketParam : null;
+    typeof input.cancelTicketParam === "string"
+      ? input.cancelTicketParam
+      : null;
   const cancelToken =
     typeof input.cancelTokenParam === "string" ? input.cancelTokenParam : null;
 
@@ -97,7 +108,9 @@ async function getVerifiedFeedbackFlow(input: {
   feedbackTokenParam?: string | string[] | undefined;
 }): Promise<{ allowFeedbackFlowAccess: boolean }> {
   const feedbackToken =
-    typeof input.feedbackTokenParam === "string" ? input.feedbackTokenParam : null;
+    typeof input.feedbackTokenParam === "string"
+      ? input.feedbackTokenParam
+      : null;
 
   if (!feedbackToken) {
     return { allowFeedbackFlowAccess: false };
@@ -133,16 +146,18 @@ export async function generateMetadata({
   if (!event || isEventMystery(event)) {
     return {
       title: "Event",
-      description: "View event details and get tickets from Stanford Speakers Bureau.",
+      description:
+        "View event details and get tickets from Stanford Speakers Bureau.",
     };
   }
 
   const title = generateEventTitle(event.name);
   const description = generateEventDescription(event);
   const eventUrl = `/events/${event.route || eventID}`;
-  const ogImageUrl = (event.img || event.mobile_img)
-    ? `${baseURL}${getImageProxyUrl(event.id, event.img_version)}`
-    : `${baseURL}/speakers/jojo-siwa-web.jpg`;
+  const ogImageUrl =
+    event.img || event.mobile_img
+      ? `${baseURL}${getImageProxyUrl(event.id, event.img_version)}`
+      : `${baseURL}/speakers/jojo-siwa-web.jpg`;
 
   return {
     title,
@@ -171,10 +186,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function EventPage({
-  params,
-  searchParams,
-}: PageProps) {
+export default async function EventPage({ params, searchParams }: PageProps) {
   const { eventID } = await params;
   const resolvedSearchParams = await searchParams;
 
@@ -184,19 +196,30 @@ export default async function EventPage({
     redirect("/upcoming-speakers");
   }
 
-  const verifiedCancellationFlow = await getVerifiedCancellationFlow({
-    eventId: event.id,
-    cancelTicketParam: resolvedSearchParams.cancel_ticket,
-    cancelTokenParam: resolvedSearchParams.cancel_token,
-  });
-  const verifiedFeedbackFlow = await getVerifiedFeedbackFlow({
-    eventId: event.id,
-    feedbackTokenParam: resolvedSearchParams.feedback_token,
-  });
+  const [verifiedCancellationFlow, verifiedFeedbackFlow, viewerStateResult] =
+    await Promise.all([
+      getVerifiedCancellationFlow({
+        eventId: event.id,
+        cancelTicketParam: resolvedSearchParams.cancel_ticket,
+        cancelTokenParam: resolvedSearchParams.cancel_token,
+      }),
+      getVerifiedFeedbackFlow({
+        eventId: event.id,
+        feedbackTokenParam: resolvedSearchParams.feedback_token,
+      }),
+      getViewerEventState(event.id)
+        .then((state) => ({ loaded: true, state }))
+        .catch((error) => {
+          console.error("Initial viewer state load error:", error);
+          return { loaded: false, state: getAnonymousViewerEventState() };
+        }),
+    ]);
+  const viewerState = viewerStateResult.state;
 
-  const ticketingDate = process.env.LOCAL_TICKETING_ENABLED === "true"
-    ? null
-    : (event.ticketing_date ?? event.release_date);
+  const ticketingDate =
+    process.env.LOCAL_TICKETING_ENABLED === "true"
+      ? null
+      : (event.ticketing_date ?? event.release_date);
   const isMysteryEvent = isEventMystery(event);
 
   if (isMysteryEvent) {
@@ -204,25 +227,43 @@ export default async function EventPage({
       <div className="relative flex min-h-screen flex-col font-sans bg-zinc-950">
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-5">
-            <EventFeedbackCard eventId={event.id} />
+            <EventFeedbackCard
+              eventId={event.id}
+              loadSessionStatus={viewerState.ticketScanned}
+            />
 
             <NoticeBanner
               color="blue"
-              icon={<svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
+              icon={
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                  />
+                </svg>
+              }
             >
-              This event is not public yet. If you already have a ticket, we&apos;ll load it below.
+              This event is not public yet. If you already have a ticket,
+              we&apos;ll load it below.
             </NoticeBanner>
 
             <TicketSection
               eventId={event.id}
-              initialHasTicket={false}
-              initialTicketId={null}
-              initialTicketType={null}
-              initialTicketName={null}
-              initialIsScanned={false}
-              initialIsOnWaitlist={false}
-              initialWaitlistPosition={null}
-              userEmail={null}
+              initialHasTicket={!!viewerState.ticketId}
+              initialTicketId={viewerState.ticketId}
+              initialTicketType={viewerState.ticketType}
+              initialTicketName={viewerState.ticketName}
+              initialIsScanned={viewerState.ticketScanned}
+              initialIsOnWaitlist={viewerState.isOnWaitlist}
+              initialWaitlistPosition={viewerState.waitlistPosition}
+              userEmail={viewerState.userEmail}
               eventRoute={event.route || eventID}
               eventStartTime={event.start_time_date}
               eventEndTime={event.end_time_date}
@@ -230,11 +271,13 @@ export default async function EventPage({
               isSoldOut={false}
               ticketingDate={ticketingDate}
               hideTicketingDate={event.hide_ticketing_date}
-              initialIsNotified={false}
+              initialIsNotified={viewerState.isNotified}
               waitlistChance={event.waitlist_chance}
               referralsEnabled={event.referrals_enabled}
               standbyMode={event.standby_enabled}
-              requireTicketAccess={!verifiedFeedbackFlow.allowFeedbackFlowAccess}
+              requireTicketAccess={
+                !verifiedFeedbackFlow.allowFeedbackFlowAccess
+              }
               allowCancelFlowAccess={
                 verifiedCancellationFlow.allowCancelFlowAccess
               }
@@ -242,6 +285,8 @@ export default async function EventPage({
                 verifiedCancellationFlow.attendeeName
               }
               eventName={event.name}
+              initialAllowAdmittingStandby={viewerState.allowAdmittingStandby}
+              initialViewerStateLoaded={viewerStateResult.loaded}
             />
           </div>
         </main>
@@ -253,12 +298,14 @@ export default async function EventPage({
   const isSoldOut = ticketAvailability.available <= 0;
 
   // Get the proxy URL for the event images
-  const signedImageUrl = (event.img || event.mobile_img)
-    ? getImageProxyUrl(event.id, event.img_version)
-    : null;
-  const mobileSignedImageUrl = (event.img || event.mobile_img)
-    ? getImageProxyUrl(event.id, event.img_version, "mobile")
-    : null;
+  const signedImageUrl =
+    event.img || event.mobile_img
+      ? getImageProxyUrl(event.id, event.img_version)
+      : null;
+  const mobileSignedImageUrl =
+    event.img || event.mobile_img
+      ? getImageProxyUrl(event.id, event.img_version, "mobile")
+      : null;
   const eventEndDate = getEventEndDate({
     endTime: event.end_time_date,
     startTime: event.start_time_date,
@@ -271,64 +318,68 @@ export default async function EventPage({
   // Pre-compute the calendar URL once
   const calendarUrl = event.start_time_date
     ? generateGoogleCalendarUrl({
-      name: event.name,
-      desc: event.desc || undefined,
-      start_time_date: event.start_time_date,
-      end_time_date: event.end_time_date,
-      venue: event.venue || undefined,
-      venue_link: event.venue_link || undefined,
-      route: event.route || undefined,
-    })
+        name: event.name,
+        desc: event.desc || undefined,
+        start_time_date: event.start_time_date,
+        end_time_date: event.end_time_date,
+        venue: event.venue || undefined,
+        venue_link: event.venue_link || undefined,
+        route: event.route || undefined,
+      })
     : null;
 
   // Build JSON-LD structured data for the event
   const jsonLd = !isEventMystery(event)
     ? {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      name: event.name,
-      ...(event.desc && { description: stripMarkdown(event.desc) }),
-      ...(event.start_time_date && { startDate: event.start_time_date }),
-      ...(eventEndDate && { endDate: eventEndDate.toISOString() }),
-      ...(event.doors_open && { doorTime: event.doors_open }),
-      location: {
-        "@type": "Place",
-        name: event.venue || "Stanford University",
-        ...(event.venue_link && { url: event.venue_link }),
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: "450 Serra Mall",
-          addressLocality: "Stanford",
-          addressRegion: "CA",
-          postalCode: "94305",
-          addressCountry: "US",
-        },
-      },
-      ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
-      url: `${baseURL}/events/${event.route || eventID}`,
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      isAccessibleForFree: true,
-      performer: {
-        "@type": "Person",
+        "@context": "https://schema.org",
+        "@type": "Event",
         name: event.name,
-      },
-      organizer: {
-        "@type": "Organization",
-        name: "Stanford Speakers Bureau",
-        url: baseURL,
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-        availability: isSoldOut
-          ? "https://schema.org/SoldOut"
-          : "https://schema.org/InStock",
-        validFrom: (!event.hide_ticketing_date && event.ticketing_date) || event.release_date || event.start_time_date || new Date().toISOString(),
+        ...(event.desc && { description: stripMarkdown(event.desc) }),
+        ...(event.start_time_date && { startDate: event.start_time_date }),
+        ...(eventEndDate && { endDate: eventEndDate.toISOString() }),
+        ...(event.doors_open && { doorTime: event.doors_open }),
+        location: {
+          "@type": "Place",
+          name: event.venue || "Stanford University",
+          ...(event.venue_link && { url: event.venue_link }),
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "450 Serra Mall",
+            addressLocality: "Stanford",
+            addressRegion: "CA",
+            postalCode: "94305",
+            addressCountry: "US",
+          },
+        },
+        ...(signedImageUrl && { image: `${baseURL}${signedImageUrl}` }),
         url: `${baseURL}/events/${event.route || eventID}`,
-      },
-    }
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        isAccessibleForFree: true,
+        performer: {
+          "@type": "Person",
+          name: event.name,
+        },
+        organizer: {
+          "@type": "Organization",
+          name: "Stanford Speakers Bureau",
+          url: baseURL,
+        },
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+          availability: isSoldOut
+            ? "https://schema.org/SoldOut"
+            : "https://schema.org/InStock",
+          validFrom:
+            (!event.hide_ticketing_date && event.ticketing_date) ||
+            event.release_date ||
+            event.start_time_date ||
+            new Date().toISOString(),
+          url: `${baseURL}/events/${event.route || eventID}`,
+        },
+      }
     : null;
 
   return (
@@ -351,17 +402,34 @@ export default async function EventPage({
         venueLink={event.venue_link}
       />
 
+      <QuestionsBar
+        event={{
+          id: event.id,
+          doors_open: event.doors_open,
+          start_time_date: event.start_time_date,
+          questions_enabled: event.questions_enabled,
+          questions_rankings_hidden: event.questions_rankings_hidden,
+        }}
+        eventRoute={event.route || eventID}
+      />
+
       {/* ─── Content section on solid background ─── */}
       <main className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pb-12 lg:pb-16">
         <div className="lg:grid lg:grid-cols-2 lg:gap-8 flex flex-col-reverse gap-6">
           {/* Left column – event details */}
           <div className="flex flex-col gap-5">
-
             {/* Description */}
             {event.desc && (
               <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/70 p-5 sm:p-6">
                 <div className="prose prose-sm prose-zinc prose-invert prose-p:text-zinc-300 prose-p:leading-[1.75] prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 max-w-none">
-                  <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{event.desc}</ReactMarkdown>
+                  <ReactMarkdown
+                    rehypePlugins={[
+                      rehypeRaw,
+                      [rehypeSanitize, sanitizeSchema],
+                    ]}
+                  >
+                    {event.desc}
+                  </ReactMarkdown>
                 </div>
               </div>
             )}
@@ -374,8 +442,18 @@ export default async function EventPage({
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/70 px-5 py-3.5 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-800/60 hover:text-white hover:border-zinc-700 active:scale-[0.98]"
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                <svg
+                  className="w-4 h-4 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                  />
                 </svg>
                 Add to Google Calendar
               </a>
@@ -390,7 +468,10 @@ export default async function EventPage({
           {/* Right column – ticket section (sticky on desktop) */}
           <div>
             <div className="lg:sticky lg:top-24 flex flex-col gap-5">
-              <EventFeedbackCard eventId={event.id} />
+              <EventFeedbackCard
+                eventId={event.id}
+                loadSessionStatus={viewerState.ticketScanned}
+              />
 
               {/* Livestream banner */}
               {event.livestream && (
@@ -403,10 +484,31 @@ export default async function EventPage({
               {event.priority && !eventOver && (
                 <NoticeBanner
                   color="blue"
-                  icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>}
+                  icon={
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                      />
+                    </svg>
+                  }
                 >
                   <div className="prose prose-sm prose-blue prose-invert prose-p:m-0 prose-a:underline max-w-none">
-                    <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{event.priority}</ReactMarkdown>
+                    <ReactMarkdown
+                      rehypePlugins={[
+                        rehypeRaw,
+                        [rehypeSanitize, sanitizeSchema],
+                      ]}
+                    >
+                      {event.priority}
+                    </ReactMarkdown>
                   </div>
                 </NoticeBanner>
               )}
@@ -417,14 +519,14 @@ export default async function EventPage({
               ) : (
                 <TicketSection
                   eventId={event.id}
-                  initialHasTicket={false}
-                  initialTicketId={null}
-                  initialTicketType={null}
-                  initialTicketName={null}
-                  initialIsScanned={false}
-                  initialIsOnWaitlist={false}
-                  initialWaitlistPosition={null}
-                  userEmail={null}
+                  initialHasTicket={!!viewerState.ticketId}
+                  initialTicketId={viewerState.ticketId}
+                  initialTicketType={viewerState.ticketType}
+                  initialTicketName={viewerState.ticketName}
+                  initialIsScanned={viewerState.ticketScanned}
+                  initialIsOnWaitlist={viewerState.isOnWaitlist}
+                  initialWaitlistPosition={viewerState.waitlistPosition}
+                  userEmail={viewerState.userEmail}
                   eventRoute={event.route || eventID}
                   eventStartTime={event.start_time_date}
                   eventEndTime={event.end_time_date}
@@ -432,7 +534,7 @@ export default async function EventPage({
                   isSoldOut={isSoldOut}
                   ticketingDate={ticketingDate}
                   hideTicketingDate={event.hide_ticketing_date}
-                  initialIsNotified={false}
+                  initialIsNotified={viewerState.isNotified}
                   waitlistChance={event.waitlist_chance}
                   referralsEnabled={event.referrals_enabled}
                   standbyMode={event.standby_enabled}
@@ -443,6 +545,10 @@ export default async function EventPage({
                     verifiedCancellationFlow.attendeeName
                   }
                   eventName={event.name}
+                  initialAllowAdmittingStandby={
+                    viewerState.allowAdmittingStandby
+                  }
+                  initialViewerStateLoaded={viewerStateResult.loaded}
                 />
               )}
             </div>

@@ -8,10 +8,7 @@ type EventErrorPageProps = {
   reset: () => void;
 };
 
-export default function EventErrorPage({
-  error,
-  reset,
-}: EventErrorPageProps) {
+export default function EventErrorPage({ error, reset }: EventErrorPageProps) {
   useEffect(() => {
     console.error("Event page error boundary caught an error:", error);
   }, [error]);

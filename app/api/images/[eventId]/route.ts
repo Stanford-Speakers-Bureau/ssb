@@ -4,8 +4,13 @@ import {
   getSupabaseClient,
   isEventMystery,
 } from "@/app/lib/supabase";
-import { fetchWithTimeout, isFetchTimeoutError } from "@/app/lib/fetch";
+import {
+  fetchWithTimeout,
+  isFetchTimeoutError,
+  FetchTimeoutError,
+} from "@/app/lib/fetch";
 import { checkRateLimit, imageRatelimit } from "@/app/lib/ratelimit";
+import { verifyEventImageToken } from "@/app/lib/image-links";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Cache headers for successful responses
@@ -25,9 +30,11 @@ export async function GET(
   // Get version from query param for cache key
   const url = new URL(request.url);
   const requestedVersion = url.searchParams.get("v") || "1";
-  const requestedVariant = url.searchParams.get("variant") === "mobile"
-    ? "mobile"
-    : "default";
+  const requestedVariant =
+    url.searchParams.get("variant") === "mobile" ? "mobile" : "default";
+  // Signed token (minted by admin emails) authorizing access to an unreleased
+  // event's image. Not part of the cache key.
+  const imageToken = url.searchParams.get("t");
 
   // R2 cache key: images/{eventId}/{variant}/v{version}
   const r2Key = `images/${eventId}/${requestedVariant}/v${requestedVersion}`;
@@ -71,16 +78,21 @@ export async function GET(
 
   // Get event from database
   const event = await getEventById(eventId);
-  const imageName = requestedVariant === "mobile"
-    ? event?.mobile_img || event?.img
-    : event?.img || event?.mobile_img;
+  const imageName =
+    requestedVariant === "mobile"
+      ? event?.mobile_img || event?.img
+      : event?.img || event?.mobile_img;
 
   if (!event || !imageName) {
     return new NextResponse("Not found", { status: 404 });
   }
 
-  // Check if mystery - return 404
-  if (isEventMystery(event)) {
+  // Hide images for unreleased ("mystery") events, unless the request carries a
+  // valid signed token (used by admin ticket/campaign emails). A bypassed
+  // mystery image is NOT written to the R2 cache below, so it can never leak to
+  // untokened public requests via a cache hit.
+  const mystery = isEventMystery(event);
+  if (mystery && !verifyEventImageToken(eventId, imageToken)) {
     return new NextResponse("Not found", { status: 404 });
   }
 
@@ -114,11 +126,34 @@ export async function GET(
     return new NextResponse("Image not found", { status: 404 });
   }
 
-  const imageBuffer = await imageResponse.arrayBuffer();
+  // fetchWithTimeout only bounds the connection/headers, not the body
+  // download. A stalled origin body would make arrayBuffer() hang forever,
+  // which the Workers runtime kills as a hung request. Race the body read
+  // against an explicit timeout so we always produce a response.
+  let imageBuffer: ArrayBuffer;
+  try {
+    imageBuffer = await Promise.race([
+      imageResponse.arrayBuffer(),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new FetchTimeoutError(IMAGE_ORIGIN_FETCH_TIMEOUT_MS)),
+          IMAGE_ORIGIN_FETCH_TIMEOUT_MS,
+        ),
+      ),
+    ]);
+  } catch (error) {
+    if (isFetchTimeoutError(error)) {
+      return new NextResponse("Image origin timed out", { status: 504 });
+    }
+    throw error;
+  }
   const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
-  // Store in R2 cache for future requests (non-blocking)
-  if (bucket) {
+  // Store in R2 cache for future requests (non-blocking).
+  // Never cache a token-bypassed mystery image: the cache lookup above runs
+  // before the mystery check, so caching it would expose it to untokened
+  // public requests until release.
+  if (bucket && !mystery) {
     try {
       await bucket.put(r2Key, imageBuffer, {
         httpMetadata: {

@@ -3,6 +3,7 @@ import { getRoleNamesForEmail, getSessionUser } from "@/app/lib/auth";
 import { db, eq, and, sql, count, events, waitlist } from "@ssb/db";
 import { checkRateLimit, ticketRatelimit } from "@/app/lib/ratelimit";
 import { logAuditEvent } from "@/app/lib/audit";
+import { recordMailingListMember } from "@/app/lib/mailing-list";
 import { type WaitlistEmailData } from "@/app/lib/email";
 import {
   createWaitlistEmailJob,
@@ -15,6 +16,7 @@ import {
   isTicketingEligible,
   resolveTicketingRoles,
 } from "@/app/lib/ticketingRoles";
+import { captureServerEvent } from "@/app/lib/posthog-server";
 
 const WAITLIST_MESSAGES = {
   SUCCESS: "You've been added to the waitlist!",
@@ -29,7 +31,7 @@ const WAITLIST_MESSAGES = {
   ERROR_WAITLIST_CLOSED:
     "Waitlist is now closed. Please visit the venue for the standby line.",
   ERROR_FEE_WAIVER_INELIGIBLE:
-    "Unfortunately, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. We encourage you to show up to the venue early to join the standby line instead. Please contact ASSU for further details.",
+    "According to ASSU records, you are ineligible for online ticketing as your student activity fee for Stanford Speakers Bureau has been waived. Please contact ASSU for further details. We encourage you to show up to the venue early to join the standby line instead.",
 } as const;
 
 const FEE_WAIVER_ROLE = "fee_waiver";
@@ -55,10 +57,7 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "";
 }
 
-function scheduleAfterResponse(
-  label: string,
-  task: () => Promise<void>,
-) {
+function scheduleAfterResponse(label: string, task: () => Promise<void>) {
   after(async () => {
     try {
       await task();
@@ -110,7 +109,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { event_id, referral: referralFromBody, name: nameFromBody } = body as {
+    const {
+      event_id,
+      referral: referralFromBody,
+      name: nameFromBody,
+    } = body as {
       event_id?: string;
       referral?: string;
       name?: string;
@@ -123,25 +126,27 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get event details
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, event_id),
-      columns: {
-        id: true,
-        name: true,
-        doorsOpen: true,
-        startTimeDate: true,
-        venue: true,
-        venueLink: true,
-        desc: true,
-        standbyEnabled: true,
-        tagline: true,
-        imgVersion: true,
-        referralsEnabled: true,
-        ticketingRoles: true,
-        route: true,
-      },
-    });
+    const [event, userRoles] = await Promise.all([
+      db.query.events.findFirst({
+        where: eq(events.id, event_id),
+        columns: {
+          id: true,
+          name: true,
+          doorsOpen: true,
+          startTimeDate: true,
+          venue: true,
+          venueLink: true,
+          desc: true,
+          standbyEnabled: true,
+          tagline: true,
+          imgVersion: true,
+          referralsEnabled: true,
+          ticketingRoles: true,
+          route: true,
+        },
+      }),
+      getRoleNamesForEmail(user.email),
+    ]);
 
     if (!event) {
       return NextResponse.json(
@@ -150,7 +155,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const userRoles = await getRoleNamesForEmail(user.email);
     const userAffiliations = [
       ...user.eduPersonAffiliation,
       ...user.eduPersonScopedAffiliation,
@@ -172,10 +176,9 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getFeeWaiverIneligiblePayload(),
-        { status: 403 },
-      );
+      return NextResponse.json(getFeeWaiverIneligiblePayload(), {
+        status: 403,
+      });
     }
 
     if (!isTicketingEligible(userAffiliations, event.ticketingRoles)) {
@@ -195,17 +198,13 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        getRoleIneligiblePayload(allowedRoles),
-        { status: 403 },
-      );
+      return NextResponse.json(getRoleIneligiblePayload(allowedRoles), {
+        status: 403,
+      });
     }
 
     // Derive name from body override or OAuth metadata
-    const waitlistName =
-      nameFromBody?.trim() ||
-      user.displayName ||
-      null;
+    const waitlistName = nameFromBody?.trim() || user.displayName || null;
 
     if (!waitlistName) {
       return NextResponse.json(
@@ -233,7 +232,9 @@ export async function POST(req: Request) {
     // Use stored procedure to atomically join waitlist (prevents position collisions)
     let rpcData: JoinWaitlistRpcResult | null = null;
     try {
-      const result = await db.execute<{ join_waitlist_with_name: JoinWaitlistRpcResult }>(sql`
+      const result = await db.execute<{
+        join_waitlist_with_name: JoinWaitlistRpcResult;
+      }>(sql`
         SELECT join_waitlist_with_name(
           ${event_id}::uuid,
           ${referral || null},
@@ -337,6 +338,20 @@ export async function POST(req: Request) {
         position: waitlistPosition,
         referral,
       },
+    });
+    captureServerEvent({
+      distinctId: user.email,
+      event: "waitlist_joined",
+      properties: {
+        event_id: event.id,
+        event_name: event.name ?? null,
+        waitlist_position: waitlistPosition,
+        used_referral: !!referral,
+      },
+      groups: { event: event.id },
+    });
+    scheduleAfterResponse("Mailing list add", async () => {
+      await recordMailingListMember({ email: user.email, source: "waitlist" });
     });
 
     return NextResponse.json(
@@ -460,11 +475,15 @@ export async function GET(req: Request) {
     if (eventId) {
       // Get status for specific event
       const entry = await db.query.waitlist.findFirst({
-        where: and(eq(waitlist.eventId, eventId), eq(waitlist.email, user.email)),
+        where: and(
+          eq(waitlist.eventId, eventId),
+          eq(waitlist.email, user.email),
+        ),
         columns: { position: true },
       });
 
-      const [totalResult] = await db.select({ count: count() })
+      const [totalResult] = await db
+        .select({ count: count() })
         .from(waitlist)
         .where(eq(waitlist.eventId, eventId));
 
@@ -510,12 +529,12 @@ export async function GET(req: Request) {
         event_id: e.eventId,
         events: e.event
           ? {
-            id: e.event.id,
-            name: e.event.name,
-            route: e.event.route,
-            start_time_date: e.event.startTimeDate?.toISOString() ?? null,
-            venue: e.event.venue,
-          }
+              id: e.event.id,
+              name: e.event.name,
+              route: e.event.route,
+              start_time_date: e.event.startTimeDate?.toISOString() ?? null,
+              venue: e.event.venue,
+            }
           : null,
       }));
 

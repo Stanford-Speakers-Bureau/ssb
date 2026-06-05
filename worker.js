@@ -1,6 +1,5 @@
 import { processEmailJob } from "./app/lib/email-jobs";
 import openNextWorker, {
-  BucketCachePurge,
   DOQueueHandler,
   DOShardedTagCache,
 } from "./.open-next/worker.js";
@@ -17,7 +16,7 @@ function syncProcessEnvFromBindings(env) {
   }
 }
 
-export { DOQueueHandler, DOShardedTagCache, BucketCachePurge };
+export { DOQueueHandler, DOShardedTagCache };
 
 const worker = {
   async fetch(request, env, ctx) {

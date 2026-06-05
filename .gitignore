@@ -48,3 +48,4 @@ packages/db/node_modules
 supabase/.temp/cli-latest
 /supabase/.temp
 /supabase/.temp
+.env.local

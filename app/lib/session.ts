@@ -1,5 +1,9 @@
 import { randomUUID } from "crypto";
-import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
+import {
+  getIronSession,
+  type IronSession,
+  type SessionOptions,
+} from "iron-session";
 import { cookies } from "next/headers";
 
 export interface SessionUser {
@@ -56,9 +60,7 @@ function getLoginFlowCookieName(): string {
   }
 
   const appUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_ROOT_URL ||
-    "";
+    process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_ROOT_URL || "";
 
   if (!appUrl) {
     return `${getSessionCookieName()}_sso_flow`;
@@ -144,7 +146,9 @@ function getInMemoryLoginFlowStores(): Map<string, InMemoryLoginFlowData> {
 }
 
 function readInMemoryLoginFlowStore(): InMemoryLoginFlowData {
-  const existingStore = getInMemoryLoginFlowStores().get(getLoginFlowCookieName());
+  const existingStore = getInMemoryLoginFlowStores().get(
+    getLoginFlowCookieName(),
+  );
 
   if (existingStore) {
     return existingStore;
@@ -179,9 +183,15 @@ function pruneSamlRequestIds(
     Object.entries(samlRequestIds || {})
       .filter(([, createdAt]) => {
         const parsedCreatedAt = parseSamlRequestCreatedAt(createdAt);
-        return parsedCreatedAt > 0 && now - parsedCreatedAt < SAML_REQUEST_STATE_TTL_MS;
+        return (
+          parsedCreatedAt > 0 &&
+          now - parsedCreatedAt < SAML_REQUEST_STATE_TTL_MS
+        );
       })
-      .sort((a, b) => parseSamlRequestCreatedAt(b[1]) - parseSamlRequestCreatedAt(a[1]))
+      .sort(
+        (a, b) =>
+          parseSamlRequestCreatedAt(b[1]) - parseSamlRequestCreatedAt(a[1]),
+      )
       .slice(0, 10),
   );
 }
@@ -193,7 +203,8 @@ async function persistLoginFlowSession(
   session.samlRequestIds = pruneSamlRequestIds(session.samlRequestIds);
 
   const hasLoginStates = (session.loginStates?.length ?? 0) > 0;
-  const hasSamlRequestIds = Object.keys(session.samlRequestIds || {}).length > 0;
+  const hasSamlRequestIds =
+    Object.keys(session.samlRequestIds || {}).length > 0;
 
   if (!hasLoginStates && !hasSamlRequestIds) {
     session.destroy();
@@ -344,7 +355,9 @@ export async function saveSamlRequestId(
   };
 }
 
-export async function getSamlRequestId(requestId: string): Promise<string | null> {
+export async function getSamlRequestId(
+  requestId: string,
+): Promise<string | null> {
   if (shouldUseInMemoryLoginFlowStore()) {
     const store = readInMemoryLoginFlowStore();
     const samlRequestIds = pruneSamlRequestIds(store.samlRequestIds);

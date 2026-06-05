@@ -24,7 +24,12 @@ export default function CountdownTimer({
   label,
   onExpire,
 }: CountdownTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(targetDate));
+  // Start null so the server render and the first client render match.
+  // Computing from Date.now() during render produces different text on the
+  // server vs. client hydration, which triggers React hydration error #418.
+  const [timeLeft, setTimeLeft] = useState<ReturnType<
+    typeof calcTimeLeft
+  > | null>(null);
 
   useEffect(() => {
     const tick = () => {
@@ -35,6 +40,7 @@ export default function CountdownTimer({
         onExpire?.();
       }
     };
+    tick(); // compute immediately after mount, then tick every second
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [targetDate, onExpire]);
@@ -42,9 +48,7 @@ export default function CountdownTimer({
   if (!timeLeft) return null;
 
   const segments = [
-    ...(timeLeft.days > 0
-      ? [{ value: timeLeft.days, label: "days" }]
-      : []),
+    ...(timeLeft.days > 0 ? [{ value: timeLeft.days, label: "days" }] : []),
     { value: timeLeft.hours, label: "hrs" },
     { value: timeLeft.minutes, label: "min" },
     { value: timeLeft.seconds, label: "sec" },
@@ -61,9 +65,7 @@ export default function CountdownTimer({
         {segments.map((seg, i) => (
           <div key={seg.label} className="flex items-center gap-1.5 sm:gap-2">
             {i > 0 && (
-              <span className="text-xl font-bold text-zinc-600 -mt-4">
-                :
-              </span>
+              <span className="text-xl font-bold text-zinc-600 -mt-4">:</span>
             )}
             <div className="flex flex-col items-center">
               <div className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 sm:px-3 py-1.5 sm:py-2 min-w-[3rem] sm:min-w-[3.5rem] flex items-center justify-center">

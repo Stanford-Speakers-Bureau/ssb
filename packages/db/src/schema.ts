@@ -69,6 +69,17 @@ export const events = pgTable(
       .notNull()
       .default(false),
     externalTicketingUrl: text("external_ticketing_url"),
+    bannerEligible: boolean("banner_eligible").notNull().default(true),
+    questionsEnabled: boolean("questions_enabled").notNull().default(false),
+    identityVerificationEnabled: boolean("identity_verification_enabled")
+      .notNull()
+      .default(true),
+    allowAdmittingStandby: boolean("allow_admitting_standby")
+      .notNull()
+      .default(false),
+    questionsRankingsHidden: boolean("questions_rankings_hidden")
+      .notNull()
+      .default(false),
   },
   (t) => [
     index("events_route_idx").on(t.route),
@@ -99,15 +110,75 @@ export const tickets = pgTable(
     scanUser: text("scan_user"),
     scanEmail: text("scan_email"),
     name: text("name"),
+    // Optional internal label for certain guests (e.g. "Keynote Speaker").
+    // Admin-only: never shown on the public site, emails, or wallet passes.
+    title: text("title"),
+    // Bumped whenever a wallet-visible field changes, so the PassKit web
+    // service can answer If-Modified-Since / passesUpdatedSince correctly.
+    walletUpdatedAt: timestamp("wallet_updated_at", { withTimezone: true }),
   },
   (t) => [
     index("tickets_email_idx").on(t.email),
     index("tickets_event_id_idx").on(t.eventId),
     index("tickets_event_type_idx").on(t.eventId, t.type),
+    index("tickets_event_lower_trim_email_idx").on(
+      t.eventId,
+      sql`lower(trim(${t.email}))`,
+    ),
     index("tickets_referral_idx").on(t.referral),
     index("tickets_scanned_idx").on(t.scanned),
     uniqueIndex("tickets_event_email_unique").on(t.eventId, t.email),
   ],
+);
+
+// ── Wallet pass registrations (Apple PassKit web service) ───────────────────
+// One row per (device, pass) the user has installed and asked us to keep
+// updated. We push to push_token via APNs when the underlying ticket changes.
+export const walletRegistrations = pgTable(
+  "wallet_registrations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    passTypeId: text("pass_type_id").notNull(),
+    serialNumber: text("serial_number").notNull(),
+    deviceLibraryId: text("device_library_id").notNull(),
+    pushToken: text("push_token").notNull(),
+  },
+  (t) => [
+    uniqueIndex("wallet_registrations_device_serial_unique").on(
+      t.deviceLibraryId,
+      t.serialNumber,
+    ),
+    index("wallet_registrations_serial_idx").on(t.serialNumber),
+    index("wallet_registrations_device_idx").on(
+      t.deviceLibraryId,
+      t.passTypeId,
+    ),
+  ],
+);
+
+// ── Wallet voided-pass tombstones ───────────────────────────────────────────
+// Cancelling a ticket hard-deletes the row, leaving the web service nothing to
+// serve. We drop a tombstone here so an installed pass can still be fetched and
+// shown as voided/CANCELLED (then pushed). The event row still exists, so the
+// voided pass renders with real event info. Safe to prune after the pass's
+// expiration date has passed.
+export const walletVoidedPasses = pgTable(
+  "wallet_voided_passes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    voidedAt: timestamp("voided_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    serialNumber: text("serial_number").notNull(),
+    email: text("email").notNull(),
+    name: text("name"),
+    ticketType: text("ticket_type").notNull(),
+    eventId: uuid("event_id"),
+  },
+  (t) => [uniqueIndex("wallet_voided_passes_serial_unique").on(t.serialNumber)],
 );
 
 // ── Waitlist ────────────────────────────────────────────────────────────────
@@ -150,6 +221,8 @@ export const suggest = pgTable(
     reviewed: boolean("reviewed").notNull().default(false),
     duplicate: boolean("duplicate").notNull().default(false),
     spoke: boolean("spoke").notNull().default(false),
+    // Where the suggestion's unique link redirects once the speaker has spoken.
+    eventLink: text("event_link"),
   },
   (t) => [
     index("suggest_email_idx").on(t.email),
@@ -178,6 +251,70 @@ export const votes = pgTable(
     uniqueIndex("votes_email_speaker_unique").on(t.email, t.speakerId),
     index("votes_email_idx").on(t.email),
     index("votes_speaker_id_idx").on(t.speakerId),
+  ],
+);
+
+// ── Event Questions ─────────────────────────────────────────────────────────
+export const eventQuestions = pgTable(
+  "event_questions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    email: text("email").notNull(),
+    question: text("question").notNull(),
+    approved: boolean("approved").notNull().default(false),
+    reviewed: boolean("reviewed").notNull().default(false),
+    duplicate: boolean("duplicate").notNull().default(false),
+    hidden: boolean("hidden").notNull().default(false),
+    votes: bigint("votes", { mode: "number" }).notNull().default(0),
+  },
+  (t) => [
+    index("event_questions_event_id_idx").on(t.eventId),
+    index("event_questions_event_public_idx").on(
+      t.eventId,
+      t.approved,
+      t.hidden,
+      t.votes,
+    ),
+    index("event_questions_reviewed_idx").on(t.reviewed),
+    index("event_questions_email_idx").on(t.email),
+    check(
+      "event_questions_length_check",
+      sql`char_length(trim(${t.question})) BETWEEN 4 AND 280`,
+    ),
+  ],
+);
+
+export const eventQuestionVotes = pgTable(
+  "event_question_votes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => eventQuestions.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    email: text("email").notNull(),
+  },
+  (t) => [
+    uniqueIndex("event_question_votes_email_question_unique").on(
+      t.email,
+      t.questionId,
+    ),
+    index("event_question_votes_question_id_idx").on(t.questionId),
+    index("event_question_votes_email_idx").on(t.email),
   ],
 );
 
@@ -228,14 +365,18 @@ export const referrals = pgTable(
 );
 
 // ── Roles ───────────────────────────────────────────────────────────────────
-export const roles = pgTable("roles", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  email: text("email"),
-  roles: text("roles"),
-});
+export const roles = pgTable(
+  "roles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    email: text("email"),
+    roles: text("roles"),
+  },
+  (t) => [index("roles_email_idx").on(t.email)],
+);
 
 // ── User Profiles ────────────────────────────────────────────────────────────
 export const userProfiles = pgTable(
@@ -335,6 +476,59 @@ export const auditLogs = pgTable(
   ],
 );
 
+// ── Mailing List ────────────────────────────────────────────────────────────
+export const mailingList = pgTable(
+  "mailing_list",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    email: text("email").notNull(),
+    displayEmail: text("display_email").notNull(),
+    source: text("source").notNull(),
+  },
+  (t) => [
+    uniqueIndex("mailing_list_email_unique").on(t.email),
+    index("mailing_list_source_idx").on(t.source),
+    index("mailing_list_created_at_idx").on(t.createdAt),
+  ],
+);
+
+// ── Email Unsubscribes ──────────────────────────────────────────────────────
+export const emailUnsubscribes = pgTable(
+  "email_unsubscribes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    email: text("email").notNull(),
+    scope: text("scope").notNull(),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    source: text("source").notNull(),
+    reason: text("reason"),
+    actor: text("actor").notNull(),
+  },
+  (t) => [
+    index("email_unsubscribes_scope_event_idx").on(t.scope, t.eventId),
+    check(
+      "email_unsubscribes_scope_check",
+      sql`${t.scope} in ('announce', 'event', 'newsletter')`,
+    ),
+    check(
+      "email_unsubscribes_scope_event_check",
+      sql`(${t.scope} = 'announce' AND ${t.eventId} IS NULL) OR (${t.scope} = 'newsletter' AND ${t.eventId} IS NULL) OR (${t.scope} = 'event' AND ${t.eventId} IS NOT NULL)`,
+    ),
+  ],
+);
+
 // ── Relations ───────────────────────────────────────────────────────────────
 
 export const eventsRelations = relations(events, ({ many }) => ({
@@ -343,7 +537,30 @@ export const eventsRelations = relations(events, ({ many }) => ({
   referralList: many(referrals),
   notifyList: many(notify),
   feedbackList: many(eventFeedback),
+  unsubscribes: many(emailUnsubscribes),
+  questionList: many(eventQuestions),
 }));
+
+export const eventQuestionsRelations = relations(
+  eventQuestions,
+  ({ one, many }) => ({
+    event: one(events, {
+      fields: [eventQuestions.eventId],
+      references: [events.id],
+    }),
+    voteList: many(eventQuestionVotes),
+  }),
+);
+
+export const eventQuestionVotesRelations = relations(
+  eventQuestionVotes,
+  ({ one }) => ({
+    question: one(eventQuestions, {
+      fields: [eventQuestionVotes.questionId],
+      references: [eventQuestions.id],
+    }),
+  }),
+);
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
   event: one(events, { fields: [tickets.eventId], references: [events.id] }),
@@ -386,3 +603,13 @@ export const eventFeedbackRelations = relations(eventFeedback, ({ one }) => ({
     references: [tickets.id],
   }),
 }));
+
+export const emailUnsubscribesRelations = relations(
+  emailUnsubscribes,
+  ({ one }) => ({
+    event: one(events, {
+      fields: [emailUnsubscribes.eventId],
+      references: [events.id],
+    }),
+  }),
+);

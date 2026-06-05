@@ -44,7 +44,13 @@ async function getUserTickets(): Promise<Ticket[]> {
     where: eq(tickets.email, user.email),
     with: {
       event: {
-        columns: { id: true, name: true, route: true, doorsOpen: true, venue: true },
+        columns: {
+          id: true,
+          name: true,
+          route: true,
+          doorsOpen: true,
+          venue: true,
+        },
       },
     },
     orderBy: (tickets, { desc }) => [desc(tickets.createdAt)],
@@ -57,12 +63,12 @@ async function getUserTickets(): Promise<Ticket[]> {
     type: t.type,
     events: t.event
       ? {
-        id: t.event.id,
-        name: t.event.name,
-        route: t.event.route,
-        doors_open: t.event.doorsOpen?.toISOString() ?? null,
-        venue: t.event.venue,
-      }
+          id: t.event.id,
+          name: t.event.name,
+          route: t.event.route,
+          doors_open: t.event.doorsOpen?.toISOString() ?? null,
+          venue: t.event.venue,
+        }
       : null,
   }));
 }
@@ -81,169 +87,222 @@ export default async function AccountPage() {
     : user.eduPersonAffiliation;
   const tickets = await getUserTickets();
 
+  const fullName = user.displayName?.trim() ?? "";
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] ?? null;
+  const initials = (
+    nameParts
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("") ||
+    user.email[0] ||
+    "?"
+  ).toUpperCase();
+
   return (
-    <div className="flex min-h-screen flex-col items-center font-sans bg-[var(--ssb-paper)]">
-      <main className="flex w-full flex-1 justify-center bg-[var(--ssb-paper)] pt-24">
-        <section className="w-full max-w-5xl flex flex-col lg:py-8 py-6 px-6 sm:px-12 md:px-16">
-          <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl text-white mb-2 font-serif">
-              My Account
-            </h1>
-            <p className="text-zinc-400">
-              Manage your tickets and account settings
-            </p>
+    <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate font-sans">
+      {/* Identity header */}
+      <section className="px-6 sm:px-16 pt-28 sm:pt-36 pb-12 sm:pb-16 border-b border-zinc-800">
+        <div className="max-w-5xl mx-auto">
+          <p className="font-mono text-[0.65rem] tracking-[0.5em] uppercase text-ssb-accent mb-6">
+            My Account
+          </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-7">
+            <div className="flex items-center gap-5">
+              <div className="flex size-16 sm:size-20 shrink-0 items-center justify-center rounded-full border border-ssb-accent/30 bg-ssb-accent/10">
+                <span className="font-serif text-2xl sm:text-3xl text-ssb-accent">
+                  {initials}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-serif text-3xl sm:text-5xl text-white tracking-tight text-balance">
+                  {firstName ? `Hi, ${firstName}.` : "Welcome back."}
+                </h1>
+                <p className="text-sm text-zinc-400 mt-1.5 break-all">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0">
+              <SignOutButton />
+            </div>
           </div>
 
-          <div className="mb-8 rounded-2xl border p-5 border-zinc-800 bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-              Stanford Affiliation
+          <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-3">
+            <p className="font-mono text-[0.55rem] tracking-[0.3em] uppercase text-zinc-500 shrink-0">
+              Stanford affiliation
             </p>
             {affiliations.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {affiliations.map((affiliation) => (
                   <span
                     key={affiliation}
-                    className="rounded-full px-3 py-1 text-sm font-medium bg-[#A80D0C]/20 text-red-200"
+                    className="rounded-full border border-ssb-accent/30 bg-ssb-accent/5 px-3 py-1 text-xs font-semibold text-ssb-accent"
                   >
                     {formatAffiliationLabel(affiliation)}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-zinc-400">
-                Stanford SSO did not provide an affiliation for your account.
+              <p className="text-sm text-zinc-500">
+                Stanford SSO didn&rsquo;t provide an affiliation for your
+                account.
               </p>
             )}
           </div>
+        </div>
+      </section>
 
-          <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl text-white mb-6 font-serif">
-              My Tickets
+      {/* Tickets */}
+      <section className="px-6 sm:px-16 py-14 sm:py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-baseline justify-between gap-4 mb-8">
+            <h2 className="font-serif text-2xl sm:text-3xl text-white tracking-tight">
+              My tickets
             </h2>
-            {tickets.length === 0 ? (
-              <div className="bg-zinc-900 rounded-lg p-6 md:p-8 text-center">
-                <p className="text-zinc-400 mb-4">
-                  You don&#39;t have any tickets yet.
-                </p>
-                <Link
-                  href="/upcoming-speakers"
-                  className="inline-flex rounded px-6 py-3 text-base font-semibold text-white bg-[#A80D0C] transform transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211]"
-                >
-                  Browse Upcoming Events
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {tickets.map((ticket) => {
-                  const event = ticket.events;
-                  if (!event) return null;
-
-                  const eventDate = event.doors_open
-                    ? formatEventDate(event.doors_open)
-                    : null;
-                  const eventTime = event.doors_open
-                    ? formatTime(event.doors_open)
-                    : null;
-
-                  return (
-                    <div
-                      key={ticket.id}
-                      className="bg-zinc-800 rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center items-stretch md:justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-xl text-white mb-3 font-serif">
-                            {event.name || "Event"}
-                          </h3>
-                          <div className="space-y-2 text-sm text-zinc-400">
-                            {eventDate && (
-                              <div className="flex items-center gap-2">
-                                <svg
-                                  className="w-5 h-5 text-red-500 shrink-0"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                                <span className="text-sm sm:text-base text-white font-medium">
-                                  Date: {eventDate}
-                                  {eventTime && ` at ${eventTime}`}
-                                </span>
-                              </div>
-                            )}
-                            {event.venue && (
-                              <div className="flex items-center gap-2">
-                                <svg
-                                  className="w-5 h-5 text-red-500 shrink-0"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                </svg>
-                                <span className="text-sm sm:text-base text-white font-medium">
-                                  {event.venue}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <svg
-                                className="w-5 h-5 text-red-500 shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-                                />
-                              </svg>
-                              <span className="text-sm sm:text-base text-zinc-400">
-                                Ticket ID: {ticket.id}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {event.route && (
-                          <a
-                            href={`/events/${event.route}`}
-                            className="inline-flex items-center justify-center gap-2 rounded px-4 py-2 md:text-base text-sm font-semibold text-white bg-[#A80D0C] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:brightness-110 hover:bg-[#C11211] w-full md:w-auto"
-                          >
-                            <span>View Event</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            {tickets.length > 0 && (
+              <span className="font-mono text-xs text-zinc-500 tabular-nums">
+                {tickets.length} {tickets.length === 1 ? "ticket" : "tickets"}
+              </span>
             )}
           </div>
 
-          <div className="mt-8 pt-8 border-t border-zinc-700">
-            <SignOutButton />
-          </div>
-        </section>
-      </main>
-    </div>
+          {tickets.length === 0 ? (
+            <div className="border border-zinc-800 bg-zinc-900/40 px-6 py-16 text-center">
+              <p className="font-serif text-2xl text-white mb-2">
+                No tickets yet.
+              </p>
+              <p className="text-sm text-zinc-400 mb-7 max-w-sm mx-auto text-pretty leading-relaxed">
+                When you reserve a spot at an upcoming event, your tickets will
+                show up here.
+              </p>
+              <Link
+                href="/upcoming-speakers"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-ssb-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-ssb-accent/25 hover:bg-ssb-accent-strong transition-colors focus-visible:outline-ssb-accent focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Browse upcoming events
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          ) : (
+            <ul role="list" className="space-y-4">
+              {tickets.map((ticket) => {
+                const event = ticket.events;
+                if (!event) return null;
+
+                const eventDate = event.doors_open
+                  ? formatEventDate(event.doors_open)
+                  : null;
+                const eventTime = event.doors_open
+                  ? formatTime(event.doors_open)
+                  : null;
+
+                return (
+                  <li
+                    key={ticket.id}
+                    className="group border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 transition-colors"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-8 p-6 sm:p-7">
+                      <div className="flex-1 min-w-0">
+                        {ticket.type && (
+                          <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-950 px-2.5 py-0.5 font-mono text-[0.55rem] tracking-[0.25em] uppercase text-zinc-400 mb-3">
+                            {ticket.type}
+                          </span>
+                        )}
+                        <h3 className="font-serif text-xl sm:text-2xl text-white tracking-tight text-balance">
+                          {event.name || "Event"}
+                        </h3>
+                        <dl className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
+                          <div className="min-w-0">
+                            <dt className="font-mono text-[0.55rem] tracking-[0.25em] uppercase text-zinc-500 mb-1.5">
+                              Date
+                            </dt>
+                            <dd className="text-sm text-zinc-200 font-medium">
+                              {eventDate ? (
+                                <>
+                                  {eventDate}
+                                  {eventTime && (
+                                    <span className="text-zinc-400 tabular-nums">
+                                      {" · "}
+                                      {eventTime}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                "To be announced"
+                              )}
+                            </dd>
+                          </div>
+                          {event.venue && (
+                            <div className="min-w-0">
+                              <dt className="font-mono text-[0.55rem] tracking-[0.25em] uppercase text-zinc-500 mb-1.5">
+                                Venue
+                              </dt>
+                              <dd
+                                className="text-sm text-zinc-200 font-medium truncate"
+                                title={event.venue}
+                              >
+                                {event.venue}
+                              </dd>
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <dt className="font-mono text-[0.55rem] tracking-[0.25em] uppercase text-zinc-500 mb-1.5">
+                              Ticket ID
+                            </dt>
+                            <dd
+                              className="text-sm font-mono text-zinc-400 truncate"
+                              title={ticket.id}
+                            >
+                              {ticket.id}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+                      {event.route && (
+                        <a
+                          href={`/events/${event.route}`}
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 hover:border-ssb-accent/50 hover:text-white transition-colors w-full md:w-auto shrink-0"
+                        >
+                          View event
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                            className="transition-transform group-hover:translate-x-0.5"
+                          >
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }

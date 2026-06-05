@@ -12,12 +12,22 @@ export type AppleWalletTokenClaims = {
 
 function getWalletLinkSecret(): Uint8Array {
   const secret =
-    process.env.SESSION_SECRET
-    || (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+    process.env.SESSION_SECRET ||
+    (process.env.NODE_ENV === "production" ? null : DEV_SECRET);
+
+  if (!secret) {
+    throw new Error("SESSION_SECRET must be set in production.");
+  }
+
+  return new TextEncoder().encode(secret);
+}
+
+function getAppleWalletSecret(): Uint8Array {
+  const secret = process.env.APPLE_WALLET_SECRET;
 
   if (!secret) {
     throw new Error(
-      "SESSION_SECRET must be set in production.",
+      "APPLE_WALLET_SECRET must be set for Apple Wallet updates.",
     );
   }
 
@@ -92,9 +102,8 @@ export async function verifyAppleWalletToken(
     }
 
     const email = typeof payload.email === "string" ? payload.email : null;
-    const ticketId = typeof payload.ticketId === "string"
-      ? payload.ticketId
-      : null;
+    const ticketId =
+      typeof payload.ticketId === "string" ? payload.ticketId : null;
 
     if (!email || !ticketId) {
       return null;
@@ -107,6 +116,56 @@ export async function verifyAppleWalletToken(
   } catch {
     return null;
   }
+}
+
+// Per-pass secret baked into the pass as `authenticationToken`. The device
+// sends it back as `Authorization: ApplePass <token>` on every web-service
+// call, so it must be stable for the life of the pass (no expiry) and
+// re-derivable server-side from the ticket id alone. Use a dedicated long-lived
+// secret so session-key rotation does not break already installed passes.
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export async function deriveAppleWalletAuthToken(
+  ticketId: string,
+): Promise<string> {
+  const secret = getAppleWalletSecret();
+  const keyData = secret.buffer.slice(
+    secret.byteOffset,
+    secret.byteOffset + secret.byteLength,
+  ) as ArrayBuffer;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`apple_wallet_auth:${ticketId}`),
+  );
+  return toHex(sig);
+}
+
+export async function verifyAppleWalletAuthToken(
+  ticketId: string,
+  token: string,
+): Promise<boolean> {
+  const expected = await deriveAppleWalletAuthToken(ticketId);
+  if (expected.length !== token.length) {
+    return false;
+  }
+  // length-independent compare to avoid leaking via early return
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= expected.charCodeAt(i) ^ token.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export async function buildAppleWalletLink(input: {
