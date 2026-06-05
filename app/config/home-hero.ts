@@ -8,6 +8,7 @@ export const HERO_BACKGROUND_IMAGES: string[] = [
   "/speakers/hasan-minhaj-web.jpg",
   "/speakers/mark-rober-web.jpeg",
   "/speakers/jojo-siwa-web.jpg",
-  "/speakers/john-green-web.jpg",
+  //"/speakers/john-green-web.jpg",
+  "/speakers/hankgreen.jpg",
   "/speakers/khanna.jpg",
 ];
