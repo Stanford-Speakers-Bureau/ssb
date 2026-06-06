@@ -7,7 +7,7 @@ import {
   sanitizeString,
 } from "@/app/lib/validation";
 import { and, db, eq, eventFeedback, sql, tickets } from "@ssb/db";
-import { getPostHogClient } from "@/app/lib/posthog-server";
+import { captureServerEvent } from "@/app/lib/posthog-server";
 
 const MAX_COMMENT_LENGTH = 1_500;
 const SCORE_EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -348,27 +348,24 @@ export async function POST(req: Request) {
         updatedAt: eventFeedback.updatedAt,
       });
 
-    try {
-      const posthog = getPostHogClient();
-      posthog.capture({
-        distinctId: resolution.ticket.email,
-        event: "event_feedback_submitted",
-        properties: {
-          event_id: body.eventId,
-          score: savedFeedback.score,
-          has_comment: !!savedFeedback.comment,
-          // Length only — the raw comment text stays in the DB, not PostHog.
-          comment_length: savedFeedback.comment?.length ?? 0,
-          submitted_via: resolution.via,
-          is_update: !!existing,
-          $set: { last_feedback_score: savedFeedback.score },
-        },
-        groups: { event: body.eventId },
-      });
-      await posthog.flush();
-    } catch (posthogError) {
-      console.error("PostHog feedback tracking error:", posthogError);
-    }
+    // Capture via the shared `after()`-wrapped helper (same path tickets use), so
+    // the event reliably flushes after the response instead of racing the
+    // serverless function's teardown.
+    captureServerEvent({
+      distinctId: resolution.ticket.email,
+      event: "event_feedback_submitted",
+      properties: {
+        event_id: body.eventId,
+        score: savedFeedback.score,
+        has_comment: !!savedFeedback.comment,
+        // Length only — the raw comment text stays in the DB, not PostHog.
+        comment_length: savedFeedback.comment?.length ?? 0,
+        submitted_via: resolution.via,
+        is_update: !!existing,
+        $set: { last_feedback_score: savedFeedback.score },
+      },
+      groups: { event: body.eventId },
+    });
 
     return NextResponse.json(
       {

@@ -12,6 +12,7 @@ import ReferralShare from "./ReferralShare";
 import { generateReferralCode } from "@/app/lib/utils";
 import CountdownTimer from "./CountdownTimer";
 import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
+import { useHasMounted } from "@/app/hooks/useHasMounted";
 
 type TicketSectionProps = {
   eventId: string;
@@ -273,32 +274,62 @@ export default function TicketSection({
     viewerStateError,
   ]);
 
+  const hasMounted = useHasMounted();
+
   const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
 
-  const [isTicketingOpen, setIsTicketingOpen] = useState(() =>
-    !ticketingOpensAt || Number.isNaN(ticketingOpensAt.getTime())
-      ? true
-      : new Date() >= ticketingOpensAt,
-  );
+  // Render as "open" on the server and the first client paint (a constant, so
+  // SSR and hydration always agree — even when Mobile Safari re-hydrates a stale
+  // page restored from its back/forward cache), then reconcile against the real
+  // clock once mounted. See useHasMounted for why this avoids React error #418.
+  const [isTicketingOpen, setIsTicketingOpen] = useState(true);
 
   useEffect(() => {
-    if (isTicketingOpen || !ticketingDate) return;
-    const nextTicketingOpensAt = new Date(ticketingDate);
-    if (Number.isNaN(nextTicketingOpensAt.getTime())) return;
-    const ms = Math.max(nextTicketingOpensAt.getTime() - Date.now(), 0);
-    const timer = setTimeout(() => setIsTicketingOpen(true), ms);
+    if (!ticketingDate) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    const opensAt = new Date(ticketingDate);
+    if (Number.isNaN(opensAt.getTime())) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    const remaining = opensAt.getTime() - Date.now();
+    if (remaining <= 0) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    setIsTicketingOpen(false);
+    const timer = setTimeout(() => setIsTicketingOpen(true), remaining);
     return () => clearTimeout(timer);
-  }, [isTicketingOpen, ticketingDate]);
+  }, [ticketingDate]);
 
-  const isEventLongOver = isEventOver({
-    endTime: eventEndTime,
-    startTime: eventStartTime,
-  });
+  // Time-dependent, so keep it false until mount to keep the first render
+  // deterministic (the server-rendered HTML must match the first client render).
+  const isEventLongOver =
+    hasMounted &&
+    isEventOver({
+      endTime: eventEndTime,
+      startTime: eventStartTime,
+    });
 
   const doorsOpenDate = doorsOpen ? new Date(doorsOpen) : null;
-  const [showDoorsCountdown, setShowDoorsCountdown] = useState(
-    () => !!doorsOpenDate && doorsOpenDate > new Date() && !isEventLongOver,
-  );
+
+  // Same reasoning: don't read the clock until after mount.
+  const [showDoorsCountdown, setShowDoorsCountdown] = useState(false);
+
+  useEffect(() => {
+    if (!doorsOpen) {
+      setShowDoorsCountdown(false);
+      return;
+    }
+    const opens = new Date(doorsOpen);
+    setShowDoorsCountdown(
+      !Number.isNaN(opens.getTime()) &&
+        opens.getTime() > Date.now() &&
+        !isEventLongOver,
+    );
+  }, [doorsOpen, isEventLongOver]);
 
   const hasValidTicketingOpensAt =
     ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
