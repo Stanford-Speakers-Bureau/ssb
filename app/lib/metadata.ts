@@ -46,7 +46,10 @@ export function generateEventDescription(
   return `Get free tickets to see ${event.name || "this event"}${venue}. Presented by Stanford Speakers Bureau.`;
 }
 
-function truncate(text: string, max: number): string {
+/**
+ * Truncate text to `max` characters at a word boundary, appending an ellipsis.
+ */
+export function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return text.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
 }
