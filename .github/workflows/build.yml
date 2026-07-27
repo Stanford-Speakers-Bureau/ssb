@@ -74,7 +74,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.109.1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -101,7 +101,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.109.1
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -171,7 +171,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: env.ADMIN_REPO_TOKEN != ''
         with:
-          version: latest
+          version: 2.109.1
 
       - name: Install web
         if: env.ADMIN_REPO_TOKEN != ''
