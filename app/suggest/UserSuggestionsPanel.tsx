@@ -11,14 +11,14 @@ export default function UserSuggestionsPanel({
 }: UserSuggestionsPanelProps) {
   if (!isLoggedIn) {
     return (
-      <p className="font-sans text-sm text-zinc-500">
+      <p className="font-sans text-sm text-zinc-400">
         Sign in to see the speakers you&rsquo;ve suggested.
       </p>
     );
   }
   if (userSuggestions.length === 0) {
     return (
-      <p className="font-sans text-sm text-zinc-500">
+      <p className="font-sans text-sm text-zinc-400">
         You haven&rsquo;t suggested anyone yet.
       </p>
     );

@@ -678,7 +678,7 @@ export default function EventPopup({
                 {/* Dismiss link */}
                 <button
                   onClick={dismiss}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors py-1"
+                  className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors py-1"
                 >
                   Maybe later
                 </button>

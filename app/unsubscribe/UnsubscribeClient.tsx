@@ -164,7 +164,7 @@ export default function UnsubscribeClient({
               {headline}
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
-              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-400">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed mb-6">
@@ -221,14 +221,14 @@ export default function UnsubscribeClient({
                   type="button"
                   onClick={startAnnounce}
                   disabled={submitting}
-                  className="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  className="text-xs text-zinc-400 hover:text-zinc-200 underline underline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 >
                   Don&rsquo;t want to hear about any future events either?
                 </button>
               </div>
             )}
 
-            <p className="mt-6 text-xs text-zinc-500">
+            <p className="mt-6 text-xs text-zinc-400">
               Changed your mind? Just close this page.
             </p>
           </>
@@ -240,7 +240,7 @@ export default function UnsubscribeClient({
               You&rsquo;ve been unsubscribed
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
-              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-400">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed mb-6">
@@ -260,7 +260,7 @@ export default function UnsubscribeClient({
 
             {scope === "event" && (
               <div className="mt-6 border-t border-zinc-800 pt-5">
-                <p className="text-xs text-zinc-500 leading-relaxed mb-3">
+                <p className="text-xs text-zinc-400 leading-relaxed mb-3">
                   Don&rsquo;t want to hear about any future events either?
                 </p>
                 <button
@@ -282,7 +282,7 @@ export default function UnsubscribeClient({
               Unsubscribe from all future events
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
-              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-400">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed mb-6">
@@ -322,7 +322,7 @@ export default function UnsubscribeClient({
               {submitting ? "Unsubscribing…" : "Unsubscribe"}
             </button>
 
-            <p className="mt-6 text-xs text-zinc-500">
+            <p className="mt-6 text-xs text-zinc-400">
               Changed your mind? Just close this page.
             </p>
           </>
@@ -334,7 +334,7 @@ export default function UnsubscribeClient({
               You&rsquo;ve been unsubscribed
             </h1>
             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
-              <span className="text-zinc-500">Email:</span>{" "}
+              <span className="text-zinc-400">Email:</span>{" "}
               <span className="text-zinc-200">{email}</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed">
