@@ -451,6 +451,46 @@ export const eventFeedback = pgTable(
   ],
 );
 
+// ── Canceled-ticket archive ─────────────────────────────────────────────────
+// Canceling a ticket hard-deletes the `tickets` row (see the
+// cancel_ticket_and_promote RPC), so the live table keeps no trace of who
+// bought-then-bailed and "show-up rate by purchase timing" silently drops them.
+// We snapshot the row here first — original purchase time + cancel time — so
+// analytics can count cancellations without these rows re-entering any
+// capacity / scan / email query (same containment as walletVoidedPasses).
+export const canceledTickets = pgTable(
+  "canceled_tickets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // id of the now-deleted ticket row. Not a FK (the row is gone); unique so a
+    // re-run of the audit-log backfill can't duplicate a cancellation.
+    originalTicketId: uuid("original_ticket_id"),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    email: text("email").notNull(),
+    name: text("name"),
+    type: text("type"),
+    referral: text("referral"),
+    // When the ticket was originally purchased — the x-axis for purchase timing.
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    // When it was canceled.
+    canceledAt: timestamp("canceled_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // 'live' = captured by the cancel RPC; 'backfill' = reconstructed from audit logs.
+    source: text("source").notNull().default("live"),
+  },
+  (t) => [
+    index("canceled_tickets_event_id_idx").on(t.eventId),
+    index("canceled_tickets_created_at_idx").on(t.createdAt),
+    uniqueIndex("canceled_tickets_original_ticket_id_unique").on(
+      t.originalTicketId,
+    ),
+  ],
+);
+
 // ── Audit Logs ─────────────────────────────────────────────────────────────
 export const auditLogs = pgTable(
   "audit_logs",
