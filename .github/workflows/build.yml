@@ -80,7 +80,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Start local Postgres
-        run: supabase db start
+        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
       - name: Apply migrations
         run: supabase db reset
@@ -116,7 +116,7 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Start local Postgres
-        run: supabase db start
+        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
       - name: Apply migrations
         run: supabase db reset
@@ -190,7 +190,7 @@ jobs:
 
       - name: Start Postgres
         if: env.ADMIN_REPO_TOKEN != ''
-        run: supabase db start
+        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
         working-directory: web
 
       - name: Apply migrations
