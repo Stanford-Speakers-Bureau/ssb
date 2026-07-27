@@ -40,11 +40,7 @@ jobs:
       - name: Typecheck
         run: bunx tsc --noEmit
 
-      # The default branch currently trips one react-hooks lint error
-      # (useHasMounted setState-in-effect) that the accessibility recolor branch
-      # already fixes. Run lint for visibility but do not block until that lands.
       - name: Lint
-        continue-on-error: true
         run: bun run lint
 
       - name: Tests
@@ -124,12 +120,7 @@ jobs:
       - name: Browser tests
         run: bunx playwright test --project=chromium --workers=1
 
-      # a11y asserts the accessible (rose) accent theme. Until that contrast fix
-      # lands on the default branch it intentionally fails on the current
-      # palette, so it runs for visibility but does not block the pipeline.
-      # Remove continue-on-error once the accessibility recolor lands.
       - name: Accessibility tests
-        continue-on-error: true
         run: bunx playwright test --project=a11y --workers=1
 
       - name: Upload browser test report
