@@ -3,6 +3,12 @@ import { defineConfig, devices } from "@playwright/test";
 import {
   LOCAL_TEST_DATABASE_URL,
   TEST_SESSION_SECRET,
+  TEST_SUPABASE_URL,
+  TEST_SUPABASE_KEY,
+  TEST_APPLE_WALLET_SECRET,
+  TEST_SAML_SP_ENTITY_ID,
+  TEST_SAML_SP_PRIVATE_KEY,
+  TEST_SAML_SP_PUBLIC_CERT,
 } from "./tests/helpers/env";
 
 // Playwright workers do not inherit webServer.env. Force the same local-only
@@ -22,6 +28,12 @@ const webEnv = {
   AWS_SECRET_ACCESS_KEY: "test-secret-key",
   AWS_REGION: "us-west-2",
   NEXT_PUBLIC_BASE_URL: "http://localhost:3100",
+  SUPABASE_URL: TEST_SUPABASE_URL,
+  SUPABASE_KEY: TEST_SUPABASE_KEY,
+  APPLE_WALLET_SECRET: TEST_APPLE_WALLET_SECRET,
+  SAML_SP_ENTITY_ID: TEST_SAML_SP_ENTITY_ID,
+  SP_PRIVATE_KEY: TEST_SAML_SP_PRIVATE_KEY,
+  SP_PUBLIC_CERT: TEST_SAML_SP_PUBLIC_CERT,
   E2E_TESTS: "true",
 };
 const adminEnv = {
