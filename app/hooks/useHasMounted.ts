@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 /**
  * Returns `false` on the server and during the first client render, then `true`
@@ -12,11 +12,9 @@ import { useEffect, useState } from "react";
  * `new Date()` computed during render no longer matches the server's value.
  */
 export function useHasMounted(): boolean {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  return hasMounted;
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 }

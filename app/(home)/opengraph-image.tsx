@@ -10,6 +10,7 @@ import { getHedvigSerif } from "@/app/lib/og-fonts";
 export const alt = "Stanford Speakers Bureau";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+export const dynamic = "force-dynamic";
 
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const hasSupabaseStorageCredentials = Boolean(

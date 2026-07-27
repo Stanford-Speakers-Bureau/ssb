@@ -69,7 +69,7 @@ export default async function SuggestPage({
         <section className="relative bg-zinc-950 border-t border-zinc-900 py-16 sm:py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
-              <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
+              <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#ff7766] mb-3">
                 The Leaderboard
               </p>
               <h2 className="font-serif text-3xl sm:text-5xl text-white leading-[0.95]">
@@ -93,12 +93,12 @@ export default async function SuggestPage({
 
                 <div>
                   <div className="flex items-center gap-4 mb-5">
-                    <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C]">
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#ff7766]">
                       Your suggestions
                     </p>
                     <div className="flex-1 h-px bg-zinc-800" />
                   </div>
-                  <p className="font-sans text-xs text-zinc-500 mb-4 leading-relaxed">
+                  <p className="font-sans text-xs text-zinc-400 mb-4 leading-relaxed">
                     New suggestions take a little time to be reviewed before
                     they appear on the leaderboard.
                   </p>

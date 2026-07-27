@@ -26,7 +26,7 @@ export default function SubmitPanel({
 
     return (
       <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#ff7766] mb-2">
           {eyebrow}
         </p>
         <h3 className="font-serif text-2xl sm:text-3xl text-white mb-5 leading-tight">
@@ -52,7 +52,7 @@ export default function SubmitPanel({
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-8 text-center shadow-sm">
-      <p className="text-xs uppercase tracking-[0.3em] text-[#A80D0C] mb-3">
+      <p className="text-xs uppercase tracking-[0.3em] text-[#ff7766] mb-3">
         Sign in required
       </p>
       <h3 className="font-serif text-2xl text-white mb-3 leading-tight">

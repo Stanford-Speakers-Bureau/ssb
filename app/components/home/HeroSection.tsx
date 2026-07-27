@@ -133,7 +133,7 @@ export default function HeroSection() {
             prefetch={false}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-full bg-[#d74331] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_20px_48px_rgba(123,19,15,0.46)] transition-all hover:-translate-y-0.5 hover:bg-[#ef624b] sm:text-base"
+            className="rounded-full bg-[#b92b20] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_20px_48px_rgba(123,19,15,0.46)] transition-all hover:-translate-y-0.5 hover:bg-[#9f2118] sm:text-base"
           >
             Join the Mailing List
           </MotionLink>

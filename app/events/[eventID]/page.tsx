@@ -557,7 +557,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
         {/* ADA notice */}
         <div className="mt-10 pt-6 border-t border-zinc-800/50">
-          <p className="text-center text-xs sm:text-sm text-zinc-500 leading-relaxed">
+          <p className="text-center text-xs sm:text-sm text-zinc-400 leading-relaxed">
             For ADA accommodations or other questions, please email{" "}
             <a
               href="mailto:tickets@stanfordspeakersbureau.com"

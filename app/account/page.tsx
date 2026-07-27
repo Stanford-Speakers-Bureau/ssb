@@ -104,13 +104,13 @@ export default async function AccountPage() {
       {/* Identity header */}
       <section className="px-6 sm:px-16 pt-28 sm:pt-36 pb-12 sm:pb-16 border-b border-zinc-800">
         <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-[0.65rem] tracking-[0.5em] uppercase text-ssb-accent mb-6">
+          <p className="font-mono text-[0.65rem] tracking-[0.5em] uppercase text-rose-400 mb-6">
             My Account
           </p>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-7">
             <div className="flex items-center gap-5">
               <div className="flex size-16 sm:size-20 shrink-0 items-center justify-center rounded-full border border-ssb-accent/30 bg-ssb-accent/10">
-                <span className="font-serif text-2xl sm:text-3xl text-ssb-accent">
+                <span className="font-serif text-2xl sm:text-3xl text-rose-400">
                   {initials}
                 </span>
               </div>
@@ -129,7 +129,7 @@ export default async function AccountPage() {
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-3">
-            <p className="font-mono text-[0.55rem] tracking-[0.3em] uppercase text-zinc-500 shrink-0">
+            <p className="font-mono text-[0.55rem] tracking-[0.3em] uppercase text-zinc-400 shrink-0">
               Stanford affiliation
             </p>
             {affiliations.length > 0 ? (
@@ -137,7 +137,7 @@ export default async function AccountPage() {
                 {affiliations.map((affiliation) => (
                   <span
                     key={affiliation}
-                    className="rounded-full border border-ssb-accent/30 bg-ssb-accent/5 px-3 py-1 text-xs font-semibold text-ssb-accent"
+                    className="rounded-full border border-rose-400/30 bg-rose-400/5 px-3 py-1 text-xs font-semibold text-rose-400"
                   >
                     {formatAffiliationLabel(affiliation)}
                   </span>
