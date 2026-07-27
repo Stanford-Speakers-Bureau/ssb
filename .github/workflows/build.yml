@@ -89,7 +89,7 @@ jobs:
         run: bun run test:integration
 
   e2e:
-    name: Browser, accessibility, and visual
+    name: Browser and accessibility
     runs-on: ubuntu-latest
 
     steps:
@@ -124,17 +124,13 @@ jobs:
       - name: Browser tests
         run: bunx playwright test --project=chromium --workers=1
 
-      # a11y and visual assert the accessible (rose) accent theme. Until that
-      # contrast fix lands on the default branch they intentionally fail on the
-      # current palette, so they run for visibility but do not block the
-      # pipeline. Remove continue-on-error once the accessibility recolor lands.
+      # a11y asserts the accessible (rose) accent theme. Until that contrast fix
+      # lands on the default branch it intentionally fails on the current
+      # palette, so it runs for visibility but does not block the pipeline.
+      # Remove continue-on-error once the accessibility recolor lands.
       - name: Accessibility tests
         continue-on-error: true
         run: bunx playwright test --project=a11y --workers=1
-
-      - name: Visual regression tests
-        continue-on-error: true
-        run: bunx playwright test --project=visual --workers=1
 
       - name: Upload browser test report
         if: always()

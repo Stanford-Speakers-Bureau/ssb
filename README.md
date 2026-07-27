@@ -190,7 +190,6 @@ bun test                    # unit + email snapshots; integration self-skips
 bun run test:integration    # real Postgres RPC/trigger contracts
 bun run test:e2e            # Chromium smoke tests on :3100
 bun run test:a11y           # axe WCAG A/AA checks
-bun run test:visual         # committed screenshot comparisons
 bun run test:cross-app      # requires ../admin; starts :3100 and :3101
 bun run check-drift         # migrations, schema shape, unsubscribe tokens
 ```

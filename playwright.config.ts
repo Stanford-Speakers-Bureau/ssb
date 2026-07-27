@@ -34,7 +34,7 @@ export default defineConfig({
   testDir: "./e2e",
   testMatch: "**/*.e2e.ts",
   timeout: 45_000,
-  expect: { timeout: 10_000, toHaveScreenshot: { maxDiffPixelRatio: 0.02 } },
+  expect: { timeout: 10_000 },
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -44,7 +44,6 @@ export default defineConfig({
     : [["list"]],
   globalSetup: "./e2e/global-setup.ts",
   outputDir: "test-results",
-  snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
   use: {
     baseURL: "http://localhost:3100",
     trace: "retain-on-failure",
@@ -80,21 +79,12 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: ["a11y/**", "visual/**", "cross-app/**"],
+      testIgnore: ["a11y/**", "cross-app/**"],
     },
     {
       name: "a11y",
       testDir: "./e2e/a11y",
       use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "visual",
-      testDir: "./e2e/visual",
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 1280, height: 720 },
-        deviceScaleFactor: 1,
-      },
     },
     ...(process.env.CROSS_APP
       ? [

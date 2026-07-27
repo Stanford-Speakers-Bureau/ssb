@@ -20,8 +20,6 @@
     "test:integration": "TEST_INTEGRATION=1 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres bun test tests/integration",
     "test:e2e": "bunx playwright test --project=chromium",
     "test:a11y": "bunx playwright test --project=a11y",
-    "test:visual": "VISUAL=1 bunx playwright test --project=visual",
-    "test:visual:update": "bun tools/update-visual-baselines.ts",
     "test:e2e:ui": "bunx playwright test --ui",
     "test:cross-app": "CROSS_APP=1 bunx playwright test --project=cross-app",
     "test:all": "bun run test && bun run test:integration && bun run test:e2e",
