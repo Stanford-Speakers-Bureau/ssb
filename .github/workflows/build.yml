@@ -74,13 +74,13 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.109.1
+          version: latest
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Start local Postgres
-        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase db start
 
       - name: Apply migrations
         run: supabase db reset
@@ -101,7 +101,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.109.1
+          version: latest
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -116,7 +116,7 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Start local Postgres
-        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase db start
 
       - name: Apply migrations
         run: supabase db reset
@@ -171,7 +171,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: env.ADMIN_REPO_TOKEN != ''
         with:
-          version: 2.109.1
+          version: latest
 
       - name: Install web
         if: env.ADMIN_REPO_TOKEN != ''
@@ -190,7 +190,7 @@ jobs:
 
       - name: Start Postgres
         if: env.ADMIN_REPO_TOKEN != ''
-        run: supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase db start
         working-directory: web
 
       - name: Apply migrations
