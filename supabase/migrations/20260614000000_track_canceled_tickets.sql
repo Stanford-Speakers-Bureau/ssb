@@ -13,8 +13,9 @@
 --   2. Rewrites cancel_ticket_and_promote to insert that snapshot in the same
 --      transaction as the delete. Both the admin and web cancel handlers call
 --      this one function, so both paths are covered.
---   3. Backfills the archive from historical `ticket.cancel` audit logs, so the
---      table isn't blind to every cancellation that happened before it existed.
+--   3. Backfills the archive from historical cancel audit logs — both web
+--      `ticket.cancel` and admin `ticket.delete` — so the table isn't blind to
+--      cancellations that happened before it existed.
 
 CREATE TABLE IF NOT EXISTS "public"."canceled_tickets" (
   "id"                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -269,49 +270,66 @@ GRANT EXECUTE ON FUNCTION "public"."cancel_ticket_and_promote"(uuid, text) TO "s
 
 -- Backfill from historical cancellations.
 --
--- Every cancel (web + admin) writes a `ticket.cancel` audit row whose metadata
--- JSON carries the deleted ticket's id (`ticketId`) and its original purchase
--- time (`gotTicketAt`); the row's own `created_at` is when the cancel happened.
--- That's enough to reconstruct a purchase-timing snapshot. name / type /
--- referral were never captured at cancel time, so they stay NULL — analytics
--- that only need timing don't read them.
+-- Reconstructs the archive from audit logs so the table isn't blind to
+-- cancellations that happened before it existed. Both cancel paths log the
+-- ticket's ORIGINAL purchase time as metadata.gotTicketAt — exactly the
+-- purchase-timing x-axis — under two different actions:
+--   * web self-cancel -> action = 'ticket.cancel'
+--   * admin cancel     -> action = 'ticket.delete' AND event_id IS NOT NULL
+--                         (the event_id IS NULL branch is an orphan-ticket hard
+--                          delete, not a cancellation — excluded)
+-- name / referral were never captured at cancel time, so they stay NULL; `type`
+-- is recovered from either the admin (`type`) or web (`ticket_type`) metadata key.
 --
 -- Skips:
 --   * rows with no `gotTicketAt` (older logs) — without the original purchase
 --     time they can't sit on the timing x-axis, and inventing one would skew it;
---   * rows with no `ticketId` — there'd be nothing to dedupe on.
--- DISTINCT ON keeps one row per ticket (the earliest cancel) so the statement
--- can't self-conflict, and ON CONFLICT defers to anything the live RPC already
--- archived. event_id is kept only when the event still exists, since the FK
--- (matching the live table) would reject an id whose event has been deleted.
+--   * events that no longer exist — the FK (matching the live table) would reject
+--     an id whose event has been deleted.
+-- The natural key here is (event_id, email, gotTicketAt): DISTINCT ON collapses
+-- duplicate audit rows for one cancellation (keeping the earliest) so the INSERT
+-- can't self-conflict even when `ticketId` is absent, while the NOT EXISTS guard
+-- plus ON CONFLICT make a re-run (fresh env / `db reset`) a no-op against
+-- anything the live RPC or a prior backfill already archived.
 INSERT INTO canceled_tickets (
   original_ticket_id, event_id, email, name, type, referral,
   created_at, canceled_at, source
 )
-SELECT DISTINCT ON (src.original_ticket_id)
+SELECT DISTINCT ON (src.event_id, src.email, src.created_at)
   src.original_ticket_id,
   src.event_id,
   src.email,
   NULL,
-  NULL,
+  src.type,
   NULL,
   src.created_at,
   src.canceled_at,
   'backfill'
 FROM (
   SELECT
-    (a.metadata::jsonb ->> 'ticketId')::uuid              AS original_ticket_id,
-    e.id                                                  AS event_id,
+    NULLIF(a.metadata::jsonb ->> 'ticketId', '')::uuid    AS original_ticket_id,
+    a.event_id                                            AS event_id,
     lower(trim(a.target_email))                           AS email,
+    COALESCE(a.metadata::jsonb ->> 'type',
+             a.metadata::jsonb ->> 'ticket_type')         AS type,
     (a.metadata::jsonb ->> 'gotTicketAt')::timestamptz    AS created_at,
     a.created_at                                          AS canceled_at
   FROM audit_logs a
-  LEFT JOIN events e ON e.id = a.event_id
-  WHERE a.action = 'ticket.cancel'
+  WHERE (
+          a.action = 'ticket.cancel'
+          OR (a.action = 'ticket.delete' AND a.event_id IS NOT NULL)
+        )
+    AND a.event_id IS NOT NULL
     AND a.target_email IS NOT NULL
     AND a.metadata IS NOT NULL
-    AND (a.metadata::jsonb ->> 'ticketId') IS NOT NULL
     AND (a.metadata::jsonb ->> 'gotTicketAt') IS NOT NULL
+    AND EXISTS (SELECT 1 FROM events e WHERE e.id = a.event_id)
+    AND NOT EXISTS (
+      SELECT 1 FROM canceled_tickets c
+      WHERE c.event_id = a.event_id
+        AND lower(c.email) = lower(trim(a.target_email))
+        AND c.created_at = (a.metadata::jsonb ->> 'gotTicketAt')::timestamptz
+    )
 ) AS src
-ORDER BY src.original_ticket_id, src.canceled_at ASC
+ORDER BY src.event_id, src.email, src.created_at, src.canceled_at ASC
 ON CONFLICT (original_ticket_id) DO NOTHING;
