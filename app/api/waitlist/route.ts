@@ -54,7 +54,13 @@ type JoinWaitlistRpcResult = {
 };
 
 function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "";
+  const parts: string[] = [];
+  let current: unknown = error;
+  while (current instanceof Error) {
+    parts.push(current.message);
+    current = current.cause;
+  }
+  return parts.join(" ");
 }
 
 function scheduleAfterResponse(label: string, task: () => Promise<void>) {

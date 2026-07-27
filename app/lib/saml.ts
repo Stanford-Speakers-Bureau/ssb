@@ -63,14 +63,14 @@ function getArrayValue(value: MultiValue): string[] {
   return value ? [value] : [];
 }
 
-function stripPemHeaders(pem: string): string {
+export function stripPemHeaders(pem: string): string {
   return pem
     .replace(/-----BEGIN [A-Z ]+-----/g, "")
     .replace(/-----END [A-Z ]+-----/g, "")
     .replace(/\s/g, "");
 }
 
-function normalizeCertificatePem(certificate: string): string {
+export function normalizeCertificatePem(certificate: string): string {
   const trimmed = certificate.trim().replace(/\\n/g, "\n");
 
   if (!trimmed) {

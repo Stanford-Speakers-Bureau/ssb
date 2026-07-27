@@ -1098,11 +1098,18 @@ function pngChunk(type: string, data: Uint8Array): Uint8Array {
 // CompressionStream("deflate") emits a zlib stream (RFC 1950) — exactly the
 // format a PNG IDAT chunk expects.
 async function deflateToZlib(input: Uint8Array): Promise<Uint8Array> {
-  const cs = new CompressionStream("deflate");
-  const writer = cs.writable.getWriter();
-  void writer.write(input as BufferSource);
-  void writer.close();
-  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+  if (typeof CompressionStream !== "undefined") {
+    const cs = new CompressionStream("deflate");
+    const writer = cs.writable.getWriter();
+    void writer.write(input as BufferSource);
+    void writer.close();
+    return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+  }
+
+  // Bun's test runtime does not expose CompressionStream. Node's zlib emits
+  // the same RFC 1950 stream required by a PNG IDAT chunk.
+  const { deflateSync } = await import("node:zlib");
+  return new Uint8Array(deflateSync(input));
 }
 
 async function generateQRCodePngBuffer(

@@ -178,6 +178,27 @@ Bindings (see `wrangler.jsonc`):
 
 ## Scripts
 
+### Testing
+
+Ordinary unit and MIME snapshot tests are hermetic and safe to run without
+services. Database and browser suites require local Supabase first:
+
+```bash
+supabase db start
+supabase db reset
+bun test                    # unit + email snapshots; integration self-skips
+bun run test:integration    # real Postgres RPC/trigger contracts
+bun run test:e2e            # Chromium smoke tests on :3100
+bun run test:a11y           # axe WCAG A/AA checks
+bun run test:visual         # committed screenshot comparisons
+bun run test:cross-app      # requires ../admin; starts :3100 and :3101
+bun run check-drift         # migrations, schema shape, unsubscribe tokens
+```
+
+All test entrypoints overwrite `.env` service values with localhost/fake
+credentials. Database factories refuse non-local hosts unless
+`I_KNOW_THIS_DB` exactly names the intended test host.
+
 ```bash
 bun dev              # next dev on :3000
 bun run build        # next build (TypeScript / lint check)

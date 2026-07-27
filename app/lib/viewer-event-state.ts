@@ -27,7 +27,7 @@ const anonymousViewerEventState: ViewerEventState = {
   allowAdmittingStandby: false,
 };
 
-type ViewerEventStateRow = {
+export type ViewerEventStateRow = {
   ticket_id: string | null;
   ticket_type: string | null;
   ticket_name: string | null;
@@ -38,7 +38,7 @@ type ViewerEventStateRow = {
   allow_admitting_standby: boolean | null;
 };
 
-function toOptionalNumber(
+export function toOptionalNumber(
   value: number | string | bigint | null,
 ): number | null {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
@@ -54,6 +54,24 @@ function toOptionalNumber(
 
 export function getAnonymousViewerEventState(): ViewerEventState {
   return anonymousViewerEventState;
+}
+
+export function deriveViewerEventState(
+  userEmail: string,
+  row: ViewerEventStateRow | undefined,
+): ViewerEventState {
+  return {
+    authenticated: true,
+    userEmail,
+    ticketId: row?.ticket_id ?? null,
+    ticketType: row?.ticket_type ?? null,
+    ticketName: row?.ticket_name ?? null,
+    ticketScanned: row?.ticket_scanned ?? false,
+    isOnWaitlist: row?.is_on_waitlist ?? false,
+    waitlistPosition: toOptionalNumber(row?.waitlist_position ?? null),
+    isNotified: row?.is_notified ?? false,
+    allowAdmittingStandby: row?.allow_admitting_standby ?? false,
+  };
 }
 
 export async function getViewerEventState(
@@ -92,16 +110,5 @@ export async function getViewerEventState(
     LIMIT 1
   `);
 
-  return {
-    authenticated: true,
-    userEmail: user.email,
-    ticketId: row?.ticket_id ?? null,
-    ticketType: row?.ticket_type ?? null,
-    ticketName: row?.ticket_name ?? null,
-    ticketScanned: row?.ticket_scanned ?? false,
-    isOnWaitlist: row?.is_on_waitlist ?? false,
-    waitlistPosition: toOptionalNumber(row?.waitlist_position ?? null),
-    isNotified: row?.is_notified ?? false,
-    allowAdmittingStandby: row?.allow_admitting_standby ?? false,
-  };
+  return deriveViewerEventState(user.email, row);
 }
