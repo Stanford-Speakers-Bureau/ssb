@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      SESSION_SECRET: ssb-ci-session-secret-0123456789-abcdef
 
     steps:
       - uses: actions/checkout@v4
