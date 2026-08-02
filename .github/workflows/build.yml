@@ -1,7 +1,8 @@
-name: CI/CD
+name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
@@ -17,7 +18,7 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +26,10 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.1
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
 
       - name: Cache Bun downloads
         uses: actions/cache@v4
@@ -49,12 +54,13 @@ jobs:
       - name: Cross-app drift contracts
         run: bun run check-drift
 
-      - name: Skip build when DATABASE_URL is not configured
-        if: env.DATABASE_URL == ''
-        run: echo "Skipping build because DATABASE_URL is required by prerendered data routes."
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
 
       - name: Build
-        if: env.DATABASE_URL != ''
         run: bun run build
 
   integration:
@@ -202,39 +208,3 @@ jobs:
       - name: Explain skipped cross-app job
         if: env.ADMIN_REPO_TOKEN == ''
         run: echo "Skipping cross-app tests because ADMIN_REPO_TOKEN is not configured."
-
-  deploy:
-    name: Deploy
-    needs: [ci, integration, e2e]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.1
-
-      - name: Cache Bun downloads
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Skip deploy when secrets are not configured
-        if: env.CLOUDFLARE_API_TOKEN == '' || env.DATABASE_URL == '' || env.SESSION_SECRET == ''
-        run: echo "Skipping deploy because CLOUDFLARE_API_TOKEN, DATABASE_URL, and SESSION_SECRET are required."
-
-      - name: Deploy to Cloudflare
-        if: env.CLOUDFLARE_API_TOKEN != '' && env.DATABASE_URL != '' && env.SESSION_SECRET != ''
-        run: bun run deploy
