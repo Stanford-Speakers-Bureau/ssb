@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development") {
+  initOpenNextCloudflareForDev({
+    // E2E runs must be hermetic. A `remote: true` R2 binding otherwise opens
+    // a Cloudflare edge-preview session during `next dev`.
+    remoteBindings: process.env.E2E_TESTS !== "true",
+  });
+}
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@ssb/db"],

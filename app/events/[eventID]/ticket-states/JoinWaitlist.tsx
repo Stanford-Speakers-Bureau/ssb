@@ -76,7 +76,7 @@ export default function JoinWaitlist({
               <p className="text-sm font-semibold text-white leading-snug">
                 Join the online waitlist
               </p>
-              <p className="text-xs text-zinc-500 leading-relaxed mt-1">
+              <p className="text-xs text-zinc-400 leading-relaxed mt-1">
                 We&apos;ll email you a ticket when a spot opens.
               </p>
             </div>
@@ -106,7 +106,7 @@ export default function JoinWaitlist({
               <p className="text-sm font-semibold text-white leading-snug">
                 Show up in person
               </p>
-              <p className="text-xs text-zinc-500 leading-relaxed mt-1">
+              <p className="text-xs text-zinc-400 leading-relaxed mt-1">
                 Join the standby line, first come, first serve.
               </p>
             </div>

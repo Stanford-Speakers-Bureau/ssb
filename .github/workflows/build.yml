@@ -1,17 +1,211 @@
-name: Build Project
+name: CI
 
-on: [push]
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      SESSION_SECRET: ssb-ci-session-secret-0123456789-abcdef
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Cache Bun downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Tests
+        run: bun test
+
+      - name: Cross-app drift contracts
+        run: bun run check-drift
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Build
+        run: bun run build
+
+  integration:
+    name: Integration (Postgres)
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
 
-      - name: install dependencies
-        run: bun install
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
 
-      - name: check typescript errors
-        run: bunx tsc --noEmit
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Real database integration tests
+        run: bun run test:integration
+
+  e2e:
+    name: Browser and accessibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Browser tests
+        run: bunx playwright test --project=chromium --workers=1
+
+      - name: Accessibility tests
+        run: bunx playwright test --project=a11y --workers=1
+
+      - name: Upload browser test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  cross-app:
+    name: Cross-app contracts
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_REPO_TOKEN: ${{ secrets.ADMIN_REPO_TOKEN }}
+
+    steps:
+      - name: Checkout web
+        if: env.ADMIN_REPO_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          path: web
+
+      - name: Checkout admin sibling
+        if: env.ADMIN_REPO_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          repository: Stanford-Speakers-Bureau/admin
+          token: ${{ secrets.ADMIN_REPO_TOKEN }}
+          path: admin
+
+      - uses: oven-sh/setup-bun@v2
+        if: env.ADMIN_REPO_TOKEN != ''
+        with:
+          bun-version: 1.3.1
+
+      - uses: supabase/setup-cli@v1
+        if: env.ADMIN_REPO_TOKEN != ''
+        with:
+          version: 2.109.1
+
+      - name: Install web
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Install admin
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: bun install --frozen-lockfile
+        working-directory: admin
+
+      - name: Install Chromium
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: bunx playwright install --with-deps chromium
+        working-directory: web
+
+      - name: Start Postgres
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: supabase db start
+        working-directory: web
+
+      - name: Apply migrations
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: supabase db reset
+        working-directory: web
+
+      - name: Drift contracts
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: bun run check-drift
+        working-directory: web
+
+      - name: Cross-app browser contracts
+        if: env.ADMIN_REPO_TOKEN != ''
+        run: bun run test:cross-app
+        working-directory: web
+
+      - name: Explain skipped cross-app job
+        if: env.ADMIN_REPO_TOKEN == ''
+        run: echo "Skipping cross-app tests because ADMIN_REPO_TOKEN is not configured."

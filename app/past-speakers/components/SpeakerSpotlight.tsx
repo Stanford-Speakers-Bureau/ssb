@@ -198,7 +198,7 @@ export default function SpeakerSpotlight({
       <div className="max-w-6xl mx-auto px-6 sm:px-12 py-12 sm:py-16">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#A80D0C] mb-2">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#ff7766] mb-2">
               In Focus
             </p>
             <h2 className="font-serif text-3xl sm:text-4xl text-white">

@@ -112,7 +112,7 @@ export default function QuestionsLeaderboard({
           <p className="font-serif text-2xl text-zinc-500 mb-2">
             No questions yet.
           </p>
-          <p className="font-sans text-sm text-zinc-500 max-w-xs">
+          <p className="font-sans text-sm text-zinc-400 max-w-xs">
             Be the first to submit one.
           </p>
         </div>

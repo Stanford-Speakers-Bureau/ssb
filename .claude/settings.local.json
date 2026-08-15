@@ -28,5 +28,8 @@
       "Bash(git log *)",
       "Bash(npx eslint *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

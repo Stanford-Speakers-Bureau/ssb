@@ -10,6 +10,7 @@ import WaitlistPosition from "./ticket-states/WaitlistPosition";
 import TicketingOpens from "./ticket-states/TicketingOpens";
 import GetTicket from "./ticket-states/GetTicket";
 import HasTicket from "./ticket-states/HasTicket";
+import JoinWaitlist from "./ticket-states/JoinWaitlist";
 
 export default function TicketButton(props: TicketButtonProps) {
   const actions = useTicketActions(props);
@@ -64,23 +65,16 @@ export default function TicketButton(props: TicketButtonProps) {
   } else if (actions.isSoldOut && !actions.hasTicket) {
     if (!actions.isOnWaitlist) {
       content = (
-        <div>
-          <GetTicket
-            isLoading={actions.isWaitlistLoading}
-            isButtonDisabled={
-              actions.isWaitlistStatusLoading ||
-              actions.isWaitlistLoading ||
-              !!actions.referralWarning
-            }
-            isSalesDisabled={false}
-            processTicketRequest={actions.handleJoinWaitlist}
-            isLoggedIn={actions.isLoggedIn}
-            referralsEnabled={actions.referralsEnabled}
-            referralCode={actions.referralCode}
-            referralWarning={actions.referralWarning}
-            handleReferralCodeChange={actions.handleReferralCodeChange}
-          />
-        </div>
+        <JoinWaitlist
+          isWaitlistStatusLoading={actions.isWaitlistStatusLoading}
+          isWaitlistLoading={actions.isWaitlistLoading}
+          referralWarning={actions.referralWarning}
+          waitlistChance={actions.waitlistChance}
+          handleJoinWaitlist={actions.handleJoinWaitlist}
+          referralsEnabled={actions.referralsEnabled}
+          referralCode={actions.referralCode}
+          handleReferralCodeChange={actions.handleReferralCodeChange}
+        />
       );
     } else {
       content = (

@@ -30,7 +30,7 @@ const EVENT_PASS_COLUMNS = {
   allowAdmittingStandby: true,
 } as const;
 
-type EventPassFields = {
+export type EventPassFields = {
   name: string | null;
   doorsOpen: Date | null;
   startTimeDate: Date | null;
@@ -44,6 +44,38 @@ type EventPassFields = {
   address: string;
   allowAdmittingStandby: boolean;
 };
+
+export type WalletPassFields = Parameters<typeof getAppleWalletPass>[1];
+
+export function buildWalletPassFields(args: {
+  ticketId: string;
+  email: string;
+  name: string | null;
+  ticketType: string;
+  event: EventPassFields;
+  cancelled: boolean;
+  checkedIn: boolean;
+}): WalletPassFields {
+  const { event } = args;
+  return {
+    email: args.email,
+    name: args.name,
+    eventName: event.name ?? "",
+    ticketType: args.ticketType,
+    eventDoorTime: event.doorsOpen?.toISOString() ?? "",
+    ticketId: args.ticketId,
+    eventVenue: event.venue ?? "",
+    eventVenueLink: event.venueLink ?? "",
+    eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
+    eventLat: Number(event.latitude),
+    eventLng: Number(event.longitude),
+    eventAddress: event.address ?? "",
+    start_time_date: event.startTimeDate?.toISOString() ?? "",
+    cancelled: args.cancelled,
+    checkedIn: args.checkedIn,
+    admittingStandby: event.allowAdmittingStandby,
+  };
+}
 
 /**
  * Verifies the `Authorization: ApplePass <token>` header a device sends on
@@ -82,24 +114,10 @@ async function renderPass(args: {
   if (!imgResponse.ok) return null;
   const imgBuffer = Buffer.from(await imgResponse.arrayBuffer());
 
-  const buffer = await getAppleWalletPass(imgBuffer, {
-    email: args.email,
-    name: args.name,
-    eventName: event.name ?? "",
-    ticketType: args.ticketType,
-    eventDoorTime: event.doorsOpen?.toISOString() ?? "",
-    ticketId: args.ticketId,
-    eventVenue: event.venue ?? "",
-    eventVenueLink: event.venueLink ?? "",
-    eventLink: `${process.env.NEXT_PUBLIC_BASE_URL}/events/${event.route}`,
-    eventLat: Number(event.latitude),
-    eventLng: Number(event.longitude),
-    eventAddress: event.address ?? "",
-    start_time_date: event.startTimeDate?.toISOString() ?? "",
-    cancelled: args.cancelled,
-    checkedIn: args.checkedIn,
-    admittingStandby: event.allowAdmittingStandby,
-  });
+  const buffer = await getAppleWalletPass(
+    imgBuffer,
+    buildWalletPassFields(args),
+  );
   return (buffer as Buffer) ?? null;
 }
 

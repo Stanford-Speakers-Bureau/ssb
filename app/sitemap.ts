@@ -3,6 +3,8 @@ import { db, events, and, isNotNull } from "@ssb/db";
 
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseURL}/`, changeFrequency: "weekly", priority: 1 },

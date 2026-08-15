@@ -14,7 +14,16 @@
     "u": "bunx npm-check-updates -u && bun install",
     "lint": "eslint",
     "seed": "supabase db reset",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "test": "bun test",
+    "test:unit": "bun test app packages",
+    "test:integration": "TEST_INTEGRATION=1 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres bun test tests/integration",
+    "test:e2e": "bunx playwright test --project=chromium",
+    "test:a11y": "bunx playwright test --project=a11y",
+    "test:e2e:ui": "bunx playwright test --ui",
+    "test:cross-app": "CROSS_APP=1 bunx playwright test --project=cross-app",
+    "test:all": "bun run test && bun run test:integration && bun run test:e2e",
+    "check-drift": "bun tools/check-drift.ts"
   },
   "dependencies": {
     "@node-saml/node-saml": "^5.1.0",
@@ -47,8 +56,11 @@
     "wrangler": "^4.86.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/bun": "^1.3.14",
     "@types/canvas-confetti": "^1.9.0",
     "@types/hast": "^3.0.4",
     "@types/node": "^24.10.13",

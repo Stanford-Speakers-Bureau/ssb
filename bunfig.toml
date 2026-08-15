@@ -4,3 +4,6 @@
 # Existing entries in bun.lock are trusted; this only gates new resolutions.
 # Override per-invocation with: bun install --minimum-release-age=0
 minimumReleaseAge = 604800
+
+[test]
+preload = ["./tests/preload.ts"]
