@@ -69,7 +69,9 @@
     {
       "bucket_name": "ssb-cache",
       "binding": "ssb_cache",
-      "remote": true,
+      // Local emulation. Set to true only if you are logged in with
+      // `wrangler login` and need production R2 during next dev.
+      "remote": false,
     },
   ],
   "images": {

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
-import { LEADERSHIP, DIRECTORS, type TeamMember } from "./members";
+import { LEADERSHIP, DIRECTORS, type TeamMember, ADJUNCTS } from "./members";
 
 function LeaderCard({ member, index }: { member: TeamMember; index: number }) {
   const ref = useRef(null);
@@ -125,6 +125,101 @@ function DirectorCard({
   );
 }
 
+const EXEC_EMAIL = "exec@stanfordspeakersbureau.com";
+
+function EnvelopeIcon({ size = 28 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
+function ContactCard({
+  index,
+  variant = "leader",
+}: {
+  index: number;
+  variant?: "leader" | "director";
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const isLeader = variant === "leader";
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: isLeader ? 24 : 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{
+        duration: isLeader ? 0.6 : 0.5,
+        delay: index * (isLeader ? 0.1 : 0.07),
+        ease: "easeOut",
+      }}
+      className="group"
+    >
+      <a
+        href={`mailto:${EXEC_EMAIL}`}
+        target="_blank"
+        className="block focus-visible:outline-ssb-accent focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        {isLeader ? (
+          <>
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-900 mb-5">
+              <div className="absolute inset-0 bg-linear-to-t from-ssb-accent/30 via-zinc-900 to-zinc-900" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                <div className="flex size-16 items-center justify-center rounded-full bg-ssb-accent/15 text-ssb-accent mb-5 ring-1 ring-ssb-accent/25">
+                  <EnvelopeIcon size={26} />
+                </div>
+                <p className="font-serif text-2xl text-white text-center leading-tight">
+                  Write to us.
+                </p>
+
+                <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-ssb-accent group-hover:text-ssb-accent-strong transition-colors break-all">
+                  <EnvelopeIcon size={12} />
+                  {EXEC_EMAIL}
+                </span>
+              </div>
+            </div>
+            <p className="font-mono text-[0.6rem] tracking-[0.35em] uppercase text-ssb-accent mb-2">
+              Contact
+            </p>
+            <h3 className="font-serif text-2xl sm:text-3xl text-white mb-2 leading-tight">
+              Have an idea?
+            </h3>
+          </>
+        ) : (
+          <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
+            <div className="absolute inset-0 bg-linear-to-t from-black via-zinc-900/80 to-ssb-accent/20" />
+            <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
+              <div className="flex size-10 items-center justify-center rounded-full bg-ssb-accent/15 text-ssb-accent mb-4 ring-1 ring-ssb-accent/25">
+                <EnvelopeIcon size={18} />
+              </div>
+              <p className="font-mono text-[0.58rem] tracking-[0.25em] uppercase text-ssb-accent mb-1">
+                Contact
+              </p>
+              <h3 className="font-serif text-xl sm:text-2xl text-white leading-tight mb-2">
+                Have an idea?
+              </h3>
+            </div>
+          </div>
+        )}
+      </a>
+    </motion.div>
+  );
+}
+
 function RecruitCard({ index }: { index: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
@@ -163,8 +258,7 @@ function RecruitCard({ index }: { index: number }) {
           Join the team.
         </h3>
         <p className="text-sm text-zinc-400 text-pretty leading-relaxed mb-4 max-w-xs">
-          We&rsquo;re always looking for students who want to bring big names to
-          campus.
+          and help bring big names to campus!
         </p>
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:text-ssb-accent transition-colors">
           Get in touch
@@ -240,6 +334,8 @@ export default function TeamClient() {
             {LEADERSHIP.map((member, i) => (
               <LeaderCard key={member.name} member={member} index={i} />
             ))}
+
+            <ContactCard index={LEADERSHIP.length} variant="leader" />
           </div>
         </div>
       </section>
@@ -258,6 +354,25 @@ export default function TeamClient() {
             ))}
             {DIRECTORS.length % 3 !== 0 && (
               <RecruitCard index={DIRECTORS.length} />
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Adjuncts */}
+      <section className="px-6 sm:px-16 py-20 sm:py-28 border-t border-zinc-800 bg-zinc-900/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-12 sm:mb-16">
+            <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight">
+              Adjuncts
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+            {ADJUNCTS.map((member, i) => (
+              <DirectorCard key={member.name} member={member} index={i} />
+            ))}
+            {ADJUNCTS.length % 3 !== 0 && (
+              <RecruitCard index={ADJUNCTS.length} />
             )}
           </div>
         </div>

@@ -8,49 +8,85 @@ export type TeamMember = {
 
 export const LEADERSHIP: TeamMember[] = [
   {
-    name: "Anish Anne",
+    name: "Rishi Jeyamurthy",
     role: "Co-President",
-    image: "/team/anish.jpg",
-    email: "anishan@stanford.edu",
+    image: "/team/Rishi.jpeg",
   },
   {
-    name: "Annika Joshi",
+    name: "Suraya Mathai-Jackson",
     role: "Co-President",
-    image: "/team/annika.jpg",
-    email: "ajoshi17@stanford.edu",
-  },
-  {
-    name: "Katie Heffernan",
-    role: "Executive Advisor to the Board",
-    image: "/team/katie.jpg",
+    image: "/team/suraya.jpg",
   },
 ];
 
 export const DIRECTORS: TeamMember[] = [
   {
-    name: "Ajay Eisenberg",
-    role: "Financial Officer",
-    image: "/team/ajay.jpg",
-  },
-  {
-    name: "Suraya Mathai-Jackson",
+    name: "Isabelle Gainsford",
     role: "Director of Marketing",
-    image: "/team/suraya.jpg",
+    image: "/team/izzy.jpg",
   },
   {
-    name: "Michael Yu",
+    name: "Hoyoon Song",
     role: "Director of Technology",
-    image: "/team/michael.jpg",
+    image: "/team/hoyoon.jpeg",
   },
   {
-    name: "Rishi Jeyamurthy",
-    role: "Director of Socials",
-    image: "/team/rishi.jpg",
+    name: "Chloe Loquet",
+    role: "VP of Design",
+    image: "/team/chloe.jpg",
+  },
+
+  {
+    name: "Claire Park",
+    role: "Financial Officer",
+    image: "/team/claire.jpg",
   },
   {
-    name: "Andrea Mock",
+    name: "Molly George",
+    role: "Financial Officer",
+    image: "/team/mollyg.jpg",
+  },
+  {
+    name: "Molly Maloney",
+    role: "Director of Community",
+    image: "/team/mollym.jpg",
+  },
+  {
+    name: "Theia Wepaloki",
+    role: "Director of Community",
+    image: "/team/theia.jpg",
+  },
+  {
+    name: "Joshua Sulmeyer-Barley",
+    role: "Director of VP of Engagement",
+    image: "/team/Josh.jpg",
+  },
+  {
+    name: "Bennett Zytko",
+    role: "Director of Partnerships",
+    image: "/team/bennett.jpg",
+  },
+  {
+    name: "Carter Cochran",
     role: "Director of Coffee Chats",
-    image: "/team/andrea.jpg",
-    email: "amock@stanford.edu",
+    image: "/team/carter.jpg",
+  },
+];
+
+export const ADJUNCTS: TeamMember[] = [
+  {
+    name: "Katie Heffernan",
+    role: "Executive Advisor to the Board",
+    image: "/team/katie.jpg",
+  },
+  {
+    name: "Anish Anne",
+    role: "Advisor to the Board",
+    image: "/team/anish.jpg",
+  },
+  {
+    name: "Annika Joshi",
+    role: "Advisor to the Board",
+    image: "/team/annika.jpg",
   },
 ];
