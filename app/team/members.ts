@@ -39,37 +39,37 @@ export const DIRECTORS: TeamMember[] = [
   {
     name: "Claire Park",
     role: "Financial Officer",
-    image: "/team/claire.jpg",
+    image: "/team/blank-headshot.jpeg",
   },
   {
     name: "Molly George",
     role: "Financial Officer",
-    image: "/team/mollyg.jpg",
+    image: "/team/Molly G.jpg",
   },
   {
     name: "Molly Maloney",
     role: "Director of Community",
-    image: "/team/mollym.jpg",
+    image: "/team/blank-headshot.jpeg",
   },
   {
     name: "Theia Wepaloki",
     role: "Director of Community",
-    image: "/team/theia.jpg",
+    image: "/team/blank-headshot.jpeg",
   },
   {
     name: "Joshua Sulmeyer-Barley",
-    role: "Director of VP of Engagement",
+    role: "VP of Engagement",
     image: "/team/Josh.jpg",
   },
   {
     name: "Bennett Zytko",
     role: "Director of Partnerships",
-    image: "/team/bennett.jpg",
+    image: "/team/blank-headshot.jpeg",
   },
   {
     name: "Carter Cochran",
     role: "Director of Coffee Chats",
-    image: "/team/carter.jpg",
+    image: "/team/blank-headshot.jpeg",
   },
 ];
 

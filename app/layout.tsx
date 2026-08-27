@@ -61,9 +61,10 @@ export default async function RootLayout({
   const initialBannerData = await getBannerData();
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${hedvigLettersSerif.variable} ${greatVibes.variable} antialiased`}
+        suppressHydrationWarning
       >
         <PostHogIdentifier />
         <ClientHeaderBar initialBannerData={initialBannerData} />
