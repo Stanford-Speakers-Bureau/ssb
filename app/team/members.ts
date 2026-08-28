@@ -33,13 +33,13 @@ export const DIRECTORS: TeamMember[] = [
   {
     name: "Chloe Loquet",
     role: "VP of Design",
-    image: "/team/chloe.jpg",
+    image: "/team/chloe.png",
   },
 
   {
     name: "Claire Park",
     role: "Financial Officer",
-    image: "/team/blank-headshot.jpeg",
+    image: "/team/claire.jpeg",
   },
   {
     name: "Molly George",
@@ -64,7 +64,7 @@ export const DIRECTORS: TeamMember[] = [
   {
     name: "Bennett Zytko",
     role: "Director of Partnerships",
-    image: "/team/blank-headshot.jpeg",
+    image: "/team/ben.jpg",
   },
   {
     name: "Carter Cochran",
