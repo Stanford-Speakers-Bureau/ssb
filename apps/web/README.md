@@ -46,17 +46,16 @@ app/
 ├── events/             event listings
 ├── lib/                supabase, auth, email, wallet, ratelimit, …
 └── components/         shared UI
-packages/db/            @ssb/db — drizzle schema, queries, client (Hyperdrive-aware)
-supabase/migrations/    SQL migrations (source of truth for the schema)
+../../packages/db/      @ssb/db — drizzle schema, queries, client (Hyperdrive-aware)
+../../supabase/         SQL migrations (source of truth for the schema)
 public/                 static assets
 middleware.ts           CSRF + origin check + body-size guard
 worker.js               Cloudflare Worker entry (loaded by wrangler)
 wrangler.jsonc          Cloudflare bindings (R2, Queues, Hyperdrive, Images)
 ```
 
-`@ssb/db` is a local file dep. The `postinstall` script copies
-`packages/db/{src,package.json,tsconfig.json}` into `node_modules/@ssb/db/`
-so the worker can resolve it.
+`@ssb/db` is a bun workspace package at the repo root (`packages/db`),
+shared with the admin app.
 
 ## Local development
 
@@ -133,9 +132,9 @@ supabase migration new <name>
 supabase db reset                # rebuild local DB from migrations + seed
 ```
 
-The Drizzle schema in `packages/db/src/schema.ts` is hand-kept in sync with the
-SQL. ⚠️ The drizzle schema files in `web/packages/db/` and `admin/packages/db/`
-are **separate copies** and have drifted before — when changing one, check the other.
+The Drizzle schema in `packages/db/src/schema.ts` (repo root) is hand-kept in
+sync with the SQL. It is shared with the admin app, so schema changes land in
+both apps at once.
 
 ### Stanford SSO locally
 

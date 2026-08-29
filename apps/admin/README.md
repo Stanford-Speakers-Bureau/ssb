@@ -58,15 +58,14 @@ app/
 ├── audit/              audit log viewer
 ├── notify/             notify-me admin
 └── lib/                auth, email, ses, audit, validation, …
-packages/db/            @ssb/db — drizzle schema, queries, client
-supabase/migrations/    SQL migrations (shared with web/)
+../../packages/db/      @ssb/db — drizzle schema, queries, client
+../../supabase/         SQL migrations (shared with the web app)
 middleware.ts           CSRF + origin check + body-size guard
 wrangler.jsonc          Cloudflare bindings (R2, Hyperdrive)
 ```
 
-`@ssb/db` is a local file dep. The `postinstall` script copies
-`packages/db/{src,package.json,tsconfig.json}` into `node_modules/@ssb/db/`
-so the worker can resolve it.
+`@ssb/db` is a bun workspace package at the repo root (`packages/db`),
+shared with the web app.
 
 ## Local development
 
@@ -158,9 +157,9 @@ supabase migration new <name>
 supabase db reset                # rebuild local DB from migrations + seed
 ```
 
-The Drizzle schema in `packages/db/src/schema.ts` is hand-kept in sync with
-the SQL. ⚠️ `web/packages/db/` and `admin/packages/db/` are **separate copies**
-of the schema and have drifted before — when changing one, check the other.
+The Drizzle schema in `packages/db/src/schema.ts` (repo root) is hand-kept in
+sync with the SQL. It is shared with the web app, so schema changes land in
+both apps at once.
 
 ### Seed
 

@@ -46,8 +46,4 @@ next-env.d.ts
 .dev.vars
 .wrangler
 stanford-speakers-bureau-f406ae28c128.json
-packages/db/node_modules
-supabase/.temp/cli-latest
-/supabase/.temp
-/supabase/.temp
 .env.local
