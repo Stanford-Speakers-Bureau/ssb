@@ -49,7 +49,7 @@ export const DIRECTORS: TeamMember[] = [
   {
     name: "Molly Maloney",
     role: "Director of Community",
-    image: "/team/blank-headshot.jpeg",
+    image: "/team/mollym.jpeg",
   },
   {
     name: "Theia Wepaloki",
@@ -73,7 +73,7 @@ export const DIRECTORS: TeamMember[] = [
   },
 ];
 
-export const ADJUNCTS: TeamMember[] = [
+export const ADVISORS: TeamMember[] = [
   {
     name: "Katie Heffernan",
     role: "Executive Advisor to the Board",

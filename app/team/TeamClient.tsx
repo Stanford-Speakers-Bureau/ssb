@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
-import { LEADERSHIP, DIRECTORS, type TeamMember, ADJUNCTS } from "./members";
+import { LEADERSHIP, DIRECTORS, type TeamMember, ADVISORS } from "./members";
 
 function LeaderCard({ member, index }: { member: TeamMember; index: number }) {
   const ref = useRef(null);
@@ -345,7 +345,7 @@ export default function TeamClient() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 sm:mb-16">
             <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight">
-              Directors
+              Board
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
@@ -359,20 +359,20 @@ export default function TeamClient() {
         </div>
       </section>
 
-      {/* Adjuncts */}
+      {/* Advisors */}
       <section className="px-6 sm:px-16 py-20 sm:py-28 border-t border-zinc-800 bg-zinc-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 sm:mb-16">
             <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight">
-              Adjuncts
+              Advisors
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            {ADJUNCTS.map((member, i) => (
+            {ADVISORS.map((member, i) => (
               <DirectorCard key={member.name} member={member} index={i} />
             ))}
-            {ADJUNCTS.length % 3 !== 0 && (
-              <RecruitCard index={ADJUNCTS.length} />
+            {ADVISORS.length % 3 !== 0 && (
+              <RecruitCard index={ADVISORS.length} />
             )}
           </div>
         </div>
