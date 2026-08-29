@@ -1,17 +1,201 @@
-name: Build Project
+name: CI
 
-on: [push]
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+  SESSION_SECRET: ssb-ci-session-secret-0123456789-abcdef
 
 jobs:
-  test:
+  ci:
+    name: CI (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Cache Bun downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Lint
+        run: bun run lint
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Tests
+        run: bun test
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Build
+        run: bun run build
+        working-directory: apps/${{ matrix.app }}
+
+  integration:
+    name: Integration (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Real database integration tests
+        run: bun run test:integration
+        working-directory: apps/${{ matrix.app }}
+
+  e2e:
+    name: Browser and accessibility (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Browser tests
+        run: bunx playwright test --project=chromium --workers=1
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Accessibility tests
+        run: bunx playwright test --project=a11y --workers=1
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Upload browser test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-playwright-report
+          path: |
+            apps/${{ matrix.app }}/playwright-report/
+            apps/${{ matrix.app }}/test-results/
+          if-no-files-found: ignore
+
+  cross-app:
+    name: Cross-app contracts
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
 
-      - name: install dependencies
-        run: bun install
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
 
-      - name: check typescript errors
-        run: bunx tsc --noEmit
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: Start local Postgres
+        run: supabase db start
+
+      - name: Apply migrations
+        run: supabase db reset
+
+      - name: Drift contracts
+        run: bun run check-drift
+        working-directory: apps/web
+
+      - name: Cross-app browser contracts
+        run: bun run test:cross-app
+        working-directory: apps/web

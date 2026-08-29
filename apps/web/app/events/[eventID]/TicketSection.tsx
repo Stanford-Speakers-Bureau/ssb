@@ -1,0 +1,745 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
+import TicketButton from "./TicketButton";
+import TicketQRCode from "./TicketQRCode";
+import Image from "next/image";
+import { isEventOver } from "@/app/lib/eventTime";
+import { glassPanel, NoticeBanner } from "./ui";
+import ReferralShare from "./ReferralShare";
+import { generateReferralCode } from "@/app/lib/utils";
+import CountdownTimer from "./CountdownTimer";
+import { PACIFIC_TIMEZONE } from "@/app/lib/constants";
+import { useHasMounted } from "@/app/hooks/useHasMounted";
+
+type TicketSectionProps = {
+  eventId: string;
+  initialHasTicket: boolean;
+  initialTicketId: string | null;
+  initialTicketType: string | null;
+  initialTicketName?: string | null;
+  initialIsOnWaitlist?: boolean;
+  initialWaitlistPosition?: number | null;
+  userEmail: string | null;
+  eventRoute: string;
+  eventStartTime: string | null;
+  eventEndTime: string | null;
+  doorsOpen: string | null;
+  ticketingDate?: string | null;
+  isSoldOut?: boolean;
+  initialIsNotified?: boolean;
+  waitlistChance?: string | null;
+  hideTicketingDate?: boolean;
+  referralsEnabled?: boolean;
+  initialIsScanned?: boolean;
+  standbyMode?: boolean;
+  requireTicketAccess?: boolean;
+  allowCancelFlowAccess?: boolean;
+  initialEmailCancelAttendeeName?: string | null;
+  eventName?: string | null;
+  initialAllowAdmittingStandby?: boolean;
+  initialViewerStateLoaded?: boolean;
+};
+
+type ViewerEventStateResponse = {
+  authenticated?: boolean;
+  userEmail?: string | null;
+  ticketId?: string | null;
+  ticketType?: string | null;
+  ticketName?: string | null;
+  ticketScanned?: boolean;
+  isOnWaitlist?: boolean;
+  waitlistPosition?: number | null;
+  isNotified?: boolean;
+  allowAdmittingStandby?: boolean;
+};
+
+export default function TicketSection({
+  eventId,
+  initialHasTicket,
+  initialTicketId,
+  initialTicketType,
+  initialTicketName = null,
+  initialIsOnWaitlist = false,
+  initialWaitlistPosition = null,
+  userEmail,
+  eventRoute,
+  eventStartTime,
+  eventEndTime,
+  doorsOpen,
+  ticketingDate = null,
+  isSoldOut = false,
+  initialIsNotified = false,
+  waitlistChance = null,
+  hideTicketingDate = false,
+  referralsEnabled = false,
+  initialIsScanned = false,
+  standbyMode = false,
+  requireTicketAccess = false,
+  allowCancelFlowAccess = false,
+  initialEmailCancelAttendeeName = null,
+  eventName = null,
+  initialAllowAdmittingStandby = false,
+  initialViewerStateLoaded = false,
+}: TicketSectionProps) {
+  const router = useRouter();
+  const [hasTicket, setHasTicket] = useState(initialHasTicket);
+  const [ticketId, setTicketId] = useState<string | null>(initialTicketId);
+  const [ticketType, setTicketType] = useState<string | null>(
+    initialTicketType,
+  );
+  const [ticketName, setTicketName] = useState<string | null>(
+    initialTicketName,
+  );
+  const [viewerUserEmail, setViewerUserEmail] = useState<string | null>(
+    userEmail,
+  );
+  const [isOnWaitlist, setIsOnWaitlist] = useState(initialIsOnWaitlist);
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(
+    initialWaitlistPosition,
+  );
+  const [isNotified, setIsNotified] = useState(initialIsNotified);
+  const [isScanned, setIsScanned] = useState(initialIsScanned);
+  const [isViewerStateLoading, setIsViewerStateLoading] = useState(
+    !initialViewerStateLoaded,
+  );
+  const [viewerStateError, setViewerStateError] = useState<string | null>(null);
+  const [viewerStateRequestKey, setViewerStateRequestKey] = useState(0);
+
+  const [isLoadingAppleWallet, setIsLoadingAppleWallet] = useState(false);
+  const [scannedRevealed, setScannedRevealed] = useState(false);
+  const [admittingStandby, setAdmittingStandby] = useState(
+    initialAllowAdmittingStandby,
+  );
+  const [standbyAdmissionOpened, setStandbyAdmissionOpened] = useState(false);
+
+  const isStandbyTicket = ticketType?.toUpperCase() === "STANDBY";
+  const standbyStartTime = eventStartTime
+    ? new Date(eventStartTime).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: PACIFIC_TIMEZONE,
+      })
+    : null;
+
+  const onAddToAppleWallet = () => {
+    if (!ticketId || isLoadingAppleWallet) return;
+    setIsLoadingAppleWallet(true);
+    window.location.href = `/api/tickets/apple-wallet?ticket_id=${ticketId}`;
+    // Reset loading state after a short delay since the download doesn't navigate away
+    setTimeout(() => {
+      setIsLoadingAppleWallet(false);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    const handleTicketChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        hasTicket: boolean;
+        ticketId: string | null;
+        ticketName?: string | null;
+        ticketType?: string | null;
+      }>;
+      if (customEvent.detail) {
+        setHasTicket(customEvent.detail.hasTicket);
+        setTicketId(customEvent.detail.ticketId);
+        setTicketName(customEvent.detail.ticketName ?? null);
+        setIsScanned(false);
+        if (customEvent.detail.hasTicket) {
+          setIsOnWaitlist(false);
+          setWaitlistPosition(null);
+        }
+        if ("ticketType" in customEvent.detail) {
+          setTicketType(customEvent.detail.ticketType ?? null);
+        }
+      }
+    };
+
+    window.addEventListener("ticketChanged", handleTicketChange);
+    return () => {
+      window.removeEventListener("ticketChanged", handleTicketChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadViewerState() {
+      if (initialViewerStateLoaded && viewerStateRequestKey === 0) {
+        setIsViewerStateLoading(false);
+        return;
+      }
+
+      setIsViewerStateLoading(true);
+      setViewerStateError(null);
+
+      try {
+        const response = await fetch(
+          `/api/events/viewer-state?eventId=${encodeURIComponent(eventId)}`,
+          {
+            cache: "no-store",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Viewer state request failed (${response.status})`);
+        }
+
+        const data = (await response.json()) as ViewerEventStateResponse;
+
+        if (ignore) return;
+
+        setViewerUserEmail(data.userEmail ?? null);
+        setHasTicket(!!data.ticketId);
+        setTicketId(data.ticketId ?? null);
+        setTicketType(data.ticketType ?? null);
+        setTicketName(data.ticketName ?? null);
+        setIsScanned(data.ticketScanned ?? false);
+        setIsOnWaitlist(!!data.isOnWaitlist);
+        setWaitlistPosition(
+          typeof data.waitlistPosition === "number"
+            ? data.waitlistPosition
+            : null,
+        );
+        setIsNotified(!!data.isNotified);
+        setAdmittingStandby(!!data.allowAdmittingStandby);
+      } catch (error) {
+        console.error("Failed to load viewer event state:", error);
+        if (!ignore) {
+          setViewerStateError(
+            "We couldn’t load your ticket status right now. Please try again.",
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setIsViewerStateLoading(false);
+        }
+      }
+    }
+
+    void loadViewerState();
+
+    return () => {
+      ignore = true;
+    };
+  }, [eventId, initialViewerStateLoaded, viewerStateRequestKey]);
+
+  // While a standby holder is waiting (admission not yet open), poll for the
+  // flip so we can prompt them to refresh and reveal their QR. The QR itself is
+  // only rendered after a re-fetch, so we surface a refresh CTA rather than
+  // swapping it in silently.
+  useEffect(() => {
+    if (!isStandbyTicket || admittingStandby) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/events/viewer-state?eventId=${encodeURIComponent(eventId)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as ViewerEventStateResponse;
+        if (!cancelled && data.allowAdmittingStandby) {
+          setStandbyAdmissionOpened(true);
+        }
+      } catch {
+        // Ignore transient poll failures; the next tick retries.
+      }
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isStandbyTicket, admittingStandby, eventId]);
+
+  useEffect(() => {
+    if (
+      requireTicketAccess &&
+      !allowCancelFlowAccess &&
+      !isViewerStateLoading &&
+      !viewerStateError &&
+      !hasTicket
+    ) {
+      router.replace("/upcoming-speakers");
+    }
+  }, [
+    hasTicket,
+    allowCancelFlowAccess,
+    isViewerStateLoading,
+    requireTicketAccess,
+    router,
+    viewerStateError,
+  ]);
+
+  const hasMounted = useHasMounted();
+
+  const ticketingOpensAt = ticketingDate ? new Date(ticketingDate) : null;
+
+  // Render as "open" on the server and the first client paint (a constant, so
+  // SSR and hydration always agree — even when Mobile Safari re-hydrates a stale
+  // page restored from its back/forward cache), then reconcile against the real
+  // clock once mounted. See useHasMounted for why this avoids React error #418.
+  const [isTicketingOpen, setIsTicketingOpen] = useState(true);
+
+  useEffect(() => {
+    if (!ticketingDate) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    const opensAt = new Date(ticketingDate);
+    if (Number.isNaN(opensAt.getTime())) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    const remaining = opensAt.getTime() - Date.now();
+    if (remaining <= 0) {
+      setIsTicketingOpen(true);
+      return;
+    }
+    setIsTicketingOpen(false);
+    const timer = setTimeout(() => setIsTicketingOpen(true), remaining);
+    return () => clearTimeout(timer);
+  }, [ticketingDate]);
+
+  // Time-dependent, so keep it false until mount to keep the first render
+  // deterministic (the server-rendered HTML must match the first client render).
+  const isEventLongOver =
+    hasMounted &&
+    isEventOver({
+      endTime: eventEndTime,
+      startTime: eventStartTime,
+    });
+
+  const doorsOpenDate = doorsOpen ? new Date(doorsOpen) : null;
+
+  // Same reasoning: don't read the clock until after mount.
+  const [showDoorsCountdown, setShowDoorsCountdown] = useState(false);
+
+  useEffect(() => {
+    if (!doorsOpen) {
+      setShowDoorsCountdown(false);
+      return;
+    }
+    const opens = new Date(doorsOpen);
+    setShowDoorsCountdown(
+      !Number.isNaN(opens.getTime()) &&
+        opens.getTime() > Date.now() &&
+        !isEventLongOver,
+    );
+  }, [doorsOpen, isEventLongOver]);
+
+  const hasValidTicketingOpensAt =
+    ticketingOpensAt && !Number.isNaN(ticketingOpensAt.getTime());
+  const showTicketPanel =
+    hasTicket ||
+    isTicketingOpen ||
+    isSoldOut ||
+    (!isTicketingOpen && (hasValidTicketingOpensAt || hideTicketingDate));
+
+  const ticketButtonProps = {
+    eventId,
+    initialHasTicket: hasTicket,
+    initialIsOnWaitlist: isOnWaitlist,
+    initialWaitlistPosition: waitlistPosition,
+    initialTicketName: ticketName,
+    eventStartTime,
+    eventEndTime,
+    doorsOpen,
+    isSoldOut,
+    isTicketingOpen,
+    ticketingOpensAt: ticketingDate,
+    initialIsNotified: isNotified,
+    isLoggedIn: viewerUserEmail != null,
+    waitlistChance,
+    hideTicketingDate,
+    referralsEnabled,
+    initialIsScanned: isScanned,
+    standbyMode,
+    allowAdmittingStandby: admittingStandby,
+    allowCancelFlowAccess,
+    initialEmailCancelAttendeeName,
+    ticketType,
+    eventName,
+  };
+
+  if (
+    isViewerStateLoading ||
+    (requireTicketAccess && !allowCancelFlowAccess && !hasTicket)
+  ) {
+    return (
+      <div className="event-ticket-section flex flex-col gap-5">
+        <div className={glassPanel + " p-5 sm:p-6"}>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-100" />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-white">
+                {requireTicketAccess
+                  ? "Checking your ticket access..."
+                  : "Loading your ticket status..."}
+              </p>
+              <p className="text-sm text-zinc-400">
+                {requireTicketAccess
+                  ? "If you already have a ticket, we'll bring it up automatically."
+                  : "We're fetching your latest ticket, waitlist, and notification state."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewerStateError) {
+    return (
+      <div className="event-ticket-section flex flex-col gap-5">
+        <div className={glassPanel + " p-5 sm:p-6"}>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <p className="text-sm font-medium text-white">{viewerStateError}</p>
+            <button
+              onClick={() => setViewerStateRequestKey((value) => value + 1)}
+              className="rounded-xl bg-[#A80D0C] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E0B0A]"
+            >
+              Retry status check
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="event-ticket-section flex flex-col gap-5">
+      {/* Ticket button (get ticket / waitlist / ticketing-opens when no ticket) */}
+      {showTicketPanel && !hasTicket && (
+        <div className={glassPanel + " p-4 sm:p-5"}>
+          <TicketButton {...ticketButtonProps} />
+        </div>
+      )}
+
+      {/* Ticket details when user has a ticket */}
+      {hasTicket && (
+        <>
+          {isEventLongOver && (
+            <div
+              className={
+                glassPanel + " p-4 sm:p-5 flex items-center justify-center"
+              }
+            >
+              <p className="text-sm font-medium text-white text-center">
+                This event is over. Thank you for attending!
+              </p>
+            </div>
+          )}
+
+          {showDoorsCountdown && doorsOpenDate && (
+            <div
+              className={
+                glassPanel + " p-4 sm:p-5 flex items-center justify-center"
+              }
+            >
+              <CountdownTimer
+                targetDate={doorsOpenDate}
+                label="Doors open in"
+                onExpire={() => setShowDoorsCountdown(false)}
+              />
+            </div>
+          )}
+
+          {ticketType?.toUpperCase() === "VIP" && (
+            <NoticeBanner
+              color="amber"
+              icon={
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9" />
+                </svg>
+              }
+            >
+              We&apos;ve reserved a seat for you in the front few rows. Please
+              use the VIP entrance when you arrive at the venue.
+            </NoticeBanner>
+          )}
+          {ticketId && (
+            <div
+              className={`${isStandbyTicket ? "rounded-xl bg-zinc-900/50 border border-amber-500/30 shadow-lg" : glassPanel} p-5 sm:p-6 flex flex-col items-center relative overflow-hidden`}
+            >
+              {isStandbyTicket && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/40 to-amber-400/0" />
+              )}
+
+              {isStandbyTicket && (
+                <div className="mb-3 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/25">
+                  <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+                    Standby Ticket
+                  </p>
+                </div>
+              )}
+
+              {isStandbyTicket && (
+                <div className="w-full mb-4">
+                  <NoticeBanner
+                    color="amber"
+                    icon={
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                        />
+                      </svg>
+                    }
+                  >
+                    This is a standby ticket, and admission is not guaranteed.
+                    Please wait in the standby ticket area. Standby admission is
+                    first come, first served — we&apos;ll start admitting from
+                    the standby line closer to the event start time
+                    {standbyStartTime ? `, around ${standbyStartTime}` : ""}.
+                  </NoticeBanner>
+                </div>
+              )}
+
+              {isStandbyTicket && waitlistChance?.toLowerCase() === "high" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="mb-4 w-full px-3.5 py-2.5 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20 relative overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/[0.07] to-emerald-400/0"
+                    animate={{ x: ["-100%", "100%"] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      repeatDelay: 1,
+                    }}
+                  />
+                  <div className="relative flex items-center gap-2.5">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-200">
+                        High chance of getting in
+                      </p>
+                      <p className="text-xs text-emerald-400">
+                        Based on past similar events
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {ticketName && (
+                <p className="text-sm sm:text-base text-zinc-200 font-medium text-center mb-4">
+                  Ticket for{" "}
+                  <span className="text-white font-semibold">{ticketName}</span>
+                </p>
+              )}
+
+              <div className="relative">
+                {/* A standby ticket has no scannable QR until staff open
+                    admission for the event. Until then we render a placeholder
+                    instead of the real code (not just an overlay over it). */}
+                {isStandbyTicket && !admittingStandby ? (
+                  <div
+                    className={`flex flex-col items-center justify-center rounded-lg ${standbyAdmissionOpened ? "bg-emerald-950" : "bg-zinc-900"}`}
+                    style={{ width: 190, height: 190 }}
+                  >
+                    {standbyAdmissionOpened ? (
+                      <>
+                        <svg
+                          className="w-10 h-10 text-emerald-400 mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                          />
+                        </svg>
+                        <p className="text-sm font-semibold text-emerald-300 text-center px-4">
+                          Standby admission is open!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setStandbyAdmissionOpened(false);
+                            setViewerStateRequestKey((k) => k + 1);
+                          }}
+                          className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-sm font-semibold cursor-pointer hover:bg-emerald-500/25 transition-colors"
+                        >
+                          Refresh to reveal QR
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-10 h-10 text-zinc-500 mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                          />
+                        </svg>
+                        <p className="text-sm font-semibold text-zinc-400 text-center px-4">
+                          QR unlocks when standby admission opens
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <TicketQRCode
+                      ticketId={ticketId}
+                      size={190}
+                      compact
+                      ticketType={ticketType}
+                      attendeeName={ticketName}
+                      eventStartTime={eventStartTime ?? doorsOpen}
+                    />
+
+                    {/* Scanned ticket overlay — tap to reveal */}
+                    <AnimatePresence>
+                      {isScanned && !scannedRevealed && (
+                        <motion.button
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => setScannedRevealed(true)}
+                          className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-emerald-950 rounded-lg cursor-pointer"
+                        >
+                          <svg
+                            className="w-10 h-10 text-emerald-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                            />
+                          </svg>
+                          <p className="text-sm font-semibold text-emerald-300">
+                            Ticket scanned
+                          </p>
+                          <p className="text-xs text-emerald-400/70 mt-1">
+                            Enjoy the event!
+                          </p>
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center justify-center gap-3 flex-wrap mt-4">
+                <button
+                  onClick={onAddToAppleWallet}
+                  disabled={isLoadingAppleWallet}
+                  className="inline-block border-none bg-transparent cursor-pointer p-0 relative disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.97]"
+                >
+                  <Image
+                    src="/images/add-to-apple-wallet.svg"
+                    alt="Add to Apple Wallet"
+                    width={140}
+                    height={44}
+                    className={`h-11 w-auto ${isLoadingAppleWallet ? "opacity-50" : ""}`}
+                  />
+                  {isLoadingAppleWallet && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    </div>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Cancel ticket button — right after ticket card */}
+      {hasTicket && <TicketButton {...ticketButtonProps} />}
+
+      {hasTicket &&
+        referralsEnabled &&
+        viewerUserEmail &&
+        (() => {
+          const code = generateReferralCode(viewerUserEmail);
+          if (!code) return null;
+          return (
+            <div className={glassPanel + " overflow-hidden"}>
+              <ReferralShare
+                referralCode={code}
+                route={eventRoute}
+                eventId={eventId}
+              />
+            </div>
+          );
+        })()}
+
+      {ticketType?.toUpperCase() !== "VIP" && hasTicket && (
+        <NoticeBanner
+          color="red"
+          icon={
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              />
+            </svg>
+          }
+        >
+          This ticket is not transferable. A photo ID will be required for
+          entry.
+        </NoticeBanner>
+      )}
+    </div>
+  );
+}

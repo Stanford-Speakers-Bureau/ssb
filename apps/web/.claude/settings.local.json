@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(supabase:*)",
+      "Bash(bun install:*)",
+      "Bash(bunx prisma generate:*)",
+      "Bash(bun add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bunx next build:*)",
+      "Bash(bash:*)",
+      "Bash(bun run build:*)",
+      "Bash(bun run postinstall:*)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebFetch(domain:developers.google.com)",
+      "Bash(git diff:*)",
+      "Read(//Users/michaelyu/Developer/WebStorm/ssb-db/**)",
+      "Bash(find /Users/michaelyu/Developer/WebStorm/ssb-db -name *.sql)",
+      "Bash(grep:*)",
+      "Bash(xargs cat *)",
+      "Bash(bun run *)",
+      "Bash(git stash *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(bunx eslint *)",
+      "Bash(curl *)",
+      "WebFetch(domain:localhost)",
+      "Bash(git log *)",
+      "Bash(npx eslint *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

@@ -71,13 +71,13 @@ export const events = pgTable(
     externalTicketingUrl: text("external_ticketing_url"),
     bannerEligible: boolean("banner_eligible").notNull().default(true),
     questionsEnabled: boolean("questions_enabled").notNull().default(false),
+    questionsRankingsHidden: boolean("questions_rankings_hidden")
+      .notNull()
+      .default(false),
     identityVerificationEnabled: boolean("identity_verification_enabled")
       .notNull()
       .default(true),
     allowAdmittingStandby: boolean("allow_admitting_standby")
-      .notNull()
-      .default(false),
-    questionsRankingsHidden: boolean("questions_rankings_hidden")
       .notNull()
       .default(false),
   },
@@ -152,10 +152,7 @@ export const walletRegistrations = pgTable(
       t.serialNumber,
     ),
     index("wallet_registrations_serial_idx").on(t.serialNumber),
-    index("wallet_registrations_device_idx").on(
-      t.deviceLibraryId,
-      t.passTypeId,
-    ),
+    index("wallet_registrations_device_idx").on(t.deviceLibraryId, t.passTypeId),
   ],
 );
 
@@ -378,6 +375,37 @@ export const roles = pgTable(
   (t) => [index("roles_email_idx").on(t.email)],
 );
 
+// ── Permission Grants ────────────────────────────────────────────────────────
+// Fine-grained, optionally event-scoped capabilities granted to a person by
+// email. `action` is one of the PERMISSION_ACTIONS (see app/lib/permissions.ts).
+// A NULL eventId means the grant applies to ALL events (and to global actions
+// like suggestions.manage / events.create). The `admin` role in `roles` is a
+// super-admin that bypasses these checks entirely.
+export const permissionGrants = pgTable(
+  "permission_grants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    email: text("email").notNull(),
+    action: text("action").notNull(),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    grantedBy: text("granted_by").notNull(),
+  },
+  (t) => [
+    // Unique per (person, action, event). NULL eventId rows (all-events grants)
+    // are treated as distinct by Postgres, so the grant API also dedupes them
+    // explicitly before inserting.
+    uniqueIndex("permission_grants_unique").on(t.email, t.action, t.eventId),
+    index("permission_grants_email_idx").on(t.email),
+    index("permission_grants_event_id_idx").on(t.eventId),
+  ],
+);
+
 // ── User Profiles ────────────────────────────────────────────────────────────
 export const userProfiles = pgTable(
   "user_profiles",
@@ -451,6 +479,46 @@ export const eventFeedback = pgTable(
   ],
 );
 
+// ── Canceled-ticket archive ─────────────────────────────────────────────────
+// Canceling a ticket hard-deletes the `tickets` row (see the
+// cancel_ticket_and_promote RPC), so the live table keeps no trace of who
+// bought-then-bailed and "show-up rate by purchase timing" silently drops them.
+// We snapshot the row here first — original purchase time + cancel time — so
+// analytics can count cancellations without these rows re-entering any
+// capacity / scan / email query (same containment as walletVoidedPasses).
+export const canceledTickets = pgTable(
+  "canceled_tickets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // id of the now-deleted ticket row. Not a FK (the row is gone); unique so a
+    // re-run of the audit-log backfill can't duplicate a cancellation.
+    originalTicketId: uuid("original_ticket_id"),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    email: text("email").notNull(),
+    name: text("name"),
+    type: text("type"),
+    referral: text("referral"),
+    // When the ticket was originally purchased — the x-axis for purchase timing.
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    // When it was canceled.
+    canceledAt: timestamp("canceled_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // 'live' = captured by the cancel RPC; 'backfill' = reconstructed from audit logs.
+    source: text("source").notNull().default("live"),
+  },
+  (t) => [
+    index("canceled_tickets_event_id_idx").on(t.eventId),
+    index("canceled_tickets_created_at_idx").on(t.createdAt),
+    uniqueIndex("canceled_tickets_original_ticket_id_unique").on(
+      t.originalTicketId,
+    ),
+  ],
+);
+
 // ── Audit Logs ─────────────────────────────────────────────────────────────
 export const auditLogs = pgTable(
   "audit_logs",
@@ -473,6 +541,68 @@ export const auditLogs = pgTable(
     index("audit_logs_actor_idx").on(t.actor),
     index("audit_logs_event_id_idx").on(t.eventId),
     index("audit_logs_target_email_idx").on(t.targetEmail),
+  ],
+);
+
+// ── Email Campaigns ────────────────────────────────────────────────────────
+export const emailCampaigns = pgTable(
+  "email_campaigns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull().default(""),
+    status: text("status").notNull().default("draft"),
+    audiences: text("audiences").notNull().default("[]"),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    includeHeroCard: boolean("include_hero_card").notNull().default(false),
+    feedbackEventId: uuid("feedback_event_id").references(() => events.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    includeFeedbackPrompt: boolean("include_feedback_prompt")
+      .notNull()
+      .default(false),
+    cancelCalloutEventId: uuid("cancel_callout_event_id").references(
+      () => events.id,
+      {
+        onDelete: "set null",
+        onUpdate: "cascade",
+      },
+    ),
+    includeCancelCallout: boolean("include_cancel_callout")
+      .notNull()
+      .default(false),
+    cancelCalloutPosition: text("cancel_callout_position")
+      .notNull()
+      .default("before"),
+    cancelCalloutText: text("cancel_callout_text")
+      .notNull()
+      .default("Can't make it? [Please cancel] so someone else can attend."),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    sentBy: text("sent_by"),
+    recipientCount: bigint("recipient_count", { mode: "number" }),
+    failedCount: bigint("failed_count", { mode: "number" })
+      .notNull()
+      .default(0),
+    sendBatchId: text("send_batch_id"),
+    lastProcessedChunkIndex: integer("last_processed_chunk_index")
+      .notNull()
+      .default(-1),
+    createdBy: text("created_by").notNull(),
+    footerType: text("footer_type").notNull().default("event_unsubscribe"),
+  },
+  (t) => [
+    index("email_campaigns_status_idx").on(t.status),
+    index("email_campaigns_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -537,6 +667,7 @@ export const eventsRelations = relations(events, ({ many }) => ({
   referralList: many(referrals),
   notifyList: many(notify),
   feedbackList: many(eventFeedback),
+  campaignList: many(emailCampaigns),
   unsubscribes: many(emailUnsubscribes),
   questionList: many(eventQuestions),
 }));
@@ -604,12 +735,16 @@ export const eventFeedbackRelations = relations(eventFeedback, ({ one }) => ({
   }),
 }));
 
-export const emailUnsubscribesRelations = relations(
-  emailUnsubscribes,
-  ({ one }) => ({
-    event: one(events, {
-      fields: [emailUnsubscribes.eventId],
-      references: [events.id],
-    }),
+export const emailCampaignsRelations = relations(emailCampaigns, ({ one }) => ({
+  event: one(events, {
+    fields: [emailCampaigns.eventId],
+    references: [events.id],
   }),
-);
+}));
+
+export const emailUnsubscribesRelations = relations(emailUnsubscribes, ({ one }) => ({
+  event: one(events, {
+    fields: [emailUnsubscribes.eventId],
+    references: [events.id],
+  }),
+}));

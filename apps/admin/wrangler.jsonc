@@ -1,0 +1,76 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "dad1029008e31e3b1823336f3651910b",
+  "main": ".open-next/worker.js",
+  "name": "admin",
+  "compatibility_date": "2025-12-16",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      // Self-reference service binding, the service name must match the worker name
+      // see https://opennext.js.org/cloudflare/caching
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "admin",
+    },
+  ],
+  "r2_buckets": [
+    // Use R2 incremental cache
+    // See https://opennext.js.org/cloudflare/caching
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      // Create the bucket before deploying
+      // You can change the bucket name if you want
+      // See https://developers.cloudflare.com/workers/wrangler/commands/#r2-bucket-create
+      "bucket_name": "ssb-admin-cache",
+    },
+    {
+      "bucket_name": "ssb-admin-cache",
+      "binding": "ssb_admin_cache",
+      "remote": true,
+    },
+  ],
+  "images": {
+    // Enable image optimization
+    // see https://opennext.js.org/cloudflare/howtos/image
+    "binding": "IMAGES",
+  },
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1,
+    },
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "67d9ff6859984be4b5e2d2e3b97f7a9f",
+      "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+    },
+  ],
+  "vars": {
+    "BASE_URL": "https://admin.stanfordspeakersbureau.com",
+    "SUPABASE_URL": "https://qxevtucghgjbewpwntry.supabase.co",
+    "NEXT_PUBLIC_BASE_URL": "https://stanfordspeakersbureau.com",
+    "NEXT_PUBLIC_ROOT_URL": "https://admin.stanfordspeakersbureau.com",
+    "SESSION_COOKIE_NAME": "ssb_session",
+    "SAML_SP_ENTITY_ID": "https://admin.stanfordspeakersbureau.com",
+    "SES_FROM_EMAIL": "tickets@stanfordspeakersbureau.com",
+    "AWS_REGION": "us-east-2"
+  },
+}
