@@ -1,53 +1,34 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+node_modules/
 
 # testing
-/coverage
-/playwright-report/
-/test-results/
+coverage/
+playwright-report/
+test-results/
 
 # next.js
-/.next/
-/out/
-
-# production
-/build
+.next/
+out/
+build/
 
 # misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
-
-# vercel
-.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-.open-next
+# cloudflare / opennext
+.open-next/
 .dev.vars
-.wrangler
-stanford-speakers-bureau-f406ae28c128.json
-packages/db/node_modules
-supabase/.temp/cli-latest
-/supabase/.temp
-/supabase/.temp
-.env.local
+.wrangler/
+
+# supabase
+supabase/.temp/
+
+stanford-speakers-bureau-*.json
