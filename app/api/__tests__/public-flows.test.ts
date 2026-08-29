@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 
+import { mockModule } from "@/tests/helpers/scoped-module-mock";
+
 type SessionUser = {
   email: string;
   displayName: string;
@@ -264,7 +266,7 @@ const db = {
   execute: mock(async () => state.executeRows.shift() ?? []),
 };
 
-mock.module("next/server", () => ({
+await mockModule("next/server", () => ({
   NextResponse: {
     json(body: unknown, init?: ResponseInit) {
       return Response.json(body, init);
@@ -275,7 +277,7 @@ mock.module("next/server", () => ({
   },
 }));
 
-mock.module("@ssb/db", () => ({
+await mockModule("@ssb/db", () => ({
   ...tables,
   db,
   eq: (column: unknown, value: unknown) => ({ op: "eq", column, value }),
@@ -287,29 +289,29 @@ mock.module("@ssb/db", () => ({
   }),
 }));
 
-mock.module("@/app/lib/auth", () => ({
+await mockModule("@/app/lib/auth", () => ({
   getSessionUser: mock(async () => state.user),
   getRoleNamesForEmail: mock(async () => state.roleNames),
 }));
 
-mock.module("@/app/lib/supabase", () => ({
+await mockModule("@/app/lib/supabase", () => ({
   getAvailablePublicTickets: mock(async () => state.availableTickets),
   updateReferralRecords: mock(async (eventId: string, email: string) => {
     state.auditEvents.push({ action: "referral.update", eventId, email });
   }),
 }));
 
-mock.module("@/app/lib/eventTime", () => ({
+await mockModule("@/app/lib/eventTime", () => ({
   isEventOver: mock(() => false),
 }));
 
-mock.module("@/app/lib/validation", () => ({
+await mockModule("@/app/lib/validation", () => ({
   isValidUUID: (id: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       .test(id),
 }));
 
-mock.module("@/app/lib/constants", () => ({
+await mockModule("@/app/lib/constants", () => ({
   SUGGEST_MESSAGES: {
     ERROR_GENERIC: "Something went wrong. Please try again.",
     ERROR_MISSING_SPEAKER: "Please enter a speaker name.",
@@ -335,23 +337,23 @@ mock.module("@/app/lib/constants", () => ({
   },
 }));
 
-mock.module("@/app/lib/audit", () => ({
+await mockModule("@/app/lib/audit", () => ({
   logAuditEvent: mock(async (event: unknown) => {
     state.auditEvents.push(event);
   }),
 }));
 
-mock.module("@/app/lib/mailing-list", () => ({
+await mockModule("@/app/lib/mailing-list", () => ({
   recordMailingListMember: mock(async (member: unknown) => {
     state.mailingListMembers.push(member);
   }),
 }));
 
-mock.module("@/app/lib/cancellation-links", () => ({
+await mockModule("@/app/lib/cancellation-links", () => ({
   verifyCancellationToken: mock(async () => state.cancellationClaims),
 }));
 
-mock.module("@/app/lib/ratelimit", () => ({
+await mockModule("@/app/lib/ratelimit", () => ({
   checkRateLimit: mock(async () => state.rateLimitResponse),
   ticketRatelimit: {},
   suggestRatelimit: {},
@@ -359,7 +361,7 @@ mock.module("@/app/lib/ratelimit", () => ({
   questionVoteRatelimit: {},
 }));
 
-mock.module("@/app/lib/email-jobs", () => ({
+await mockModule("@/app/lib/email-jobs", () => ({
   createCancellationEmailJob: (payload: unknown) => ({
     type: "cancellation",
     payload,
@@ -374,12 +376,12 @@ mock.module("@/app/lib/email-jobs", () => ({
   }),
 }));
 
-mock.module("@/app/lib/referrals", () => ({
+await mockModule("@/app/lib/referrals", () => ({
   sanitizeStoredReferral: mock(async () => null),
   validateReferralInput: mock(async () => state.referralValidation),
 }));
 
-mock.module("@/app/lib/ticketingRoles", () => ({
+await mockModule("@/app/lib/ticketingRoles", () => ({
   getRoleIneligiblePayload: (allowedRoles: string[]) => ({
     error: "Role ineligible",
     code: "ticketing_role_ineligible",
@@ -390,7 +392,7 @@ mock.module("@/app/lib/ticketingRoles", () => ({
     roles?.length ? roles : ["student"],
 }));
 
-mock.module("@/app/lib/posthog-server", () => ({
+await mockModule("@/app/lib/posthog-server", () => ({
   captureServerEvent: mock((event: unknown) => {
     state.analyticsEvents.push(event);
   }),
@@ -400,7 +402,7 @@ mock.module("@/app/lib/posthog-server", () => ({
   }),
 }));
 
-mock.module("@/app/events/[eventID]/questions/lifecycle", () => ({
+await mockModule("@/app/events/[eventID]/questions/lifecycle", () => ({
   getQuestionsLifecycleState: mock(() => state.lifecycleState),
 }));
 
