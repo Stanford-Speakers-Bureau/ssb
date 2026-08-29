@@ -1,0 +1,17 @@
+{
+  "name": "ssb-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "web": "bun run --cwd apps/web",
+    "admin": "bun run --cwd apps/admin",
+    "seed": "supabase db reset",
+    "prettier": "prettier --write .",
+    "test": "bun run --cwd apps/web test && bun run --cwd apps/admin test",
+    "typecheck": "cd apps/web && bunx tsc --noEmit && cd ../admin && bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "prettier": "3.7.4"
+  }
+}

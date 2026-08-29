@@ -1,10 +1,9 @@
 {
-  "name": "ssb-admin",
+  "name": "@ssb/admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "rm -rf node_modules/@ssb/db && mkdir -p node_modules/@ssb/db && cp -R packages/db/package.json packages/db/tsconfig.json packages/db/src node_modules/@ssb/db/",
     "build": "next build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -16,7 +15,7 @@
     "lint": "eslint",
     "prettier": "prettier --write .",
     "test": "bun test",
-    "test:unit": "bun test app packages",
+    "test:unit": "bun test app",
     "test:integration": "TEST_INTEGRATION=1 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres bun test tests/integration",
     "test:e2e": "bunx playwright test --project=chromium",
     "test:a11y": "bunx playwright test --project=a11y",
@@ -28,7 +27,7 @@
     "@heroicons/react": "^2.2.0",
     "@node-saml/node-saml": "^5.1.0",
     "@opennextjs/cloudflare": "^1.19.10",
-    "@ssb/db": "file:./packages/db",
+    "@ssb/db": "workspace:*",
     "@supabase/supabase-js": "^2.88.0",
     "@types/qrcode": "^1.5.6",
     "clsx": "^2.1.1",
@@ -49,6 +48,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "postgres": "^3.4.8",
     "@playwright/test": "^1.55.1",
     "@snaplet/copycat": "^6.0.0",
     "@snaplet/seed": "^0.98.0",

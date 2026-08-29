@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# testing
+coverage/
+playwright-report/
+test-results/
+
+# next.js
+.next/
+out/
+build/
+
+# misc
+.DS_Store
+*.pem
+*.log
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# cloudflare / opennext
+.open-next/
+.dev.vars
+.wrangler/
+
+# supabase
+supabase/.temp/
+
+stanford-speakers-bureau-*.json
