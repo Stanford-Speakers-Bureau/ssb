@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 
-const CO_PRES_EMAIL = "ajoshi17@stanford.edu,anishan@stanford.edu";
+const EXEC_EMAIL = "exec@stanfordspeakersbureau.com";
 const APPLICATION_FORM = "https://forms.gle/82WaYv3C6oQC8bHU7";
 
 const ACTIVITIES = [
@@ -99,7 +99,7 @@ export default function JoinClient() {
               Request Membership Info
             </a>
             <a
-              href={`mailto:${CO_PRES_EMAIL}`}
+              href={`mailto:${EXEC_EMAIL}`}
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-7 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
             >
               Email Co-Presidents
@@ -201,7 +201,7 @@ export default function JoinClient() {
               Get on the List
             </a>
             <a
-              href={`mailto:${CO_PRES_EMAIL}`}
+              href={`mailto:${EXEC_EMAIL}`}
               className="inline-flex items-center justify-center rounded-full border border-zinc-700 px-8 py-3.5 text-sm font-semibold text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
             >
               Email Co-Presidents

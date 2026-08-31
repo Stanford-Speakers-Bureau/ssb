@@ -2,198 +2,171 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView } from "motion/react";
-import { useRef } from "react";
-import { LEADERSHIP, DIRECTORS, type TeamMember } from "./members";
+import { motion } from "motion/react";
+import { type TeamMember, ADVISORS, TEAMS } from "./members";
 
-function LeaderCard({ member, index }: { member: TeamMember; index: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+type TeamGroup = { id: string; name: string; members: TeamMember[] };
+
+const ALL_GROUPS: TeamGroup[] = [
+  ...TEAMS,
+  { id: "advisors", name: "Advisors", members: ADVISORS },
+];
+
+const PRESIDENCY = ALL_GROUPS[0];
+
+function JoinCard({ className = "aspect-[3/4]" }: { className?: string }) {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
-      className="group"
+    <Link
+      href="/join"
+      prefetch={false}
+      className={`group relative w-full overflow-hidden border border-dashed border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center text-center p-4 sm:p-6 transition-all duration-500 hover:border-ssb-accent hover:bg-ssb-accent/5 focus-visible:outline-ssb-accent focus-visible:outline-2 ${className}`}
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-900 mb-5">
-        <Image
-          src={member.image}
-          alt={member.name}
-          fill
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          sizes="(max-width: 768px) 100vw, 33vw"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      </div>
-      <p className="font-mono text-[0.6rem] tracking-[0.35em] uppercase text-ssb-accent mb-2">
-        {member.role}
-      </p>
-      <h3 className="font-serif text-2xl sm:text-3xl text-white mb-2 leading-tight">
-        {member.name}
-      </h3>
-      {member.bio && (
-        <p className="text-sm text-zinc-400 text-pretty leading-relaxed mb-3">
-          {member.bio}
-        </p>
-      )}
-      {member.email && (
-        <a
-          href={`mailto:${member.email}`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-ssb-accent transition-colors"
+      <div className="flex size-11 items-center justify-center rounded-full bg-ssb-accent/10 text-ssb-accent mb-4 transition-colors group-hover:bg-ssb-accent/20">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <rect width="20" height="16" x="2" y="4" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
-          {member.email}
-        </a>
-      )}
-    </motion.div>
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </svg>
+      </div>
+      <p className="font-mono text-[0.625rem] tracking-[0.25em] uppercase text-ssb-accent-strong mb-2">
+        This could be you
+      </p>
+      <h3 className="font-serif text-lg sm:text-xl text-white leading-tight mb-3">
+        Join the team.
+      </h3>
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white group-hover:text-ssb-accent transition-colors">
+        Get in touch
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="transition-transform group-hover:translate-x-0.5"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </span>
+    </Link>
   );
 }
 
-function DirectorCard({
+function MosaicTile({
   member,
   index,
+  large = false,
 }: {
   member: TeamMember;
   index: number;
+  large?: boolean;
 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
     <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.07, ease: "easeOut" }}
-      className="group relative overflow-hidden"
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, delay: (index % 5) * 0.06, ease: "easeOut" }}
+      className={`group relative w-full overflow-hidden bg-zinc-900 ${
+        large ? "h-64 sm:h-80" : "h-52 sm:h-64"
+      }`}
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
+      {member.image.includes("blank-headshot") ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
+          <span className="font-serif text-4xl sm:text-5xl text-zinc-700 select-none">
+            {member.name
+              .split(" ")
+              .map((word) => word[0])
+              .slice(0, 2)
+              .join("")}
+          </span>
+        </div>
+      ) : (
         <Image
           src={member.image}
           alt={member.name}
           fill
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-          sizes="(max-width: 768px) 50vw, 25vw"
+          className="object-cover grayscale-[40%] will-change-[scale,filter] transition-[scale,filter] duration-700 ease-out group-hover:scale-[1.06] group-hover:grayscale-0"
+          sizes={
+            large
+              ? "(max-width: 640px) 50vw, 33vw"
+              : "(max-width: 640px) 50vw, 20vw"
+          }
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/40 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-          <h3 className="font-serif text-xl sm:text-2xl text-white leading-tight mb-1">
-            {member.name}
-          </h3>
-          <p className="font-mono text-[0.58rem] tracking-[0.25em] uppercase text-ssb-accent">
-            {member.role}
-          </p>
-        </div>
-      </div>
-      {member.email && (
-        <a
-          href={`mailto:${member.email}`}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-ssb-accent transition-colors"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <rect width="20" height="16" x="2" y="4" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
-          {member.email}
-        </a>
       )}
+      <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/30 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
+        {/* Reserve two lines so first lines align across tiles with wrapped names. */}
+        <h3
+          className={`font-serif text-white leading-snug text-pretty min-h-[2.75em] ${
+            large ? "text-base sm:text-xl" : "text-sm sm:text-base"
+          }`}
+        >
+          {member.name}
+        </h3>
+      </div>
     </motion.div>
   );
 }
 
-function RecruitCard({ index }: { index: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+const EXEC_EMAIL = "exec@stanfordspeakersbureau.com";
+
+function ContactCard({ className = "" }: { className?: string }) {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.07, ease: "easeOut" }}
+    <a
+      href={`mailto:${EXEC_EMAIL}`}
+      className={`group relative h-64 sm:h-80 w-full overflow-hidden bg-zinc-900 ring-1 ring-ssb-accent/30 transition-colors duration-500 hover:ring-ssb-accent focus-visible:outline-ssb-accent focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`}
     >
-      <Link
-        href="/join"
-        prefetch={false}
-        className="group relative aspect-square w-full overflow-hidden border border-dashed border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center text-center p-6 sm:p-8 transition-all duration-500 hover:border-ssb-accent hover:bg-ssb-accent/5 focus-visible:outline-ssb-accent focus-visible:outline-2"
+      <div className="absolute inset-0 bg-linear-to-tr from-ssb-accent/30 via-ssb-accent/[0.06] to-transparent transition-opacity duration-500 opacity-80 group-hover:opacity-100" />
+      <svg
+        className="absolute top-3 right-3 sm:top-4 sm:right-4 text-zinc-500 transition-all duration-300 group-hover:text-ssb-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
       >
-        <div className="flex size-14 items-center justify-center rounded-full bg-ssb-accent/10 text-ssb-accent mb-5 transition-colors group-hover:bg-ssb-accent/20">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 5v14" />
-            <path d="M5 12h14" />
-          </svg>
-        </div>
-        <p className="font-mono text-[0.6rem] tracking-[0.3em] uppercase text-ssb-accent mb-3">
-          This could be you
+        <path d="M7 17 17 7" />
+        <path d="M8 7h9v9" />
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
+        <p className="font-mono text-[0.625rem] tracking-[0.25em] uppercase text-ssb-accent-strong mb-1.5">
+          Write to us
         </p>
-        <h3 className="font-serif text-xl sm:text-2xl text-white leading-tight mb-2">
-          Join the team.
+        <h3 className="font-serif text-xl sm:text-2xl text-white leading-snug">
+          Have an idea?
         </h3>
-        <p className="text-sm text-zinc-400 text-pretty leading-relaxed mb-4 max-w-xs">
-          We&rsquo;re always looking for students who want to bring big names to
-          campus.
+        <p className="mt-1.5 text-[0.65rem] text-zinc-300 transition-colors group-hover:text-ssb-accent-strong break-words">
+          {EXEC_EMAIL}
         </p>
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:text-ssb-accent transition-colors">
-          Get in touch
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="transition-transform group-hover:translate-x-0.5"
-          >
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-          </svg>
-        </span>
-      </Link>
-    </motion.div>
+      </div>
+    </a>
   );
 }
 
 export default function TeamClient() {
+  const rest = ALL_GROUPS.slice(1);
   return (
     <main className="min-h-dvh bg-zinc-950 text-zinc-100 isolate">
       {/* Hero */}
-      <section className="relative min-h-dvh flex items-end overflow-hidden">
+      <section className="relative min-h-[80svh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/team.jpg"
@@ -228,37 +201,56 @@ export default function TeamClient() {
         </div>
       </section>
 
-      {/* Executive Leadership */}
       <section className="px-6 sm:px-16 py-20 sm:py-28 border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-12 sm:mb-16">
-            <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight">
-              Executive Leadership
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            {LEADERSHIP.map((member, i) => (
-              <LeaderCard key={member.name} member={member} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap gap-4 sm:gap-5">
+            {/* Presidency: full row — both presidents and the contact card. */}
+            <div className="basis-full bg-zinc-900/60 ring-1 ring-zinc-800 p-3 sm:p-4">
+              <div className="flex items-baseline justify-between gap-4 mb-3">
+                <p className="font-mono text-[0.6875rem] tracking-[0.3em] uppercase text-ssb-accent-strong">
+                  {PRESIDENCY.name}
+                </p>
+                <p className="font-mono text-[0.6875rem] tracking-[0.3em] uppercase text-zinc-500">
+                  2026 – 2027
+                </p>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {PRESIDENCY.members.map((member, i) => (
+                  <MosaicTile key={member.name} member={member} index={i} large />
+                ))}
+                <ContactCard className="col-span-2 lg:col-span-1" />
+              </div>
+            </div>
 
-      {/* Directors */}
-      <section className="px-6 sm:px-16 py-20 sm:py-28 border-t border-zinc-800 bg-zinc-900/50">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-12 sm:mb-16">
-            <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight">
-              Directors
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            {DIRECTORS.map((member, i) => (
-              <DirectorCard key={member.name} member={member} index={i} />
+            {/* Remaining teams: panels sized by headcount so rows fill. */}
+            {rest.map((group) => (
+              <div
+                key={group.id}
+                style={{
+                  flexGrow: group.members.length,
+                  flexBasis: `${group.members.length * 9}rem`,
+                }}
+                className="bg-zinc-900/60 ring-1 ring-zinc-800 p-3 sm:p-4 min-w-0"
+              >
+                <p
+                  className={`font-mono text-[0.6875rem] tracking-[0.3em] uppercase mb-3 ${
+                    group.id === "advisors"
+                      ? "text-zinc-400"
+                      : "text-ssb-accent-strong"
+                  }`}
+                >
+                  {group.name}
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {group.members.map((member, i) => (
+                    <div key={member.name} className="flex-1 min-w-28 max-w-40">
+                      <MosaicTile member={member} index={i} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ))}
-            {DIRECTORS.length % 3 !== 0 && (
-              <RecruitCard index={DIRECTORS.length} />
-            )}
+            <JoinCard className="aspect-auto min-h-56 grow basis-44" />
           </div>
         </div>
       </section>

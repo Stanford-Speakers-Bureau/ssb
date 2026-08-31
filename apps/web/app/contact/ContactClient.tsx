@@ -12,7 +12,7 @@ const REASONS = [
       "Event ideas, press inquiries, partnerships, or anything else. We read every message.",
     cta: {
       label: "Email the Co-Presidents",
-      href: "mailto:ajoshi17@stanford.edu,anishan@stanford.edu",
+      href: "mailto:exec@stanfordspeakersbureau.com",
       external: true,
     },
   },
