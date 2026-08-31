@@ -7,8 +7,7 @@ const EVAL_DOC_URL =
   "https://docs.google.com/document/d/14YNE5wMrzkfKF-Otm_o4klpIHpqe1h5V/edit?usp=sharing_eil&rtpof=true&sd=true&ts=68fa9d1f";
 const APPLICATION_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeAO0VRXyvxokpYWpFYPDg03UJ2oITF4LtWIF8GO0TIvyVIpA/viewform?usp=sharing&ouid=103384219620885640711";
-const SPONSORSHIP_EMAIL =
-  "mailto:ctoh28@stanford.edu,ajoshi17@stanford.edu,anishan@stanford.edu";
+const SPONSORSHIP_EMAIL = "mailto:partnerships@stanfordspeakersbureau.com";
 
 const COMMUNITY_TAGS = [
   "Communities of Color",

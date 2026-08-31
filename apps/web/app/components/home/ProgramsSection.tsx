@@ -35,8 +35,8 @@ const PROGRAMS: Program[] = [
     image: "/coffee-chat.jpg",
     imageAlt:
       "Coffee Chats at Stanford University from Stanford Speakers Bureau (SSB)",
-    href: "mailto:amock@stanford.edu",
-    linkLabel: "Contact Andrea Mock",
+    href: "mailto:coffeechats@stanfordspeakersbureau.com",
+    linkLabel: "Contact the Coffee Chats Team",
     external: true,
   },
   {
