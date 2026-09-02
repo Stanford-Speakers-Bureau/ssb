@@ -4,6 +4,8 @@ export type TeamMember = {
   image: string;
   email?: string;
   bio?: string;
+  /** Extra classes for the photo (crop / zoom). */
+  imageClassName?: string;
 };
 
 export type Team = {
@@ -24,6 +26,9 @@ export const TEAMS: Team[] = [
         name: "Rishi Jeyamurthy",
         role: "Co-President",
         image: "/team/rishi.jpeg",
+        // Wider environmental shot — crop in on head and shoulders.
+        imageClassName:
+          "object-[center_72%] scale-[1.45] group-hover:scale-[1.52]",
       },
       {
         name: "Suraya Mathai-Jackson",

@@ -99,7 +99,9 @@ function MosaicTile({
           src={member.image}
           alt={member.name}
           fill
-          className="object-cover grayscale-[40%] will-change-[scale,filter] transition-[scale,filter] duration-700 ease-out group-hover:scale-[1.06] group-hover:grayscale-0"
+          className={`object-cover grayscale-[40%] will-change-[scale,filter] transition-[scale,filter] duration-700 ease-out group-hover:grayscale-0 ${
+            member.imageClassName ?? "group-hover:scale-[1.06]"
+          }`}
           sizes={
             large
               ? "(max-width: 640px) 50vw, 33vw"
