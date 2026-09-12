@@ -44,7 +44,7 @@ export const TEAMS: Team[] = [
       {
         name: "Claire Park",
         role: "Financial Officer",
-        image: "/team/claire.jpeg",
+        image: "/team/claire.png",
       },
       {
         name: "Molly George",
