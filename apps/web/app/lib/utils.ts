@@ -102,3 +102,28 @@ export function generateGoogleCalendarUrl(event: {
 
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodedDetails}&location=${location}`;
 }
+
+export function isExternalHref(href: string): boolean {
+  return /^https?:\/\//i.test(href);
+}
+
+/**
+ * Where "Get Tickets" should send someone.
+ * External ticketing wins over the event page. A missing route must not
+ * become `/events/null`.
+ */
+export function ticketDestination(event: {
+  route?: string | null;
+  external_ticketing_enabled?: boolean;
+  external_ticketing_url?: string | null;
+}): { href: string; external: boolean } | null {
+  const url = event.external_ticketing_url?.trim() ?? "";
+  if (event.external_ticketing_enabled && isExternalHref(url)) {
+    return { href: url, external: true };
+  }
+  const route = event.route?.trim();
+  if (route) {
+    return { href: `/events/${route}`, external: false };
+  }
+  return null;
+}
