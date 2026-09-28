@@ -1,4 +1,5 @@
 import { getNextMilestoneEvent, getImageProxyUrl } from "./supabase";
+import { ticketDestination } from "./utils";
 import { BANNER_MESSAGES } from "./constants";
 import { getSessionUser } from "./auth";
 import { db, eq, and, notify } from "@ssb/db";
@@ -109,12 +110,6 @@ export async function getBannerData({
           ? ""
           : BANNER_MESSAGES.COUNTDOWN_EVENT_MESSAGE;
 
-    const bannerHref = isMystery
-      ? "/upcoming-speakers"
-      : closestEvent
-        ? `/events/${closestEvent.route}`
-        : "/upcoming-speakers";
-
     // For the popup phase: check if ticketing has actually opened (ignores hideTicketingDate).
     // The banner uses isBeforeTicketing (which respects hideTicketingDate) for its own display,
     // but the popup needs the real ticketing state to show the correct CTA.
@@ -124,6 +119,19 @@ export async function getBannerData({
       ticketingDate &&
       !Number.isNaN(ticketingDate.getTime()) &&
       now < ticketingDate;
+
+    const destination =
+      !isMystery && closestEvent ? ticketDestination(closestEvent) : null;
+    // Once tickets are open, send people to the external form. Before that,
+    // keep the event page when a route exists. Never interpolate a null route
+    // into `/events/null`.
+    const bannerHref = isMystery
+      ? "/upcoming-speakers"
+      : destination?.external && !isActuallyBeforeTicketing
+        ? destination.href
+        : closestEvent?.route
+          ? `/events/${closestEvent.route}`
+          : "/upcoming-speakers";
 
     const phase = isMystery
       ? ("mystery" as const)

@@ -10,6 +10,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { sanitizeSchema } from "@/app/lib/sanitize";
 import CountdownTimer from "@/app/events/[eventID]/CountdownTimer";
 import { motion } from "motion/react";
+import { isExternalHref } from "@/app/lib/utils";
 
 const MotionLink = motion.create(Link);
 const EASE = [0.43, 0.13, 0.23, 0.96] as const;
@@ -497,15 +498,28 @@ function RevealedCard({
       {/* Full-width CTA button */}
       {showCta && (
         <div className="px-5 sm:px-8 pb-5 sm:pb-7 pt-2">
-          <MotionLink
-            href={ctaHref}
-            prefetch={false}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
-          >
-            {ctaText}
-          </MotionLink>
+          {isExternalHref(ctaHref) ? (
+            <motion.a
+              href={ctaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
+            >
+              {ctaText}
+            </motion.a>
+          ) : (
+            <MotionLink
+              href={ctaHref}
+              prefetch={false}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#b51f1a] to-[#db4c3a] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(181,31,26,0.35)] transition-all hover:from-[#c62720] hover:to-[#eb6a56] sm:text-base"
+            >
+              {ctaText}
+            </MotionLink>
+          )}
         </div>
       )}
     </div>

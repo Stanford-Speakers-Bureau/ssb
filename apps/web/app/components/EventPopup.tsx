@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isExternalHref } from "@/app/lib/utils";
 
 // ─── Types ───
 
@@ -306,6 +307,12 @@ export default function EventPopup({
   }, [isMystery, isLoggedIn, eventId, href, redirectToLogin]);
 
   const handleGetTickets = useCallback(() => {
+    // Off-platform events go straight to the provider. There is no in-app
+    // ticket to create, and a login hop would drop the external URL.
+    if (isExternalHref(href)) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
     // Send them to the event page to get a ticket. We deliberately do NOT
     // auto-create it (?ticket=true) — the event page's "Get Ticket" button gates
     // creation behind the "no bags" confirmation, which must not be skipped.

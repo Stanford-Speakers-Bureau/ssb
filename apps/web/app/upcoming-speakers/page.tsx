@@ -13,6 +13,7 @@ import {
   isEventMystery,
   serializeEvent,
 } from "@/app/lib/supabase";
+import { ticketDestination } from "@/app/lib/utils";
 import { getSessionUser } from "@/app/lib/auth";
 import { db, eq, count as dbCount, tickets, notify } from "@ssb/db";
 
@@ -39,6 +40,7 @@ type SanitizedEvent = {
   desc: string | null;
   tagline: string | null;
   route: string | null;
+  ticketHref: string;
   signedImageUrl: string | null;
   isMystery: boolean;
   capacity: number | null;
@@ -93,6 +95,7 @@ async function getUpcomingEvents(): Promise<SanitizedEvent[]> {
         desc: isMystery ? null : event.desc,
         tagline: isMystery ? null : event.tagline,
         route: isMystery ? null : event.route,
+        ticketHref: isMystery ? "" : (ticketDestination(event)?.href ?? ""),
         signedImageUrl: isMystery
           ? null
           : getImageProxyUrl(event.id, event.img_version),
@@ -183,7 +186,7 @@ export default async function UpcomingSpeakers() {
                 backgroundImageUrl={
                   event.isMystery ? "" : event.signedImageUrl || ""
                 }
-                ctaHref={event.isMystery ? "" : `/events/${event.route}`}
+                ctaHref={event.ticketHref}
                 ctaText={event.isMystery ? "" : "Get Tickets"}
                 mystery={event.isMystery}
                 eventDateRaw={event.isMystery ? event.release_date : null}

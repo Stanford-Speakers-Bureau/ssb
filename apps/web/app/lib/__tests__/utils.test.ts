@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { generateReferralCode, generateGoogleCalendarUrl } from "../utils";
+import {
+  generateReferralCode,
+  generateGoogleCalendarUrl,
+  ticketDestination,
+} from "../utils";
 import { CALENDAR_DEFAULT_DURATION_MS } from "../constants";
 
 describe("generateReferralCode", () => {
@@ -33,11 +37,16 @@ describe("generateGoogleCalendarUrl", () => {
   });
 
   test("returns empty string when startTime is invalid", () => {
-    expect(generateGoogleCalendarUrl({ start_time_date: "not-a-date" })).toBe("");
+    expect(generateGoogleCalendarUrl({ start_time_date: "not-a-date" })).toBe(
+      "",
+    );
   });
 
   test("returns Google Calendar URL host", () => {
-    const url = generateGoogleCalendarUrl({ start_time_date: START, end_time_date: END });
+    const url = generateGoogleCalendarUrl({
+      start_time_date: START,
+      end_time_date: END,
+    });
     expect(url).toContain("https://calendar.google.com/calendar/render");
   });
 
@@ -47,7 +56,10 @@ describe("generateGoogleCalendarUrl", () => {
   });
 
   test("URL contains dates query param", () => {
-    const url = generateGoogleCalendarUrl({ start_time_date: START, end_time_date: END });
+    const url = generateGoogleCalendarUrl({
+      start_time_date: START,
+      end_time_date: END,
+    });
     expect(url).toContain("dates=");
   });
 
@@ -74,7 +86,10 @@ describe("generateGoogleCalendarUrl", () => {
   });
 
   test("uses provided endTime over default duration", () => {
-    const url = generateGoogleCalendarUrl({ start_time_date: START, end_time_date: END });
+    const url = generateGoogleCalendarUrl({
+      start_time_date: START,
+      end_time_date: END,
+    });
     const parsed = new URL(url);
     const datesParam = parsed.searchParams.get("dates")!;
     const [, endStr] = datesParam.split("/");
@@ -84,7 +99,10 @@ describe("generateGoogleCalendarUrl", () => {
   });
 
   test("URL contains encoded event name in text param", () => {
-    const url = generateGoogleCalendarUrl({ start_time_date: START, name: "Test Speaker" });
+    const url = generateGoogleCalendarUrl({
+      start_time_date: START,
+      name: "Test Speaker",
+    });
     // encodeURIComponent uses %20 not +
     expect(decodeURIComponent(url)).toContain("Stanford Speakers Bureau");
     expect(decodeURIComponent(url)).toContain("Test Speaker");
@@ -112,5 +130,47 @@ describe("generateGoogleCalendarUrl", () => {
   test("empty string when start_time_date is falsy", () => {
     expect(generateGoogleCalendarUrl({ start_time_date: null })).toBe("");
     expect(generateGoogleCalendarUrl({ start_time_date: "" })).toBe("");
+  });
+});
+
+describe("ticketDestination", () => {
+  const form =
+    "https://docs.google.com/forms/d/e/1FAIpQLSfUD2YSsuXVeiDMP7PQdNNyeTa1w5zdpwtFP8kGRchX-2sLhQ/viewform";
+
+  test("uses the external ticketing URL when it is enabled", () => {
+    expect(
+      ticketDestination({
+        route: null,
+        external_ticketing_enabled: true,
+        external_ticketing_url: form,
+      }),
+    ).toEqual({ href: form, external: true });
+  });
+
+  test("ignores a missing or non-http external URL", () => {
+    expect(
+      ticketDestination({
+        route: "zucman-galle",
+        external_ticketing_enabled: true,
+        external_ticketing_url: null,
+      }),
+    ).toEqual({ href: "/events/zucman-galle", external: false });
+    expect(
+      ticketDestination({
+        route: "zucman-galle",
+        external_ticketing_enabled: true,
+        external_ticketing_url: "javascript:alert(1)",
+      }),
+    ).toEqual({ href: "/events/zucman-galle", external: false });
+  });
+
+  test("returns null when there is no route and no external URL", () => {
+    expect(
+      ticketDestination({
+        route: null,
+        external_ticketing_enabled: false,
+        external_ticketing_url: null,
+      }),
+    ).toBeNull();
   });
 });

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
+import { isExternalHref } from "@/app/lib/utils";
 
 interface TimeUnitProps {
   value: string;
@@ -51,6 +52,8 @@ export default function BannerBar({
 
   const hasText = (text ?? "").trim().length > 0;
   const hasHref = (href ?? "").trim().length > 0;
+  const externalHref = isExternalHref(href);
+  const linkClassName = "underline hover:opacity-90 transition-opacity";
 
   const calculateTimeLeft = (targetMs: number | null) => {
     const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
@@ -95,13 +98,24 @@ export default function BannerBar({
       {/* Mobile version - simplified */}
       {hasText &&
         (hasHref ? (
-          <Link
-            href={href}
-            className="md:hidden underline hover:opacity-90 transition-opacity"
-            prefetch={false}
-          >
-            {text}
-          </Link>
+          externalHref ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`md:hidden ${linkClassName}`}
+            >
+              {text}
+            </a>
+          ) : (
+            <Link
+              href={href}
+              className={`md:hidden ${linkClassName}`}
+              prefetch={false}
+            >
+              {text}
+            </Link>
+          )
         ) : (
           <span className="md:hidden underline">{text}</span>
         ))}
@@ -110,13 +124,20 @@ export default function BannerBar({
       <div className="hidden md:flex items-center gap-3">
         {hasText &&
           (hasHref ? (
-            <Link
-              href={href}
-              className="underline hover:opacity-90 transition-opacity"
-              prefetch={false}
-            >
-              {text}
-            </Link>
+            externalHref ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClassName}
+              >
+                {text}
+              </a>
+            ) : (
+              <Link href={href} className={linkClassName} prefetch={false}>
+                {text}
+              </Link>
+            )
           ) : (
             <span className="underline">{text}</span>
           ))}
