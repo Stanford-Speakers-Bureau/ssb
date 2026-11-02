@@ -97,6 +97,9 @@ const ACTION_LABELS: Record<string, string> = {
   "campaign.create": "Created Campaign",
   "campaign.send": "Sent Campaign",
   "email.send_failed": "Email Send Failed",
+  "email.bounce": "Email Bounced",
+  "email.complaint": "Spam Complaint",
+  "email.ses_webhook": "Bounce Webhook",
   "mailing_list.subscribe": "Subscribed to Mailing List",
   "mailing_list.unsubscribe": "Unsubscribed from Mailing List",
   "mailing_list.resubscribe": "Resubscribed to Mailing List",
@@ -137,6 +140,10 @@ const ACTION_OPTIONS = [
       "event.toggle_standby",
       "event.delete",
     ],
+  },
+  {
+    group: "Bounces & Complaints",
+    actions: ["email.bounce", "email.complaint", "email.ses_webhook"],
   },
   { group: "Users", actions: ["user.add_role", "user.remove_role"] },
   {
@@ -434,7 +441,39 @@ function getMassEmailLabel(metadata: Record<string, unknown> | null): string {
   return "Mass email";
 }
 
+const SES_OUTCOME_LABELS: Record<string, string> = {
+  suppressed: "Added to suppression list",
+  already_suppressed: "Already suppressed",
+  not_suppressed: "Not suppressed (temporary)",
+};
+
+const SES_WEBHOOK_STATUS_LABELS: Record<string, string> = {
+  subscription_confirmed: "AWS subscription confirmed",
+  subscription_confirm_failed: "AWS subscription confirm failed",
+  unsubscribed: "AWS subscription removed",
+};
+
+function getSesFeedbackSummary(log: AuditLogItem): string | null {
+  const meta = log.metadata;
+  if (log.action === "email.ses_webhook") {
+    const status = typeof meta?.status === "string" ? meta.status : "";
+    return SES_WEBHOOK_STATUS_LABELS[status] ?? (status || null);
+  }
+  if (log.action !== "email.bounce" && log.action !== "email.complaint") {
+    return null;
+  }
+  const parts: string[] = [];
+  const outcome = typeof meta?.outcome === "string" ? meta.outcome : "";
+  if (outcome) parts.push(SES_OUTCOME_LABELS[outcome] ?? outcome);
+  if (typeof meta?.type === "string") parts.push(meta.type);
+  if (typeof meta?.subject === "string") parts.push(`"${meta.subject}"`);
+  return parts.length > 0 ? parts.join(" • ") : null;
+}
+
 function getDetailsSummary(log: AuditLogItem): string {
+  const sesSummary = getSesFeedbackSummary(log);
+  if (sesSummary) return sesSummary;
+
   if (log.action === "event.edit") {
     const changed = log.metadata?.changedFields;
     if (Array.isArray(changed) && changed.length > 0) {

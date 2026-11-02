@@ -121,6 +121,7 @@ plus Cloudflare secrets (`wrangler secret put`).
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiting |
 | `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | SES sender |
 | `SES_FROM_EMAIL` | From-address for transactional + bulk mail |
+| `SES_FEEDBACK_SNS_TOPIC_ARNS` | Comma-separated SNS topic ARNs allowed to post bounces/complaints to `/api/webhooks/ses` (see below) |
 | `APPLE_WALLET_KEY` / `APPLE_WALLET_CERT` | PKPass signing (used to regenerate passes from admin) |
 | `GOOGLE_WALLET_EMAIL` / `GOOGLE_WALLET_KEY` | Google Wallet service account |
 
@@ -262,3 +263,40 @@ zinc/dark UI palette.
 `POST /api/tickets` handles both create-new and update-existing — if a ticket
 already exists for the `(email, event)` pair it's updated in place instead of
 creating a duplicate.
+
+## Automatic bounce suppression
+
+Hard bounces and spam complaints from SES are added to the `email_suppression`
+role automatically (the same list as **Users → Email Suppression**).
+Transient bounces (mailbox full, etc.) are not suppressed.
+
+Everything is visible in the audit log under the **Bounces & Complaints**
+filter, all by actor `system:ses-feedback`:
+
+- **Email Bounced** / **Spam Complaint**: one row per affected address, with
+  the outcome (added to suppression list, already suppressed, or not
+  suppressed because it was temporary), bounce type, the receiving server's
+  error, and the email subject.
+- **Bounce Webhook**: AWS subscription confirmed, failed, or removed.
+- New suppressions also get an **Added Role** row, same as a manual add.
+
+Rejected requests (bad signature, unknown topic) only go to the Worker logs
+(`wrangler tail`, lines prefixed `[ses-webhook]`), so outsiders can't fill the
+audit log.
+
+One-time AWS setup (region `us-east-2`, same as SES):
+
+1. **SNS → Create topic** (Standard), e.g. `ses-feedback`. Copy its ARN.
+2. Set `SES_FEEDBACK_SNS_TOPIC_ARNS` to that ARN on the admin Worker
+   (`wrangler secret put SES_FEEDBACK_SNS_TOPIC_ARNS` or the dashboard) and deploy.
+3. **SNS → topic → Create subscription**: protocol `HTTPS`, endpoint
+   `https://<admin domain>/api/webhooks/ses`. Leave raw message delivery **off**.
+   The webhook confirms the subscription by itself; the status should flip to
+   "Confirmed" within a few seconds.
+4. **SES → Identities → `stanfordspeakersbureau.com` → Notifications**: set the
+   **Bounce** and **Complaint** feedback topics to `ses-feedback`.
+   (A configuration set event destination publishing Bounce + Complaint to the
+   same topic also works.)
+5. Optional: once you see suppressions in the audit log, turn off
+   **Email feedback forwarding** on the identity so MAILER-DAEMON bounces stop
+   landing in the tickets@ inbox.

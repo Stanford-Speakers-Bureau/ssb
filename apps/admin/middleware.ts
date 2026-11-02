@@ -9,7 +9,12 @@ const ORIGIN_EXEMPT_ROUTES = [
   "/api/auth/login",
   "/api/auth/callback",
   "/api/auth/metadata",
+  "/api/webhooks/ses",
 ];
+
+// AWS SNS posts JSON bodies with Content-Type: text/plain. The route checks
+// the AWS signature itself.
+const SNS_WEBHOOK_ROUTES = ["/api/webhooks/ses"];
 
 /**
  * Get allowed origins for CSRF validation
@@ -95,8 +100,10 @@ export async function middleware(request: NextRequest) {
   if (["POST", "PUT", "PATCH"].includes(method)) {
     const contentType = request.headers.get("content-type");
     const isSamlCallback = pathname.startsWith("/api/auth/callback");
+    const isSnsWebhook = SNS_WEBHOOK_ROUTES.includes(pathname);
 
     if (
+      !isSnsWebhook &&
       !contentType?.includes("application/json") &&
       !contentType?.includes("multipart/form-data") &&
       !(isSamlCallback && contentType?.includes("application/x-www-form-urlencoded"))

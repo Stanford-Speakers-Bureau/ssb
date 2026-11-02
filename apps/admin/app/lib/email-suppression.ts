@@ -1,4 +1,4 @@
-import { db, inArray, roles } from "@ssb/db";
+import { and, auditLogs, db, inArray, roles, sql } from "@ssb/db";
 import { logAuditEvent } from "@/app/lib/audit";
 
 /**
@@ -115,4 +115,91 @@ export async function logSendFailures(opts: {
       })
     ),
   );
+}
+
+const SUPPRESSION_ROLE = "email_suppression";
+
+/**
+ * Adds the `email_suppression` role to each address (creating the roles row
+ * if needed) and writes one `user.add_role` audit row per newly suppressed
+ * address. Addresses that are already suppressed are skipped silently, so
+ * repeated bounces for the same address are harmless.
+ *
+ * Returns the addresses that were newly suppressed.
+ */
+export async function addEmailSuppressions(opts: {
+  entries: Array<{ email: string; metadata?: Record<string, unknown> }>;
+  actor: string;
+}): Promise<string[]> {
+  const byEmail = new Map<string, Record<string, unknown> | undefined>();
+  for (const entry of opts.entries) {
+    const email = entry.email.trim().toLowerCase();
+    if (email && !byEmail.has(email)) byEmail.set(email, entry.metadata);
+  }
+  const emails = [...byEmail.keys()];
+  if (emails.length === 0) return [];
+
+  const existing = await db
+    .select({ email: roles.email, roles: roles.roles })
+    .from(roles)
+    .where(inArray(roles.email, emails));
+
+  const existingEmails = new Set<string>();
+  const toUpdate: string[] = [];
+  for (const row of existing) {
+    if (!row.email) continue;
+    existingEmails.add(row.email);
+    const current = (row.roles ?? "")
+      .split(",")
+      .map((r) => r.trim().toLowerCase());
+    if (!current.includes(SUPPRESSION_ROLE)) toUpdate.push(row.email);
+  }
+  const toInsert = emails.filter((e) => !existingEmails.has(e));
+
+  const added: string[] = [];
+  if (toUpdate.length > 0) {
+    // The NOT ANY guard keeps this idempotent if two notifications for the
+    // same address race each other.
+    const rows = await db
+      .update(roles)
+      .set({
+        roles: sql`array_to_string(array_append(array_remove(string_to_array(coalesce(${roles.roles}, ''), ','), ''), ${SUPPRESSION_ROLE}), ',')`,
+      })
+      .where(
+        and(
+          inArray(roles.email, toUpdate),
+          sql`not (${SUPPRESSION_ROLE} = any(string_to_array(coalesce(${roles.roles}, ''), ',')))`,
+        ),
+      )
+      .returning({ email: roles.email });
+    for (const r of rows) if (r.email) added.push(r.email);
+  }
+  if (toInsert.length > 0) {
+    const rows = await db
+      .insert(roles)
+      .values(toInsert.map((email) => ({ email, roles: SUPPRESSION_ROLE })))
+      .returning({ email: roles.email });
+    for (const r of rows) if (r.email) added.push(r.email);
+  }
+
+  if (added.length > 0) {
+    try {
+      await db.insert(auditLogs).values(
+        added.map((email) => ({
+          action: "user.add_role",
+          actor: opts.actor,
+          source: "admin",
+          targetEmail: email,
+          metadata: JSON.stringify({
+            role: SUPPRESSION_ROLE,
+            ...byEmail.get(email),
+          }),
+        })),
+      );
+    } catch (err) {
+      console.error("[email-suppression] Failed to write audit rows:", err);
+    }
+  }
+
+  return added;
 }
