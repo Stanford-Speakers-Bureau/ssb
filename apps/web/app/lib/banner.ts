@@ -1,6 +1,7 @@
 import { getNextMilestoneEvent, getImageProxyUrl } from "./supabase";
 import { ticketDestination } from "./utils";
 import { BANNER_MESSAGES } from "./constants";
+import { isPluralName } from "./metadata";
 import { getSessionUser } from "./auth";
 import { db, eq, and, notify } from "@ssb/db";
 
@@ -87,11 +88,11 @@ export async function getBannerData({
       ? BANNER_MESSAGES.NOTIFY_MESSAGE
       : isHappeningNow
         ? closestEvent?.name +
-          (closestEvent?.name?.includes("and")
+          (isPluralName(closestEvent?.name)
             ? BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE_PLURAL
             : BANNER_MESSAGES.EVENT_HAPPENING_NOW_MESSAGE)
         : closestEvent?.name +
-          (closestEvent?.name?.includes("and")
+          (isPluralName(closestEvent?.name)
             ? BANNER_MESSAGES.EVENT_MESSAGE_PLURAL
             : BANNER_MESSAGES.EVENT_MESSAGE);
 

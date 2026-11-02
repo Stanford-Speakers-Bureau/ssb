@@ -20,12 +20,20 @@ export function stripMarkdown(text: string): string {
 }
 
 /**
+ * True when an event name lists several people, e.g. "Key and Peele".
+ * Matches "and" only as a whole word, so names like "Amanda Gorman" stay singular.
+ */
+export function isPluralName(name: string | null | undefined): boolean {
+  return !!name && /\band\b/i.test(name);
+}
+
+/**
  * Generate an engaging event title for meta tags.
  * Uses "are" if the name contains the word "and" (e.g. "Penn & Teller and Friends").
  */
 export function generateEventTitle(name: string | null): string {
   if (!name) return "Event";
-  const isPlural = /\band\b/i.test(name);
+  const isPlural = isPluralName(name);
   return (
     name +
     (isPlural
