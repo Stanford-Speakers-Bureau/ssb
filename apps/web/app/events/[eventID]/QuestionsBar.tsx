@@ -48,7 +48,7 @@ export default async function QuestionsBar({
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#A80D0C]/60 to-transparent"
       />
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-4 sm:py-5">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-6 sm:py-7">
         <QuestionsBarClient
           questions={questions}
           total={total}

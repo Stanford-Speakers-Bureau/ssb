@@ -134,32 +134,39 @@ export default function QuestionsBarClient({
 
   return (
     <>
-      {/* Top bar: label on the left, inline actions on the right. */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-xs font-sans uppercase tracking-[0.25em] sm:tracking-[0.3em] text-[#A80D0C]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#A80D0C] motion-safe:animate-pulse" />
-          Moderator Q&amp;A
-        </span>
-        <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold">
+      {/* Header: title on the left, actions on the right. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 font-sans text-base sm:text-lg font-semibold text-white">
+            {canVote && (
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 rounded-full bg-red-500 motion-safe:animate-pulse"
+              />
+            )}
+            Questions for the moderator
+          </h2>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
           {canVote && (
             <Link
               href={`/events/${eventRoute}/questions#ask`}
               prefetch={false}
-              className="inline-flex items-center gap-1 rounded-full bg-[#A80D0C] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm shadow-[#A80D0C]/20 transition-all hover:bg-[#C11211] active:scale-95"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#A80D0C] px-4 text-sm font-semibold text-white shadow-sm shadow-[#A80D0C]/20 transition-colors hover:bg-[#C11211] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              + Ask
+              Ask a question
             </Link>
           )}
           {total > questions.length && (
             <Link
               href={`/events/${eventRoute}/questions`}
               prefetch={false}
-              className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs font-semibold text-zinc-200 transition-all hover:bg-white/[0.1] hover:text-white hover:border-white/25 active:scale-95"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.06] px-4 text-sm font-semibold text-zinc-100 transition-colors hover:bg-white/[0.12] hover:border-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              See all
+              See all {total}
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -176,45 +183,46 @@ export default function QuestionsBarClient({
         </div>
       </div>
 
-      {/* Compact one-line rows. */}
-      <ol className="mt-2 sm:mt-2.5 divide-y divide-white/10">
+      {/* Question rows: full text wraps, labeled vote pill on the right. */}
+      <ol className="mt-4 divide-y divide-white/10 border-y border-white/10">
         {questions.map((q, idx) => {
           const voted = votedById[q.id] ?? q.hasVoted;
           const pending = !!pendingById[q.id];
           return (
-            <li key={q.id} className="flex items-center gap-3 py-2 sm:py-2.5">
+            <li key={q.id} className="flex items-start gap-3 py-3">
               {rankingsHidden ? (
                 <span
                   aria-hidden="true"
-                  className="shrink-0 w-4 flex justify-center text-[#A80D0C]"
+                  className="shrink-0 w-5 flex justify-center pt-2.5 text-red-400"
                 >
-                  <span className="h-1 w-1 rounded-full bg-current" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 </span>
               ) : (
-                <span className="shrink-0 w-4 text-center font-serif text-sm sm:text-base text-[#A80D0C] tabular-nums">
+                <span className="shrink-0 w-5 pt-0.5 text-center font-serif text-base sm:text-lg text-red-400 tabular-nums">
                   {idx + 1}
                 </span>
               )}
-              <span className="flex-1 min-w-0 truncate font-serif text-sm sm:text-base text-zinc-100">
+              <p className="flex-1 min-w-0 pt-0.5 font-serif text-base sm:text-lg leading-snug text-zinc-50 break-words">
                 {q.question}
-              </span>
+              </p>
               {canVote && (
                 <button
                   type="button"
                   onClick={() => handleVoteClick(q)}
                   disabled={pending}
                   aria-pressed={voted}
-                  aria-label={voted ? "Remove vote" : "Vote"}
-                  className={`shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  aria-label={`${voted ? "Remove your vote for" : "Vote for"}: ${q.question}`}
+                  title={voted ? "You voted for this. Click to undo." : "Vote for this question"}
+                  className={`shrink-0 inline-flex h-9 min-w-[5.5rem] items-center justify-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     voted
-                      ? "bg-[#A80D0C] text-white border border-[#A80D0C] shadow-sm shadow-[#A80D0C]/30 hover:bg-[#C11211]"
-                      : "border border-[#A80D0C]/40 text-[#A80D0C] bg-[#A80D0C]/[0.06] hover:bg-[#A80D0C]/15 hover:border-[#A80D0C]/70"
+                      ? "bg-[#A80D0C] text-white border border-[#A80D0C] hover:bg-[#C11211]"
+                      : "border border-white/25 text-zinc-100 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/40"
                   }`}
                 >
                   {voted ? (
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2.6"
@@ -227,11 +235,11 @@ export default function QuestionsBarClient({
                     </svg>
                   ) : (
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2.2"
+                      strokeWidth="2.4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       viewBox="0 0 24 24"
@@ -241,6 +249,7 @@ export default function QuestionsBarClient({
                       <path d="m5 12 7-7 7 7" />
                     </svg>
                   )}
+                  {voted ? "Voted" : "Vote"}
                 </button>
               )}
             </li>
