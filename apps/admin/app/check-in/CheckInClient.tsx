@@ -17,6 +17,7 @@ import {
 } from "@/app/lib/utils";
 import ReactECharts from "echarts-for-react";
 import { PageHeader, SegmentedControl, StatusPill } from "@/app/components/ui";
+import { ScanQrButton } from "./ScanQrButton";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -1631,7 +1632,9 @@ export default function CheckInClient() {
           subtitle={
             currentEvent ? currentEvent.name || "Unnamed Event" : undefined
           }
-        />
+        >
+          <ScanQrButton />
+        </PageHeader>
       </div>
 
       {!selectedEventId ? (
