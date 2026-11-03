@@ -51,10 +51,3 @@ Content-Type: multipart/alternative; boundary="BOUNDARY"
 Content-Type: text/plain; charset=UTF-8
 Content-Type: text/html; charset=UTF-8"
 `;
-
-exports[`ticket email MIME snapshots VIP scan notification captures internal alert structure 1`] = `
-"Subject: VIP Ticket Scanned: Email Snapshot Event
-Content-Type: multipart/alternative; boundary="BOUNDARY"
-Content-Type: text/plain; charset=UTF-8
-Content-Type: text/html; charset=UTF-8"
-`;

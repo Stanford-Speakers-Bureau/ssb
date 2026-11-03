@@ -6,7 +6,6 @@ import {
 } from "@/app/lib/auth";
 import { db, eq, and, events, tickets } from "@ssb/db";
 import { isValidEmail } from "@/app/lib/validation";
-import { sendVIPScanNotification } from "@/app/lib/email";
 import { pushWalletUpdate } from "@/app/lib/wallet-push";
 
 async function resolveTicketUserName(
@@ -194,7 +193,6 @@ export async function POST(req: Request) {
 
     // Update ticket: set scanned to true and scan_time to current timestamp
     const now = new Date();
-    const scanTime = now.toISOString();
 
     const [updatedTicket] = await db
       .update(tickets)
@@ -217,24 +215,6 @@ export async function POST(req: Request) {
 
     // Note: Event scanned count is automatically incremented by database trigger
     // when ticket.scanned is set to true (auto_increment_event_scanned)
-
-    // Send VIP scan notification email if ticket is VIP
-    if (updatedTicket.type?.toUpperCase() === "VIP") {
-      try {
-        await sendVIPScanNotification({
-          attendeeEmail: updatedTicket.email || "",
-          attendeeName: userName,
-          eventName: liveEvent.name || "Event",
-          ticketId: updatedTicket.id,
-          scanTime: scanTime,
-          scannerName: scannerName,
-          scannerEmail: scannerEmail,
-        });
-      } catch (emailError) {
-        // Log error but don't fail the scan request
-        console.error("Error sending VIP scan notification email:", emailError);
-      }
-    }
 
     // Push the live "Checked In" state to the attendee's Apple Wallet pass.
     // Bumps wallet_updated_at and fires an APNs refresh; best-effort so it

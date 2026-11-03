@@ -87,20 +87,4 @@ describe("ticket email MIME snapshots", () => {
     );
     expect(capture.messages[0].subject).toContain("Cancellation Confirmed");
   });
-
-  test("VIP scan notification captures internal alert structure", async () => {
-    const { sendVIPScanNotification } = await import("../email");
-    await sendVIPScanNotification({
-      attendeeEmail: baseTicket.email,
-      attendeeName: baseTicket.name,
-      eventName: baseTicket.eventName,
-      ticketId: baseTicket.ticketId,
-      scanTime: "2030-01-15T19:30:00-08:00",
-      scannerName: "Test Scanner",
-      scannerEmail: "scanner@example.test",
-    });
-
-    expect(summarizeMime(capture.messages[0].rawMime)).toMatchSnapshot();
-    expect(capture.messages[0].subject).toContain("VIP Ticket Scanned");
-  });
 });
